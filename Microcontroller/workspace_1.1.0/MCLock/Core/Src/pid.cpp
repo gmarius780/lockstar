@@ -8,6 +8,12 @@
 #include "pid.hpp"
 
 __attribute__((section("sram_func")))
+float PID::CalculateFeedback(float pv)
+{
+	this->CalculateFeedback(this->set_point, pv);
+}
+
+__attribute__((section("sram_func")))
 float PID::CalculateFeedback(float setpoint, float pv)
 {
 	// Calculate error
@@ -32,6 +38,53 @@ float PID::CalculateFeedback(float setpoint, float pv)
 
 	    // Calculate total output
 	    float output = Pout + Iout + Dout;
+
+	    output += pre_output;
+
+	    // Restrict to max/min
+	    if( output > max )
+	        output = max;
+	    else if( output < min )
+	        output = min;
+
+	    // Save error to previous error
+	    pre_error = error;
+
+	    pre_output = output;
+
+	    return output;
+}
+
+__attribute__((section("sram_func")))
+float PID::CalculateLimitedFeedback(float pv, float limit)
+{
+	// Calculate error
+	    float error = pol ? (this->set_point - pv) : (pv - this->set_point);
+
+	    // Proportional term
+	    float Pout = Kp * error;
+
+	    float Iout;
+	    // Integral term
+	    //if(counter>10000) {
+	    	integral += error * dt;
+	    	Iout = Ki * integral;
+	    //}
+	    //else
+	    //	Iout = 0;
+	    //counter++;
+
+	    // Derivative term
+	    float derivative = (error - pre_error) / dt;
+	    float Dout = Kd * derivative;
+
+	    // Calculate total output
+	    float output = Pout + Iout + Dout;
+	    if(output>limit)
+	    	output=limit;
+	    if(output<-limit)
+	    	output=-limit;
+
 
 	    output += pre_output;
 

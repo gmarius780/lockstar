@@ -36,7 +36,11 @@ extern DMA_HandleTypeDef hdma_spi4_rx;
 
 extern DMA_HandleTypeDef hdma_spi4_tx;
 
+extern DMA_HandleTypeDef hdma_spi5_rx;
+
 extern DMA_HandleTypeDef hdma_spi5_tx;
+
+extern DMA_HandleTypeDef hdma_spi6_rx;
 
 extern DMA_HandleTypeDef hdma_spi6_tx;
 
@@ -316,6 +320,24 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
     HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
 
     /* SPI5 DMA Init */
+	/* SPI5_RX Init */
+	hdma_spi5_rx.Instance = DMA2_Stream3;
+	hdma_spi5_rx.Init.Channel = DMA_CHANNEL_2;
+	hdma_spi5_rx.Init.Direction = DMA_PERIPH_TO_MEMORY;
+	hdma_spi5_rx.Init.PeriphInc = DMA_PINC_DISABLE;
+	hdma_spi5_rx.Init.MemInc = DMA_MINC_ENABLE;
+	hdma_spi5_rx.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+	hdma_spi5_rx.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+	hdma_spi5_rx.Init.Mode = DMA_NORMAL;
+	hdma_spi5_rx.Init.Priority = DMA_PRIORITY_HIGH;
+	hdma_spi5_rx.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
+	if (HAL_DMA_Init(&hdma_spi5_rx) != HAL_OK)
+	{
+	  Error_Handler();
+	}
+
+	__HAL_LINKDMA(hspi,hdmarx,hdma_spi5_rx);
+
     /* SPI5_TX Init */
     hdma_spi5_tx.Instance = DMA2_Stream4;
     hdma_spi5_tx.Init.Channel = DMA_CHANNEL_2;
@@ -360,7 +382,23 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
     HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
 
     /* SPI6 DMA Init */
+    /* SPI6_RX Init */
+	hdma_spi6_rx.Instance = DMA2_Stream6;
+	hdma_spi6_rx.Init.Channel = DMA_CHANNEL_1;
+	hdma_spi6_rx.Init.Direction = DMA_PERIPH_TO_MEMORY;
+	hdma_spi6_rx.Init.PeriphInc = DMA_PINC_DISABLE;
+	hdma_spi6_rx.Init.MemInc = DMA_MINC_ENABLE;
+	hdma_spi6_rx.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+	hdma_spi6_rx.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+	hdma_spi6_rx.Init.Mode = DMA_NORMAL;
+	hdma_spi6_rx.Init.Priority = DMA_PRIORITY_HIGH;
+	hdma_spi6_rx.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
+	if (HAL_DMA_Init(&hdma_spi6_rx) != HAL_OK)
+	{
+	  Error_Handler();
+	}
 
+	__HAL_LINKDMA(hspi,hdmarx,hdma_spi6_rx);
 
     /* SPI6_TX Init */
     hdma_spi6_tx.Instance = DMA2_Stream5;
@@ -478,6 +516,7 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* hspi)
 
     /* SPI5 DMA DeInit */
     HAL_DMA_DeInit(hspi->hdmatx);
+    HAL_DMA_DeInit(hspi->hdmarx);
   /* USER CODE BEGIN SPI5_MspDeInit 1 */
 
   /* USER CODE END SPI5_MspDeInit 1 */
@@ -499,6 +538,7 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* hspi)
 
     /* SPI6 DMA DeInit */
     HAL_DMA_DeInit(hspi->hdmatx);
+    HAL_DMA_DeInit(hspi->hdmarx);
   /* USER CODE BEGIN SPI6_MspDeInit 1 */
 
   /* USER CODE END SPI6_MspDeInit 1 */

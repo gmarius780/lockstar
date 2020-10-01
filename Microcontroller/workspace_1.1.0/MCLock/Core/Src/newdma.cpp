@@ -11,6 +11,11 @@
 
 SPI_DMA_Handler::SPI_DMA_Handler(uint8_t SPI, uint8_t DMA_Stream_In, uint8_t DMA_Channel_In, uint8_t DMA_Stream_Out, uint8_t DMA_Channel_Out, uint32_t priority)
 {
+	Config(SPI, DMA_Stream_In, DMA_Channel_In, DMA_Stream_Out, DMA_Channel_Out, priority);
+}
+
+void SPI_DMA_Handler::Config(uint8_t SPI, uint8_t DMA_Stream_In, uint8_t DMA_Channel_In, uint8_t DMA_Stream_Out, uint8_t DMA_Channel_Out, uint32_t priority)
+{
 	switch(SPI) {
 	case 1: this->SPI = SPI1; break;
 	case 4: this->SPI = SPI4; break;
@@ -44,6 +49,10 @@ SPI_DMA_Handler::SPI_DMA_Handler(uint8_t SPI, uint8_t DMA_Stream_In, uint8_t DMA
 
 	DMA_In_Backup = DMA_In;
 	DMA_Out_Backup = DMA_Out;
+
+
+	// disable the SPI interface
+	this->SPI->CR1 &= ~SPI_CR1_SPE;
 
 	// configure input DMA
 	if(DMA_In!=NULL)
@@ -128,6 +137,7 @@ void SPI_DMA_Handler::Transfer(uint8_t *ReadBuffer, uint8_t *WriteBuffer, uint16
 		// make Rx enabled
 		ActivateSPI |= SPI_CR2_RXDMAEN;
 	}
+
 	// start SPI transfer
 	SPI->CR2 |=  ActivateSPI;
 }

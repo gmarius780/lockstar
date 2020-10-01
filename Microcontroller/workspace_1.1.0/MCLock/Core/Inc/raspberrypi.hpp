@@ -27,6 +27,8 @@
 #define RPi_Command_DetailedTrace 27
 #define RPi_Command_ProgramCalibration 30
 #define RPi_Command_OptimizePID 31
+#define RPi_Command_SelfTest 32
+#define RPi_Command_ProgramSetValue 33
 
 #define TunePID_FollowWaypoints 1
 

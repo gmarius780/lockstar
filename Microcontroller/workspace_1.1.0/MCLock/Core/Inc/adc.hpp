@@ -13,11 +13,11 @@
 #include "oscilloscope.hpp"
 #include "flashmemory.hpp"
 
-#define ADC_BIPOLAR_10V		(uint8_t)0
-#define ADC_BIPOLAR_5V		(uint8_t)1
-#define ADC_UNIPOLAR_10V	(uint8_t)2
-#define ADC_UNIPOLAR_5V		(uint8_t)3
-#define ADC_OFF				(uint8_t)4
+#define ADC_BIPOLAR_10V		(uint8_t)0b111
+#define ADC_BIPOLAR_5V		(uint8_t)0b011
+#define ADC_UNIPOLAR_10V	(uint8_t)0b101
+#define ADC_UNIPOLAR_5V		(uint8_t)0b001
+#define ADC_OFF				(uint8_t)0b000
 
 class ADC_Dev;
 
@@ -40,6 +40,7 @@ public:
 	void Setup(uint8_t config);
 	void SetLowPass(bool LowPassOn, float Weight);
 	void ResetLowPass();
+	uint8_t GetConfig(){ return config; };
 
 	friend class ADC_Dev;
 	friend class Oscilloscope;
@@ -56,17 +57,18 @@ private:
 	volatile bool ready;
 	SPI_DMA_Handler* DMAHandler;
 	volatile uint8_t BufferSize;
+	void UpdateSoftSpan(uint8_t chcode, uint8_t ChannelId);
 public:
 	ADC_Channel *Channel1, *Channel2;
 	ADC_Dev(uint8_t SPI, uint8_t DMA_Stream_In, uint8_t DMA_Channel_In, uint8_t DMA_Stream_Out, uint8_t DMA_Channel_Out, GPIO_TypeDef* CNV_Port, uint16_t CNV_Pin);
 	void Read();
 	void Callback();
-	void UpdateSoftSpan(uint8_t chcode, uint8_t ChannelId);
 	bool isReady() { return ready; };
 	bool isZero() { return (Buffer[0]==0) && (Buffer[1]==0) && (Buffer[2]==0) && (Buffer[3]==0) && (Buffer[4]==0) && (Buffer[5]==0); };
-	//uint8_t* getBuffer(){return Buffer;};
+	uint8_t* getBuffer(){return Buffer;};
 
 	friend class Oscilloscope;
+	friend class ADC_Channel;
 	friend class UserData;
 };
 

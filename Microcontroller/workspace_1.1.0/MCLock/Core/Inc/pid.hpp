@@ -20,10 +20,13 @@ private:
 	unsigned long counter;
 	float dt;
 public:
-	float Kp, Ki, Kd, max, min, pre_output, set_point;
+	float Kp, Ki, Kd, max, min, pre_output;
+	volatile float set_point;
 	bool pol;
-	PID() { pre_error=0; integral=0; pre_output = 0; min=-10; max=10; dt=1; Kp=0; Kd=0; Ki=0; counter=0; };
+	PID() { pre_error=0; integral=0; pre_output = 0; min=-10; max=10; dt=1; Kp=0; Kd=0; Ki=0; counter=0; set_point=0.0; };
 	float CalculateFeedback(float setpoint, float pv);
+	float CalculateFeedback(float pv);
+	float CalculateLimitedFeedback(float pv, float limit);
 	float Diff(float setpoint, float pv);
 	void Reset() { pre_error=0; integral=0; pre_output = 0; counter=0; };
 	void SetVars(float* Vars);

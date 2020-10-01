@@ -22,6 +22,7 @@ float FFTCorrection::CalculateCorrection(float pv) {
         (*passiveFFT)[i].fft = fourierCoeffs[i] * ((*passiveFFT)[i].fft + pv);
 
         tempResult = (*activeFFT)[i].fft * amplitudeCorr[i];
+
         pvOut -= amplitudeNorm * ((*activeFFT)[i].supportSin * tempResult.real() + (*activeFFT)[i].supportCos * tempResult.imag());
         pvOut += amplitudeNorm * ((*activeFFT)[i].shiftSin * tempResult.real() + (*activeFFT)[i].shiftCos * tempResult.imag());
 

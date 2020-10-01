@@ -309,3 +309,63 @@ void OptimizePID(ADC_Dev* ADC_DEV, uint8_t ADC_Channel, DAC_Dev* DAC_DEV, Raspbe
 		while(!RPi->isReady());
 	}
 }
+
+void SelfTest(ADC_Dev* ADC_DEV, DAC_Dev* DAC_1, DAC_Dev* DAC_2, RaspberryPi* RPi)
+{
+	//turn_LED6_on();
+	volatile uint32_t countdown;
+	uint8_t Dummy[100];
+	// communication check
+	float* communication_ok = new float[2];
+	RPi->Transfer((uint8_t*)communication_ok, Dummy, 8);
+	while(!RPi->isReady());
+	HAL_Delay(500);
+	RPi->Transfer(Dummy, (uint8_t*)communication_ok, 8);
+	while(!RPi->isReady());
+
+	// ADC communication check
+	HAL_Delay(500);
+	uint8_t prev_config_ch1 = ADC_DEV->Channel1->GetConfig();
+	uint8_t prev_config_ch2 = ADC_DEV->Channel2->GetConfig();
+	//ADC_DEV->Channel1->Setup(ADC_BIPOLAR_10V);
+	//ADC_DEV->Channel2->Setup(ADC_BIPOLAR_10V);
+	ADC_DEV->Read(); while(!ADC_DEV->isReady());
+	ADC_DEV->Read(); while(!ADC_DEV->isReady());
+	RPi->Transfer(Dummy, ADC_DEV->getBuffer(), 6);
+	while(!RPi->isReady());
+	ADC_DEV->Channel1->Setup(prev_config_ch1);
+	ADC_DEV->Channel2->Setup(prev_config_ch2);
+
+	DAC_1->WriteFloat(0.0f);
+	while(!DAC_1->isReady());
+	// DAC 1 communication check
+	volatile uint8_t* control_reg;
+	HAL_Delay(500);
+	while(!DAC_1->isReady());
+	DAC_1->MakeDMA2Way();
+	DAC_1->ReadControlReg_Step1(); while(!DAC_1->isReady());
+	countdown=5;
+	while(countdown>0)
+		countdown--;
+	control_reg = DAC_1->ReadControlReg_Step2(); while(!DAC_1->isReady());
+	control_reg[3] = DAC_1->GetControlReg();
+	RPi->Transfer(Dummy, (uint8_t*)control_reg, 4);
+	while(!RPi->isReady());
+	delete control_reg;
+	DAC_1->MakeDMA1Way();
+
+	DAC_2->WriteFloat(9.68f);
+	while(!DAC_2->isReady());
+	// DAC 2 communication check
+	HAL_Delay(500);
+	while(!DAC_2->isReady());
+	//DAC_2->MakeDMA2Way();
+	DAC_2->ReadControlReg_Step1(); while(!DAC_2->isReady());
+	control_reg = DAC_2->ReadControlReg_Step2(); while(!DAC_2->isReady());
+	control_reg[3] = DAC_2->GetControlReg();
+	RPi->Transfer(Dummy, (uint8_t*)control_reg, 4);
+	while(!RPi->isReady());
+	delete control_reg;
+	//DAC_2->MakeDMA1Way();
+	//turn_LED6_off();
+}

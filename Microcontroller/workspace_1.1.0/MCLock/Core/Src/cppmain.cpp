@@ -27,6 +27,7 @@ DAC_Dev *DAC_2, *DAC_1;
 ADC_Dev *ADC_DEV;
 RaspberryPi *RPi;
 PID* PIDLoop;
+PID* PIDLoop2;
 volatile bool new_RPi_input = false;
 
 volatile bool locking = false;
@@ -82,6 +83,8 @@ void HAL_GPIO_EXTI_Callback (uint16_t GPIO_Pin)
 	if(GPIO_Pin == DigitalIn_Pin && HAL_GPIO_ReadPin(DigitalIn_GPIO_Port, DigitalIn_Pin)==GPIO_PIN_RESET){
 		locking = true;
 		PIDLoop->Reset();
+		PIDLoop2->Reset();
+		PIDLoop2->pre_output=2.5;
 		turn_LED6_on();
 
 	}
@@ -114,7 +117,7 @@ void DMA2_Stream2_IRQHandler(void)
 __attribute__((section("sram_func")))
 void DMA2_Stream3_IRQHandler(void)
 {
-	// SPI 1 tx
+	// SPI 1 tx - SPI 5 rx
 	// no action required
 }
 __attribute__((section("sram_func")))
@@ -131,11 +134,19 @@ void DMA2_Stream1_IRQHandler(void)
 	// SPI 4 Tx
 	// no action required
 }
+__attribute__((section("sram_func")))
+void DMA2_Stream6_IRQHandler(void)
+{
+	// SPI 6 Rx
+	// no action required
+}
 
 
 
 //#define NESTED_LOCK
 //#define CLOCKED_OPERATION
+//#define SINGLE_PID
+#define DOUBLE_PID
 
 
 /******************************
@@ -168,9 +179,9 @@ void cppmain(void)
 	ADC_DEV = new ADC_Dev(/*SPI number*/ 1, /*DMA Stream In*/ 2, /*DMA Channel In*/ 3, /*DMA Stream Out*/ 3, /*DMA Channel Out*/ 3,
 			/* conversion pin port*/ ADC_CNV_GPIO_Port, /* conversion pin number*/ ADC_CNV_Pin);
 	//ADC_DEV->Channel1->Setup(ADC_OFF);
-	DAC_1 = new DAC_Dev(/*SPI number*/ 6, /*DMA Stream*/ 5, /*DMA Channel*/ 1, /* sync pin port*/ DAC_1_Sync_GPIO_Port,
+	DAC_1 = new DAC_Dev(/*SPI number*/ 6, /*DMA Stream Out*/ 5, /*DMA Channel Out*/ 1, /*DMA Stream In*/ 6, /*DMA Channel In*/ 1, /* sync pin port*/ DAC_1_Sync_GPIO_Port,
 			/* sync pin number*/ DAC_1_Sync_Pin, /* clear pin port*/ CLR6_GPIO_Port, /* clear pin number*/ CLR6_Pin);
-	DAC_2 = new DAC_Dev(/*SPI number*/ 5, /*DMA Stream*/ 4, /*DMA Channel*/ 2, /* sync pin port*/ DAC_2_Sync_GPIO_Port,
+	DAC_2 = new DAC_Dev(/*SPI number*/ 5, /*DMA Stream Out*/ 4, /*DMA Channel Out*/ 2, /*DMA Stream In*/ 3, /*DMA Channel In*/ 2, /* sync pin port*/ DAC_2_Sync_GPIO_Port,
 			/* sync pin number*/ DAC_2_Sync_Pin, /* clear pin port*/ CLR5_GPIO_Port, /* clear pin number*/ CLR5_Pin);
 	RPi = new RaspberryPi(/*SPI number*/ 4, /*DMA Stream In*/ 0, /*DMA Channel In*/ 4, /*DMA Stream Out*/ 1,
 			/*DMA Channel Out*/ 4, /*GPIO Port*/ Pi_Int_GPIO_Port, /*GPIO Pin*/ Pi_Int_Pin);
@@ -196,19 +207,22 @@ void cppmain(void)
 	//FFTCorrection* FFTCorr = new FFTCorrection();
 	//FFTCorr->Setup();
 
-#ifdef NESTED_LOCK
-	PID* PIDLoop2 = new PID();
-	PIDLoop2->Kp = 0.0001;
+#if defined(NESTED_LOCK) || defined(DOUBLE_PID)
+	PIDLoop2 = new PID();
+	PIDLoop2->Kp = 0.05;//0.0001;
 	PIDLoop2->Ki = 0.0;
 	PIDLoop2->Kd = 0.0;
 	PIDLoop2->min = -10.0;
 	PIDLoop2->max = +10.0;
+	PIDLoop2->pol = true;
+	PIDLoop2->set_point = 0.0;
 #endif
+
 
 	/* Set up DAC output range */
 	DAC_1->Setup(DAC_BIPOLAR_10V, false);
 	while(!DAC_1->isReady());
-	DAC_2->Setup(DAC_BIPOLAR_10V, false);
+	DAC_2->Setup(DAC_UNIPOLAR_5V, false);
 	while(!DAC_2->isReady());
 	DAC_1->WriteFloat(0.0);
 	DAC_2->WriteFloat(0.0);
@@ -254,7 +268,7 @@ void cppmain(void)
 		}
 #endif
 
-#ifndef NESTED_LOCK
+#if defined(SINGLE_PID)
 		ADC_DEV->Read();
 		while(!ADC_DEV->isReady());
 		if(locking) {
@@ -269,6 +283,20 @@ void cppmain(void)
 		while(!(DAC_2->isReady()));
 		Scope.Input();
 
+#elif defined(DOUBLE_PID)
+		ADC_DEV->Read();
+		while(!ADC_DEV->isReady());
+		if(locking){
+			DAC_1->WriteFloat(PIDLoop->CalculateLimitedFeedback(ADC_DEV->Channel1->GetFloat(),0.001));
+			DAC_2->WriteFloat(PIDLoop2->CalculateLimitedFeedback(ADC_DEV->Channel2->GetFloat(),0.001));
+		}
+		else{
+			DAC_1->WriteFloat(0.0);
+			DAC_2->WriteFloat(2.5);
+		}
+		Scope.Input();
+		while(!(DAC_1->isReady()) or !(DAC_2->isReady()));
+
 
 		/* in nested operation:
 		 * - read from analog-digital converter
@@ -277,7 +305,7 @@ void cppmain(void)
 		 * - input data to oscilloscope
 		 */
 
-#else
+#elif defined(NESTED_LOCK)
 		ADC_DEV->Read();
 		while(!ADC_DEV->isReady());
 		if(locking) {
@@ -298,8 +326,14 @@ void cppmain(void)
 				break;
 
 			case RPi_Command_SetPIDParameters:
-				PIDLoop->SetPIDParam((float*)(RPi->ReadBuffer+1));
+			{
+				volatile uint8_t Channel  = RPi->ReadBuffer[1];
+				PIDLoop->SetPIDParam((float*)(RPi->ReadBuffer+2));
+#if defined(DOUBLE_PID) || defined(NESTED_LOCK)
+				PIDLoop2->SetPIDParam((float*)(RPi->ReadBuffer+2));
+#endif
 				break;
+			}
 
 			case RPi_Command_MeasureAOMResponse:
 			{
@@ -488,6 +522,31 @@ void cppmain(void)
 			{
 				volatile uint8_t ADC_Channel = RPi->ReadBuffer[1];
 				OptimizePID(ADC_DEV, ADC_Channel, DAC_2, RPi, PIDLoop);
+				break;
+			}
+
+			case RPi_Command_SelfTest:
+			{
+				SelfTest(ADC_DEV, DAC_1, DAC_2, RPi);
+				for(int i=0; i<50; i++) {
+					DAC_1->WriteFloat(0.0);
+					while(!DAC_1->isReady());
+					HAL_Delay(50);
+					DAC_1->WriteFloat(5.0);
+					while(!DAC_1->isReady());
+					HAL_Delay(50);
+				}
+				break;
+			}
+
+			case RPi_Command_ProgramSetValue:
+			{
+				volatile float SetValue1 = *((float*)(RPi->ReadBuffer+1));
+				volatile float SetValue2 = *((float*)(RPi->ReadBuffer+5));
+				PIDLoop->set_point = SetValue1;
+#if defined(DOUBLE_PID) || defined(NESTED_LOCK)
+				PIDLoop2->set_point = SetValue2;
+#endif
 				break;
 			}
 

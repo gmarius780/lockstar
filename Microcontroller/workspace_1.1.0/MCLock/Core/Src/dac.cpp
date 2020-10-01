@@ -8,9 +8,10 @@
 #include "dac.hpp"
 #include "newdma.hpp"
 #include "stm32f4xx_hal.h"
+#include "leds.hpp"
 
 
-DAC_Dev::DAC_Dev(uint8_t SPI, uint8_t DMA_Stream, uint8_t DMA_Channel, GPIO_TypeDef* SYNC_Port, uint16_t SYNC_Pin, GPIO_TypeDef* CLEAR_Port, uint16_t CLEAR_Pin)
+DAC_Dev::DAC_Dev(uint8_t SPI, uint8_t DMA_Stream_Out, uint8_t DMA_Channel_Out, uint8_t DMA_Stream_In, uint8_t DMA_Channel_In, GPIO_TypeDef* SYNC_Port, uint16_t SYNC_Pin, GPIO_TypeDef* CLEAR_Port, uint16_t CLEAR_Pin)
 {
 	this->SYNC_Port = SYNC_Port;
 	this->SYNC_Pin = SYNC_Pin;
@@ -22,7 +23,13 @@ DAC_Dev::DAC_Dev(uint8_t SPI, uint8_t DMA_Stream, uint8_t DMA_Channel, GPIO_Type
 
 	this->last_output = 0;
 
-	this->DMAHandler = new SPI_DMA_Handler(SPI, NONE, NONE, DMA_Stream, DMA_Channel, 2);
+	DMAConfig = new uint8_t[5];
+	DMAConfig[0] = SPI;
+	DMAConfig[1] = DMA_Stream_Out;
+	DMAConfig[2] = DMA_Channel_Out;
+	DMAConfig[3] = DMA_Stream_In;
+	DMAConfig[4] = DMA_Channel_In;
+	this->DMAHandler = new SPI_DMA_Handler(SPI, NONE, NONE, DMA_Stream_Out, DMA_Channel_Out, 2);
 
 	this->Cal = new DAC_Calibration();
 
@@ -124,13 +131,42 @@ void DAC_Dev::SendControlbit(float FullRange)
 	bool DACTRI = false;
 	bool NOT2C = false;
 	bool SDODIS = false;
+	control_reg = (RBUF<<1)+(OPGND<<2)+(DACTRI<<3)+(NOT2C<<4)+(SDODIS<<5);
 	buffer[0] = 0b00100000;
 	buffer[1] = Lincomp>>2;
-	buffer[2] = ((Lincomp & 0b11)<<6)+(RBUF<<1)+(OPGND<<2)+(DACTRI<<3)+(NOT2C<<4)+(SDODIS<<5);
+	buffer[2] = ((Lincomp & 0b11)<<6)+control_reg;
 
 	// send configuration
 	DMAHandler->Transfer(NULL, buffer, 3);
 
+}
+
+void DAC_Dev::ReadControlReg_Step1()
+{
+	// mark device as busy
+	ready = false;
+
+	SYNC_Port->BSRR = (uint32_t)SYNC_Pin << 16U;
+
+	buffer[0] = 0b10010000;
+	buffer[1] = 0;
+	buffer[2] = 0;
+	DMAHandler->Transfer(NULL, buffer, 3);
+}
+
+uint8_t* DAC_Dev::ReadControlReg_Step2()
+{
+	// mark device as busy
+	ready = false;
+
+	SYNC_Port->BSRR = (uint32_t)SYNC_Pin << 16U;
+
+	buffer[0] = 0;
+	buffer[1] = 0;
+	buffer[2] = 0;
+	uint8_t* read_control_reg = new uint8_t[4];
+	DMAHandler->Transfer(read_control_reg, buffer, 3);
+	return read_control_reg;
 }
 
 
@@ -251,4 +287,14 @@ float DAC_Calibration::ApplyCalibration(float TargetOutput)
 	float FloatIndex = (TargetOutput-Min) * OneOverStep;
 	uint32_t IntIndex = (uint32_t)FloatIndex;
 	return ((1+IntIndex-FloatIndex)*Pivots[IntIndex]+(FloatIndex-IntIndex)*Pivots[IntIndex+1]);
+}
+
+void DAC_Dev::MakeDMA2Way()
+{
+	DMAHandler->Config(DMAConfig[0], DMAConfig[3], DMAConfig[4], DMAConfig[1], DMAConfig[2], 2);
+}
+
+void DAC_Dev::MakeDMA1Way()
+{
+	DMAHandler->Config(DMAConfig[0], NONE, NONE, DMAConfig[1], DMAConfig[2], 2);
 }

@@ -195,10 +195,10 @@ void cppmain(void)
 	/* Set up FFTCorrection functionality */
 	float m_pi = 3.14159265;
 	//vector<peak> peaks = {{1700.0f, 1, 0.0f, 0.0f}, {1710.0f, 1, 0.0f, 0.0f}}; // {{resFreq, linewidth, amplitudeShift, phaseShift}}
-	vector<peak> peaks = {{1700.0f, 1, 0, 0}};
-	//vector<peak> peaks = {{1200.0f, 1, 0.0f, 0.0f}, {1700.0f, 1, 0.0f, 0.0f}, {1710.0f, 1, 0.0f, 0.0f}, {1800.0f, 1, 0.0f, 0.0f}, {2000.0f, 1, 0.0f, 0.0f}, {2300.0f, 1, 0.0f, 0.0f}, {2700.0f, 1, 0.0f, 0.0f}, {3003.0f, 12, 0.0f, 0.0f}, {3500.0f, 1, 0.0f, 0.0f}, {3700.0f, 1, 0.0f, 0.0f}};
+	vector<peak> peaks = {{1700, 1, 0, 0}, {1710, 1, 0, 0}};
+	//vector<peak> peaks = {{1200.0f, 1, 0.0f, 0.0f}, {1450.0f, 1, 0.0f, 0.0f}, {1700.0f, 1, 0.0f, 0.0f}, {1710.0f, 1, 0.0f, 0.0f}, {1800.0f, 1, 0.0f, 0.0f}, {2000.0f, 1, 0.0f, 0.0f}, {2300.0f, 1, 0.0f, 0.0f}, {2700.0f, 1, 0.0f, 0.0f}, {3003.0f, 12, 0.0f, 0.0f}, {3050, 1, 0.0f, 0.0f}};
 	FFTCorrection* FFTCorr = new FFTCorrection(peaks);
-	FFTCorr->SetParameters(10000, 500);
+	FFTCorr->SetParameters(10000, 1000);  //Attention: Do not forget to also set the corresponding StartTimer() value in line 230, which represents the sample rate
 	FFTCorr->Setup();
 
 #ifdef NESTED_LOCK
@@ -252,7 +252,9 @@ void cppmain(void)
 			DigitalOutHigh();
 			//saved_data[counter++] = FFTCorr->CalculateCorrection(ADC_DEV->Channel1->GetFloat());//ADC_DEV->Channel1->GetFloat();
 			//DAC_1->WriteFloat(ADC_DEV->Channel1->GetFloat());
+
 			DAC_1->WriteFloat(FFTCorr->CalculateCorrection(ADC_DEV->Channel1->GetFloat()));
+
 			//FFTCorr->CalculateCorrection(ADC_DEV->Channel1->GetFloat());
 			DigitalOutLow();
 			new_data = false;

@@ -79,7 +79,7 @@ void ADC_Dev::UpdateSoftSpan(uint8_t chcode, uint8_t ChannelId)
 	 * SoftSpan programmed to device is given as S2[2] S2[1] S2[0] S1[2] S1[1] S1[0] . . . . . . . . . . . . . .
 	 * Note that Hardware Device 2 is Input Channel 1.
 	 */
-	uint8_t code = Softspan[0];
+	volatile uint8_t code = Softspan[0];
 	if(ChannelId==1)
 		code = ((code&0b00011111) | (chcode<<5));
 	else

@@ -33,6 +33,7 @@ void Go2Lock(DAC_Dev* DAC_DEV, ADC_Dev* ADC_DEV, std::queue<Waypoint> waypoints,
 void RecordDetailedTrace(ADC_Dev* ADC_DEV, bool ReadChannel1, bool ReadChannel2, DAC_Dev* DAC_DEV, RaspberryPi* RPi, uint32_t From, uint32_t NumberSteps, uint32_t BlockSize);
 void TestRCCompensationJump(DAC_Dev* DAC_DEV);
 void OptimizePID(ADC_Dev* ADC_DEV, uint8_t ADC_Channel, DAC_Dev* DAC_DEV, RaspberryPi* RPi, PID* PIDLoop);
+void SelfTest(ADC_Dev* ADC_DEV, DAC_Dev* DAC_1, DAC_Dev* DAC_2, RaspberryPi* RPi);
 
 void DigitalOutHigh();
 void DigitalOutLow();

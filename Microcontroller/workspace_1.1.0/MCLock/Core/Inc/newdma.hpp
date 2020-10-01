@@ -22,6 +22,7 @@ private:
 	SPI_TypeDef *SPI;
 public:
 	SPI_DMA_Handler(uint8_t SPI, uint8_t DMA_Stream_In, uint8_t DMA_Channel_In, uint8_t DMA_Stream_Out, uint8_t DMA_Channel_Out, uint32_t priority);
+	void Config(uint8_t SPI, uint8_t DMA_Stream_In, uint8_t DMA_Channel_In, uint8_t DMA_Stream_Out, uint8_t DMA_Channel_Out, uint32_t priority);
 	void Transfer(uint8_t *ReadBuffer, uint8_t *WriteBuffer, uint16_t BufferSize);
 	void Callback();
 	void JustWrite();

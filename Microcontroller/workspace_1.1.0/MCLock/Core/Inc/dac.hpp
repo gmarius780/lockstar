@@ -51,9 +51,13 @@ private:
 
 	// int to float conversion
 	uint8_t config;
+	uint8_t control_reg;
 	float InvStepSize;
 	float StepSize;
 	float ZeroVoltage;
+
+	// DMA config
+	volatile uint8_t* DMAConfig;
 
 	/*float* Aom_coeff;
 	uint16_t* lin_aom;
@@ -68,7 +72,7 @@ private:
 public:
 
 	// constructor
-	DAC_Dev(uint8_t SPI, uint8_t DMA_Stream, uint8_t DMA_Channel, GPIO_TypeDef* SYNC_Port, uint16_t SYNC_Pin, GPIO_TypeDef* CLEAR_Port, uint16_t CLEAR_Pin);
+	DAC_Dev(uint8_t SPI, uint8_t DMA_Stream_Out, uint8_t DMA_Channel_Out, uint8_t DMA_Stream_In, uint8_t DMA_Channel_In, GPIO_TypeDef* SYNC_Port, uint16_t SYNC_Pin, GPIO_TypeDef* CLEAR_Port, uint16_t CLEAR_Pin);
 
 	// output functions
 	void WriteFloat(float value);
@@ -92,10 +96,18 @@ public:
 	void SendControlbit(float FullRange);
 	void EnableClearbit(bool enable);
 
+	void MakeDMA2Way();
+	void MakeDMA1Way();
+
 	// getter functions
 	float GetLast(){ return this->last_output; };
 	float GetMax(){ return LimitHigh; };
 	float GetMin(){ return LimitLow; };
+	uint8_t GetControlReg(){ return control_reg; };
+
+	// self test
+	void ReadControlReg_Step1();
+	uint8_t* ReadControlReg_Step2();
 
 	// output calibration
 	DAC_Calibration* Cal;
