@@ -1,0 +1,12 @@
+FFTCorrection.cpp:48:6:void FFTCorrection::SwapFFTs()	0	static
+FFTCorrection.cpp:55:6:void FFTCorrection::ResetActiveFFT()	4	static
+FFTCorrection.cpp:13:7:float FFTCorrection::CalculateCorrection(float)	32	static
+FFTCorrection.cpp:80:7:float FFTCorrection::sinc(float)	16	static
+vector.tcc:394:7:) [with _Args = {const fftEntry&}; _Tp = fftEntry; _Alloc = std::allocator<fftEntry>]	40	static
+FFTCorrection.cpp:60:6:void FFTCorrection::GenerateFFTBasis()	88	static
+vector.tcc:394:7:) [with _Args = {const std::complex<float>&}; _Tp = std::complex<float>; _Alloc = std::allocator<std::complex<float> >]	40	static
+FFTCorrection.cpp:98:6:void FFTCorrection::GenerateAmplitudeCorrection()	56	static
+vector.tcc:394:7:) [with _Args = {std::complex<float>}; _Tp = std::complex<float>; _Alloc = std::allocator<std::complex<float> >]	40	static
+vector.tcc:95:7:) [with _Args = {std::complex<float>}; _Tp = std::complex<float>; _Alloc = std::allocator<std::complex<float> >]	8	static
+FFTCorrection.cpp:86:6:void FFTCorrection::GenerateFourierCoeffs()	48	static
+FFTCorrection.cpp:113:6:void FFTCorrection::Setup()	32	static

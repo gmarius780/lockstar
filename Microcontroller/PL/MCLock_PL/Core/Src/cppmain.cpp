@@ -20,6 +20,9 @@
 #include "flashmemory.hpp"
 #include "FFTCorrection.hpp"
 
+#include <math.h>
+#include <vector>
+
 
 
 // Peripheral devices
@@ -27,7 +30,10 @@ DAC_Dev *DAC_2, *DAC_1;
 ADC_Dev *ADC_DEV;
 RaspberryPi *RPi;
 PID* PIDLoop;
+FFTCorrection* FFTCorr;
 volatile bool new_RPi_input = false;
+
+volatile bool digitalOutOn = false;
 
 volatile bool locking = false;
 
@@ -35,6 +41,13 @@ volatile bool locking = false;
 __attribute__((__section__(".user_data"),used)) uint32_t SavedSettings[4];
 
 volatile bool new_data = false;
+
+
+//Matrix
+struct voltageOut {
+    float time;
+    float voltage;
+};
 
 
 /************************
@@ -64,9 +77,14 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	// do something with sensitive timing
 	ADC_DEV->Read();
+
+	//For testing the MC-clock rate
+	//digitalOutOn = !digitalOutOn;
+	//digitalOutOn ? DigitalOutHigh() : DigitalOutLow();
 }
 
-
+//digitalOutOn = !digitalOutOn;
+//DAC_1->WriteFloat(digitalOutOn ? 1.0f : -1.0f);
 
 
 /******************************
@@ -78,6 +96,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 __attribute__((section("sram_func")))
 void HAL_GPIO_EXTI_Callback (uint16_t GPIO_Pin)
 {
+
+	//turn_LED6_on();
+
 	// Falling Edge = Trigger going High
 	if(GPIO_Pin == DigitalIn_Pin && HAL_GPIO_ReadPin(DigitalIn_GPIO_Port, DigitalIn_Pin)==GPIO_PIN_RESET){
 		locking = true;
@@ -166,10 +187,10 @@ void cppmain(void)
 	 * table.
 	 */
 	ADC_DEV = new ADC_Dev(/*SPI number*/ 1, /*DMA Stream In*/ 2, /*DMA Channel In*/ 3, /*DMA Stream Out*/ 3, /*DMA Channel Out*/ 3,
-			/* conversion pin port*/ ADC_CNV_GPIO_Port, /* conversion pin number*/ ADC_CNV_Pin);
+				/* conversion pin port*/ ADC_CNV_GPIO_Port, /* conversion pin number*/ ADC_CNV_Pin);
 	//ADC_DEV->Channel1->Setup(ADC_OFF);
 	DAC_1 = new DAC_Dev(/*SPI number*/ 6, /*DMA Stream*/ 5, /*DMA Channel*/ 1, /* sync pin port*/ DAC_1_Sync_GPIO_Port,
-			/* sync pin number*/ DAC_1_Sync_Pin, /* clear pin port*/ CLR6_GPIO_Port, /* clear pin number*/ CLR6_Pin);
+				/* sync pin number*/ DAC_1_Sync_Pin, /* clear pin port*/ CLR6_GPIO_Port, /* clear pin number*/ CLR6_Pin);
 	DAC_2 = new DAC_Dev(/*SPI number*/ 5, /*DMA Stream*/ 4, /*DMA Channel*/ 2, /* sync pin port*/ DAC_2_Sync_GPIO_Port,
 			/* sync pin number*/ DAC_2_Sync_Pin, /* clear pin port*/ CLR5_GPIO_Port, /* clear pin number*/ CLR5_Pin);
 	RPi = new RaspberryPi(/*SPI number*/ 4, /*DMA Stream In*/ 0, /*DMA Channel In*/ 4, /*DMA Stream Out*/ 1,
@@ -193,13 +214,25 @@ void cppmain(void)
 	PIDLoop->pol = true;
 
 	/* Set up FFTCorrection functionality */
-	float m_pi = 3.14159265;
-	//vector<peak> peaks = {{1700.0f, 1, 0.0f, 0.0f}, {1710.0f, 1, 0.0f, 0.0f}}; // {{resFreq, linewidth, amplitudeShift, phaseShift}}
-	vector<peak> peaks = {{1700, 1, 0, 0}, {1710, 1, 0, 0}};
+	vector<peak> peaks = {{1700, 58, 0, 0}}; //{{freq, fftCoeffs, amplitudeShift, phaseShift}}
 	//vector<peak> peaks = {{1200.0f, 1, 0.0f, 0.0f}, {1450.0f, 1, 0.0f, 0.0f}, {1700.0f, 1, 0.0f, 0.0f}, {1710.0f, 1, 0.0f, 0.0f}, {1800.0f, 1, 0.0f, 0.0f}, {2000.0f, 1, 0.0f, 0.0f}, {2300.0f, 1, 0.0f, 0.0f}, {2700.0f, 1, 0.0f, 0.0f}, {3003.0f, 12, 0.0f, 0.0f}, {3050, 1, 0.0f, 0.0f}};
-	FFTCorrection* FFTCorr = new FFTCorrection(peaks);
+
+	FFTCorr = new FFTCorrection(peaks);
 	FFTCorr->SetParameters(10000, 1000);  //Attention: Do not forget to also set the corresponding StartTimer() value in line 230, which represents the sample rate
 	FFTCorr->Setup();
+
+	/*Matrix functionality*/
+	volatile bool outputVoltage = false;
+	vector<voltageOut> voltageOuts = {{1.0f, 1.0f}, {2.0f, 2.0f}};;
+	volatile float voltageOutputTime = 0.0;
+	volatile uint32_t voltageOutputCounter = 0;
+	volatile uint32_t voltageOutputTotal = 2;
+
+	/*vector<float> sineData;
+	for (int i = 0; i < 10000; i++) {
+		//sineData.push_back(sin(2));
+		sineData.push_back(sin((float) (2 * 3.14159265 * 10000 * i) ));
+	}*/
 
 #ifdef NESTED_LOCK
 	PID* PIDLoop2 = new PID();
@@ -230,6 +263,9 @@ void cppmain(void)
 	StartTimer(10000);
 	float saved_data[10000];
 	volatile uint32_t counter=0;
+	//float data_temp = new float[1];
+	//volatile bool digitalOutOn = false;
+	volatile bool flagTemp = true;
 #endif
 
 	while(1) {
@@ -248,21 +284,77 @@ void cppmain(void)
 		 */
 
 #ifdef CLOCKED_OPERATION
-		if(new_data && counter<10000) {
+
+		//if(new_data && counter<10000) {
+		if(new_data) {
+
+			if (flagTemp == true) {
+				Scope.Input();
+			}
+
 			DigitalOutHigh();
-			//saved_data[counter++] = FFTCorr->CalculateCorrection(ADC_DEV->Channel1->GetFloat());//ADC_DEV->Channel1->GetFloat();
-			//DAC_1->WriteFloat(ADC_DEV->Channel1->GetFloat());
+			if (outputVoltage) {
+				if (voltageOutputCounter == voltageOutputTotal) {
+					//turn_LED6_on();
+					voltageOutputCounter = 0;
+					voltageOutputTime = 0.0;
+				}
+				DAC_1->WriteFloat((voltageOuts[voltageOutputCounter].voltage * (voltageOuts[voltageOutputCounter+1].time - voltageOutputTime) + voltageOuts[voltageOutputCounter+1].voltage * (voltageOutputTime - voltageOuts[voltageOutputCounter].time)) / (voltageOuts[voltageOutputCounter+1].time - voltageOuts[voltageOutputCounter].time));
 
-			DAC_1->WriteFloat(FFTCorr->CalculateCorrection(ADC_DEV->Channel1->GetFloat()));
+				//DAC_1->WriteFloat(((voltageOuts[voltageOutputCounter+1].voltage - voltageOuts[voltageOutputCounter].voltage) / voltageOuts[voltageOutputCounter+1].time) * voltageOutputTime + voltageOuts[voltageOutputCounter].voltage);
 
-			//FFTCorr->CalculateCorrection(ADC_DEV->Channel1->GetFloat());
+				if (voltageOuts[voltageOutputCounter+1].time <= voltageOutputTime) {
+					voltageOutputCounter++;
+				}
+
+				voltageOutputTime += 1.0/10000.0;
+			}
 			DigitalOutLow();
+
+			/*if (true) {
+				//turn_LED6_on();
+				DAC_1->WriteFloat(0.00001 * counter);
+				counter++;
+
+				if (counter == 10000) {
+					counter = 0;
+				}
+			}*/
+
+			//DAC_1->WriteFloat(1.0f);
+
+			//digitalOutOn ? DigitalOutHigh() : DigitalOutLow();
+			//digitalOutOn = !digitalOutOn;
+			//saved_data[counter++] = FFTCorr->CalculateCorrection(ADC_DEV->Channel1->GetFloat());
+
+			//DAC_1->WriteFloat(FFTCorr->CalculateCorrection(ADC_DEV->Channel1->GetFloat()));
+
+			/*DigitalOutHigh();
+			DAC_1->WriteFloat(FFTCorr->CalculateCorrection(1.0f));
+			//DAC_1->WriteFloat(sin(counter * M_PI / 180));
+			//DAC_1->WriteFloat(sineData[counter]);
+			DigitalOutLow();*/
+
+			//counter++;
+
+			/*if (digitalOutOn) {
+				DigitalOutHigh();
+				digitalOutOn = false;
+			}*/
+
+
+
 			new_data = false;
-		}
+		} /*else {
+			if (!digitalOutOn) {
+				DigitalOutLow();
+				digitalOutOn = true;
+			}
+		}*/
 
 		/*if(counter == 10000) {
-			RPi->Write((uint8_t*)saved_data, 4*10000);
-			//counter = 0;
+			//RPi->Write((uint8_t*)saved_data, 4*10000);
+			counter = 0;
 		}*/
 #endif
 
@@ -283,14 +375,14 @@ void cppmain(void)
 		 */
 
 #else
-		ADC_DEV->Read();
+		/*ADC_DEV->Read();
 		while(!ADC_DEV->isReady());
 		if(locking) {
 			DAC_1->WriteFloat(PIDLoop->CalculateFeedback(PIDLoop->set_point, ADC_DEV->Channel2->GetFloat()));
 			DAC_2->WriteFloat(PIDLoop2->CalculateFeedback(0.0f, DAC_1->GetLast()));
 		}
 		Scope.Input();
-		while(!(DAC_2->isReady()));
+		while(!(DAC_2->isReady()));*/
 #endif
 
 
@@ -493,6 +585,93 @@ void cppmain(void)
 				break;
 			}
 
+			case RPi_Command_SetFFTCorrectionParameters:
+			{
+				volatile float sampleRate = *((float*)(RPi->ReadBuffer+1));
+				volatile float batchSize = *((float*)(RPi->ReadBuffer+5));
+				volatile float nrOfResoanantPeaks = *((float*)(RPi->ReadBuffer+9));
+
+				// For Debug only
+				/*if (nrOfResoanantPeaks == 2.0f) {
+					turn_LED6_on();
+				}*/
+
+				vector<peak> resonantPeaks;
+				for (int i=0; i<nrOfResoanantPeaks; i++) {
+					resonantPeaks.push_back({
+						*((float*)(RPi->ReadBuffer+(13+i*4*4+0))),
+						*((float*)(RPi->ReadBuffer+(13+i*4*4+1*4))),
+						*((float*)(RPi->ReadBuffer+(13+i*4*4+2*4))),
+						*((float*)(RPi->ReadBuffer+(13+i*4*4+3*4)))
+					});
+				}
+
+				FFTCorr = new FFTCorrection(resonantPeaks);
+				FFTCorr->SetParameters(sampleRate, batchSize);  //Attention: Do not forget to also set the corresponding StartTimer() value in line 230, which represents the sample rate
+				FFTCorr->Setup();
+
+				// For Debug only
+				/*if (FFTCorr->resonantPeaks[1].freq == 1900.0f) {
+					turn_LED6_on();
+				}*/
+
+				break;
+			}
+			case RPi_Command_SetChannelEventVoltage:
+			{
+				flagTemp = false;
+
+				volatile float nrOfVoltageValues = *((float*)(RPi->ReadBuffer+1));
+				voltageOutputTotal = (uint32_t) nrOfVoltageValues;
+				//voltageOutputTotal = *((uint32_t*)(RPi->ReadBuffer+1));
+				//nrOfVoltageValues *= 2; //Since Every voltage values comes in a pair with the corresponding time step in the form (t, V)
+				outputVoltage = true;
+
+				//volatile float tempTime = 0.0;
+				//volatile float tempVoltage = 0.0;
+
+				//addr = 0x08000000;
+
+				voltageOuts.clear();
+
+				//voltageOuts = vector<voltageOut>(nrOfVoltageValues);
+
+				for (int i=0; i<nrOfVoltageValues; i++) {
+					//tempVoltage = *((float*)(RPi->ReadBuffer+(5 + i*4)));
+
+					voltageOuts.push_back({
+						*((float*)(RPi->ReadBuffer+(5 + i*4*2 + 0))),
+						*((float*)(RPi->ReadBuffer+(5 + i*4*2 + 1*4)))
+					});
+
+					//*(__IO uint32_t*)addr = tempVoltage_v2;
+					//addr += 4;
+//					*(addr++) = (tempVoltage_v2         & 0xF);
+//					*(addr++) = ((tempVoltage_v2 >> 8)  & 0xF);
+//					*(addr++) = ((tempVoltage_v2 >> 16) & 0xF);
+//					*(addr++) = ((tempVoltage_v2 >> 24) & 0xF);
+
+				}
+
+				// For Debug onlya
+				/*if (voltageOutputTotal == 8) {
+					turn_LED6_on();
+				}*/
+
+				/*if (voltageOuts[5].voltage == 1.6f) {
+					turn_LED6_on();
+				}*/
+
+				float* data_temp = new float[1];
+				data_temp[0] = 1997.0;
+				RPi->Write((uint8_t*)data_temp, 4*1);
+				while(!RPi->isReady());
+				delete data_temp;
+
+				flagTemp = false;
+
+				break;
+			}
 
 			}
 			new_RPi_input = false;

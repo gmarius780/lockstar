@@ -25,7 +25,7 @@ struct fftEntry {
 
 struct peak {
     float freq;
-    float linewidth; //Must be even or 1
+    float fftCoeffs; //Must be even or 1
     float amplitudeShift;
     float phaseShift;
 };

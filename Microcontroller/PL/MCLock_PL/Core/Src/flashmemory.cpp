@@ -14,7 +14,8 @@
 
 UserData::UserData(ADC_Dev* ADC_DEV, DAC_Dev* DAC_1, DAC_Dev* DAC_2, PID* PID_1, PID* PID_2, Oscilloscope* Scope)
 {
-	flash_address = 0x081E0000UL;
+//	flash_address = 0x081E0000UL;
+	flash_address = 0x08000000UL; // max address = 0x081F FFFF
 	this->ADC_DEV = ADC_DEV;
 	this->DAC_1 = DAC_1;
 	this->DAC_2 = DAC_2;

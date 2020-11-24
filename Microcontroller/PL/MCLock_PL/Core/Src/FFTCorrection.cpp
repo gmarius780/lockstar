@@ -60,8 +60,8 @@ void FFTCorrection::ResetActiveFFT() {
 void FFTCorrection::GenerateFFTBasis() {
     for (int i = 0; i < resonantPeaks.size(); i++) {
         int peak_k = int(resonantPeaks[i].freq / fftStep) + 1;
-        int start_k = resonantPeaks[i].linewidth == 1 ? peak_k - 1 : peak_k - int(resonantPeaks[i].linewidth / 2);
-        int end_k = resonantPeaks[i].linewidth == 1 ? peak_k : peak_k + int(resonantPeaks[i].linewidth / 2);
+        int start_k = resonantPeaks[i].fftCoeffs == 1 ? peak_k - 1 : peak_k - int(resonantPeaks[i].fftCoeffs / 2);
+        int end_k = resonantPeaks[i].fftCoeffs == 1 ? peak_k : peak_k + int(resonantPeaks[i].fftCoeffs / 2);
         for (int j = start_k; j < end_k; j++) {
             float freq = j * fftStep;
             float fft = 0.0;
@@ -86,8 +86,8 @@ float FFTCorrection::sinc(float x) {
 void FFTCorrection::GenerateFourierCoeffs() {
     for (int i = 0; i < resonantPeaks.size(); i++) {
         int peak_k = int(resonantPeaks[i].freq / fftStep) + 1;
-        int start_k = resonantPeaks[i].linewidth == 1 ? peak_k - 1 : peak_k - int(resonantPeaks[i].linewidth / 2);
-        int end_k = resonantPeaks[i].linewidth == 1 ? peak_k : peak_k + int(resonantPeaks[i].linewidth / 2);
+        int start_k = resonantPeaks[i].fftCoeffs == 1 ? peak_k - 1 : peak_k - int(resonantPeaks[i].fftCoeffs / 2);
+        int end_k = resonantPeaks[i].fftCoeffs == 1 ? peak_k : peak_k + int(resonantPeaks[i].fftCoeffs / 2);
         for (int j = start_k; j < end_k; j++) {
             complex<float> temp(0, 2 * m_pi * j / batchSize);
             fourierCoeffs.push_back(exp(temp));
@@ -100,8 +100,8 @@ void FFTCorrection::GenerateAmplitudeCorrection() {
     for (int i = 0; i < resonantPeaks.size(); i++) {
         float r = resonantPeaks[i].freq / fftStep;
         int r_r = int(resonantPeaks[i].freq / fftStep) + 1;
-        int start_k = resonantPeaks[i].linewidth == 1 ? r_r - 1 : r_r - int(resonantPeaks[i].linewidth / 2);
-        int end_k = resonantPeaks[i].linewidth == 1 ? r_r : r_r + int(resonantPeaks[i].linewidth / 2);
+        int start_k = resonantPeaks[i].fftCoeffs == 1 ? r_r - 1 : r_r - int(resonantPeaks[i].fftCoeffs / 2);
+        int end_k = resonantPeaks[i].fftCoeffs == 1 ? r_r : r_r + int(resonantPeaks[i].fftCoeffs / 2);
         for (int k = start_k; k < end_k; k++) {
             float diff_k = r-k;
             complex<float> corr = exp(- c_i * m_pi * diff_k) * sinc(m_pi * diff_k);

@@ -1,0 +1,7 @@
+lock.cpp:27:6:bool lockparameters::CheckLock()	0	static
+lock.cpp:42:6:void lockparameters::RestartLock()	40	static
+lock.cpp:61:7:float Damping(uint32_t)	8	static
+lock.cpp:70:7:float lockparameters::LockStep()	24	static
+vector.tcc:394:7:) [with _Args = {const float&}; _Tp = float; _Alloc = std::allocator<float>]	48	static
+lock.cpp:10:6:void lockparameters::AddWaypoint(float)	40	static
+lock.cpp:17:6:void lockparameters::AddWaypoints(float*, uint16_t)	48	static
