@@ -8,6 +8,7 @@
 #include "dac.hpp"
 #include "newdma.hpp"
 #include "stm32f4xx_hal.h"
+#include "stm32f4xx_hal_adc.h"
 #include "leds.hpp"
 
 
@@ -69,6 +70,47 @@ void DAC_Dev::WriteInt(int32_t value)
 	DMAHandler->Transfer(NULL, buffer, 3);
 	// when done, HAL_SPI_TxCpltCallback is run, which calls Callback()
 
+}
+
+void DAC_Dev::ConfigOutputs(ADC_HandleTypeDef* hadc, uint32_t ADC_SENL, uint32_t ADC_SENH)
+{
+	// read ADC value of lower voltage
+	ADC_ChannelConfTypeDef sConfig = {0};
+	sConfig.Channel = ADC_SENL;
+	sConfig.Rank = 1;
+	sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
+	HAL_ADC_ConfigChannel(hadc, &sConfig);
+	HAL_ADC_Start(hadc);
+	HAL_ADC_PollForConversion(hadc, 1);
+	uint32_t SENL = HAL_ADC_GetValue(hadc);
+	float low = 3.3 * SENL / 4096.0f;
+	if (low>=2.6)
+		this->V_LOW = 0.0f;
+	if (low<2.6 && low>=1.0)
+		this->V_LOW = -5.0f;
+	if (low < 1.0)
+		this->V_LOW = -10.0f;
+
+	// read ADC value of upper voltage
+	sConfig.Channel = ADC_SENH;
+	HAL_ADC_ConfigChannel(hadc, &sConfig);
+	HAL_ADC_Start(hadc);
+	HAL_ADC_PollForConversion(hadc, 1);
+	uint32_t SENH = HAL_ADC_GetValue(hadc);
+	float high = 3.3 * SENH / 4096.0f;
+	if (high>=2.4)
+		this->V_HIGH = 10.0f;
+	if (high < 2.4)
+		this->V_HIGH = 5.0f;
+
+	float FullRange = this->V_HIGH - this->V_LOW;
+	this->ZeroVoltage = (this->V_HIGH+this->V_LOW)/2.0f;
+	this->StepSize = FullRange / 0xfffff;	// FullRange / (2^20-1)
+	this->InvStepSize = 1 / StepSize;
+	this->invert=invert;
+
+	this->SendControlbit(FullRange);
+	while(!this->isReady());
 }
 
 

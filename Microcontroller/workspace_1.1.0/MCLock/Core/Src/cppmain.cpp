@@ -68,6 +68,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 }
 
 
+extern ADC_HandleTypeDef hadc3;
 
 
 /******************************
@@ -220,10 +221,12 @@ void cppmain(void)
 
 
 	/* Set up DAC output range */
-	DAC_1->Setup(DAC_BIPOLAR_10V, false);
-	while(!DAC_1->isReady());
-	DAC_2->Setup(DAC_UNIPOLAR_5V, false);
-	while(!DAC_2->isReady());
+	DAC_1->ConfigOutputs(&hadc3, ADC_CHANNEL_14, ADC_CHANNEL_9);
+	//DAC_1->Setup(DAC_BIPOLAR_10V, false);
+	//while(!DAC_1->isReady());
+	DAC_2->ConfigOutputs(&hadc3, ADC_CHANNEL_8, ADC_CHANNEL_15);
+	//DAC_2->Setup(DAC_UNIPOLAR_5V, false);
+	//while(!DAC_2->isReady());
 	DAC_1->WriteFloat(0.0);
 	DAC_2->WriteFloat(0.0);
 	while(!DAC_1->isReady() && !DAC_2->isReady());
@@ -548,6 +551,19 @@ void cppmain(void)
 				PIDLoop2->set_point = SetValue2;
 #endif
 				break;
+			}
+
+			case 101:
+			{
+				float* adc_reads = new float[5];
+				adc_reads[0] = DAC_1->V_LOW;
+				adc_reads[1] = DAC_1->V_HIGH;
+				adc_reads[2] = DAC_2->V_LOW;
+				adc_reads[3] = DAC_2->V_HIGH;
+				adc_reads[4] = 3.1415;
+				float* Dummy = new float[5];
+				RPi->Transfer((uint8_t*)Dummy, (uint8_t*)adc_reads, 20);
+				while(!RPi->isReady());
 			}
 
 

@@ -78,6 +78,12 @@ public:
 	void WriteFloat(float value);
 	void WriteInt(int32_t value);
 
+	// temporary ADC result
+	float V_LOW, V_HIGH;
+
+	// read output configuration
+	void ConfigOutputs(ADC_HandleTypeDef* hadc, uint32_t ADC_SENL, uint32_t ADC_SENH);
+
 	// callback function to clean up after writing
 	void Callback();
 
