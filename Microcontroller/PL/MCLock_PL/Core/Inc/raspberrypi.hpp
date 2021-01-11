@@ -29,6 +29,7 @@
 #define RPi_Command_OptimizePID 31
 #define RPi_Command_SetFFTCorrectionParameters 34
 #define RPi_Command_SetChannelEventVoltage 35
+#define RPi_Command_SetClockRate 36
 
 #define TunePID_FollowWaypoints 1
 

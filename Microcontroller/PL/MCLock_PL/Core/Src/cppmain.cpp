@@ -24,7 +24,6 @@
 #include <vector>
 
 
-
 // Peripheral devices
 DAC_Dev *DAC_2, *DAC_1;
 ADC_Dev *ADC_DEV;
@@ -203,7 +202,7 @@ void cppmain(void)
 	Scope.AddChannel(OSCILLOSCOPE_REC_ADC1);
 	Scope.AddChannel(OSCILLOSCOPE_REC_ADC2);
 	//Scope.AddChannel(OSCILLOSCOPE_REC_DAC2);
-	Scope.Setup(1.0, 200000.0f);
+	Scope.Setup(1.0, 10000.0f);
 
 	/* Set up PID functionality */
 	PIDLoop = new PID();
@@ -226,7 +225,7 @@ void cppmain(void)
 	vector<voltageOut> voltageOuts = {{1.0f, 1.0f}, {2.0f, 2.0f}};;
 	volatile float voltageOutputTime = 0.0;
 	volatile uint32_t voltageOutputCounter = 0;
-	volatile uint32_t voltageOutputTotal = 2;
+	volatile uint32_t no_voltages = 2;
 
 	/*vector<float> sineData;
 	for (int i = 0; i < 10000; i++) {
@@ -260,7 +259,8 @@ void cppmain(void)
 	float step = 0.005;
 
 #ifdef CLOCKED_OPERATION
-	StartTimer(10000);
+	volatile uint32_t clockRate = 10000;
+	StartTimer(clockRate);
 	float saved_data[10000];
 	volatile uint32_t counter=0;
 	//float data_temp = new float[1];
@@ -294,7 +294,7 @@ void cppmain(void)
 
 			DigitalOutHigh();
 			if (outputVoltage) {
-				if (voltageOutputCounter == voltageOutputTotal) {
+				if (voltageOutputCounter == no_voltages) {
 					//turn_LED6_on();
 					voltageOutputCounter = 0;
 					voltageOutputTime = 0.0;
@@ -308,6 +308,9 @@ void cppmain(void)
 				}
 
 				voltageOutputTime += 1.0/10000.0;
+			} else {
+				DAC_1->WriteFloat(2.5f);
+				DAC_2->WriteFloat(1.5f);
 			}
 			DigitalOutLow();
 
@@ -587,96 +590,119 @@ void cppmain(void)
 
 			case RPi_Command_SetFFTCorrectionParameters:
 			{
-				volatile float sampleRate = *((float*)(RPi->ReadBuffer+1));
-				volatile float batchSize = *((float*)(RPi->ReadBuffer+5));
-				volatile float nrOfResoanantPeaks = *((float*)(RPi->ReadBuffer+9));
+				flagTemp = false;
 
-				// For Debug only
-				/*if (nrOfResoanantPeaks == 2.0f) {
-					turn_LED6_on();
-				}*/
+				//volatile float sampleRate = *((float*)(RPi->ReadBuffer+1));
+				volatile uint8_t activateFFTCorrection = RPi->ReadBuffer[1];
+				if (activateFFTCorrection == 1) {
+					volatile float batchSize = *((float*)(RPi->ReadBuffer+2));
+					volatile uint32_t nrOfResoanantPeaks = *((uint32_t*)(RPi->ReadBuffer+6));
 
-				vector<peak> resonantPeaks;
-				for (int i=0; i<nrOfResoanantPeaks; i++) {
-					resonantPeaks.push_back({
-						*((float*)(RPi->ReadBuffer+(13+i*4*4+0))),
-						*((float*)(RPi->ReadBuffer+(13+i*4*4+1*4))),
-						*((float*)(RPi->ReadBuffer+(13+i*4*4+2*4))),
-						*((float*)(RPi->ReadBuffer+(13+i*4*4+3*4)))
-					});
+					// For Debug only
+					/*if (nrOfResoanantPeaks == 2.0f) {
+						turn_LED6_on();
+					}*/
+
+					float* readData = new float[4*nrOfResoanantPeaks];
+					RPi->Read((uint8_t*)readData, 4*4*nrOfResoanantPeaks);
+					while(!RPi->isReady());
+
+					vector<peak> resonantPeaks;
+					for (int i=0; i<nrOfResoanantPeaks; i++) {
+						resonantPeaks.push_back({
+							//*((float*)(RPi->ReadBuffer+(9+i*4*4+0))),
+							//*((float*)(RPi->ReadBuffer+(9+i*4*4+1*4))),
+							//*((float*)(RPi->ReadBuffer+(9+i*4*4+2*4))),
+							//*((float*)(RPi->ReadBuffer+(9+i*4*4+3*4)))
+							readData[i*4 + 0],
+							readData[i*4 + 1],
+							readData[i*4 + 2],
+							readData[i*4 + 3]
+						});
+					}
+
+					FFTCorr = new FFTCorrection(resonantPeaks);
+					FFTCorr->SetParameters(clockRate, batchSize);  //Attention: Do not forget to also set the corresponding StartTimer() value in line 230, which represents the sample rate
+					FFTCorr->Setup();
 				}
-
-				FFTCorr = new FFTCorrection(resonantPeaks);
-				FFTCorr->SetParameters(sampleRate, batchSize);  //Attention: Do not forget to also set the corresponding StartTimer() value in line 230, which represents the sample rate
-				FFTCorr->Setup();
 
 				// For Debug only
 				/*if (FFTCorr->resonantPeaks[1].freq == 1900.0f) {
 					turn_LED6_on();
 				}*/
 
+				float* sendData = new float[1];
+				sendData[0] = 1996.0;
+				//sendData[0] = clockRate;
+				RPi->Write((uint8_t*)sendData, 4*1);
+				while(!RPi->isReady());
+
+				flagTemp = true;
 				break;
 			}
 			case RPi_Command_SetChannelEventVoltage:
 			{
 				flagTemp = false;
+				outputVoltage = false;
 
-				volatile float nrOfVoltageValues = *((float*)(RPi->ReadBuffer+1));
-				voltageOutputTotal = (uint32_t) nrOfVoltageValues;
-				//voltageOutputTotal = *((uint32_t*)(RPi->ReadBuffer+1));
-				//nrOfVoltageValues *= 2; //Since Every voltage values comes in a pair with the corresponding time step in the form (t, V)
-				outputVoltage = true;
+				no_voltages = *((uint32_t*)(RPi->ReadBuffer+1));
 
-				//volatile float tempTime = 0.0;
-				//volatile float tempVoltage = 0.0;
+				/*float* readData = new float[2*no_voltages];
+				float* sendData = new float[2*no_voltages];
+				sendData[0] = 1997.0;
+				sendData[1] = 1.0;
+				sendData[2] = 2.0;
+				sendData[3] = 3.0;
+				RPi->Transfer((uint8_t*)readData, (uint8_t*)sendData, 4*2*no_voltages);
+				while(!RPi->isReady());
+				delete readData;
+				delete sendData;*/
 
-				//addr = 0x08000000;
+				float* readData = new float[2*no_voltages];
+				RPi->Read((uint8_t*)readData, 4*2*no_voltages);
+				while(!RPi->isReady());
 
 				voltageOuts.clear();
 
-				//voltageOuts = vector<voltageOut>(nrOfVoltageValues);
-
-				for (int i=0; i<nrOfVoltageValues; i++) {
-					//tempVoltage = *((float*)(RPi->ReadBuffer+(5 + i*4)));
-
+				for (int i=0; i<no_voltages; i++) {
 					voltageOuts.push_back({
-						*((float*)(RPi->ReadBuffer+(5 + i*4*2 + 0))),
-						*((float*)(RPi->ReadBuffer+(5 + i*4*2 + 1*4)))
+						readData[i*2 + 0],
+						readData[i*2 + 1]
 					});
-
-					//*(__IO uint32_t*)addr = tempVoltage_v2;
-					//addr += 4;
-//					*(addr++) = (tempVoltage_v2         & 0xF);
-//					*(addr++) = ((tempVoltage_v2 >> 8)  & 0xF);
-//					*(addr++) = ((tempVoltage_v2 >> 16) & 0xF);
-//					*(addr++) = ((tempVoltage_v2 >> 24) & 0xF);
-
 				}
 
-				// For Debug onlya
-				/*if (voltageOutputTotal == 8) {
-					turn_LED6_on();
-				}*/
-
-				/*if (voltageOuts[5].voltage == 1.6f) {
-					turn_LED6_on();
-				}*/
-
-				float* data_temp = new float[1];
-				data_temp[0] = 1997.0;
-				RPi->Write((uint8_t*)data_temp, 4*1);
+				float* sendData = new float[1];
+				sendData[0] = 1997.0;
+				//sendData[0] = readData[2];
+				RPi->Write((uint8_t*)sendData, 4*1);
 				while(!RPi->isReady());
-				delete data_temp;
 
-				flagTemp = false;
+				delete readData;
+				delete sendData;
+
+				outputVoltage = true;
+				flagTemp = true;
 
 				break;
 			}
+			case RPi_Command_SetClockRate:
+			{
+				flagTemp = false;
+				clockRate = *((uint32_t*)(RPi->ReadBuffer+1));
+				StartTimer(clockRate);
 
+				float* sendData = new float[1];
+				//sendData[0] = 1998.0;
+				sendData[0] = clockRate;
+				RPi->Write((uint8_t*)sendData, 4*1);
+				while(!RPi->isReady());
+
+				flagTemp = true;
+				break;
+			}
 			}
 			new_RPi_input = false;
 		}
 	}
 
 }
-
