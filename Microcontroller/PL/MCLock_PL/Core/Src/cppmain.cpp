@@ -19,6 +19,7 @@
 #include "misc_func.hpp"
 #include "flashmemory.hpp"
 #include "FFTCorrection.hpp"
+#include "matrix.hpp"
 
 #include <math.h>
 #include <vector>
@@ -30,9 +31,12 @@ ADC_Dev *ADC_DEV;
 RaspberryPi *RPi;
 PID* PIDLoop;
 FFTCorrection* FFTCorr;
-volatile bool new_RPi_input = false;
+Matrix* Matr;
 
-volatile bool digitalOutOn = false;
+//For testing the MC-clock rate
+//volatile bool digitalOutOn = false;
+
+volatile bool new_RPi_input = false;
 
 volatile bool locking = false;
 
@@ -40,14 +44,6 @@ volatile bool locking = false;
 __attribute__((__section__(".user_data"),used)) uint32_t SavedSettings[4];
 
 volatile bool new_data = false;
-
-
-//Matrix
-struct voltageOut {
-    float time;
-    float voltage;
-};
-
 
 /************************
  *        TIMER         *
@@ -82,9 +78,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	//digitalOutOn ? DigitalOutHigh() : DigitalOutLow();
 }
 
-//digitalOutOn = !digitalOutOn;
-//DAC_1->WriteFloat(digitalOutOn ? 1.0f : -1.0f);
-
 
 /******************************
  *         CALLBACKS          *
@@ -96,10 +89,13 @@ __attribute__((section("sram_func")))
 void HAL_GPIO_EXTI_Callback (uint16_t GPIO_Pin)
 {
 
-	//turn_LED6_on();
-
 	// Falling Edge = Trigger going High
 	if(GPIO_Pin == DigitalIn_Pin && HAL_GPIO_ReadPin(DigitalIn_GPIO_Port, DigitalIn_Pin)==GPIO_PIN_RESET){
+
+		DigitalOutHigh();
+		Matr->setOutputActive(true);
+		new_data = true;
+
 		locking = true;
 		PIDLoop->Reset();
 		turn_LED6_on();
@@ -209,29 +205,23 @@ void cppmain(void)
 	PIDLoop->max = 10.0;//2.0;
 	PIDLoop->min = -10;//1.6;
 	PIDLoop->Kp = 0.05;
-	PIDLoop->Ki = 0.00000;
+	PIDLoop->Ki = 0.05;//0.00000;
 	PIDLoop->pol = true;
 
 	/* Set up FFTCorrection functionality */
 	vector<peak> peaks = {{1700, 58, 0, 0}}; //{{freq, fftCoeffs, amplitudeShift, phaseShift}}
 	//vector<peak> peaks = {{1200.0f, 1, 0.0f, 0.0f}, {1450.0f, 1, 0.0f, 0.0f}, {1700.0f, 1, 0.0f, 0.0f}, {1710.0f, 1, 0.0f, 0.0f}, {1800.0f, 1, 0.0f, 0.0f}, {2000.0f, 1, 0.0f, 0.0f}, {2300.0f, 1, 0.0f, 0.0f}, {2700.0f, 1, 0.0f, 0.0f}, {3003.0f, 12, 0.0f, 0.0f}, {3050, 1, 0.0f, 0.0f}};
-
 	FFTCorr = new FFTCorrection(peaks);
 	FFTCorr->SetParameters(10000, 1000);  //Attention: Do not forget to also set the corresponding StartTimer() value in line 230, which represents the sample rate
 	FFTCorr->Setup();
 
 	/*Matrix functionality*/
-	volatile bool outputVoltage = false;
+	Matr = new Matrix();
+	/*volatile bool outputVoltage = false;
 	vector<voltageOut> voltageOuts = {{1.0f, 1.0f}, {2.0f, 2.0f}};;
 	volatile float voltageOutputTime = 0.0;
 	volatile uint32_t voltageOutputCounter = 0;
-	volatile uint32_t no_voltages = 2;
-
-	/*vector<float> sineData;
-	for (int i = 0; i < 10000; i++) {
-		//sineData.push_back(sin(2));
-		sineData.push_back(sin((float) (2 * 3.14159265 * 10000 * i) ));
-	}*/
+	volatile uint32_t no_voltages = 2;*/
 
 #ifdef NESTED_LOCK
 	PID* PIDLoop2 = new PID();
@@ -265,7 +255,8 @@ void cppmain(void)
 	volatile uint32_t counter=0;
 	//float data_temp = new float[1];
 	//volatile bool digitalOutOn = false;
-	volatile bool flagTemp = true;
+	volatile bool scopeInputEnabled = true;
+	volatile float matrixTemp;
 #endif
 
 	while(1) {
@@ -288,31 +279,23 @@ void cppmain(void)
 		//if(new_data && counter<10000) {
 		if(new_data) {
 
-			if (flagTemp == true) {
+			if (scopeInputEnabled)
 				Scope.Input();
-			}
 
-			DigitalOutHigh();
-			if (outputVoltage) {
-				if (voltageOutputCounter == no_voltages) {
-					//turn_LED6_on();
-					voltageOutputCounter = 0;
-					voltageOutputTime = 0.0;
-				}
-				DAC_1->WriteFloat((voltageOuts[voltageOutputCounter].voltage * (voltageOuts[voltageOutputCounter+1].time - voltageOutputTime) + voltageOuts[voltageOutputCounter+1].voltage * (voltageOutputTime - voltageOuts[voltageOutputCounter].time)) / (voltageOuts[voltageOutputCounter+1].time - voltageOuts[voltageOutputCounter].time));
-
-				//DAC_1->WriteFloat(((voltageOuts[voltageOutputCounter+1].voltage - voltageOuts[voltageOutputCounter].voltage) / voltageOuts[voltageOutputCounter+1].time) * voltageOutputTime + voltageOuts[voltageOutputCounter].voltage);
-
-				if (voltageOuts[voltageOutputCounter+1].time <= voltageOutputTime) {
-					voltageOutputCounter++;
-				}
-
-				voltageOutputTime += 1.0/10000.0;
-			} else {
-				DAC_1->WriteFloat(2.5f);
-				DAC_2->WriteFloat(1.5f);
-			}
+			//DigitalOutHigh();
 			DigitalOutLow();
+			if (Matr->isOutputActive()) {
+				matrixTemp = Matr->getLinarizedVoltageOut();
+				DAC_1->WriteFloat(matrixTemp);
+
+				//DAC_2->WriteFloat(ADC_DEV->Channel2->GetFloat());
+				//DAC_2->WriteFloat(PIDLoop->CalculateFeedback(matrixTemp, ADC_DEV->Channel2->GetFloat()));
+				//DAC_2->WriteFloat(PIDLoop->CalculateFeedback(matrixTemp, matrixTemp));
+			} else {
+				DAC_1->WriteFloat(0.0f);
+				//DAC_2->WriteFloat(0.0f);
+				//DAC_2->WriteFloat(ADC_DEV->Channel2->GetFloat());
+			}
 
 			/*if (true) {
 				//turn_LED6_on();
@@ -590,7 +573,7 @@ void cppmain(void)
 
 			case RPi_Command_SetFFTCorrectionParameters:
 			{
-				flagTemp = false;
+				scopeInputEnabled = false;
 
 				//volatile float sampleRate = *((float*)(RPi->ReadBuffer+1));
 				volatile uint8_t activateFFTCorrection = RPi->ReadBuffer[1];
@@ -637,15 +620,16 @@ void cppmain(void)
 				RPi->Write((uint8_t*)sendData, 4*1);
 				while(!RPi->isReady());
 
-				flagTemp = true;
+				scopeInputEnabled = true;
 				break;
 			}
 			case RPi_Command_SetChannelEventVoltage:
 			{
-				flagTemp = false;
-				outputVoltage = false;
+				scopeInputEnabled = false;
 
-				no_voltages = *((uint32_t*)(RPi->ReadBuffer+1));
+				Matr->setOutputActive(false);
+				Matr->reset();
+				Matr->setNoVoltages(*((uint32_t*)(RPi->ReadBuffer+1)));
 
 				/*float* readData = new float[2*no_voltages];
 				float* sendData = new float[2*no_voltages];
@@ -658,14 +642,12 @@ void cppmain(void)
 				delete readData;
 				delete sendData;*/
 
-				float* readData = new float[2*no_voltages];
-				RPi->Read((uint8_t*)readData, 4*2*no_voltages);
+				float* readData = new float[2*Matr->getNoVoltages()];
+				RPi->Read((uint8_t*)readData, 4*2*Matr->getNoVoltages());
 				while(!RPi->isReady());
 
-				voltageOuts.clear();
-
-				for (int i=0; i<no_voltages; i++) {
-					voltageOuts.push_back({
+				for (int i=0; i<Matr->getNoVoltages(); i++) {
+					Matr->addVoltageOut({
 						readData[i*2 + 0],
 						readData[i*2 + 1]
 					});
@@ -680,15 +662,16 @@ void cppmain(void)
 				delete readData;
 				delete sendData;
 
-				outputVoltage = true;
-				flagTemp = true;
-
+				//Matr->setOutputActive(true);
+				scopeInputEnabled = true;
 				break;
 			}
 			case RPi_Command_SetClockRate:
 			{
-				flagTemp = false;
+				scopeInputEnabled = false;
+
 				clockRate = *((uint32_t*)(RPi->ReadBuffer+1));
+				Matr->setSampleRate(clockRate);
 				StartTimer(clockRate);
 
 				float* sendData = new float[1];
@@ -697,7 +680,9 @@ void cppmain(void)
 				RPi->Write((uint8_t*)sendData, 4*1);
 				while(!RPi->isReady());
 
-				flagTemp = true;
+				delete sendData;
+
+				scopeInputEnabled = true;
 				break;
 			}
 			}
