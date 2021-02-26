@@ -7,33 +7,21 @@
 
 #include "matrix.hpp"
 
-float Matrix::getLinarizedVoltageOut() {
+void Matrix::doTimeStepEvolution() {
 
-	//TODO: Watch out for edge cases & clean up
-	if (voltageOutputCounter == noVoltageOuts) {
-		voltageOutputCounter = 0;
-		voltageOutputTime = 0.0;
+	timeCounter++;
+
+	channel_1.increaseCounter(timeCounter);
+	channel_2.increaseCounter(timeCounter);
+
+	if (timeCounter == timeCounterEnd) {
+		channel_1.counter = 0;
+		channel_2.counter = 0;
+		channel_1.linearizedVoltageOut = 0.0f;
+		channel_2.linearizedVoltageOut = 0.0f;
+		timeCounter = 0;
 		outputActive = false;
 	}
-	// y(x) = [y0 * (x1 - x) + y1 * (x - x0)] / (x1 - x0)
-
-	deltaT = voltageOuts[voltageOutputCounter+1].time - voltageOuts[voltageOutputCounter].time;
-
-	if (deltaT != 0.0f) {
-		linearizedVoltageOut = (voltageOuts[voltageOutputCounter].voltage * (voltageOuts[voltageOutputCounter+1].time - voltageOutputTime) + voltageOuts[voltageOutputCounter+1].voltage * (voltageOutputTime - voltageOuts[voltageOutputCounter].time)) / (deltaT);
-	}
-
-	if (voltageOuts[voltageOutputCounter+1].time <= voltageOutputTime) {
-		voltageOutputCounter++;
-
-		if (voltageOuts[voltageOutputCounter+1].time == voltageOuts[voltageOutputCounter].time && voltageOutputCounter+1 <= noVoltageOuts) {
-			voltageOutputCounter++;
-		}
-	}
-
-	voltageOutputTime += 1.0f/sampleRate; //+ timeCorrection/sampleRate;//timeStep;
-
-	return linearizedVoltageOut;
 }
 
 

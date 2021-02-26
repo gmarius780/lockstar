@@ -4,16 +4,19 @@ signals.hpp:21:8:float* RampSignal(float, float, uint32_t)	16	static
 signals.hpp:31:7:float RampStep(uint32_t, float, float, uint32_t)	0	static
 signals.hpp:35:7:float TriangleStep(uint32_t, float, float, uint32_t)	0	static
 signals.hpp:39:7:float SineStep(uint32_t, float, float, uint32_t)	40	static
-cppmain.cpp:57:6:void StartTimer(uint32_t)	16	static
-cppmain.cpp:65:6:void StopTimer()	8	static
-cppmain.cpp:71:6:void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef*)	8	static
-cppmain.cpp:89:6:void HAL_GPIO_EXTI_Callback(uint16_t)	8	static
-cppmain.cpp:114:6:void DMA2_Stream4_IRQHandler()	8	static
-cppmain.cpp:119:6:void DMA2_Stream5_IRQHandler()	8	static
-cppmain.cpp:124:6:void DMA2_Stream2_IRQHandler()	8	static
-cppmain.cpp:131:6:void DMA2_Stream3_IRQHandler()	0	static
-cppmain.cpp:137:6:void DMA2_Stream0_IRQHandler()	8	static
-cppmain.cpp:145:6:void DMA2_Stream1_IRQHandler()	0	static
+cppmain.cpp:60:6:void StartTimer(uint32_t)	16	static
+cppmain.cpp:71:6:void StopTimer()	8	static
+cppmain.cpp:77:6:void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef*)	8	static
+cppmain.cpp:87:6:void RestartTimer()	8	static
+cppmain.cpp:94:6:void SetTimerCounter(int)	8	static
+cppmain.cpp:108:6:void HAL_GPIO_EXTI_Callback(uint16_t)	8	static
+cppmain.cpp:136:6:void DMA2_Stream4_IRQHandler()	8	static
+cppmain.cpp:141:6:void DMA2_Stream5_IRQHandler()	8	static
+cppmain.cpp:146:6:void DMA2_Stream2_IRQHandler()	8	static
+cppmain.cpp:153:6:void DMA2_Stream3_IRQHandler()	0	static
+cppmain.cpp:159:6:void DMA2_Stream0_IRQHandler()	8	static
+cppmain.cpp:167:6:void DMA2_Stream1_IRQHandler()	0	static
+cppmain.cpp:175:6:void sendControllData(uint8_t)	16	static
 stl_deque.h:738:5:void std::_Deque_base<_Tp, _Alloc>::_M_destroy_nodes(std::_Deque_base<_Tp, _Alloc>::_Map_pointer, std::_Deque_base<_Tp, _Alloc>::_Map_pointer) [with _Tp = Waypoint; _Alloc = std::allocator<Waypoint>]	16	static
 stl_deque.h:660:5:std::_Deque_base<_Tp, _Alloc>::~_Deque_base() [with _Tp = Waypoint; _Alloc = std::allocator<Waypoint>]	8	static
 stl_iterator.h:983:5:_Iterator std::__niter_base(__gnu_cxx::__normal_iterator<_Iterator, _Container>) [with _Iterator = const peak*; _Container = std::vector<peak>]	0	static
@@ -25,9 +28,13 @@ stl_deque.h:681:5:void std::_Deque_base<_Tp, _Alloc>::_M_initialize_map(std::siz
 deque.tcc:917:5:void std::deque<_Tp, _Alloc>::_M_reallocate_map(std::deque<_Tp, _Alloc>::size_type, bool) [with _Tp = Waypoint; _Alloc = std::allocator<Waypoint>]	40	static
 deque.tcc:478:7:) [with _Args = {Waypoint}; _Tp = Waypoint; _Alloc = std::allocator<Waypoint>]	16	static
 deque.tcc:161:7:) [with _Args = {Waypoint}; _Tp = Waypoint; _Alloc = std::allocator<Waypoint>]	8	static
-stl_iterator.h:1241:5:base())) std::__miter_base(std::move_iterator<_IteratorL>) [with _Iterator = voltageOut*]	0	static
-vector.tcc:394:7:) [with _Args = {const voltageOut&}; _Tp = voltageOut; _Alloc = std::allocator<voltageOut>]	40	static
 stl_iterator.h:1241:5:base())) std::__miter_base(std::move_iterator<_IteratorL>) [with _Iterator = peak*]	0	static
 vector.tcc:394:7:) [with _Args = {peak}; _Tp = peak; _Alloc = std::allocator<peak>]	40	static
 vector.tcc:95:7:) [with _Args = {peak}; _Tp = peak; _Alloc = std::allocator<peak>]	16	static
-cppmain.cpp:160:6:void cppmain()	528	static
+stl_iterator.h:1241:5:base())) std::__miter_base(std::move_iterator<_IteratorL>) [with _Iterator = voltageOut*]	0	static
+vector.tcc:394:7:) [with _Args = {voltageOut}; _Tp = voltageOut; _Alloc = std::allocator<voltageOut>]	40	static
+vector.tcc:95:7:) [with _Args = {voltageOut}; _Tp = voltageOut; _Alloc = std::allocator<voltageOut>]	8	static
+stl_iterator.h:1241:5:base())) std::__miter_base(std::move_iterator<_IteratorL>) [with _Iterator = pidInteruptIntervall*]	0	static
+vector.tcc:394:7:) [with _Args = {pidInteruptIntervall}; _Tp = pidInteruptIntervall; _Alloc = std::allocator<pidInteruptIntervall>]	40	static
+vector.tcc:95:7:) [with _Args = {pidInteruptIntervall}; _Tp = pidInteruptIntervall; _Alloc = std::allocator<pidInteruptIntervall>]	8	static
+cppmain.cpp:192:6:void cppmain()	560	static

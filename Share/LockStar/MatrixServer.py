@@ -44,11 +44,24 @@ async def handle_new_matrix_data(reader, writer):
             activateChannelVolatges = int(dataArray.pop(0))
             #DP.addUInt8(activateChannelVolatges)  # activateChannelVolatges
             if activateChannelVolatges == 1:
-                channelValuesNum = int(dataArray.pop(0))
-                DP.addUInt32(channelValuesNum)  # channelValuesNum
-                for i in range(0, channelValuesNum):
+                channel_1_ValuesNum = int(dataArray.pop(0))
+                channel_2_ValuesNum = int(dataArray.pop(0))
+                DP.addUInt32(channel_1_ValuesNum)  # channel_1_ValuesNum
+                DP.addUInt32(channel_2_ValuesNum)  # channel_2_ValuesNum
+                for i in range(0, channel_1_ValuesNum):
                     DP_Large.addFloat(float(dataArray.pop(0)))  # time
                     DP_Large.addFloat(float(dataArray.pop(0)))  # vlotage
+                for i in range(0, channel_2_ValuesNum):
+                    DP_Large.addFloat(float(dataArray.pop(0)))  # time
+                    DP_Large.addFloat(float(dataArray.pop(0)))  # vlotage
+                channel_1_PIDNotActiveTimesNum = int(dataArray.pop(0))
+                channel_2_PIDNotActiveTimesNum = int(dataArray.pop(0))
+                DP.addUInt32(channel_1_PIDNotActiveTimesNum)  # channel_1_PIDNotActiveTimesNum
+                DP.addUInt32(channel_2_PIDNotActiveTimesNum)  # channel_2_PIDNotActiveTimesNum
+                for i in range(0, channel_1_PIDNotActiveTimesNum):
+                    DP_Large.addFloat(float(dataArray.pop(0)))  # time
+                for i in range(0, channel_2_PIDNotActiveTimesNum):
+                    DP_Large.addFloat(float(dataArray.pop(0)))  # time
 
 
         MCU.transfer(output=DP)
