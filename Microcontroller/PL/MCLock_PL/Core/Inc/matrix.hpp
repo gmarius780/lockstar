@@ -36,6 +36,10 @@ struct matrixChannel {
 	vector<pidInteruptIntervall> pidInterruptIntervalls;
 	uint32_t pidInterruptIntervallsNr = 0;
 
+	matrixChannel() {
+
+	}
+
 	void increaseCounter(uint32_t time) {
 		if (counter+1 <= voltagesOutsNr) {
 			if (voltageOuts[counter+1].time <= time) {
@@ -87,7 +91,8 @@ private:
 public:
 	bool hasMatrixData = false;
 	uint32_t timeCounter, timeCounterEnd;
-	matrixChannel channel_1, channel_2;
+	matrixChannel channel_1 = {};
+	matrixChannel channel_2 = {};
 
 	Matrix() {
 		timeCounter = 0;

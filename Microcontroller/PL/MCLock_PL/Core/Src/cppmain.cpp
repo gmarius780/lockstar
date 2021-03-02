@@ -34,7 +34,7 @@ FFTCorrection* FFTCorr;
 Matrix* Matr;
 
 //Clocked Operation
-volatile uint32_t clockRate = 10000;
+volatile uint32_t clockRate = 30000;
 
 //For testing the MC-clock rate
 //volatile bool digitalOutOn = false;
@@ -61,9 +61,7 @@ void StartTimer(uint32_t frequency)
 {
 	HAL_TIM_Base_Stop_IT(&htim2);
 	//Corrections: (1-100Hz: +7100), (1000Hz: 6000), (10000Hz: 4900)
-	htim2.Init.Period = 90000000/frequency; //7100
-	//htim2.Init.Period = 90000000/frequency;
-	//htim2.Init.Period = (90000000)/frequency;
+	htim2.Init.Period = (90000000)/frequency;
 	HAL_TIM_Base_Init(&htim2);
 	HAL_TIM_Base_Start_IT(&htim2);
 }
@@ -119,7 +117,6 @@ void HAL_GPIO_EXTI_Callback (uint16_t GPIO_Pin)
 			Matr->setOutputActive(true);
 			new_data = true;
 			RestartTimer();
-			//StartTimer(clockRate);
 		}
 	}
 	// Rising Edge = Trigger going Low
@@ -230,7 +227,8 @@ void cppmain(void)
 	Scope.AddChannel(OSCILLOSCOPE_REC_ADC1);
 	Scope.AddChannel(OSCILLOSCOPE_REC_ADC2);
 	//Scope.AddChannel(OSCILLOSCOPE_REC_DAC2);
-	Scope.Setup(1.0, 10000.0f);
+	//Scope.Setup(1.0, 10000.0f);
+	Scope.Setup(1.0, clockRate);
 
 	/* Set up PID functionality */
 	PIDLoop = new PID();
@@ -250,11 +248,6 @@ void cppmain(void)
 	/*Matrix functionality*/
 	Matr = new Matrix();
 	Matr->hasMatrixData = true;
-	/*volatile bool outputVoltage = false;
-	vector<voltageOut> voltageOuts = {{1.0f, 1.0f}, {2.0f, 2.0f}};;
-	volatile float voltageOutputTime = 0.0;
-	volatile uint32_t voltageOutputCounter = 0;
-	volatile uint32_t no_voltages = 2;*/
 	vector<float> voltageOuts = {0.2, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0};
 
 #ifdef NESTED_LOCK
@@ -338,8 +331,7 @@ void cppmain(void)
 					DAC_1->WriteFloat(voltageOuts[7]);
 				} else if (tempCounter < 9*clockRate) {
 					DAC_1->WriteFloat(voltageOuts[8]);
-
-					SetTimerCounter((90000000/clockRate)*9 + 1000);
+					//SetTimerCounter((90000000/clockRate)*9 + 1000);
 				} else if (tempCounter < 10*clockRate) {
 					DAC_1->WriteFloat(voltageOuts[9]);
 				} else if (tempCounter < 11*clockRate) {
@@ -702,15 +694,14 @@ void cppmain(void)
 
 				delete readData;
 				Matr->setTimeCounterEnd();
-				//sendControllData(RPi_Command_SetChannelEventVoltage);
+				sendControllData(RPi_Command_SetChannelEventVoltage);
 
-				float* sendData = new float[1];
+				/*float* sendData = new float[1];
 				sendData[0] = nrOfPairs;
 				RPi->Write((uint8_t*)sendData, 4*1);
 				while(!RPi->isReady());
 
-				delete sendData;
-
+				delete sendData;*/
 
 				Matr->hasMatrixData = true;
 
