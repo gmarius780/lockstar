@@ -34,7 +34,7 @@ FFTCorrection* FFTCorr;
 Matrix* Matr;
 
 //Clocked Operation
-volatile uint32_t clockRate = 30000;
+volatile uint32_t clockRate = 10000;
 
 //For testing the MC-clock rate
 //volatile bool digitalOutOn = false;
@@ -61,7 +61,8 @@ void StartTimer(uint32_t frequency)
 {
 	HAL_TIM_Base_Stop_IT(&htim2);
 	//Corrections: (1-100Hz: +7100), (1000Hz: 6000), (10000Hz: 4900)
-	htim2.Init.Period = (90000000)/frequency;
+	htim2.Init.Period = (90000000)/frequency - 1;
+	//htim2.Init.Period = (90000000)/frequency;
 	HAL_TIM_Base_Init(&htim2);
 	HAL_TIM_Base_Start_IT(&htim2);
 }
@@ -89,11 +90,11 @@ void RestartTimer()
 	HAL_TIM_Base_Start_IT(&htim2);
 }
 
-void SetTimerCounter(int counter) {
+/*void SetTimerCounter(int counter) {
 	HAL_TIM_Base_Stop_IT(&htim2);
 	__HAL_TIM_SET_COUNTER(&htim2, (__HAL_TIM_GET_COUNTER(&htim2)+41));
 	HAL_TIM_Base_Start_IT(&htim2);
-}
+}*/
 
 
 /******************************
@@ -167,17 +168,13 @@ void DMA2_Stream1_IRQHandler(void)
 	// no action required
 }
 
-
-
-void sendControllData(uint8_t data) {
+void sendControlData(uint8_t data) {
 	float* sendData = new float[1];
 	sendData[0] = data;
 	RPi->Write((uint8_t*)sendData, 4*1);
 	while(!RPi->isReady());
 	delete sendData;
 }
-
-
 
 //#define NESTED_LOCK
 #define CLOCKED_OPERATION
@@ -247,8 +244,8 @@ void cppmain(void)
 
 	/*Matrix functionality*/
 	Matr = new Matrix();
-	Matr->hasMatrixData = true;
-	vector<float> voltageOuts = {0.2, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0};
+	//Matr->hasMatrixData = true;
+	//vector<float> voltageOuts = {0.2, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0};
 
 #ifdef NESTED_LOCK
 	PID* PIDLoop2 = new PID();
@@ -312,27 +309,26 @@ void cppmain(void)
 			DigitalOutLow();
 
 			//MARK_2: MatrixCode
-			if (Matr->isOutputActive()) {
-				if (tempCounter < clockRate) {
+			/*if (Matr->isOutputActive()) {
+				if (tempCounter < 1*clockRate + 1*(clockRate/10000)) {
 					DAC_1->WriteFloat(voltageOuts[0]);
-				} else if (tempCounter < 2*clockRate) {
+				} else if (tempCounter < 2*clockRate + 2*(clockRate/10000)-3) {
 					DAC_1->WriteFloat(voltageOuts[1]);
-				} else if (tempCounter < 3*clockRate) {
+				} else if (tempCounter < 3*clockRate + 3*(clockRate/10000)) {
 					DAC_1->WriteFloat(voltageOuts[2]);
-				} else if (tempCounter < 4*clockRate) {
+				} else if (tempCounter < 4*clockRate + 4*(clockRate/10000)) {
 					DAC_1->WriteFloat(voltageOuts[3]);
-				} else if (tempCounter < 5*clockRate) {
+				} else if (tempCounter < 5*clockRate + 4*(clockRate/10000)) {
 					DAC_1->WriteFloat(voltageOuts[4]);
-				} else if (tempCounter < 6*clockRate) {
+				} else if (tempCounter < 6*clockRate + 5*(clockRate/10000)) {
 					DAC_1->WriteFloat(voltageOuts[5]);
-				} else if (tempCounter < 7*clockRate) {
+				} else if (tempCounter < 7*clockRate + 6*(clockRate/10000)) {
 					DAC_1->WriteFloat(voltageOuts[6]);
-				} else if (tempCounter < 8*clockRate) {
+				} else if (tempCounter < 8*clockRate + 7*(clockRate/10000)) {
 					DAC_1->WriteFloat(voltageOuts[7]);
-				} else if (tempCounter < 9*clockRate) {
+				} else if (tempCounter < 9*clockRate + 8*(clockRate/10000)) {
 					DAC_1->WriteFloat(voltageOuts[8]);
-					//SetTimerCounter((90000000/clockRate)*9 + 1000);
-				} else if (tempCounter < 10*clockRate) {
+				} else if (tempCounter < 10*clockRate + 0*(clockRate/10000)) {
 					DAC_1->WriteFloat(voltageOuts[9]);
 				} else if (tempCounter < 11*clockRate) {
 					DAC_1->WriteFloat(voltageOuts[10]);
@@ -347,10 +343,10 @@ void cppmain(void)
 			} else {
 				DAC_1->WriteFloat(0.0f);
 				DAC_2->WriteFloat(0.0f);
-			}
+			}*/
 
 			//MARK_1: MatrixCode
-			/*if (Matr->isOutputActive()) {
+			if (Matr->isOutputActive()) {
 				if (Matr->isChannel_1Active()) {
 					matrixTemp1 = Matr->channel_1.getLinearizedVoltageOut(Matr->timeCounter);
 					if (Matr->channel_1.pidInterrupted(Matr->timeCounter)) {
@@ -380,7 +376,7 @@ void cppmain(void)
 			} else {
 				DAC_1->WriteFloat(0.0f);
 				DAC_2->WriteFloat(0.0f);
-			}*/
+			}
 			new_data = false;
 		}
 
@@ -645,7 +641,7 @@ void cppmain(void)
 					FFTCorr->Setup();
 				}
 
-				sendControllData(RPi_Command_SetFFTCorrectionParameters);
+				sendControlData(RPi_Command_SetFFTCorrectionParameters);
 
 				scopeInputEnabled = true;
 				break;
@@ -667,6 +663,8 @@ void cppmain(void)
 				float* readData = new float[readDataSize];
 				RPi->Read((uint8_t*)readData, 4*(readDataSize));
 				while(!RPi->isReady());
+				//NOTE: ControlData has to be sent before assigning the vectors, otherwise the communication breaks with large datapackages
+				sendControlData(RPi_Command_SetChannelEventVoltage);
 
 				for (int i=0; i<nrOfPairs; i++) {
 					if (i < Matr->channel_1.voltagesOutsNr) {
@@ -694,15 +692,6 @@ void cppmain(void)
 
 				delete readData;
 				Matr->setTimeCounterEnd();
-				sendControllData(RPi_Command_SetChannelEventVoltage);
-
-				/*float* sendData = new float[1];
-				sendData[0] = nrOfPairs;
-				RPi->Write((uint8_t*)sendData, 4*1);
-				while(!RPi->isReady());
-
-				delete sendData;*/
-
 				Matr->hasMatrixData = true;
 
 				scopeInputEnabled = true;
@@ -712,9 +701,10 @@ void cppmain(void)
 			{
 				scopeInputEnabled = false;
 
-				clockRate = *((uint32_t*)(RPi->ReadBuffer+1)); //+ 50;
+				clockRate = *((uint32_t*)(RPi->ReadBuffer+1));
+				Scope.Setup(1.0, clockRate);
 				StartTimer(clockRate);
-				sendControllData(RPi_Command_SetClockRate);
+				sendControlData(RPi_Command_SetClockRate);
 
 				scopeInputEnabled = true;
 				break;

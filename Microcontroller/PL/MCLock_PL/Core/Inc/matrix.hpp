@@ -91,12 +91,14 @@ private:
 public:
 	bool hasMatrixData = false;
 	uint32_t timeCounter, timeCounterEnd;
-	matrixChannel channel_1 = {};
-	matrixChannel channel_2 = {};
+	uint32_t timeCorr = 12500;
+	uint32_t timeCorrCounter;
+	matrixChannel channel_1, channel_2;
 
 	Matrix() {
 		timeCounter = 0;
 		timeCounterEnd = 0;
+		timeCorrCounter = 0;
 	};
 
 	void doTimeStepEvolution();
