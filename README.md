@@ -1,4 +1,4 @@
-Lockstar
+#Lockstar
 
 For information on this project please consult the wiki: https://gitlab.phys.ethz.ch/qo/lockstar/-/wikis/home
 
