@@ -1,0 +1,14 @@
+spi.cpp:21:9:uint8_t Pi_ReadUInt8(SPI_HandleTypeDef*)	24	static
+spi.cpp:29:10:uint16_t Pi_ReadUInt16(SPI_HandleTypeDef*)	24	static
+spi.cpp:37:6:void Pi_ReadUInt16Chunk(SPI_HandleTypeDef*, uint16_t*, uint32_t)	40	static
+spi.cpp:53:10:uint32_t Pi_ReadUInt32(SPI_HandleTypeDef*)	24	static
+spi.cpp:60:6:void Pi_ReadUInt32Chunk(SPI_HandleTypeDef*, uint32_t*, uint32_t)	40	static
+spi.cpp:76:7:float Pi_ReadFloat(SPI_HandleTypeDef*)	24	static
+spi.cpp:83:6:void Pi_ReadFloatChunk(SPI_HandleTypeDef*, float*, uint32_t)	40	static
+spi.cpp:103:6:void Pi_WriteUInt8(SPI_HandleTypeDef*, uint8_t)	24	static
+spi.cpp:109:6:void Pi_WriteUInt16(SPI_HandleTypeDef*, uint16_t)	24	static
+spi.cpp:117:6:void Pi_WriteUInt16Chunk(SPI_HandleTypeDef*, uint16_t*, uint32_t)	40	static
+spi.cpp:133:6:void Pi_WriteUInt32(SPI_HandleTypeDef*, uint32_t)	24	static
+spi.cpp:141:6:void Pi_WriteUInt32Chunk(SPI_HandleTypeDef*, uint32_t*, uint32_t)	40	static
+spi.cpp:157:6:void Pi_WriteFloat(SPI_HandleTypeDef*, float)	24	static
+spi.cpp:166:6:void Pi_WriteFloatChunk(SPI_HandleTypeDef*, float*, uint32_t)	40	static
