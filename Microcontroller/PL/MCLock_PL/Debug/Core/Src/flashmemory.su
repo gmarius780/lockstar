@@ -1,4 +1,0 @@
-flashmemory.cpp:15:1:UserData::UserData(ADC_Dev*, DAC_Dev*, DAC_Dev*, PID*, PID*, Oscilloscope*)	8	static
-flashmemory.cpp:28:6:void UserData::WriteFlashPage(uint32_t*, uint32_t)	48	static
-flashmemory.cpp:50:6:void UserData::LoadSettings(uint32_t*)	16	static
-flashmemory.cpp:65:6:void UserData::SaveSettings()	0	static
