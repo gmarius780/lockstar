@@ -6477,32 +6477,32 @@ OUTPUT(MCLock.elf elf32-littlearm)
  .debug_macro   0x0000000000026cc7      0x1e8 Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_tim.o
  .debug_macro   0x0000000000026eaf      0x1e7 Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_tim_ex.o
 
-.debug_line     0x0000000000000000    0x1220f
+.debug_line     0x0000000000000000    0x12210
  .debug_line    0x0000000000000000     0x1031 Core\Src\adc.o
  .debug_line    0x0000000000001031     0x1cde Core\Src\cppmain.o
- .debug_line    0x0000000000002d0f     0x10c1 Core\Src\dac.o
- .debug_line    0x0000000000003dd0      0x7ac Core\Src\leds.o
- .debug_line    0x000000000000457c      0x8fb Core\Src\main.o
- .debug_line    0x0000000000004e77     0x1730 Core\Src\misc_func.o
- .debug_line    0x00000000000065a7      0x513 Core\Src\newdma.o
- .debug_line    0x0000000000006aba     0x1177 Core\Src\oscilloscope.o
- .debug_line    0x0000000000007c31      0x14a Core\Src\pid.o
- .debug_line    0x0000000000007d7b      0x743 Core\Src\raspberrypi.o
- .debug_line    0x00000000000084be      0x8a7 Core\Src\stm32f4xx_hal_msp.o
- .debug_line    0x0000000000008d65      0x7dd Core\Src\stm32f4xx_it.o
- .debug_line    0x0000000000009542      0x733 Core\Src\syscalls.o
- .debug_line    0x0000000000009c75      0x55f Core\Src\sysmem.o
- .debug_line    0x000000000000a1d4      0x718 Core\Src\system_stm32f4xx.o
- .debug_line    0x000000000000a8ec      0x90f Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal.o
- .debug_line    0x000000000000b1fb      0xbd3 Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_adc.o
- .debug_line    0x000000000000bdce      0x941 Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_cortex.o
- .debug_line    0x000000000000c70f      0xa18 Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_dma.o
- .debug_line    0x000000000000d127      0x88d Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_gpio.o
- .debug_line    0x000000000000d9b4      0x7da Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_pwr_ex.o
- .debug_line    0x000000000000e18e      0x961 Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_rcc.o
- .debug_line    0x000000000000eaef     0x1130 Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_spi.o
- .debug_line    0x000000000000fc1f     0x18d4 Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_tim.o
- .debug_line    0x00000000000114f3      0xd1c Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_tim_ex.o
+ .debug_line    0x0000000000002d0f     0x10c2 Core\Src\dac.o
+ .debug_line    0x0000000000003dd1      0x7ac Core\Src\leds.o
+ .debug_line    0x000000000000457d      0x8fb Core\Src\main.o
+ .debug_line    0x0000000000004e78     0x1730 Core\Src\misc_func.o
+ .debug_line    0x00000000000065a8      0x513 Core\Src\newdma.o
+ .debug_line    0x0000000000006abb     0x1177 Core\Src\oscilloscope.o
+ .debug_line    0x0000000000007c32      0x14a Core\Src\pid.o
+ .debug_line    0x0000000000007d7c      0x743 Core\Src\raspberrypi.o
+ .debug_line    0x00000000000084bf      0x8a7 Core\Src\stm32f4xx_hal_msp.o
+ .debug_line    0x0000000000008d66      0x7dd Core\Src\stm32f4xx_it.o
+ .debug_line    0x0000000000009543      0x733 Core\Src\syscalls.o
+ .debug_line    0x0000000000009c76      0x55f Core\Src\sysmem.o
+ .debug_line    0x000000000000a1d5      0x718 Core\Src\system_stm32f4xx.o
+ .debug_line    0x000000000000a8ed      0x90f Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal.o
+ .debug_line    0x000000000000b1fc      0xbd3 Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_adc.o
+ .debug_line    0x000000000000bdcf      0x941 Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_cortex.o
+ .debug_line    0x000000000000c710      0xa18 Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_dma.o
+ .debug_line    0x000000000000d128      0x88d Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_gpio.o
+ .debug_line    0x000000000000d9b5      0x7da Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_pwr_ex.o
+ .debug_line    0x000000000000e18f      0x961 Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_rcc.o
+ .debug_line    0x000000000000eaf0     0x1130 Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_spi.o
+ .debug_line    0x000000000000fc20     0x18d4 Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_tim.o
+ .debug_line    0x00000000000114f4      0xd1c Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_tim_ex.o
 
 .debug_str      0x0000000000000000    0xe9397
  .debug_str     0x0000000000000000    0xd584a Core\Src\adc.o

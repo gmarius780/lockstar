@@ -107,7 +107,7 @@ void DAC_Dev::ConfigOutputs(ADC_HandleTypeDef* hadc, uint32_t ADC_SENL, uint32_t
 	this->ZeroVoltage = (this->V_HIGH+this->V_LOW)/2.0f;
 	this->StepSize = FullRange / 0xfffff;	// FullRange / (2^20-1)
 	this->InvStepSize = 1 / StepSize;
-	this->invert=invert;
+	this->invert=false;
 
 	this->SendControlbit(FullRange);
 	while(!this->isReady());
