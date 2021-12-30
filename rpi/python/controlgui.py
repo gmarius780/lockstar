@@ -38,7 +38,7 @@ class ControlGUI(tk.Tk):
         self.Config = Settings(self)
         
         # set up SPI to microcontroller and read/write queue
-        self.MCU = MCU_Handler(self, speed=20000000)
+        self.MCU = MCU_Handler(self, speed=20000000, verbose=False)
         # make sure all MCU threads stop when window is closed
         self.protocol("WM_DELETE_WINDOW", self.close)
         
