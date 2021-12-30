@@ -1,0 +1,56 @@
+16:49:40 **** Incremental Build of configuration Debug for project MCLock ****
+Info: Internal Builder is used for build
+arm-none-eabi-g++ "..\\Core\\Src\\cppmain.cpp" -mcpu=cortex-m4 -std=gnu++14 -g3 -DSTM32F427xx -DUSE_HAL_DRIVER -DDEBUG -c -I../Drivers/CMSIS/Include -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Core/Inc -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -Og -ffunction-sections -fdata-sections -fno-exceptions -fno-rtti -fno-threadsafe-statics -fno-use-cxa-atexit -Wall -fstack-usage --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core\\Src\\cppmain.o" 
+In file included from ../Core/Inc/adc.hpp:12:0,
+                 from ..\Core\Src\cppmain.cpp:1:
+../Core/Inc/newdma.hpp:13:0: warning: "NULL" redefined
+ #define NULL 0
+ 
+In file included from ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h:32:0,
+                 from ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc.h:29,
+                 from ../Core/Inc/stm32f4xx_hal_conf.h:232,
+                 from ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:30,
+                 from ../Core/Inc/adc.hpp:11,
+                 from ..\Core\Src\cppmain.cpp:1:
+c:\st\stm32cubeide_1.2.0\stm32cubeide\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.0.0.201904181610\tools\lib\gcc\arm-none-eabi\7.3.1\include\stddef.h:403:0: note: this is the location of the previous definition
+ #define NULL __null
+ 
+..\Core\Src\cppmain.cpp: In function 'void cppmain()':
+..\Core\Src\cppmain.cpp:340:22: warning: unused variable 'Channel' [-Wunused-variable]
+     volatile uint8_t Channel  = RPi->ReadBuffer[1];
+                      ^~~~~~~
+..\Core\Src\cppmain.cpp:423:22: warning: unused variable 'DAC_Channel' [-Wunused-variable]
+     volatile uint8_t DAC_Channel  = RPi->ReadBuffer[1];
+                      ^~~~~~~~~~~
+..\Core\Src\cppmain.cpp:427:20: warning: unused variable 'FeedbackMin' [-Wunused-variable]
+     volatile float FeedbackMin = *((float*)(RPi->ReadBuffer+8));
+                    ^~~~~~~~~~~
+..\Core\Src\cppmain.cpp:428:20: warning: unused variable 'FeedbackMax' [-Wunused-variable]
+     volatile float FeedbackMax = *((float*)(RPi->ReadBuffer+12));
+                    ^~~~~~~~~~~
+..\Core\Src\cppmain.cpp:429:20: warning: unused variable 'StartFrom' [-Wunused-variable]
+     volatile float StartFrom = *((float*)(RPi->ReadBuffer+16));
+                    ^~~~~~~~~
+..\Core\Src\cppmain.cpp:485:22: warning: unused variable 'Procedure' [-Wunused-variable]
+     volatile uint8_t Procedure = RPi->ReadBuffer[1];
+                      ^~~~~~~~~
+..\Core\Src\cppmain.cpp:511:22: warning: unused variable 'DAC_Channel' [-Wunused-variable]
+     volatile uint8_t DAC_Channel = RPi->ReadBuffer[1];
+                      ^~~~~~~~~~~
+..\Core\Src\cppmain.cpp:555:20: warning: unused variable 'SetValue2' [-Wunused-variable]
+     volatile float SetValue2 = *((float*)(RPi->ReadBuffer+5));
+                    ^~~~~~~~~
+..\Core\Src\cppmain.cpp:238:8: warning: unused variable 'output' [-Wunused-variable]
+  float output = 0.0;
+        ^~~~~~
+..\Core\Src\cppmain.cpp:239:8: warning: unused variable 'step' [-Wunused-variable]
+  float step = 0.005;
+        ^~~~
+arm-none-eabi-g++ -o MCLock.elf "Core\\Src\\FFTCorrection.o" "Core\\Src\\adc.o" "Core\\Src\\benchmarking.o" "Core\\Src\\cppmain.o" "Core\\Src\\dac.o" "Core\\Src\\dma.o" "Core\\Src\\flashmemory.o" "Core\\Src\\leds.o" "Core\\Src\\lock.o" "Core\\Src\\main.o" "Core\\Src\\misc_func.o" "Core\\Src\\newdma.o" "Core\\Src\\oscilloscope.o" "Core\\Src\\pid.o" "Core\\Src\\raspberrypi.o" "Core\\Src\\spi.o" "Core\\Src\\stm32f4xx_hal_msp.o" "Core\\Src\\stm32f4xx_it.o" "Core\\Src\\syscalls.o" "Core\\Src\\sysmem.o" "Core\\Src\\system_stm32f4xx.o" "Core\\Startup\\startup_stm32f427zitx.o" "Drivers\\STM32F4xx_HAL_Driver\\Src\\stm32f4xx_hal.o" "Drivers\\STM32F4xx_HAL_Driver\\Src\\stm32f4xx_hal_adc.o" "Drivers\\STM32F4xx_HAL_Driver\\Src\\stm32f4xx_hal_adc_ex.o" "Drivers\\STM32F4xx_HAL_Driver\\Src\\stm32f4xx_hal_cortex.o" "Drivers\\STM32F4xx_HAL_Driver\\Src\\stm32f4xx_hal_dma.o" "Drivers\\STM32F4xx_HAL_Driver\\Src\\stm32f4xx_hal_dma_ex.o" "Drivers\\STM32F4xx_HAL_Driver\\Src\\stm32f4xx_hal_exti.o" "Drivers\\STM32F4xx_HAL_Driver\\Src\\stm32f4xx_hal_flash.o" "Drivers\\STM32F4xx_HAL_Driver\\Src\\stm32f4xx_hal_flash_ex.o" "Drivers\\STM32F4xx_HAL_Driver\\Src\\stm32f4xx_hal_flash_ramfunc.o" "Drivers\\STM32F4xx_HAL_Driver\\Src\\stm32f4xx_hal_gpio.o" "Drivers\\STM32F4xx_HAL_Driver\\Src\\stm32f4xx_hal_pwr.o" "Drivers\\STM32F4xx_HAL_Driver\\Src\\stm32f4xx_hal_pwr_ex.o" "Drivers\\STM32F4xx_HAL_Driver\\Src\\stm32f4xx_hal_rcc.o" "Drivers\\STM32F4xx_HAL_Driver\\Src\\stm32f4xx_hal_rcc_ex.o" "Drivers\\STM32F4xx_HAL_Driver\\Src\\stm32f4xx_hal_spi.o" "Drivers\\STM32F4xx_HAL_Driver\\Src\\stm32f4xx_hal_tim.o" "Drivers\\STM32F4xx_HAL_Driver\\Src\\stm32f4xx_hal_tim_ex.o" -mcpu=cortex-m4 "-TC:\\Development\\Microcontroller\\workspace_1.1.0\\MCLock\\STM32F427ZITX_FLASH.ld" --specs=nosys.specs -Wl,-Map=MCLock.map -Wl,--gc-sections -static "-LC:\\Development\\Microcontroller\\workspace_1.1.0\\MCLock\\Core\\Src" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -lstdc++ -lsupc++ -Wl,--end-group 
+copy_to_share.bat 
+
+C:\Development\Microcontroller\workspace_1.1.0\MCLock\Debug>copy MCLock.elf ..\..\..\..\Share\MicrocontrollerPrograms\MCLock.elf 
+        1 file(s) copied.
+
+16:49:42 Build Finished. 0 errors, 11 warnings. (took 2s.113ms)
+
