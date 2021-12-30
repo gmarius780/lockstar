@@ -100,8 +100,8 @@ class LinearizeWindow(tk.Toplevel):
 
         
     def calculate(self):
-        #self.filtered = savgol_filter(self.PD_voltage, int(self.sg_wl.get()), int(self.sg_po.get()))
-        self.filtered = self.PD_voltage
+        self.filtered = savgol_filter(self.PD_voltage, int(self.sg_wl.get()), int(self.sg_po.get()))
+        #self.filtered = self.PD_voltage
         MAX = np.max(self.filtered)
         print("MAX: %f" % MAX)
         
