@@ -1,4 +1,0 @@
-misc_func.cpp:12:8:float* RecordTrace(ADC_Dev*, uint8_t, DAC_Dev*, uint16_t)	56	static
-misc_func.cpp:53:8:float* RecordTrace(ADC_Dev*, bool, bool, DAC_Dev*, float, float, uint32_t)	64	static
-misc_func.cpp:90:6:void Move2Voltage(DAC_Dev*, float, float)	40	static
-misc_func.cpp:109:6:void Go2Lock(DAC_Dev*, ADC_Dev*, std::queue<Waypoint>, float)	40	static

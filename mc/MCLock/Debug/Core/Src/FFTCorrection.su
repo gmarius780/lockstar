@@ -1,0 +1,14 @@
+FFTCorrection.cpp:13:7:float FFTCorrection::CalculateCorrection(float)	4	static
+vector.tcc:394:7:) [with _Args = {fftEntry}; _Tp = fftEntry; _Alloc = std::allocator<fftEntry>]	40	static
+vector.tcc:95:7:) [with _Args = {fftEntry}; _Tp = fftEntry; _Alloc = std::allocator<fftEntry>]	16	static
+vector.tcc:394:7:) [with _Args = {std::complex<float>}; _Tp = std::complex<float>; _Alloc = std::allocator<std::complex<float> >]	40	static
+vector.tcc:95:7:) [with _Args = {std::complex<float>}; _Tp = std::complex<float>; _Alloc = std::allocator<std::complex<float> >]	8	static
+stl_iterator.h:983:5:_Iterator std::__niter_base(__gnu_cxx::__normal_iterator<_Iterator, _Container>) [with _Iterator = const fftEntry*; _Container = std::vector<fftEntry>]	0	static
+stl_iterator.h:983:5:_Iterator std::__niter_base(__gnu_cxx::__normal_iterator<_Iterator, _Container>) [with _Iterator = fftEntry*; _Container = std::vector<fftEntry>]	0	static
+vector.tcc:179:5:std::vector<_Tp, _Alloc>& std::vector<_Tp, _Alloc>::operator=(const std::vector<_Tp, _Alloc>&) [with _Tp = fftEntry; _Alloc = std::allocator<fftEntry>]	32	static
+FFTCorrection.cpp:52:6:void FFTCorrection::GenerateFFTBasis()	80	static
+stl_iterator.h:983:5:_Iterator std::__niter_base(__gnu_cxx::__normal_iterator<_Iterator, _Container>) [with _Iterator = const std::complex<float>*; _Container = std::vector<std::complex<float> >]	0	static
+stl_iterator.h:983:5:_Iterator std::__niter_base(__gnu_cxx::__normal_iterator<_Iterator, _Container>) [with _Iterator = std::complex<float>*; _Container = std::vector<std::complex<float> >]	0	static
+vector.tcc:179:5:std::vector<_Tp, _Alloc>& std::vector<_Tp, _Alloc>::operator=(const std::vector<_Tp, _Alloc>&) [with _Tp = std::complex<float>; _Alloc = std::allocator<std::complex<float> >]	24	static
+FFTCorrection.cpp:69:6:void FFTCorrection::GenerateFourierCoeffs()	72	static
+FFTCorrection.cpp:81:6:void FFTCorrection::Setup()	8	static

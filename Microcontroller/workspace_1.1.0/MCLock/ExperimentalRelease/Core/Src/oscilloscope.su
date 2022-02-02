@@ -1,4 +1,0 @@
-oscilloscope.cpp:12:1:Oscilloscope::Oscilloscope(RaspberryPi*)	16	static
-oscilloscope.cpp:21:6:void Oscilloscope::Setup(uint16_t)	0	static
-oscilloscope.cpp:29:6:void Oscilloscope::Input(float)	8	static
-oscilloscope.cpp:61:6:void Oscilloscope::Input(float, float)	16	static

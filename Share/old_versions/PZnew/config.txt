@@ -1,9 +1,0 @@
-AOM Transverse Pump
-0-5V
-0-5V
-0.2000
-0.0002
-0.2000
-5
-None
-None

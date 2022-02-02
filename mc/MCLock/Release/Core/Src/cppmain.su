@@ -1,0 +1,20 @@
+cppmain.cpp:94:7:float set_point_triangle(uint32_t)	0	static
+cppmain.cpp:98:7:float set_point_ramp(uint32_t)	0	static
+cppmain.cpp:106:7:float set_point_const(uint32_t)	0	static
+cppmain.cpp:102:7:float set_point_sine(uint32_t)	32	static
+signals.hpp:5:8:float* SineSignal(float, float, uint32_t)	64	static
+signals.hpp:13:8:float* TriangleSignal(float, float, uint32_t)	24	static
+signals.hpp:21:8:float* RampSignal(float, float, uint32_t)	16	static
+signals.hpp:31:7:float RampStep(uint32_t, float, float, uint32_t)	0	static
+signals.hpp:35:7:float TriangleStep(uint32_t, float, float, uint32_t)	0	static
+signals.hpp:39:7:float SineStep(uint32_t, float, float, uint32_t)	40	static
+cppmain.cpp:112:7:float set_point2(uint32_t)	0	static
+cppmain.cpp:117:6:bool ClockRunning(TIM_HandleTypeDef*)	0	static
+cppmain.cpp:123:6:void SetSamplingFrequency(uint32_t)	16	static
+cppmain.cpp:133:6:void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef*)	16	static
+cppmain.cpp:169:6:void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef*)	24	static
+cppmain.cpp:209:6:void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef*)	0	static
+cppmain.cpp:215:6:void HAL_GPIO_EXTI_Callback(uint16_t)	8	static
+cppmain.cpp:240:6:void RecieveSettings(SPI_HandleTypeDef*)	48	static
+cppmain.cpp:258:6:void cppmain()	48	static
+cppmain.cpp:321:1:cpp)	16	static
