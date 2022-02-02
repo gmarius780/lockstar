@@ -77,6 +77,7 @@ extern ADC_HandleTypeDef hadc3;
  * Callbacks are functions that are executed in response to events such as SPI communication finished, change on trigger line etc */
 
 // Interrupt for Digital In line (Trigger)
+//sram_func: https://rhye.org/post/stm32-with-opencm3-4-memory-sections/
 __attribute__((section("sram_func")))
 void HAL_GPIO_EXTI_Callback (uint16_t GPIO_Pin)
 {
@@ -146,8 +147,8 @@ void DMA2_Stream6_IRQHandler(void)
 
 //#define NESTED_LOCK
 //#define CLOCKED_OPERATION
-//#define SINGLE_PID
-#define DOUBLE_PID
+#define SINGLE_PID
+//#define DOUBLE_PID
 
 
 /******************************
@@ -225,7 +226,7 @@ void cppmain(void)
 	//DAC_1->Setup(DAC_BIPOLAR_10V, false);
 	//while(!DAC_1->isReady());
 	DAC_2->ConfigOutputs(&hadc3, ADC_CHANNEL_8, ADC_CHANNEL_15);
-	//DAC_2->Setup(DAC_UNIPOLAR_5V, false);
+	//DAC_2->Setup(DAC_BIPOLAR_10V, false);
 	//while(!DAC_2->isReady());
 	DAC_1->WriteFloat(0.0);
 	DAC_2->WriteFloat(0.0);
@@ -235,7 +236,7 @@ void cppmain(void)
 	turn_LED5_on();
 
 	//DAC_2->SetLimits(0.0f, 5.0f);
-	float output = 0.0f;
+	float output = 0.0;
 	float step = 0.005;
 
 #ifdef CLOCKED_OPERATION
@@ -274,6 +275,7 @@ void cppmain(void)
 #if defined(SINGLE_PID)
 		ADC_DEV->Read();
 		while(!ADC_DEV->isReady());
+
 		if(locking) {
 			DigitalOutLow();
 			DAC_2->WriteFloat(PIDLoop->CalculateFeedback(ADC_DEV->Channel1->GetFloat(), ADC_DEV->Channel2->GetFloat()));
@@ -283,7 +285,13 @@ void cppmain(void)
 			DAC_2->WriteFloat(0.0);//DAC_2->GetMin());
 			DigitalOutHigh();
 		}
-		while(!(DAC_2->isReady()));
+		/*DAC_2->WriteFloat(output);
+		output += step;
+		if (output>5.0)
+			output = 0.0;
+		while(!(DAC_2->isReady()));*/
+		/*float* data = RecordTrace(ADC_DEV, true, false, DAC_2, 0.0, 5.0, 1000);
+		delete data;*/
 		Scope.Input();
 
 #elif defined(DOUBLE_PID)
@@ -343,13 +351,13 @@ void cppmain(void)
 				uint8_t ADC_Channel = RPi->ReadBuffer[1];
 				uint8_t DAC_Channel = RPi->ReadBuffer[2];
 				DAC_2->Cal->CalibrationOn = false;
-				DAC_2->WriteFloat(0.01f);
+				DAC_2->WriteFloat(0.00f);
 				while(!DAC_2->isReady());
 				ADC_DEV->Read();
 				while(!ADC_DEV->isReady());
 				HAL_Delay(1000);
 				//float* data = RecordTrace(ADC_DEV, ADC_Channel, (DAC_Channel==1) ? DAC_1 : DAC_2, 1000);
-				float* data = RecordTrace(ADC_DEV, ADC_Channel==1 ? true : false, ADC_Channel==2 ? true : false, (DAC_Channel==1) ? DAC_1 : DAC_2, 0.01f, 5.0f, 1000);
+				float* data = RecordTrace(ADC_DEV, ADC_Channel==1 ? true : false, ADC_Channel==2 ? true : false, (DAC_Channel==1) ? DAC_1 : DAC_2, 0.0f, 5.0f, 1000);
 				// send
 				RPi->Transfer(RPi->ReadBuffer, (uint8_t*)data, 4000);
 				while(!RPi->isReady());
