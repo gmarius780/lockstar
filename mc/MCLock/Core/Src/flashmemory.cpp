@@ -103,4 +103,6 @@ void UserData::SaveSettings()
 	SaveData[index++] = (uint32_t)(DAC_2->Cal->NumberPivots);
 	for(uint32_t i=0; i<DAC_2->Cal->NumberPivots; i++)
 		*((float*)(SaveData+index++)) = (DAC_2->Cal->Pivots[i]);
+
+	//WriteFlashPage!!
 }

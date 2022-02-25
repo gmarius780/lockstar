@@ -17,6 +17,7 @@ Command_RecordTrace = 20
 Command_MoveTo = 21
 Command_GotoLock = 22
 Command_StopLock = 23
+Command_StartLock = 26
 Command_DACLog = 24
 Command_DetailedTrace = 27
 Command_ProgramCalibration = 30
