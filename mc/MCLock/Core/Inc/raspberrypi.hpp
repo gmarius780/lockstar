@@ -8,8 +8,8 @@
 #ifndef INC_RASPBERRYPI_HPP_
 #define INC_RASPBERRYPI_HPP_
 
-#include "newdma.hpp"
 #include "stm32f4xx_hal.h"
+#include "../HAL/dma.hpp"
 
 #define DefaultBufferSize	4096
 

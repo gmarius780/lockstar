@@ -8,8 +8,8 @@
 #ifndef INC_BENCHMARKING_HPP_
 #define INC_BENCHMARKING_HPP_
 
-#include "adc.hpp"
-#include "dac.hpp"
+#include "../HAL/adc.hpp"
+#include "../HAL/dac.hpp"
 
 class AnalogBenchmarker
 {

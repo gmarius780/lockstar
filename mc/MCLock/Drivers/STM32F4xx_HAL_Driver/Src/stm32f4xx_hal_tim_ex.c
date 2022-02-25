@@ -155,7 +155,7 @@ HAL_StatusTypeDef HAL_TIMEx_HallSensor_Init(TIM_HandleTypeDef *htim, TIM_HallSen
     /* Reset interrupt callbacks to legacy week callbacks */
     TIM_ResetCallback(htim);
 
-    if (htim->HallSensor_MspInitCallback == NULL)
+    if (htim->HallSensor_MspInitCallback == )
     {
       htim->HallSensor_MspInitCallback = HAL_TIMEx_HallSensor_MspInit;
     }
@@ -230,7 +230,7 @@ HAL_StatusTypeDef HAL_TIMEx_HallSensor_DeInit(TIM_HandleTypeDef *htim)
   __HAL_TIM_DISABLE(htim);
 
 #if (USE_HAL_TIM_REGISTER_CALLBACKS == 1)
-  if (htim->HallSensor_MspDeInitCallback == NULL)
+  if (htim->HallSensor_MspDeInitCallback == )
   {
     htim->HallSensor_MspDeInitCallback = HAL_TIMEx_HallSensor_MspDeInit;
   }

@@ -7,10 +7,10 @@
 
 #include "flashmemory.hpp"
 #include "stm32f4xx_hal.h"
-#include "adc.hpp"
-#include "dac.hpp"
 #include "oscilloscope.hpp"
 #include "pid.hpp"
+#include "../HAL/adc.hpp"
+#include "../HAL/dac.hpp"
 
 UserData::UserData(ADC_Dev* ADC_DEV, DAC_Dev* DAC_1, DAC_Dev* DAC_2, PID* PID_1, PID* PID_2, Oscilloscope* Scope)
 {

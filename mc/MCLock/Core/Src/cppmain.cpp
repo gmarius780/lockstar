@@ -1,5 +1,3 @@
-#include <adc.hpp>
-#include <dac.hpp>
 #include <lock.hpp>
 #include <main.h>
 #include <pid.hpp>
@@ -19,6 +17,8 @@
 #include "misc_func.hpp"
 #include "flashmemory.hpp"
 #include "FFTCorrection.hpp"
+#include "../HAL/adc.hpp"
+#include "../HAL/dac.hpp"
 
 
 

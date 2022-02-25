@@ -12,9 +12,9 @@
 
 #include "pid.hpp"
 #include <vector>
-#include "dac.hpp"
-#include "adc.hpp"
 #include "spi.h"
+#include "../HAL/adc.hpp"
+#include "../HAL/dac.hpp"
 
 
 class lockparameters
