@@ -1,13 +1,8 @@
-import HomeIcon from '@material-ui/icons/Home'
 import DeviceHubIcon from '@material-ui/icons/DeviceHub'
 import SettingsIcon from '@material-ui/icons/Settings'
-import InfoIcon from '@material-ui/icons/Info'
 
-import HomePage from './pages/home'
 import DevicesPage from './pages/devices'
 import SettingsPage from './pages/settings'
-import AboutPage from './pages/about'
-import WelcomePage from './pages/welcome'
 import NotFoundPage from './pages/not-found'
 
 interface Route {
@@ -23,14 +18,6 @@ interface Route {
 export default [
   {
     path: '/',
-    label: 'Home',
-    exact: true,
-    icon: HomeIcon,
-    component: HomePage,
-    sidebar: true,
-  },
-  {
-    path: '/devices',
     label: 'Devices',
     divider: true,
     icon: DeviceHubIcon,
@@ -44,20 +31,6 @@ export default [
     icon: SettingsIcon,
     component: SettingsPage,
     sidebar: true,
-  },
-  {
-    path: '/about',
-    label: 'About',
-    exact: true,
-    icon: InfoIcon,
-    component: AboutPage,
-    sidebar: true,
-  },
-  {
-    path: '/welcome',
-    label: 'Welcome',
-    exact: true,
-    component: WelcomePage,
   },
   {
     path: '/*',

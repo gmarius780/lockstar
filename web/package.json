@@ -44,7 +44,8 @@
     "yup": "^0.29.3"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "CHOKIDAR_USEPOLLING=true react-scripts start",
+    "start-flask-app": "cd api && venv/bin/flask run",
     "lint": "eslint 'src/**/*.{js,ts,tsx}'",
     "type-check": "tsc --noEmit",
     "build": "react-scripts build",
@@ -70,5 +71,6 @@
     "hooks": {
       "pre-commit": "npm run lint && npm run type-check"
     }
-  }
+  },
+  "proxy": "http://127.0.0.1:5000/"
 }

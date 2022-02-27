@@ -1,5 +1,4 @@
-import React, { useEffect, useCallback, useState } from 'react'
-import { Link } from 'react-router-dom'
+import React, { useEffect, useCallback, useState, useRef } from 'react'
 import { Theme, createStyles, makeStyles } from '@material-ui/core/styles'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import grey from '@material-ui/core/colors/grey'
@@ -10,13 +9,12 @@ import CardActions from '@material-ui/core/CardActions'
 import CardContent from '@material-ui/core/CardContent'
 import Button from '@material-ui/core/Button'
 import Typography from '@material-ui/core/Typography'
-import ToggleOnIcon from '@material-ui/icons/ToggleOn'
-import ToggleOffIcon from '@material-ui/icons/ToggleOff'
-import EmojiObjectsIcon from '@material-ui/icons/EmojiObjects'
+import TextField from '@material-ui/core/TextField'
+import DeveloperBoardSharpIcon from '@material-ui/icons/DeveloperBoardSharp';
 
 import Snackbar from '../snackbar'
 import useLocalStorage from '../../hooks/useLocalStorage'
-import { initiateSocket, disconnectSocket, subscribeTo } from '../../utils/socket'
+// import { initiateSocket, disconnectSocket, subscribeTo } from '../../utils/socket'
 
 interface Device {
   pin: number
@@ -74,8 +72,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
   deviceLabel: {
     color: grey[700],
   },
-  link: {
-    textDecoration: 'none',
+  parameter: {
     color: grey[500],
   },
 }))
@@ -83,67 +80,107 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 const DeviceItem = ({ device }: DeviceItemProps) => {
   const classes = useStyles()
   const [deviceStatus, setDeviceStatus] = useState(device.status)
-  const [serverBaseUrl] = useLocalStorage('serverBaseUrl')
+  // const [serverBaseUrl] = useLocalStorage('serverBaseUrl')
 
   // force re-render
   if (deviceStatus !== device.status) {
     setDeviceStatus(device.status)
   }
 
-  const onButtonClick = async (statusToSet: number) => {
-    if (deviceStatus === statusToSet) {
-      const res = await fetch(`${serverBaseUrl}/api/devices/change-status`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          'pin': device.pin,
-        }),
-      })
-      const { status } = await res.json()
-      setDeviceStatus(status)
-    }
+  // const onButtonClick = async (statusToSet: number) => {
+    // if (deviceStatus === statusToSet) {
+    //   const res = await fetch(`${serverBaseUrl}/api/devices/change-status`, {
+    //     method: 'POST',
+    //     headers: {
+    //       'Content-Type': 'application/json',
+    //     },
+    //     body: JSON.stringify({
+    //       'pin': device.pin,
+    //     }),
+    //   })
+    //   const { status } = await res.json()
+    //   setDeviceStatus(status)
+    // }
+  // }
+
+  const pFieldRef = useRef<HTMLInputElement | null>(null);
+  const iFieldRef = useRef<HTMLInputElement | null>(null);
+  const dFieldRef = useRef<HTMLInputElement | null>(null);
+
+  const onPIDClick = async (p: string, i: string, d: string) => {
+    const pid = {p: p, i: i, d: d}
+
+    const res = await fetch('/pid', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(pid),
+    })
+
+    console.log(res)
+    // setDevicePID([p, i, d])
   }
+
 
   let icon = null
   let iconStyles = { fontSize: 125 }
   let actions = null
-  if (device.type === 'led') {
-    if (deviceStatus) {
-      // @ts-ignore TS2322
-      iconStyles = { ...iconStyles, fill: '#ffc300' }
-    }
-    icon = <EmojiObjectsIcon style={iconStyles} />
-    actions = (
-      <>
-        <Button size="small" color="primary" className={classes.actionItem} onClick={() => onButtonClick(deviceStatus || 0)}>
-          {deviceStatus ? 'Turn Off' : 'Turn On'}
-        </Button>
-      </>
-    )
-  } else if (device.type.toLowerCase().endsWith('button')) {
-    if (deviceStatus) {
-      icon = <ToggleOnIcon style={{ ...iconStyles, fill: '#ffc300' }} />
-    } else {
-      icon = <ToggleOffIcon style={iconStyles} />
-    }
+
+  if (deviceStatus) {
+    // @ts-ignore TS2322
+    iconStyles = { ...iconStyles, fill: '#ffc300' }
   }
+  icon = <DeveloperBoardSharpIcon style={iconStyles} />
+  actions = (
+    <>
+      <Button size="small" color="primary" className={classes.actionItem} >
+        {deviceStatus ? 'Disconnect' : 'Connect'}
+      </Button>
+    </>
+  )
+  
 
   return (
     <Grid item lg={3} md={4} xs={6}>
       <Card className={classes.card}>
         <CardActionArea>
-          <Link to={`/devices/view/${device.pin}`} className={classes.link}>
+
             <>
               {icon}
               <CardContent>
                 <Typography gutterBottom variant="h5" component="h2" className={classes.deviceLabel}>
                   {device.label}
                 </Typography>
+
+                <Typography gutterBottom variant="body1" component="span" className={classes.parameter}>
+                  <TextField
+                    id="standard-basic"
+                    label="P"
+                    variant="standard"
+                    inputRef={pFieldRef}
+                  />
+                  <TextField
+                    id="standard-basic"
+                    label="I"
+                    variant="standard"
+                    inputRef={iFieldRef}
+                  />
+                  <TextField
+                    id="standard-basic"
+                    label="D"
+                    variant="standard"
+                    inputRef={dFieldRef}
+                  />
+                </Typography>
+                <div>
+                <Button size="small" color="primary" className={classes.actionItem} onClick={() => onPIDClick(pFieldRef.current?.value || "0", iFieldRef.current?.value || "0", dFieldRef.current?.value || "0")}>
+                  Send
+                </Button>
+                </div>
               </CardContent>
             </>
-          </Link>
+
         </CardActionArea>
         <CardActions className={classes.cardActions} classes={{ root: classes.cardActionsRoot }}>
           {actions}
@@ -176,29 +213,62 @@ export default ({ devicesPath }: Props) => {
     setMessage(null)
     setLoading(true)
 
-    const data = await fetch(`${serverBaseUrl}${devicesPath}`)
+    const data = [
+      {
+        pin: 2,
+        type: 'led',
+        label: 'Pi 1',
+        status: 1,
+        dependencies: [{ pin: 20, type: 'pushButton', label: 'Button 20' }],
+      },
+      {
+        pin: 3,
+        type: 'led',
+        label: 'Pi 2',
+        status: 0,
+        dependencies: [{ pin: 20, type: 'pushButton', label: 'Button 20' }],
+      },
+      {
+        pin: 4,
+        type: 'led',
+        label: 'Pi 3',
+        status: 0,
+        dependencies: [{ pin: 21, type: 'toggleButton', label: 'Button 21' }],
+      },
+      {
+        pin: 20,
+        type: 'pushButton',
+        label: 'Pi 4',
+        status: 0,
+        dependencies: [{ pin: 2, type: 'led', label: 'Led 2' }, { pin: 3, type: 'led', label: 'Led 3' }],
+      },
+      {
+        pin: 21,
+        type: 'toggleButton',
+        label: 'Pi 5',
+        status: 0,
+        dependencies: [{ pin: 4, type: 'led', label: 'Led 4' }],
+      },
+    ]
 
-    if (data.ok) {
-      setData(await data.json())
-    } else {
-      setError(await data.text())
-    }
+    // if (data.ok) {
+    //   setData(await data.json())
+    // } else {
+    //   setError(await data.text())
+    // }
+
+    setData(data)
 
     setLoading(false)
-  }, [serverBaseUrl, devicesPath])
+  }, [])
 
   useEffect(() => {
     fetchData()
+    fetch('/api').then(
+      response => response.json()
+    ).then(dataPID => console.log(dataPID))
 
-    if (serverBaseUrl) {
-      initiateSocket(`${serverBaseUrl}`)
 
-      subscribeTo('all', (eventName: string, data: object) => setMessage({ eventName, data }))
-    }
-
-    return () => {
-      disconnectSocket()
-    }
   }, [fetchData, serverBaseUrl])
 
   if (message && data) {
