@@ -9,11 +9,11 @@
 #define INC_MISC_FUNC_HPP_
 
 
-#include "pid.hpp"
 #include <queue>
 #include "../HAL/adc.hpp"
 #include "../HAL/dac.hpp"
 #include "../HAL/raspberrypi.hpp"
+#include "../Lib/pid.hpp"
 
 struct Waypoint { float type; float value; Waypoint(float minmax, float value){this->type=minmax; this->value=value;};};
 #define WAYPOINT_GO_TO 3.0f

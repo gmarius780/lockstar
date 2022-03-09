@@ -1,6 +1,5 @@
 #include <lock.hpp>
 #include <main.h>
-#include <pid.hpp>
 #include <signals.hpp>
 #include <stm32f427xx.h>
 #include <stm32f4xx_hal_gpio.h>
@@ -17,8 +16,17 @@
 #include "../HAL/flashmemory.hpp"
 #include "../HAL/leds.hpp"
 #include "../HAL/raspberrypi.hpp"
+#include "../Lib/pid.hpp"
 
 
+#define module_1
+
+#if defined(module_1)
+
+#include "../Modules/Module.hpp"
+
+Module *module = new Module();
+#endif
 
 // Peripheral devices
 DAC_Dev *DAC_2, *DAC_1;
@@ -34,7 +42,6 @@ volatile bool locking = false;
 __attribute__((__section__(".user_data"),used)) uint32_t SavedSettings[4];
 
 volatile bool new_data = false;
-
 
 /************************
  *        TIMER         *
@@ -63,6 +70,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	// do something with sensitive timing
 	//ADC_DEV->Read();
+	module->timer_interrupt();
 }
 
 
@@ -79,8 +87,9 @@ extern ADC_HandleTypeDef hadc3;
 __attribute__((section("sram_func")))
 void HAL_GPIO_EXTI_Callback (uint16_t GPIO_Pin)
 {
+	module->trigger_interrupt();
 	// Falling Edge = Trigger going High
-	if(GPIO_Pin == DigitalIn_Pin && HAL_GPIO_ReadPin(DigitalIn_GPIO_Port, DigitalIn_Pin)==GPIO_PIN_RESET){
+	/*if(GPIO_Pin == DigitalIn_Pin && HAL_GPIO_ReadPin(DigitalIn_GPIO_Port, DigitalIn_Pin)==GPIO_PIN_RESET){
 		locking = true;
 		PIDLoop->Reset();
 		PIDLoop2->Reset();
@@ -92,7 +101,7 @@ void HAL_GPIO_EXTI_Callback (uint16_t GPIO_Pin)
 	if(GPIO_Pin == DigitalIn_Pin && HAL_GPIO_ReadPin(DigitalIn_GPIO_Port, DigitalIn_Pin)==GPIO_PIN_SET){
 		locking = false;
 		turn_LED6_off();
-	}
+	}*/
 
 }
 
@@ -100,19 +109,19 @@ void HAL_GPIO_EXTI_Callback (uint16_t GPIO_Pin)
 __attribute__((section("sram_func")))
 void DMA2_Stream4_IRQHandler(void)
 {
-	DAC_2->Callback();
+	module->DAC_2->Callback();
 }
 __attribute__((section("sram_func")))
 void DMA2_Stream5_IRQHandler(void)
 {
-	DAC_1->Callback();
+	module->DAC_1->Callback();
 }
 __attribute__((section("sram_func")))
 void DMA2_Stream2_IRQHandler(void)
 {
 	// SPI 1 rx
-	ADC_DEV->Callback();
-	new_data = true;
+	module->ADC_DEV->Callback();
+	module->adc_interrupt();
 }
 __attribute__((section("sram_func")))
 void DMA2_Stream3_IRQHandler(void)
@@ -124,9 +133,9 @@ __attribute__((section("sram_func")))
 void DMA2_Stream0_IRQHandler(void)
 {
 	// SPI 4 Rx
-	RPi->Callback();
-	new_RPi_input = true;
-	RPi->ResetIntPin();
+	module->RPi->Callback();
+	module->rpi_interrupt();
+	module->RPi->ResetIntPin();
 }
 __attribute__((section("sram_func")))
 void DMA2_Stream1_IRQHandler(void)
@@ -169,6 +178,10 @@ void cppmain(void)
 
 	/* After power on, give all devices a moment to properly start up */
 	HAL_Delay(200);
+
+
+	module->run();
+
 
 	/* Set up input and output devices
 	 * The devices communicate with the microcontroller via SPI (serial peripheral interace). For full-speed operation,

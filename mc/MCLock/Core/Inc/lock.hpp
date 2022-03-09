@@ -10,10 +10,10 @@
 #ifndef LOCK_H_
 #define LOCK_H_
 
-#include "pid.hpp"
 #include <vector>
 #include "../HAL/adc.hpp"
 #include "../HAL/dac.hpp"
+#include "../Lib/pid.hpp"
 
 
 class lockparameters
