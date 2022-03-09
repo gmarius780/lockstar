@@ -10,6 +10,7 @@
 #include "stm32f4xx_hal.h"
 #include "stm32f4xx.h"
 #include "stm32f4xx_hal_spi.h"
+
 #include "leds.hpp"
 
 #define TIMEOUT	1000000

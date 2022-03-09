@@ -9,8 +9,8 @@
 
 #include "stm32f4xx_hal.h"
 #include "stm32f4xx_hal_adc.h"
-#include "leds.hpp"
 #include "dma.hpp"
+#include "leds.hpp"
 
 
 DAC_Dev::DAC_Dev(uint8_t SPI, uint8_t DMA_Stream_Out, uint8_t DMA_Channel_Out, uint8_t DMA_Stream_In, uint8_t DMA_Channel_In, GPIO_TypeDef* SYNC_Port, uint16_t SYNC_Pin, GPIO_TypeDef* CLEAR_Port, uint16_t CLEAR_Pin)

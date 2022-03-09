@@ -9,8 +9,8 @@
 
 #include "misc_func.hpp"
 #include <main.h>
-#include "leds.hpp"
 #include <math.h>
+#include "../HAL/leds.hpp"
 
 float* RecordTrace(ADC_Dev* ADC_DEV, uint8_t ADC_Channel, DAC_Dev* DAC_DEV, uint16_t Steps)
 {

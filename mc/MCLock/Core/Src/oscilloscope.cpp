@@ -8,9 +8,9 @@
 
 #include "raspberrypi.hpp"
 #include "oscilloscope.hpp"
-#include "leds.hpp"
 #include "../HAL/adc.hpp"
 #include "../HAL/dac.hpp"
+#include "../HAL/leds.hpp"
 
 Oscilloscope::Oscilloscope(RaspberryPi* RPi, ADC_Dev* ADC_DEV, DAC_Dev* DAC_1, DAC_Dev* DAC_2)
 {
