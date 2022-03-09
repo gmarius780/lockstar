@@ -9,7 +9,6 @@
 #include <sys/_stdint.h>
 #include "stm32f4xx_it.h"
 #include <queue>
-#include "benchmarking.hpp"
 #include "oscilloscope.hpp"
 #include "misc_func.hpp"
 #include "flashmemory.hpp"
