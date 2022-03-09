@@ -1,8 +1,8 @@
 import DeviceHubIcon from '@material-ui/icons/DeviceHub'
-import SettingsIcon from '@material-ui/icons/Settings'
+
 
 import DevicesPage from './pages/devices'
-import SettingsPage from './pages/settings'
+
 import NotFoundPage from './pages/not-found'
 
 interface Route {
@@ -24,14 +24,7 @@ export default [
     component: DevicesPage,
     sidebar: true,
   },
-  {
-    path: '/settings',
-    label: 'Settings',
-    exact: true,
-    icon: SettingsIcon,
-    component: SettingsPage,
-    sidebar: true,
-  },
+
   {
     path: '/*',
     component: NotFoundPage,
