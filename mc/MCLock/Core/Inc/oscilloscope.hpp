@@ -12,6 +12,8 @@
 //#include "adc.hpp"
 //#include "dac.hpp"
 #include <vector>
+#include <stddef.h>
+#include "stm32f4xx_hal.h"
 class RaspberryPi;
 class ADC_Dev;
 class DAC_Dev;

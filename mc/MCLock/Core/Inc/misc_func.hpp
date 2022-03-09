@@ -10,11 +10,10 @@
 
 
 #include "pid.hpp"
-#include "raspberrypi.hpp"
-
 #include <queue>
 #include "../HAL/adc.hpp"
 #include "../HAL/dac.hpp"
+#include "../HAL/raspberrypi.hpp"
 
 struct Waypoint { float type; float value; Waypoint(float minmax, float value){this->type=minmax; this->value=value;};};
 #define WAYPOINT_GO_TO 3.0f

@@ -12,7 +12,6 @@
 
 #include "pid.hpp"
 #include <vector>
-#include "spi.h"
 #include "../HAL/adc.hpp"
 #include "../HAL/dac.hpp"
 

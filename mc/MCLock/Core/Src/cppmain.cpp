@@ -2,7 +2,6 @@
 #include <main.h>
 #include <pid.hpp>
 #include <signals.hpp>
-#include <spi.h>
 #include <stm32f427xx.h>
 #include <stm32f4xx_hal_gpio.h>
 #include <stm32f4xx_hal_spi.h>
@@ -11,7 +10,6 @@
 #include "stm32f4xx_it.h"
 #include <queue>
 #include "benchmarking.hpp"
-#include "raspberrypi.hpp"
 #include "oscilloscope.hpp"
 #include "misc_func.hpp"
 #include "flashmemory.hpp"
@@ -19,6 +17,7 @@
 #include "../HAL/adc.hpp"
 #include "../HAL/dac.hpp"
 #include "../HAL/leds.hpp"
+#include "../HAL/raspberrypi.hpp"
 
 
 

@@ -1,5 +1,4 @@
 #include "lock.hpp"
-#include "spi.h"
 #include "stm32f4xx_hal_tim.h"
 #include <vector>
 #include <math.h>
