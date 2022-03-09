@@ -10,8 +10,8 @@
 
 #include "stm32f4xx_hal.h"
 #include "oscilloscope.hpp"
-#include "flashmemory.hpp"
 #include "dma.hpp"
+#include "flashmemory.hpp"
 
 #define ADC_BIPOLAR_10V		(uint8_t)0b111
 #define ADC_BIPOLAR_5V		(uint8_t)0b011

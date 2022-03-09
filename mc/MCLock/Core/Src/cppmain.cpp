@@ -11,10 +11,10 @@
 #include <queue>
 #include "oscilloscope.hpp"
 #include "misc_func.hpp"
-#include "flashmemory.hpp"
 #include "FFTCorrection.hpp"
 #include "../HAL/adc.hpp"
 #include "../HAL/dac.hpp"
+#include "../HAL/flashmemory.hpp"
 #include "../HAL/leds.hpp"
 #include "../HAL/raspberrypi.hpp"
 
