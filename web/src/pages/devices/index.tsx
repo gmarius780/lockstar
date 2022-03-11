@@ -10,9 +10,11 @@ export default () => {
   const { path } = useRouteMatch()
   const [serverBaseUrl] = useLocalStorage('serverBaseUrl')
 
-  if (!serverBaseUrl) {
-    return <Redirect to={'/welcome'} />
-  }
+  
+
+  // if (!serverBaseUrl) {
+  //   return <Redirect to={'/welcome'} />
+  // }
 
   return (
     <>

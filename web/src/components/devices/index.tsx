@@ -270,8 +270,9 @@ export default ({ devicesPath }: Props) => {
 
 
   }, [fetchData, serverBaseUrl])
-
+  
   if (message && data) {
+    
     switch (message.eventName) {
     case 'deviceStatusChanged':
       const devices = data.map((device) => {
