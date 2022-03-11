@@ -1,0 +1,11 @@
+adc.cpp:39:6:void ADC_Dev::Read()	16	static
+adc.cpp:78:6:void ADC_Dev::UpdateSoftSpan(uint8_t, uint8_t)	16	static
+adc.cpp:107:1:ADC_Channel::ADC_Channel(ADC_Dev*, uint16_t)	0	static
+adc.cpp:114:6:void ADC_Channel::Setup(uint8_t)	8	static
+adc.cpp:20:1:ADC_Dev::ADC_Dev(uint8_t, uint8_t, uint8_t, uint8_t, uint8_t, GPIO_TypeDef*, uint16_t)	48	static
+adc.cpp:175:7:float ADC_Channel::GetFloat()	0	static
+adc.cpp:181:9:int16_t ADC_Channel::GetInt()	0	static
+adc.cpp:158:6:void ADC_Channel::SetInput(int16_t)	16	static
+adc.cpp:65:6:void ADC_Dev::Callback()	8	static
+adc.cpp:187:6:void ADC_Channel::SetLowPass(bool, float)	0	static
+adc.cpp:194:6:void ADC_Channel::ResetLowPass()	0	static
