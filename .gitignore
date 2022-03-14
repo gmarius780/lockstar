@@ -1,4 +1,11 @@
 *.img
 .metadata/
+*.o
+*.su
+*.prefs
+*.pyc
 
 Microcontroller/
+
+node_modules/
+web/api/__pycache__/*
