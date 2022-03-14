@@ -9,7 +9,8 @@
 #define DAC_H_
 
 #include "stm32f4xx_hal.h"
-#include "oscilloscope.hpp"
+
+#include "../Lib/oscilloscope.hpp"
 #include "dma.hpp"
 
 #define DAC_BIPOLAR_10V		(uint8_t)0

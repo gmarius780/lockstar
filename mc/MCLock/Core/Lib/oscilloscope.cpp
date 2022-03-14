@@ -7,6 +7,7 @@
 
 
 #include "oscilloscope.hpp"
+
 #include "../HAL/adc.hpp"
 #include "../HAL/dac.hpp"
 #include "../HAL/leds.hpp"

@@ -26,7 +26,7 @@ public:
 	virtual ~Module();
 
 	void run();
-	void init();
+	virtual void init();
 	void loop();
 
 	void adc_interrupt();
@@ -34,13 +34,13 @@ public:
 	void trigger_interrupt();
 	void timer_interrupt();
 
-	void handle_rpi_input();
+	virtual void handle_rpi_input();
 	void rpi_init();
-	void work();
+	virtual void work();
 
-	DAC_Dev *DAC_2, *DAC_1;
-	ADC_Dev *ADC_DEV;
-	RaspberryPi *RPi;
+	DAC_Dev *dac_2, *dac_1;
+	ADC_Dev *adc_dev;
+	RaspberryPi *rpi;
 
 	ModuleState module_state;
 	RpiInputState rpi_input_state;

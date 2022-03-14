@@ -8,9 +8,9 @@
 #include "flashmemory.hpp"
 
 #include "stm32f4xx_hal.h"
-#include "oscilloscope.hpp"
 #include "../HAL/adc.hpp"
 #include "../HAL/dac.hpp"
+#include "../Lib/oscilloscope.hpp"
 #include "../Lib/pid.hpp"
 
 UserData::UserData(ADC_Dev* ADC_DEV, DAC_Dev* DAC_1, DAC_Dev* DAC_2, PID* PID_1, PID* PID_2, Oscilloscope* Scope)

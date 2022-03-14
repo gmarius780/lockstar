@@ -10,15 +10,22 @@
 
 #include "Module.hpp"
 #include "../Lib/pid.hpp"
+#include "../Lib/oscilloscope.hpp"
 
-class SinglePIDModule : Module{
+enum PidState {pid_locked, pid_unlocked};
+
+class SinglePIDModule : public Module{
 public:
 	SinglePIDModule();
 	virtual ~SinglePIDModule();
 
-	void init();
-	void work();
-	PID* PIDLoop;
+	void init() override;
+	void work() override;
+	void handle_rpi_input() override;
+	PID* pid_loop;
+	Oscilloscope* oscilloscope;
+
+	PidState pid_state;
 };
 
 #endif /* MODULES_SINGLEPIDMODULE_HPP_ */

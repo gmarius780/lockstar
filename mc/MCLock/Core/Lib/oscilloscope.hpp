@@ -5,8 +5,8 @@
  *      Author: qo
  */
 
-#ifndef INC_OSCILLOSCOPE_HPP_
-#define INC_OSCILLOSCOPE_HPP_
+#ifndef LIB_OSCILLOSCOPE_HPP_
+#define LIB_OSCILLOSCOPE_HPP_
 
 //#include "raspberrypi.hpp"
 //#include "adc.hpp"
@@ -55,4 +55,4 @@ public:
 };
 
 
-#endif /* INC_OSCILLOSCOPE_HPP_ */
+#endif /* LIB_OSCILLOSCOPE_HPP_ */
