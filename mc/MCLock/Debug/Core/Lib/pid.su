@@ -1,6 +1,0 @@
-pid.cpp:17:7:float PID::CalculateFeedback(float, float)	0	static
-pid.cpp:11:7:float PID::CalculateFeedback(float)	8	static
-pid.cpp:59:7:float PID::CalculateLimitedFeedback(float, float)	0	static
-pid.cpp:105:6:void PID::SetVars(float*)	0	static
-pid.cpp:113:6:void PID::SetPIDParam(float*)	0	static
-pid.cpp:120:7:float PID::Diff(float, float)	0	static

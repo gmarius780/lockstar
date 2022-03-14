@@ -1,3 +1,0 @@
-TimedModule.cpp:15:1:TimedModule::~TimedModule()	0	static
-TimedModule.cpp:15:1:virtual TimedModule::~TimedModule()	8	static
-TimedModule.cpp:10:1:TimedModule::TimedModule()	0	static

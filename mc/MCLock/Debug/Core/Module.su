@@ -1,3 +1,0 @@
-Module.cpp:15:1:Module::~Module()	0	static
-Module.cpp:15:1:virtual Module::~Module()	8	static
-Module.cpp:10:1:Module::Module()	0	static
