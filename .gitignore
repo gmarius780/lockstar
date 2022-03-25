@@ -1,6 +1,7 @@
 #################
 ## Eclipse
 #################
+__pycache__
 
 *.pydevproject
 .project

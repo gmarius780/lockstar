@@ -1,11 +1,13 @@
 import asyncio
-from BackendSettings import BackendSettings
-from code.general.communication.BackendDP import BackendDP
+from lockstar_rpi.BackendSettings import BackendSettings
 import logging
-from BackendModules.GeneralMethodModuleDP import GeneralMethodModuleDP
+from lockstar_general.communication.BackendDPFactory import BackendDPFactory
+from lockstar_general.communication.BackendModuleTypes import BackendModuleTypes
+from lockstar_general.communication.BackendDP import GeneralMethods
 
 class BackendState:
-    currently_loaded_module = None
+    current_client_id = None
+    current_module = None
 
 state_lock = asyncio.Lock()
 
@@ -13,33 +15,24 @@ backend_state = BackendState()
 
 async def handle_client_requests(reader, writer):
     try:
-        backend_dp = await BackendDP.from_stream_reader(reader)
+        backend_dp = await BackendDPFactory.get_dp_from_reader(reader)
     except ValueError as ex:
         logging.error(f'handle_client_requests: cannot parse backend_dp: {ex}')
         backend_dp = None
     
     if backend_dp is not None:
-        if backend_dp.is_general_method_call():
+        if backend_dp.module_identifier == BackendModuleTypes.GENERAL:
             # === Handle general methods
-            try:
-                module_dp = GeneralMethodModuleDP.from_backend_dp(backend_dp)
-            except ValueError as ex:
-                logging.error(f'Could not parse BackendModuleDP: {ex}')
-                module_dp = None
-
-            if module_dp is not None:
-                if module_dp.method == 'init_hardware':
-                    print('init_hardware')
-                elif module_dp.method == 'free_hardware':
-                    print('free_hardware')
-                elif module_dp.method == 'init_module':
-                    print('init_module')
+            if backend_dp.method_identifier == GeneralMethods.INIT_HARDWARE:
+                print('init_hardware')
+            elif backend_dp.method_identifier == GeneralMethods.FREE_HARDWARE:
+                print('free_hardware')
             
         else:
             async with state_lock:
-                if backend_state.currently_loaded_module is not None:
-                    if isinstance(backend_state.currently_loaded_module, backend_dp.module_class):
-                        backend_state.currently_loaded_module.execute_method(backend_dp)
+                if backend_state.current_module is not None:
+                    if backend_state.current_module.module_identifier == backend_dp.module_identifier:
+                        backend_state.current_module.execute_method(backend_dp)
                     else:
                         logging.error(f'handle_client_request: wrong module loaded: loaded module: {backend_state.currently_loaded_module.__class__}, requested module: {backend_dp.module_class}')
                 else:
