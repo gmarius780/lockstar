@@ -1,50 +1,79 @@
 import asyncio
+from lockstar_general.communication.backend.BackendResponse import BackendResponse
 from lockstar_rpi.BackendSettings import BackendSettings
+from lockstar_general.communication.backend.BackendCall import BackendCall
+from lockstar_rpi.ModuleFactory import ModuleFactory
+from lockstar_rpi.Modules.GeneralModule import GeneralModule
 import logging
-from lockstar_general.communication.BackendDPFactory import BackendDPFactory
-from lockstar_general.communication.BackendModuleTypes import BackendModuleTypes
-from lockstar_general.communication.BackendDP import GeneralMethods
+import json
+import os
+
 
 class BackendState:
-    current_client_id = None
     current_module = None
+    general_module = None
 
 state_lock = asyncio.Lock()
 
 backend_state = BackendState()
 
 async def handle_client_requests(reader, writer):
+    backend_call = None
     try:
-        backend_dp = await BackendDPFactory.get_dp_from_reader(reader)
-    except ValueError as ex:
+        byte_backend_call = (await reader.readuntil(separator=b'\xBC'))[:-1]
+        backend_call = BackendCall.from_bytes(byte_backend_call)
+    except Exception as ex:
         logging.error(f'handle_client_requests: cannot parse backend_dp: {ex}')
-        backend_dp = None
+        backend_call = None
     
-    if backend_dp is not None:
-        if backend_dp.module_identifier == BackendModuleTypes.GENERAL:
-            # === Handle general methods
-            if backend_dp.method_identifier == GeneralMethods.INIT_HARDWARE:
-                print('init_hardware')
-            elif backend_dp.method_identifier == GeneralMethods.FREE_HARDWARE:
-                print('free_hardware')
-            
-        else:
-            async with state_lock:
-                if backend_state.current_module is not None:
-                    if backend_state.current_module.module_identifier == backend_dp.module_identifier:
-                        backend_state.current_module.execute_method(backend_dp)
-                    else:
-                        logging.error(f'handle_client_request: wrong module loaded: loaded module: {backend_state.currently_loaded_module.__class__}, requested module: {backend_dp.module_class}')
-                else:
-                    logging.error(f'handle_client_request: no module is loaded: requested module: {backend_dp.module_class} init_module first!')
+    if backend_call is not None:
+        client_id_missmatch = False
+        async with state_lock:
+            if backend_state.general_module.client_id != backend_call.client_id:
+                client_id_missmatch = True
 
-            # if module matches current module --> execute command
-            # else: write error response
-            pass
-    
+        if client_id_missmatch and not (backend_call.module_name == 'GeneralModule' and backend_call.method_name == 'register_client'):
+            logging.error(f'Currently a client with another id is using the device: {backend_state.general_module.client_id} (your id: {backend_call.client_id}')
+            response = BackendResponse.wrong_client_id()
+            writer.write(response.to_bytes())
+            await writer.drain()
+        else:
+            if backend_call.module_name == 'GeneralModule':
+                async with state_lock:
+                    await backend_state.general_module.call_method(backend_call, writer)
+            else:
+                async with state_lock:
+                    # instantiate new module if necessary
+                    if backend_state.current_module is None or backend_state.current_module.__class__.__name__ != backend_call.module_name:
+                        backend_state.current_module = ModuleFactory.I().module_class_form_name(backend_call.module_name)()
+
+                    await backend_state.current_module.call_method(backend_call, writer)
+        
+        # write config of current module
+        async with state_lock:
+            if backend_state.current_module is not None:
+                config_dict = backend_state.current_module.generate_config_dict()
+                with open(BackendSettings.current_module_config_file, 'w+') as config_file:
+                    json.dump(config_dict, config_file)
     
 
 async def main():
+    # initialize GeneralModule
+    backend_state.general_module = GeneralModule()
+
+    # initialize current module if config file is available
+    if os.path.exists(BackendSettings.current_module_config_file):
+        with open(BackendSettings.current_module_config_file, 'r') as config_file:
+            config_dict = json.load(config_file)
+
+            try:
+                backend_state.current_module = ModuleFactory.I().module_class_form_name(config_dict['module_name'])()
+                await backend_state.current_module.launch_from_config(config_dict)
+
+            except Exception as ex:
+                logging.error(f'Could not launch from config file: {ex} (config_dict: {config_dict})')
+                backend_state.current_module = None
+
     server = await asyncio.start_server(
         handle_client_requests, BackendSettings.backend_ip, BackendSettings.backend_port, limit=BackendSettings.read_buffer_limit_bytes)
 

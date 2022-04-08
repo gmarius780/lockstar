@@ -1,8 +1,7 @@
-from mimetypes import init
-from lockstar_general.communication.BackendDP import BackendDP
+from lockstar_general.communication.MCDP import MCDP
 from enum import Enum
 from struct import pack, unpack, calcsize
-from lockstar_general.communication.BackendModuleTypes import BackendModuleTypes
+from lockstar_general.communication.MCModuleTypes import MCModuleTypes
 
 
 class SinglePIDMethods(Enum):
@@ -10,11 +9,11 @@ class SinglePIDMethods(Enum):
     SET_PID = 1
     
 
-class SinglePIDBackendDP(BackendDP):
+class SinglePIDMCDP(MCDP):
 
     @classmethod
     def for_init(cls, output_min, output_max, channel_error, channel_setpoint, channel_out, triggered):
-        module_identifier_b = BackendModuleTypes.SINGLEPID.value.to_bytes(2, 'big')
+        module_identifier_b = MCModuleTypes.SINGLEPID.value.to_bytes(2, 'big')
         method_identifier_b = SinglePIDMethods.INIT.value.to_bytes(2, 'big')
         payload_b = pack('>ddbbb?', output_min, output_max, channel_error, channel_setpoint, channel_out, triggered)
         payload_length = calcsize('>ddbbb?')
@@ -44,7 +43,7 @@ class SinglePIDBackendDP(BackendDP):
         self.channel_out = None
         self.triggered = None
 
-        self.module_identifier = BackendModuleTypes.SINGLEPID
+        self.module_identifier = MCModuleTypes.SINGLEPID
 
         # === parse payload
         self.method_identifier = int.from_bytes(method_identifier_b, 'big')

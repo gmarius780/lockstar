@@ -1,5 +1,5 @@
 from enum import Enum
 
-class BackendModuleTypes(Enum):
+class MCModuleTypes(Enum):
     GENERAL = 0
     SINGLEPID = 1
