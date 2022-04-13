@@ -15,6 +15,8 @@
 #include "../HAL/leds.hpp"
 #include "../Inc/misc_func.hpp"
 
+#include <cstring>
+
 extern ADC_HandleTypeDef hadc3;
 
 enum ModuleState {module_state_rpi_init_pending, module_state_running, module_state_failed};
