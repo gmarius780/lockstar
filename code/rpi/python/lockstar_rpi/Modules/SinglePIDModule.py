@@ -2,6 +2,7 @@ from lockstar_rpi.Modules.IOModule_ import IOModule_
 from lockstar_general.hardware.HardwareComponents import HardwareComponents
 from lockstar_general.communication.backend.BackendResponse import BackendResponse
 import logging
+from lockstar_rpi.MC import MC
 
 
 class SinglePIDModule(IOModule_):
@@ -36,9 +37,21 @@ class SinglePIDModule(IOModule_):
 
         logging.debug('Initialized SinglePIDModule')
 
+        # === MC CALL:
+        write_bytes = []
+        # SinglePIDModuleDP.write_initialize_call(write_bytes, p, i, d, ....)
+        MC.I().write(write_bytes)
+
+        ack = await MC.I().read_ack()
+
         if writer is not None:
-            writer.write(BackendResponse.ACK().to_bytes())
+            if ack:
+                writer.write(BackendResponse.ACK().to_bytes())
+            else:
+                writer.write(BackendResponse.NACK().to_bytes())
             await writer.drain()
+        
+        return ack
 
     async def set_pid(self, p: float, i: float, d: float, writer):
         self.p = p

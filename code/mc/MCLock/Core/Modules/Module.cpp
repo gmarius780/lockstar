@@ -6,6 +6,7 @@
  */
 
 #include "Module.hpp"
+#include "ModuleDP.hpp"
 
 Module::Module() {
 	this->module_state = module_state_rpi_init_pending;
@@ -30,11 +31,10 @@ void Module::run() {
 }
 
 
-void Module::handle_rpi_input() {
-	//read data, decide what to do, create RpiData object?!
-	//if rpi_initialize is called --> change module state to module_state_running
-	//TODO: REMOVE THIS ONCE POSSIBLE:
-	this->module_state = module_state_running;
+uint8_t Module::handle_rpi_input() {
+	uint8_t method_identifier;
+	ModuleDP::pop_method_identifier(this->rpi->ReadBuffer, &method_identifier);
+	return method_identifier;
 }
 
 void Module::timer_interrupt() {
@@ -101,7 +101,7 @@ void Module::loop() {
 	while (this->module_state == module_state_rpi_init_pending) {
 		HAL_Delay(1000);
 		//TODO: REMOVE THIS ONCE POSSIBLE:
-		this->rpi_input_state = rpi_input_pending;
+		//this->rpi_input_state = rpi_input_pending;
 		if (this->rpi_input_state == rpi_input_pending) {
 			this->handle_rpi_input();
 			this->rpi_input_state = rpi_input_none;

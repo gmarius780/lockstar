@@ -24,14 +24,14 @@ public:
 
 	void init() override;
 	void work() override;
-	void handle_rpi_input() override;
+	virtual uint8_t handle_rpi_input() override;
 	PID* pid_loop;
 	Oscilloscope* oscilloscope;
 
 	PidState pid_state;
 
-	void initialize(float p, float i, float d, float out_range_min, float out_range_max, bool useTTL,
-			bool locked, HardwareComponents err_channel, HardwareComponents setpoint_channel, HardwareComponents out_channel);
+	void initialize(float p, float i, float d, float out_range_min, float out_range_max, bool useTTL, bool locked,
+			HardwareComponents err_channel, HardwareComponents setpoint_channel, HardwareComponents out_channel);
 	void set_pid(float p, float i, float d);
 	void lock();
 	void unlock();

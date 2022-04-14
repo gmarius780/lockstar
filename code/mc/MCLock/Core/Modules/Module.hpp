@@ -36,7 +36,7 @@ public:
 	void trigger_interrupt();
 	void timer_interrupt();
 
-	virtual void handle_rpi_input();
+	virtual uint8_t handle_rpi_input();
 	void rpi_init();
 	virtual void work();
 
