@@ -8,6 +8,7 @@
 #include "SinglePIDModule.hpp"
 #include "SinglePIDModuleDP.hpp"
 #include <functional>
+#include <cstdio>
 
 SinglePIDModule::SinglePIDModule() : Module(){
 
@@ -166,5 +167,5 @@ uint8_t SinglePIDModule::handle_rpi_input() {
 void SinglePIDModule::initialize(float p, float i, float d, float out_range_min, float out_range_max, bool useTTL, bool locked,
 		HardwareComponents err_channel, HardwareComponents setpoint_channel, HardwareComponents out_channel) {
 	this->rpi_init();
-	printf('asdf');
+	printf("asdf");
 }
