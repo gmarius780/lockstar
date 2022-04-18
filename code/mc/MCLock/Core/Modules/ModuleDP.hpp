@@ -4,7 +4,11 @@
  *  Created on: Apr 13, 2022
  *      Author: marius
  */
-
+#include <stdint.h>
+#include <iosfwd>
+#include <cstddef>
+#include <cstring>
+#include "../HAL/HardwareComponents.hpp"
 
 class ModuleDP {
 	/* DataPackage structure for rpi-calls to the MC:

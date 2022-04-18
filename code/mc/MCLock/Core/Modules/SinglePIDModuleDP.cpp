@@ -7,6 +7,10 @@
 
 #include "ModuleDP.hpp"
 #include <tuple>
+#include <stdint.h>
+#include <pybind11/pybind11.h>
+
+namespace py = pybind11;
 
 enum SinglePIDMethods {
 	INITIALIZE = (uint8_t)0,
@@ -15,6 +19,10 @@ enum SinglePIDMethods {
 
 class SinglePIDModuleDP: public ModuleDP {
 public:
+	SinglePIDModuleDP()
+	{
+	}
+
 	static unsigned int size_initialize_call() {
 		return sizeof(uint8_t) + 5 * sizeof(float) + 2 * sizeof(bool) + 3 * sizeof(HardwareComponents);
 	}
@@ -56,3 +64,12 @@ public:
 	}
 
 };
+
+
+PYBIND11_MODULE(module_name, handle) {
+	handle.doc() = "stuff"; 
+	
+	py::class_<SinglePIDModuleDP> (
+		handle, "PySinglePIDModule" 
+	).def(py::init<>());
+}
