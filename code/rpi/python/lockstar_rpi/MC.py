@@ -105,7 +105,7 @@ class MC:
         async with self._rpi_lock:
             # wait for MC to become ready
             while not self.get_GPIO_pin():
-                print(self.get_GPIO_pin())
+                write(self.get_GPIO_pin())
                 pass
             try:
                 self._spi.writebytes2(bytes)
