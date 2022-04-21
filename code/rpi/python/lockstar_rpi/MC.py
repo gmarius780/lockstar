@@ -89,6 +89,6 @@ class MC:
         async with self._rpi_lock:
             try:
                 self._spi.writebytes2(bytes)
-                logging.info('write stuff to MC')
+                logging.info(f'write stuff to MC:{bytes}')
             except Exception as ex:
                 logging.error(f'MC: Cannot send bytes to rpi: {ex}. len-bytes: {len(bytes)}')
