@@ -1,6 +1,6 @@
 import logging
 from lockstar_rpi.Modules.Module import Module
-from lockstar_general.communication.backend.BackendResponse import BackendResponse
+from lockstar_general.backend.BackendResponse import BackendResponse
 
 class GeneralModule(Module):
     def __init__(self) -> None:
@@ -16,7 +16,7 @@ class GeneralModule(Module):
 
 if __name__ == "__main__":
     # test module calling
-    from lockstar_general.communication.backend.BackendCall import BackendCall
+    from lockstar_general.backend.BackendCall import BackendCall
     from lockstar_rpi.ModuleFactory import ModuleFactory
     import asyncio
     bc = BackendCall(123, 'GeneralModule', 'register_client', {'client_id': 2222})

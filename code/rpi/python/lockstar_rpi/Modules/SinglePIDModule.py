@@ -1,6 +1,7 @@
 from lockstar_rpi.Modules.IOModule_ import IOModule_
-from lockstar_general.hardware.HardwareComponents import HardwareComponents
-from lockstar_general.communication.backend.BackendResponse import BackendResponse
+from lockstar_general.hardware import HardwareComponents
+from lockstar_general.backend.BackendResponse import BackendResponse
+from lockstar_general.mc_modules import SinglePIDModuleDP
 import logging
 from lockstar_rpi.MC import MC
 
@@ -38,8 +39,9 @@ class SinglePIDModule(IOModule_):
         logging.debug('Initialized SinglePIDModule')
 
         # === MC CALL:
-        write_bytes = []
-        # SinglePIDModuleDP.write_initialize_call(write_bytes, p, i, d, ....)
+        #float p, float i, float d, float out_range_min, float out_range_max, bool useTTL,
+		#	bool locked, HardwareComponents err_channel, HardwareComponents setpoint_channel, HardwareComponents out_channel
+        write_bytes = SinglePIDModuleDP.write_initialize_call(p, i, d, out_range_min, out_range_max, useTTL, locked, err_channel, setpoint_channel, out_channel)
         MC.I().write(write_bytes)
 
         ack = await MC.I().read_ack()

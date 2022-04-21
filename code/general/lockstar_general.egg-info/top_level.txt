@@ -1,1 +1,3 @@
+hardware
 lockstar_general
+mc_modules

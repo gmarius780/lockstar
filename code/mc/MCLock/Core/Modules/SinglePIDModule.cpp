@@ -57,15 +57,15 @@ void SinglePIDModule::work() {
 }
 
 uint8_t SinglePIDModule::handle_rpi_input() {
-	uint8_t method_identifier = Module::handle_rpi_input();
+	SinglePIDMethods method_identifier = (SinglePIDMethods)Module::handle_rpi_input();
 
 
 	switch(method_identifier) {
-	case INITIALIZE:
-	{
+	case SinglePIDMethods::INITIALIZE:
 		std::apply(&SinglePIDModule::initialize, std::tuple_cat(std::make_tuple(this), SinglePIDModuleDP::read_initialize_call(this->rpi->ReadBuffer)));
 		break;
-	}
+	case SinglePIDMethods::SET_PID:
+		break;
 //		case RPi_Command_SetPIDParameters:
 //		{
 ////			volatile uint8_t Channel  = this->rpi->ReadBuffer[1];
@@ -161,7 +161,7 @@ uint8_t SinglePIDModule::handle_rpi_input() {
 //		}
 	}
 
-	return method_identifier;
+	return (uint8_t)method_identifier;
 }
 
 void SinglePIDModule::initialize(float p, float i, float d, float out_range_min, float out_range_max, bool useTTL, bool locked,

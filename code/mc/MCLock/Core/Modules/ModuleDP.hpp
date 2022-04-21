@@ -5,6 +5,13 @@
  *      Author: marius
  */
 
+#ifndef MODULES_MODULEDP_HPP_
+#define MODULES_MODULEDP_HPP_
+
+#include <stdint.h>
+#include <iosfwd>
+#include <cstddef>
+#include <cstring>
 
 class ModuleDP {
 	/* DataPackage structure for rpi-calls to the MC:
@@ -36,3 +43,5 @@ public:
 		return ModuleDP::pop_from_buffer<uint8_t>(buffer, value);
 	}
 };
+
+#endif

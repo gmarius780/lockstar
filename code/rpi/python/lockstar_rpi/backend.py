@@ -1,7 +1,7 @@
 import asyncio
-from lockstar_general.communication.backend.BackendResponse import BackendResponse
+from lockstar_general.backend.BackendResponse import BackendResponse
 from lockstar_rpi.BackendSettings import BackendSettings
-from lockstar_general.communication.backend.BackendCall import BackendCall
+from lockstar_general.backend.BackendCall import BackendCall
 from lockstar_rpi.ModuleFactory import ModuleFactory
 from lockstar_rpi.Modules.GeneralModule import GeneralModule
 import logging

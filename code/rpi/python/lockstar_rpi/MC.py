@@ -19,6 +19,7 @@ class MC:
     def __init__(self) -> None:
         self._rpi_lock = asyncio.Lock()
 
+        # check if it is running on a raspberry-pi (not debug mode)
         if not BackendSettings.debug_mode:
             # set up SPI
             try:
@@ -78,7 +79,7 @@ class MC:
                         output += list(spiinput)
                         bytes_left -= batchsize
                 except Exception as ex:
-                    logging.error(f'MC.rad_module_response: cannot read payload of length: {payload_length}: {ex}')
+                    logging.error(f'MC.read_module_response: cannot read payload of length: {payload_length}: {ex}')
 
                 return payload_length, output
             else:

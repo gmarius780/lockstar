@@ -1,8 +1,8 @@
 import asyncio
 import logging
-from lockstar_general.communication.backend.BackendResponse import BackendResponse
-from lockstar_general.communication.backend.BackendCall import BackendCall
-from lockstar_general.hardware.HardwareComponents import HardwareComponents
+from lockstar_general.backend.BackendResponse import BackendResponse
+from lockstar_general.backend.BackendCall import BackendCall
+from lockstar_general.hardware import HardwareComponents
 
 class LockstarClient():
     def __init__(self, lockstar_ip, lockstar_port, client_id) -> None:

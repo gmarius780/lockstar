@@ -1,6 +1,6 @@
 from lockstar_rpi.Modules.Module import Module
-from lockstar_general.hardware.HardwareComponents import HardwareComponents
-from lockstar_general.communication.backend.BackendResponse import BackendResponse
+from lockstar_general.hardware import HardwareComponents
+from lockstar_general.backend.BackendResponse import BackendResponse
 
 class IOModule_(Module):
     """This Module should not be used directly by the client (hence the _ at the end of the name).
