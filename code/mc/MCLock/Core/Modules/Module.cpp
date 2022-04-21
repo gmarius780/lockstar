@@ -98,9 +98,13 @@ void Module::work() {
 
 void Module::loop() {
 
+
 	while (this->module_state == module_state_rpi_init_pending) {
-		this->rpi->SetIntPin();
-		HAL_Delay(1000);
+		//this->rpi->SetIntPin();
+		//HAL_Delay(1000);
+		HAL_Delay(1);
+		this->work();
+
 		//TODO: REMOVE THIS ONCE POSSIBLE:
 		//this->rpi_input_state = rpi_input_pending;
 		if (this->rpi_input_state == rpi_input_pending) {
