@@ -103,7 +103,7 @@ void Module::loop() {
 		//this->rpi->SetIntPin();
 		//HAL_Delay(1000);
 		HAL_Delay(1);
-		this->work();
+		//this->work();
 
 		//TODO: REMOVE THIS ONCE POSSIBLE:
 		//this->rpi_input_state = rpi_input_pending;
