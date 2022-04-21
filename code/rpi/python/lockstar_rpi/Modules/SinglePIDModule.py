@@ -56,7 +56,7 @@ class SinglePIDModule(IOModule_):
             # === MC CALL:
             #float p, float i, float d, float out_range_min, float out_range_max, bool useTTL,
             #	bool locked, HardwareComponents err_channel, HardwareComponents setpoint_channel, HardwareComponents out_channel
-            write_bytes = SinglePIDModuleDP.write_initialize_call(p, i, d, out_range_min, out_range_max, useTTL, locked, err_channel, setpoint_channel, out_channel)
+            write_bytes = SinglePIDModuleDP.write_initialize_call(p, i, d, out_range_min, out_range_max, useTTL, locked, self.err_channel, self.setpoint_channel, self.out_channel)
             MC.I().write(write_bytes)
 
             ack = await MC.I().read_ack()
