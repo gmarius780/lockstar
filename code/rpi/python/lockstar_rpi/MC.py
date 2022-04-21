@@ -49,7 +49,7 @@ class MC:
         """
         async with self._rpi_lock:
             try:
-                (r1, r2) = unpack('>??', self.spi.readbytes(calcsize('>??')))
+                (r1, r2) = unpack('>??', self._spi.readbytes(calcsize('>??')))
                 return r1 and r2
             except Exception as ex:
                 logging.error(f'MC.read_module_response: cannot parse payload length: {ex}')
@@ -75,7 +75,7 @@ class MC:
                 try:
                     while bytes_left>0:
                         batchsize = min(bytes_left, 4000)
-                        spiinput = self.spi.readbytes(batchsize)
+                        spiinput = self._spi.readbytes(batchsize)
                         output += list(spiinput)
                         bytes_left -= batchsize
                 except Exception as ex:
