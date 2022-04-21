@@ -48,6 +48,9 @@ class MC:
             Returns: True if ack False otherwise
         """
         async with self._rpi_lock:
+            # wait for MC to become ready
+            while not self.get_GPIO_pin():
+                pass
             try:
                 (r1, r2) = unpack('>??', self._spi.readbytes(calcsize('>??')))
                 return r1 and r2
@@ -62,6 +65,11 @@ class MC:
             (unsigned int, byte-array): (payload length, payload)
         """
         async with self._rpi_lock:
+            
+            # wait for MC to become ready
+            while not self.get_GPIO_pin():
+                pass
+
             #read unsigned int corresponding to the payload size
             payload_length = None
             try:
@@ -86,8 +94,18 @@ class MC:
             else:
                 return None
 
+    def get_GPIO_pin(self):
+        try:
+            return GPIO.input(BackendSettings.mc_gpio_input_channel)
+        except:
+            print("GPIO Issue.")
+            raise NameError('No GPIO')
+
     async def write(self, bytes):
         async with self._rpi_lock:
+            # wait for MC to become ready
+            while not self.get_GPIO_pin():
+                pass
             try:
                 self._spi.writebytes2(bytes)
                 logging.info(f'write stuff to MC:{bytes}')
