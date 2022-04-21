@@ -65,9 +65,10 @@ class MC:
             #read unsigned int corresponding to the payload size
             payload_length = None
             try:
-                payload_length = unpack('>I', self._spi.readbytes(calcsize('>I')))
+                read_bytes = self._spi.readbytes(calcsize('>I'))
+                payload_length = unpack('>I', read_bytes)
             except Exception as ex:
-                logging.error(f'MC.read_module_response: cannot parse payload length: {ex}')
+                logging.error(f'MC.read_module_response: {read_bytes} cannot parse payload length: {ex}')
             
             if payload_length is not None:
                 bytes_left = payload_length
