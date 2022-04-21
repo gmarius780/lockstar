@@ -2,6 +2,7 @@ from lockstar_rpi.Modules.IOModule_ import IOModule_
 from lockstar_general.hardware import HardwareComponents
 from lockstar_general.backend.BackendResponse import BackendResponse
 from lockstar_general.mc_modules import SinglePIDModuleDP
+from lockstar_general.hardware.utils import int_to_HardwareComponents
 import logging
 from lockstar_rpi.MC import MC
 
@@ -30,24 +31,38 @@ class SinglePIDModule(IOModule_):
         self.out_range_max = out_range_max
         self.useTTL = useTTL
         self.locked = locked
-        self.err_channel = err_channel if isinstance(err_channel, HardwareComponents) else HardwareComponents.from_int(err_channel)
-        self.setpoint_channel = setpoint_channel if isinstance(setpoint_channel, HardwareComponents) else HardwareComponents.from_int(setpoint_channel)
-        self.out_channel = out_channel if isinstance(out_channel, HardwareComponents) else HardwareComponents.from_int(out_channel)
+        
+        error = False
+        
+        try:
+            self.err_channel = err_channel if isinstance(err_channel, HardwareComponents) else int_to_HardwareComponents(err_channel)
+        except:
+            error = True
 
-        # Send to MC and await answer
+        try:
+            self.setpoint_channel = setpoint_channel if isinstance(setpoint_channel, HardwareComponents) else int_to_HardwareComponents(setpoint_channel)
+        except:
+            error = True
+        try:
+            self.out_channel = out_channel if isinstance(out_channel, HardwareComponents) else int_to_HardwareComponents(out_channel)
+        except:
+            error = True
 
-        logging.debug('Initialized SinglePIDModule')
+        if not error:
+            # Send to MC and await answer
 
-        # === MC CALL:
-        #float p, float i, float d, float out_range_min, float out_range_max, bool useTTL,
-		#	bool locked, HardwareComponents err_channel, HardwareComponents setpoint_channel, HardwareComponents out_channel
-        write_bytes = SinglePIDModuleDP.write_initialize_call(p, i, d, out_range_min, out_range_max, useTTL, locked, err_channel, setpoint_channel, out_channel)
-        MC.I().write(write_bytes)
+            logging.debug('Initialized SinglePIDModule')
 
-        ack = await MC.I().read_ack()
+            # === MC CALL:
+            #float p, float i, float d, float out_range_min, float out_range_max, bool useTTL,
+            #	bool locked, HardwareComponents err_channel, HardwareComponents setpoint_channel, HardwareComponents out_channel
+            write_bytes = SinglePIDModuleDP.write_initialize_call(p, i, d, out_range_min, out_range_max, useTTL, locked, err_channel, setpoint_channel, out_channel)
+            MC.I().write(write_bytes)
+
+            ack = await MC.I().read_ack()
 
         if writer is not None:
-            if ack:
+            if not error and ack:
                 writer.write(BackendResponse.ACK().to_bytes())
             else:
                 writer.write(BackendResponse.NACK().to_bytes())
