@@ -2,7 +2,7 @@ from lockstar_rpi.Modules.IOModule_ import IOModule_
 from lockstar_general.hardware import HardwareComponents
 from lockstar_general.backend.BackendResponse import BackendResponse
 from lockstar_general.mc_modules import SinglePIDModuleDP
-from lockstar_general.hardware.utils import int_to_HardwareComponents
+from lockstar_general.utils import int_to_HardwareComponents
 import logging
 from lockstar_rpi.MC import MC
 
