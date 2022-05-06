@@ -4,7 +4,7 @@
 __pycache__
 
 *.pydevproject
-.project
+#.project
 .metadata
 bin/
 tmp/
@@ -126,7 +126,7 @@ Microcontroller/
 
 # Eclipse CDT project files
 .cproject
-.project
+#.project
 .settings/
 
 # Vagrant directory
