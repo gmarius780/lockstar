@@ -1,5 +1,6 @@
 #include <lock.hpp>
 #include <main.h>
+
 #include <signals.hpp>
 #include <stm32f427xx.h>
 #include <stm32f4xx_hal_gpio.h>
