@@ -7,8 +7,9 @@
 
 #include "SinglePIDModule.hpp"
 #include "SinglePIDModuleDP.hpp"
-#include <functional>
 #include <cstdio>
+#include <functional>
+
 
 SinglePIDModule::SinglePIDModule() : Module(){
 

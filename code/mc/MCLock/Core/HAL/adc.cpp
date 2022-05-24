@@ -55,7 +55,8 @@ void ADC_Dev::Read()
 	CNV_Port->BSRR = (uint32_t)CNV_Pin << 16U;
 	if (true/*BufferSize==6*/) {
 		delay = 5;// 5,3
-		while (delay--);}
+		while (delay--);
+	}
 	
 	DMAHandler->Transfer(Buffer, Softspan, BufferSize);
 

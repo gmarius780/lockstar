@@ -233,7 +233,8 @@ void DAC_Dev::Callback()
 	//while((!( this->hspi->Instance->SR & SPI_SR_TXE )) & ( this->hspi->Instance->SR & SPI_SR_BSY ))
 	//	;
 	// bring SYNC line up to finish DA conversion
-	// (The DA conversion is completed automatically with the 24th transmitted bit. The SYNC line has to go high at least 20ish ns before the next data package, so it
+	// (The DA conversion is completed automatically with the 24th transmitted bit. The SYNC line has to go
+	// high at least 20ish ns before the next data package, so it
 	// could also be done at a later point, if more convenient / faster.)
 	//HAL_GPIO_WritePin(SYNC_Port, SYNC_Pin, GPIO_PIN_SET);
 	SYNC_Port->BSRR = (uint32_t)SYNC_Pin;
@@ -248,7 +249,7 @@ void DAC_Dev::WriteFloat(float value)
 	float output = value;
 	if(output<LimitLow)
 		output = LimitLow;
-	if(output>LimitHigh)
+	else if(output>LimitHigh)
 		output = LimitHigh;
 	// save output
 	last_output = output;
