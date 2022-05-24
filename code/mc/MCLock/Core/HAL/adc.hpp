@@ -24,53 +24,55 @@ class ADC_Dev;
 
 class ADC_Channel
 {
-private:
-	ADC_Dev* ParentDevice;
-	float StepSize;
-	bool TwoComp;
-	volatile int16_t input;
-	volatile float InputFloat;
-	uint8_t ChannelId, config;
-	bool LowPassOn, LowPassReset;
-	float LowPassWeight, LowPassPrev;
-public:
-	ADC_Channel(ADC_Dev* ParentDevice, uint16_t ChannelId);
-	float GetFloat();
-	int16_t GetInt();
-	void SetInput(int16_t input);
-	void Setup(uint8_t config);
-	void SetLowPass(bool LowPassOn, float Weight);
-	void ResetLowPass();
-	uint8_t GetConfig(){ return config; };
+	public:
+		ADC_Channel(ADC_Dev* ParentDevice, uint16_t ChannelId);
+		float GetFloat();
+		int16_t GetInt();
+		void SetInput(int16_t input);
+		void Setup(uint8_t config);
+		void SetLowPass(bool LowPassOn, float Weight);
+		void ResetLowPass();
+		uint8_t GetConfig(){ return config; };
 
-	friend class ADC_Dev;
-	friend class Oscilloscope;
-	friend class UserData;
+		friend class ADC_Dev;
+		friend class Oscilloscope;
+		friend class UserData;
+
+	private:
+		ADC_Dev* ParentDevice;
+		float StepSize;
+		bool TwoComp;
+		volatile int16_t input;
+		volatile float InputFloat;
+		uint8_t ChannelId, config;
+		bool LowPassOn, LowPassReset;
+		float LowPassWeight, LowPassPrev;
 };
 
 class ADC_Dev
 {
-private:
-	GPIO_TypeDef* CNV_Port;
-	uint16_t CNV_Pin;
-	uint8_t* Buffer;
-	uint8_t* Softspan;
-	volatile bool ready;
-	SPI_DMA_Handler* DMAHandler;
-	volatile uint8_t BufferSize;
-	void UpdateSoftSpan(uint8_t chcode, uint8_t ChannelId);
-public:
-	ADC_Channel *Channel1, *Channel2;
-	ADC_Dev(uint8_t SPI, uint8_t DMA_Stream_In, uint8_t DMA_Channel_In, uint8_t DMA_Stream_Out, uint8_t DMA_Channel_Out, GPIO_TypeDef* CNV_Port, uint16_t CNV_Pin);
-	void Read();
-	void Callback();
-	bool isReady() { return ready; };
-	bool isZero() { return (Buffer[0]==0) && (Buffer[1]==0) && (Buffer[2]==0) && (Buffer[3]==0) && (Buffer[4]==0) && (Buffer[5]==0); };
-	uint8_t* getBuffer(){return Buffer;};
+	public:
+		ADC_Channel *Channel1, *Channel2;
+		ADC_Dev(uint8_t SPI, uint8_t DMA_Stream_In, uint8_t DMA_Channel_In, uint8_t DMA_Stream_Out, uint8_t DMA_Channel_Out, GPIO_TypeDef* CNV_Port, uint16_t CNV_Pin);
+		void Read();
+		void Callback();
+		bool isReady() { return ready; };
+		bool isZero() { return (Buffer[0]==0) && (Buffer[1]==0) && (Buffer[2]==0) && (Buffer[3]==0) && (Buffer[4]==0) && (Buffer[5]==0); };
+		uint8_t* getBuffer(){return Buffer;};
 
-	friend class Oscilloscope;
-	friend class ADC_Channel;
-	friend class UserData;
+		friend class Oscilloscope;
+		friend class ADC_Channel;
+		friend class UserData;
+
+	private:
+		GPIO_TypeDef* CNV_Port;
+		uint16_t CNV_Pin;
+		uint8_t* Buffer;
+		uint8_t* Softspan;
+		volatile bool ready;
+		SPI_DMA_Handler* DMAHandler;
+		volatile uint8_t BufferSize;
+		void UpdateSoftSpan(uint8_t chcode, uint8_t ChannelId);
 };
 
 
