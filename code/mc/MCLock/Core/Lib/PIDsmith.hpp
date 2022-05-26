@@ -33,6 +33,6 @@ class PIDsmith {
 		void setPIDParameter(float p,float i ,float d) { Kp=p; Ki=i; Kd=d; };
 		float calcControlOutput(float,float,float);
 		float calcModelOutput(float);
-		int setModelParameter(float*,float*,int);
+		int setModelParameter(const float*,const float*,const int);
 		float getLatestModelOutput() { return outputBuffer[(outputBufferPointer+outputBufferLength-1)%outputBufferLength]; };
 };

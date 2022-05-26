@@ -112,7 +112,10 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
   /* USER CODE END SPI1_MspInit 0 */
     /* Peripheral clock enable */
     __HAL_RCC_SPI1_CLK_ENABLE();
-  
+    /* SPI1 interrupt Init */
+    SPI1->CR2 &= ~(SPI_CR2_TXEIE | SPI_CR2_RXNEIE | SPI_CR2_ERRIE);
+	HAL_NVIC_SetPriority(SPI1_IRQn, 0, 0);
+	HAL_NVIC_EnableIRQ(SPI1_IRQn);
     __HAL_RCC_GPIOA_CLK_ENABLE();
     /**SPI1 GPIO Configuration    
     PA5     ------> SPI1_SCK

@@ -5,6 +5,8 @@ PIDsmith::PIDsmith(float p, float i, float d, int modelOrder, float deadtime, fl
 	Ki = i;
 	Kd = d;
 
+	integral = 0.0f;
+
 	this->modelOrder 	= modelOrder;
 	this->deadtime 		= deadtime;
 	this->dt 			= dt;
@@ -78,7 +80,7 @@ float PIDsmith::calcModelOutput(float input) {
 	return modelOutput;
 }
 
-int PIDsmith::setModelParameter(float* A, float* B, int order) {
+int PIDsmith::setModelParameter(const float* A, const float* B, const int order) {
 	if(order != modelOrder)
 		return -1;
 

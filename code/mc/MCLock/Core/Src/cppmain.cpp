@@ -79,7 +79,8 @@ __attribute__((section("sram_func")))
 void DMA2_Stream3_IRQHandler(void)
 {
 	// SPI 1 tx - SPI 5 rx
-	// no action required
+	// use to disable SPI1_DMA
+	ADC_DEV->DMA_TX_Callback();
 }
 __attribute__((section("sram_func")))
 void DMA2_Stream0_IRQHandler(void)
@@ -102,8 +103,11 @@ void DMA2_Stream6_IRQHandler(void)
 	// no action required
 }
 
-
-
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
+	if(htim->Instance == TIM4) {
+		ADC_DEV->startTransmission();
+	}
+}
 
 
 
@@ -136,13 +140,16 @@ void cppmain(void)
 	 * the microcontroller. See the STM32F4xx reference for more information, in particular for the DMA streams/channels
 	 * table.
 	 */
+
 	ADC_DEV = new ADC_Dev(	/*SPI number*/ 				1,
 							/*DMA Stream In*/ 			2,
 							/*DMA Channel In*/ 			3,
 							/*DMA Stream Out*/ 			3,
 							/*DMA Channel Out*/ 		3,
 							/* conversion pin port*/ 	ADC_CNV_GPIO_Port,
-							/* conversion pin number*/ 	ADC_CNV_Pin);
+							/* conversion pin number*/ 	ADC_CNV_Pin,
+							/*scanmode*/				true);
+
 	ADC_DEV->Channel1->Setup(ADC_UNIPOLAR_10V);
 	ADC_DEV->Channel2->Setup(ADC_UNIPOLAR_10V);
 
@@ -173,10 +180,6 @@ void cppmain(void)
 	//DAC_2->Setup(DAC_UNIPOLAR_10V, false);
 	while(!DAC_1->isReady() && !DAC_2->isReady());
 
-	//DAC_1->SetLimits(0.0f, 10.0f);
-	//DAC_2->SetLimits(0.0f, 10.0f);
-	while(!DAC_1->isReady() && !DAC_2->isReady());
-
 	DAC_1->WriteFloat(0.0f);
 	DAC_2->WriteFloat(0.0f);
 	while(!DAC_1->isReady() && !DAC_2->isReady());
@@ -191,16 +194,25 @@ void cppmain(void)
 
 	// 1. Enable Peripheral Clock for TIM3 (bit 1 in APB1ENR)
 	RCC->APB1ENR |= 1<<1;
-	// 2. Set Prescaler to 686 (should be 1s per overflow)
+	// 2. Set Prescaler to 68
 	TIM3->PSC = (uint16_t) 68;
-	// 3. Set the Auto Reload Register to 0
+	// 3. Set the Auto Reload Register to max. value
 	TIM3->ARR = 0xFFFF;
 	// 4. Enable update interrupt (bit 0)
 	//TIM3->DIER |= 1;
-	// 5. Clear interrupt flag
-	//TIM3->SR &= 0xFFFE;
 	// 6. Enable Counter
 	TIM3->CR1 = 1;
+
+	// 1. Enable Peripheral Clock for TIM3 (bit 1 in APB1ENR)
+	RCC->APB1ENR |= 1<<1;
+	// 2. Set Prescaler to 1
+	TIM4->PSC = (uint16_t) 1;
+	// 3. Set the Auto Reload Register to 180 (2us to overflow)
+	TIM4->ARR = 0xB4;
+	// 4. Enable update interrupt (bit 0)
+	TIM4->DIER |= 1;
+	// 6. Enable Counter
+	TIM4->CR1 |= TIM_CR1_CEN;
 
 
 
@@ -208,25 +220,25 @@ void cppmain(void)
 	float systemOutput = 0;
 
 	// OK-ish tuning for PID controller
+	/*float P = 0.025;
+	float I = 11e3;
+	float D = 0;
+
+	PIDnew* PIDcontroller = new PIDnew(P,I,D);*/
+
+	/*********************************************/
+
 	float P = 0.025;
 	float I = 11e3;
 	float D = 0;
 
-	PIDnew* PIDcontroller = new PIDnew(P,I,D);
-
-	/*********************************************/
-
-	P = 0.025;
-	I = 13e3;
-	D = 0;
-
-	float dtSim = 1.3e-5;
-	int deadtime = 0;
-	int order = 2;
+	const float dtSim = 1.3e-5;
+	const int deadtime = 0;
+	const int order = 2;
 	PIDsmith* smithController = new PIDsmith(P,I,D,order,deadtime,dtSim);
-	float A[2] = {0.38108794, 0.38108794};
-	float B[2] = {1.0, 0.93844733};
-	smithController->setModelParameter(A,B,2);
+	const float A[2] = {0.38108794, 0.38108794};
+	const float B[2] = {1.0, 0.93844733};
+	smithController->setModelParameter(A,B,order);
 
 	float controlOutput = 0;
 
@@ -234,12 +246,14 @@ void cppmain(void)
 	uint16_t t = TIM3->CNT;
 	uint16_t psc = TIM3->PSC;
 
-	bool smith = true;
+	float dtAcc = 0.0f;
+	int n = 0;
 
+	ADC_DEV->startScanmode();
 
 	while(true) {
 
-		while(!ADC_DEV->isReady());
+		/*while(!ADC_DEV->isReady());
 		ADC_DEV->Read();
 		setpoint = ADC_DEV->Channel1->GetFloat();
 		systemOutput = ADC_DEV->Channel2->GetFloat();
@@ -247,12 +261,17 @@ void cppmain(void)
 		t = TIM3->CNT - t;
 		dt = t/90e6*psc;
 
+		dtAcc += dt;
+		n++;
+		if(n == 60000) {
+			n = 0;
+			dtAcc = 0;
+		}
+
 		t = TIM3->CNT;
 
-		if(smith)
-			controlOutput = smithController->calcControlOutput(setpoint,systemOutput,dt);
-		else
-			controlOutput = PIDcontroller->calcControlOutput(setpoint,systemOutput,dt);
+		controlOutput = smithController->calcControlOutput(setpoint,systemOutput,dt);
+
 
 		if(controlOutput < 0)
 			controlOutput = 0;
@@ -262,10 +281,12 @@ void cppmain(void)
 		while(!DAC_1->isReady() && !DAC_2->isReady());
 		DAC_2->WriteFloat(controlOutput);
 		//DAC_1->WriteFloat(smithController->getLatestModelOutput());
-		DAC_1->WriteFloat(setpoint);
+		DAC_1->WriteFloat(dtAcc/n*1000);*/
 
-		//ADC_DEV->Read();
-		//controlOutput = ADC_DEV->Channel1->GetFloat();
+		ADC_DEV->Read();
+		setpoint = ADC_DEV->Channel1->GetFloat();
+		while(!DAC_1->isReady());
+		DAC_1->WriteFloat(setpoint);
 
 		/*
 		flag = !flag;
@@ -282,7 +303,6 @@ void cppmain(void)
 		 * - write to digital-analog converter
 		 * - input data to oscilloscope
 		 */
-
 	}
 }
 

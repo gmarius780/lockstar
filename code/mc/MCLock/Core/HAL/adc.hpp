@@ -53,12 +53,16 @@ class ADC_Dev
 {
 	public:
 		ADC_Channel *Channel1, *Channel2;
-		ADC_Dev(uint8_t SPI, uint8_t DMA_Stream_In, uint8_t DMA_Channel_In, uint8_t DMA_Stream_Out, uint8_t DMA_Channel_Out, GPIO_TypeDef* CNV_Port, uint16_t CNV_Pin);
+		ADC_Dev(uint8_t SPI, uint8_t DMA_Stream_In, uint8_t DMA_Channel_In, uint8_t DMA_Stream_Out, uint8_t DMA_Channel_Out, GPIO_TypeDef* CNV_Port, uint16_t CNV_Pin, bool scanmode=false);
 		void Read();
 		void Callback();
 		bool isReady() { return ready; };
 		bool isZero() { return (Buffer[0]==0) && (Buffer[1]==0) && (Buffer[2]==0) && (Buffer[3]==0) && (Buffer[4]==0) && (Buffer[5]==0); };
 		uint8_t* getBuffer(){return Buffer;};
+		void startScanmode();
+		void SPI_byteTransmitted();
+		void DMA_TX_Callback();
+		void startTransmission();
 
 		friend class Oscilloscope;
 		friend class ADC_Channel;
@@ -73,12 +77,10 @@ class ADC_Dev
 		SPI_DMA_Handler* DMAHandler;
 		volatile uint8_t BufferSize;
 		void UpdateSoftSpan(uint8_t chcode, uint8_t ChannelId);
+
+		bool scanmode;
+		int transmittedBytes;
+		int scanmodeReadoutPointer;
 };
-
-
-
-
-
-
 
 #endif /* ADC_H_ */

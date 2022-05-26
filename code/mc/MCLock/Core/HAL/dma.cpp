@@ -73,7 +73,7 @@ void SPI_DMA_Handler::Config(uint8_t SPI, uint8_t DMA_Stream_In, uint8_t DMA_Cha
 		DMA_In->CR &= ~DMA_SxCR_PINC;
 		// set direction of transfer to "peripheral to memory"
 		DMA_In->CR &= ~(DMA_SxCR_DIR_0 | DMA_SxCR_DIR_1);
-		// Clear DBM bit
+		// Clear Double Buffer Mode bit
 		DMA_In->CR &= (uint32_t)(~DMA_SxCR_DBM);
 		// Program transmission-complete interrupt
 		DMA_In->CR  |= DMA_SxCR_TCIE;
@@ -109,37 +109,52 @@ void SPI_DMA_Handler::Config(uint8_t SPI, uint8_t DMA_Stream_In, uint8_t DMA_Cha
 	this->SPI->CR1 |= SPI_CR1_SPE;
 }
 
+void SPI_DMA_Handler::enableCircularMode(DMA_Stream_TypeDef* DMAstream) {
+	if(DMAstream == NULL)
+		return;
+
+	// make sure DMA is disabled, otherwise it is not programmable
+	DMAstream->CR &= ~DMA_SxCR_EN;
+	// wait until DMA is ready to be configured
+	while(DMAstream->CR & DMA_SxCR_EN);
+	// Enable CIRC mode
+	DMAstream->CR |= DMA_SxCR_CIRC;
+}
+
 __attribute__((section("sram_func")))
 void SPI_DMA_Handler::Transfer(uint8_t *ReadBuffer, uint8_t *WriteBuffer, uint16_t BufferSize)
 {
-	uint32_t ActivateSPI = 0;
+	uint32_t ActivateSPI_DMA = 0;
 	if(DMA_Out!=NULL)
 	{
-		// The memory address is iterated with each transfered byte while the number of items left is decremented. Therefore, both numbers have to be reset with each transfer block
-		// point memory address to buffer
-		DMA_Out->M0AR = (uint32_t)WriteBuffer;
-		// set number of data items
-		DMA_Out->NDTR = BufferSize;
-		// activate stream
-		DMA_Out->CR |= DMA_SxCR_EN;
-		// make Tx enabled
-		ActivateSPI |= SPI_CR2_TXDMAEN;
+		// Give DMA Controller pointer to write buffer
+		setupDMAStream(DMA_Out, WriteBuffer, BufferSize);
+		// Enable SPI TX DMA
+		ActivateSPI_DMA |= SPI_CR2_TXDMAEN;
 	}
 	if(DMA_In!=NULL)
 	{
-		// The memory address is iterated with each transfered byte while the number of items left is decremented. Therefore, both numbers have to be reset with each transfer block
-		// point memory address to buffer
-		DMA_In->M0AR = (uint32_t)ReadBuffer;
-		// set number of data items
-		DMA_In->NDTR = BufferSize;
-		// activate stream
-		DMA_In->CR |= DMA_SxCR_EN;
-		// make Rx enabled
-		ActivateSPI |= SPI_CR2_RXDMAEN;
+		// Give DMA Controller pointer to read buffer
+		setupDMAStream(DMA_In, ReadBuffer, BufferSize);
+		// Enable SPI RX DMA
+		ActivateSPI_DMA |= SPI_CR2_RXDMAEN;
 	}
 
-	// start SPI transfer
-	SPI->CR2 |=  ActivateSPI;
+	// start SPI DMA transfer
+	SPI->CR2 |=  ActivateSPI_DMA;
+}
+
+void SPI_DMA_Handler::setupDMAStream(DMA_Stream_TypeDef* stream, uint8_t* Buffer, uint16_t BufferSize) {
+	if(stream == NULL)
+		return;
+
+	// The memory address is iterated with each transfered byte while the number of items left is decremented. Therefore, both numbers have to be reset with each transfer block
+	// point memory address to buffer
+	stream->M0AR = (uint32_t)Buffer;
+	// set number of data items
+	stream->NDTR = BufferSize;
+	// activate stream
+	stream->CR |= DMA_SxCR_EN;
 }
 
 __attribute__((section("sram_func")))

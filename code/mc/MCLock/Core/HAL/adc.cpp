@@ -13,15 +13,27 @@
 
 #include "leds.hpp"
 
-#define TIMEOUT	1000000
+#define TIMEOUT				1000000
+#define SCANBUFFER_SIZE 	10
 
 #include "main.h"
 
-ADC_Dev::ADC_Dev(uint8_t SPI, uint8_t DMA_Stream_In, uint8_t DMA_Channel_In, uint8_t DMA_Stream_Out, uint8_t DMA_Channel_Out, GPIO_TypeDef* CNV_Port, uint16_t CNV_Pin)
+ADC_Dev::ADC_Dev(uint8_t SPI, uint8_t DMA_Stream_In, uint8_t DMA_Channel_In, uint8_t DMA_Stream_Out, uint8_t DMA_Channel_Out, GPIO_TypeDef* CNV_Port, uint16_t CNV_Pin, bool scanmode)
 {
 	this->CNV_Port = CNV_Port;
 	this->CNV_Pin = CNV_Pin;
-	this->Buffer = new uint8_t[6];
+
+	this->scanmode = scanmode;
+	this->transmittedBytes = 0;
+	this->scanmodeReadoutPointer = (SCANBUFFER_SIZE-1)*6;
+	// One ADC conversion takes 6 bytes,
+	// so if the scan buffer should store SCANBUFFER_SIZE
+	// conversions, the buffer has to to be 6*SCANBUFFER_SIZE
+	if(scanmode) {
+		this->Buffer = new uint8_t[6*SCANBUFFER_SIZE]();
+	} else {
+		this->Buffer = new uint8_t[6*1];
+	}
 	this->Softspan = new uint8_t[6]();
 	this->ready = true;
 
@@ -33,11 +45,69 @@ ADC_Dev::ADC_Dev(uint8_t SPI, uint8_t DMA_Stream_In, uint8_t DMA_Channel_In, uin
 	this->Softspan[0] = 0b11111100;
 
 	this->DMAHandler = new SPI_DMA_Handler(SPI, DMA_Stream_In, DMA_Channel_In, DMA_Stream_Out, DMA_Channel_Out, 2);
+	if(scanmode) {
+		SPI_DMA_Handler::enableCircularMode(DMAHandler->getInputStream());
+		SPI_DMA_Handler::enableCircularMode(DMAHandler->getOutputStream());
+	}
+}
+
+void ADC_Dev::startScanmode() {
+
+	if(!scanmode)
+		return;
+
+	SPI_DMA_Handler::setupDMAStream(DMAHandler->getInputStream(), Buffer, BufferSize);
+	SPI_DMA_Handler::setupDMAStream(DMAHandler->getOutputStream(), Softspan, 6); // TODO: redo this whole buffer stuff.. got unreadable with this additional scan mode
+
+	// Tell ADC to start conversion
+	CNV_Port->BSRR = CNV_Pin;
+	CNV_Port->BSRR = (uint32_t)CNV_Pin << 16U;
+	// Wait for conversion, enable counter
+	TIM4->CR1 |= TIM_CR1_CEN;
+}
+
+void ADC_Dev::startTransmission() {
+	// Disable Counter
+	TIM4->CR1 &= ~(TIM_CR1_CEN);
+	// Turn DMA back on
+	SPI1->CR2 |= (SPI_CR2_TXDMAEN | SPI_CR2_RXDMAEN);
+}
+
+void ADC_Dev::DMA_TX_Callback() {
+	if(!scanmode)
+		return;
+
+	// Disable SPI_DMA
+	SPI1->CR2 &= ~(SPI_CR2_TXDMAEN | SPI_CR2_RXDMAEN);
+
+	// wait while SPI is busy
+	while(SPI->SR & SPI_SR_BSY);
+
+	// clear DMA interrupt flag
+	DMAHandler->getInputStream()->
+
+	if(scanmodeReadoutPointer == (SCANBUFFER_SIZE-1)*6)
+		scanmodeReadoutPointer = 0;
+	else
+		scanmodeReadoutPointer += 6;
+
+	// Tell ADC to start conversion
+	CNV_Port->BSRR = CNV_Pin;
+	CNV_Port->BSRR = (uint32_t)CNV_Pin << 16U;
+	// Wait for conversion, enable timer
+	TIM4->CR1 |= TIM_CR1_CEN;
+
 }
 
 __attribute__((section("sram_func")))
 void ADC_Dev::Read()
 {
+	if(scanmode) {
+		Channel2->SetInput(( (int16_t)Buffer[scanmodeReadoutPointer+0] << 8) + Buffer[scanmodeReadoutPointer+1]);
+		Channel1->SetInput(( (int16_t)Buffer[scanmodeReadoutPointer+3] << 8) + Buffer[scanmodeReadoutPointer+4]);
+		return;
+	}
+
 	// device busy?
 	if(!ready)
 		return;
@@ -65,6 +135,9 @@ void ADC_Dev::Read()
 __attribute__((section("sram_func")))
 void ADC_Dev::Callback()
 {
+	if(scanmode)
+		return;
+
 	DMAHandler->Callback();
 	Channel2->SetInput(( (int16_t)Buffer[0] << 8) + Buffer[1]);
 	Channel1->SetInput(( (int16_t)Buffer[3] << 8) + Buffer[4]);
@@ -82,6 +155,9 @@ void ADC_Dev::UpdateSoftSpan(uint8_t chcode, uint8_t ChannelId)
 	 * SoftSpan programmed to device is given as S2[2] S2[1] S2[0] S1[2] S1[1] S1[0] . . . . . . . . . . . . . .
 	 * Note that Hardware Device 2 is Input Channel 1.
 	 */
+
+	// TODO: make this function more readable for scan mode (maybe export to separate function for scanmode...)
+
 	volatile uint8_t code = Softspan[0];
 	if(ChannelId==1)
 		code = ((code&0b00011111) | (chcode<<5));
@@ -94,15 +170,17 @@ void ADC_Dev::UpdateSoftSpan(uint8_t chcode, uint8_t ChannelId)
 	else
 		BufferSize = 6;
 	// setup buffers accordingly
-	delete Buffer;
-	Buffer = new uint8_t[BufferSize];
+	if(!scanmode) { // TODO: in scan mode setup buffer for 1 channel only as well.
+		delete Buffer;
+		Buffer = new uint8_t[BufferSize];
+	} else {
+		BufferSize *= SCANBUFFER_SIZE;
+	}
+
 	delete this->Softspan;
 	Softspan = new uint8_t[BufferSize];
 	Softspan[0] = code;
 }
-
-
-
 
 
 ADC_Channel::ADC_Channel(ADC_Dev* ParentDevice, uint16_t ChannelId){
