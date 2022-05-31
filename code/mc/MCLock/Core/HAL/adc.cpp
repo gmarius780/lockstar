@@ -24,16 +24,16 @@ ADC_Dev::ADC_Dev(uint8_t SPI, uint8_t DMA_Stream_In, uint8_t DMA_Channel_In, uin
 	this->CNV_Pin = CNV_Pin;
 
 	this->scanmode = scanmode;
-	this->transmittedBytes = 0;
 	this->scanmodeReadoutPointer = (SCANBUFFER_SIZE-1)*6;
 	// One ADC conversion takes 6 bytes,
 	// so if the scan buffer should store SCANBUFFER_SIZE
-	// conversions, the buffer has to to be 6*SCANBUFFER_SIZE
-	if(scanmode) {
+	// conversions, the buffer has to to be 6*SCANBUFFER_SIZE bytes.
+
+	if(scanmode)
 		this->Buffer = new uint8_t[6*SCANBUFFER_SIZE]();
-	} else {
-		this->Buffer = new uint8_t[6*1];
-	}
+	 else
+		this->Buffer = new uint8_t[6];
+
 	this->Softspan = new uint8_t[6]();
 	this->ready = true;
 
@@ -57,7 +57,8 @@ void ADC_Dev::startScanmode() {
 		return;
 
 	SPI_DMA_Handler::setupDMAStream(DMAHandler->getInputStream(), Buffer, BufferSize);
-	SPI_DMA_Handler::setupDMAStream(DMAHandler->getOutputStream(), Softspan, 6); // TODO: redo this whole buffer stuff.. got unreadable with this additional scan mode
+	SPI_DMA_Handler::setupDMAStream(DMAHandler->getOutputStream(), Softspan, 6);
+	// TODO: redo this whole buffer stuff.. got unreadable with this additional scan mode
 
 	// Tell ADC to start conversion
 	CNV_Port->BSRR = CNV_Pin;
@@ -71,20 +72,25 @@ void ADC_Dev::startTransmission() {
 	TIM4->CR1 &= ~(TIM_CR1_CEN);
 	// Turn DMA back on
 	SPI1->CR2 |= (SPI_CR2_TXDMAEN | SPI_CR2_RXDMAEN);
+	// Clear the interrupt flag
+	TIM4->SR &= ~(TIM_SR_UIF);
 }
 
 void ADC_Dev::DMA_TX_Callback() {
-	if(!scanmode)
+	if(!scanmode) {
+		// clear input stream DMA interrupt flags
+		DMA2->LIFCR = (1<<27 | 1<<26 | 1<<25);
 		return;
+	}
 
 	// Disable SPI_DMA
 	SPI1->CR2 &= ~(SPI_CR2_TXDMAEN | SPI_CR2_RXDMAEN);
 
-	// wait while SPI is busy
-	while(SPI->SR & SPI_SR_BSY);
+	// clear input stream DMA interrupt flags
+	DMA2->LIFCR = (1<<27 | 1<<26 | 1<<25);
 
-	// clear DMA interrupt flag
-	DMAHandler->getInputStream()->
+	// wait while SPI is busy
+	while(SPI1->SR & SPI_SR_BSY);
 
 	if(scanmodeReadoutPointer == (SCANBUFFER_SIZE-1)*6)
 		scanmodeReadoutPointer = 0;
@@ -93,9 +99,13 @@ void ADC_Dev::DMA_TX_Callback() {
 
 	// Tell ADC to start conversion
 	CNV_Port->BSRR = CNV_Pin;
+	volatile int32_t delay = 0;//0,1
+	while (delay--);
 	CNV_Port->BSRR = (uint32_t)CNV_Pin << 16U;
 	// Wait for conversion, enable timer
 	TIM4->CR1 |= TIM_CR1_CEN;
+
+	// Note: first byte softspan: 0xe0
 
 }
 
@@ -135,8 +145,11 @@ void ADC_Dev::Read()
 __attribute__((section("sram_func")))
 void ADC_Dev::Callback()
 {
-	if(scanmode)
+	if(scanmode) {
+		// clear the interrupt flags
+		DMA2->LIFCR = (1<<21 | 1<<20 | 1<<19);
 		return;
+	}
 
 	DMAHandler->Callback();
 	Channel2->SetInput(( (int16_t)Buffer[0] << 8) + Buffer[1]);
@@ -170,16 +183,19 @@ void ADC_Dev::UpdateSoftSpan(uint8_t chcode, uint8_t ChannelId)
 	else
 		BufferSize = 6;
 	// setup buffers accordingly
-	if(!scanmode) { // TODO: in scan mode setup buffer for 1 channel only as well.
+	if(scanmode) { // TODO: in scan mode setup buffer for 1 channel only as well.
+		BufferSize = 6*SCANBUFFER_SIZE;
+		delete this->Softspan;
+		Softspan = new uint8_t[6];
+		Softspan[0] = code;
+	} else {
 		delete Buffer;
 		Buffer = new uint8_t[BufferSize];
-	} else {
-		BufferSize *= SCANBUFFER_SIZE;
+		delete this->Softspan;
+		Softspan = new uint8_t[BufferSize];
+		Softspan[0] = code;
 	}
 
-	delete this->Softspan;
-	Softspan = new uint8_t[BufferSize];
-	Softspan[0] = code;
 }
 
 

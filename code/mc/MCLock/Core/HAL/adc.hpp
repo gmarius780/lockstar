@@ -79,7 +79,6 @@ class ADC_Dev
 		void UpdateSoftSpan(uint8_t chcode, uint8_t ChannelId);
 
 		bool scanmode;
-		int transmittedBytes;
 		int scanmodeReadoutPointer;
 };
 

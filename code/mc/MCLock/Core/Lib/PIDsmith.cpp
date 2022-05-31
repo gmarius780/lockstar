@@ -45,6 +45,7 @@ float PIDsmith::calcControlOutput(float sp,float pv, float dtNew) {
 	error += outputBuffer[(outputBufferPointer+outputBufferLength-deadtime)%outputBufferLength];
 	error -= outputBuffer[(outputBufferPointer+outputBufferLength-deadtime)%outputBufferLength];
 
+	// proceed as usual with PID
 	integral += error*dt;
 
 	float pControl = Kp*error;

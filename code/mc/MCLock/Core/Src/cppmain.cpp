@@ -80,7 +80,7 @@ void DMA2_Stream3_IRQHandler(void)
 {
 	// SPI 1 tx - SPI 5 rx
 	// use to disable SPI1_DMA
-	ADC_DEV->DMA_TX_Callback();
+	//ADC_DEV->DMA_TX_Callback();
 }
 __attribute__((section("sram_func")))
 void DMA2_Stream0_IRQHandler(void)
@@ -141,14 +141,14 @@ void cppmain(void)
 	 * table.
 	 */
 
-	ADC_DEV = new ADC_Dev(	/*SPI number*/ 				1,
-							/*DMA Stream In*/ 			2,
-							/*DMA Channel In*/ 			3,
-							/*DMA Stream Out*/ 			3,
-							/*DMA Channel Out*/ 		3,
-							/* conversion pin port*/ 	ADC_CNV_GPIO_Port,
-							/* conversion pin number*/ 	ADC_CNV_Pin,
-							/*scanmode*/				true);
+	ADC_DEV = new ADC_Dev(	/* SPI number */ 				1,
+							/* DMA Stream In */ 			2,
+							/* DMA Channel In */ 			3,
+							/* DMA Stream Out */ 			3,
+							/* DMA Channel Out */ 			3,
+							/* conversion pin port */ 		ADC_CNV_GPIO_Port,
+							/* conversion pin number */		ADC_CNV_Pin,
+							/* scanmode */					false);
 
 	ADC_DEV->Channel1->Setup(ADC_UNIPOLAR_10V);
 	ADC_DEV->Channel2->Setup(ADC_UNIPOLAR_10V);
@@ -208,11 +208,9 @@ void cppmain(void)
 	// 2. Set Prescaler to 1
 	TIM4->PSC = (uint16_t) 1;
 	// 3. Set the Auto Reload Register to 180 (2us to overflow)
-	TIM4->ARR = 0xB4;
+	TIM4->ARR = 0xFFFF;
 	// 4. Enable update interrupt (bit 0)
 	TIM4->DIER |= 1;
-	// 6. Enable Counter
-	TIM4->CR1 |= TIM_CR1_CEN;
 
 
 
@@ -283,10 +281,11 @@ void cppmain(void)
 		//DAC_1->WriteFloat(smithController->getLatestModelOutput());
 		DAC_1->WriteFloat(dtAcc/n*1000);*/
 
+		while(!ADC_DEV->isReady());
 		ADC_DEV->Read();
 		setpoint = ADC_DEV->Channel1->GetFloat();
 		while(!DAC_1->isReady());
-		DAC_1->WriteFloat(setpoint);
+		DAC_1->WriteFloat(2.5f);
 
 		/*
 		flag = !flag;
