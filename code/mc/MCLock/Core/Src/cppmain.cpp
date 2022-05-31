@@ -80,7 +80,7 @@ void DMA2_Stream3_IRQHandler(void)
 {
 	// SPI 1 tx - SPI 5 rx
 	// use to disable SPI1_DMA
-	//ADC_DEV->DMA_TX_Callback();
+	ADC_DEV->DMA_TX_Callback();
 }
 __attribute__((section("sram_func")))
 void DMA2_Stream0_IRQHandler(void)
@@ -148,7 +148,7 @@ void cppmain(void)
 							/* DMA Channel Out */ 			3,
 							/* conversion pin port */ 		ADC_CNV_GPIO_Port,
 							/* conversion pin number */		ADC_CNV_Pin,
-							/* scanmode */					false);
+							/* scanmode */					true);
 
 	ADC_DEV->Channel1->Setup(ADC_UNIPOLAR_10V);
 	ADC_DEV->Channel2->Setup(ADC_UNIPOLAR_10V);
@@ -285,7 +285,7 @@ void cppmain(void)
 		ADC_DEV->Read();
 		setpoint = ADC_DEV->Channel1->GetFloat();
 		while(!DAC_1->isReady());
-		DAC_1->WriteFloat(2.5f);
+		DAC_1->WriteFloat(setpoint);
 
 		/*
 		flag = !flag;

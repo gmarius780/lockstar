@@ -56,8 +56,24 @@ void ADC_Dev::startScanmode() {
 	if(!scanmode)
 		return;
 
-	SPI_DMA_Handler::setupDMAStream(DMAHandler->getInputStream(), Buffer, BufferSize);
-	SPI_DMA_Handler::setupDMAStream(DMAHandler->getOutputStream(), Softspan, 6);
+	//SPI_DMA_Handler::setupDMAStream(DMAHandler->getOutputStream(), Softspan, 6);
+	DMA_Stream_TypeDef* DMA_Out = DMAHandler->getOutputStream();
+	DMA_Out->M0AR = (uint32_t)Softspan;
+	// set number of data items
+	DMA_Out->NDTR = 6;
+	// activate stream
+	DMA_Out->CR |= DMA_SxCR_EN;
+
+
+	//SPI_DMA_Handler::setupDMAStream(DMAHandler->getInputStream(), Buffer, BufferSize);
+	DMA_Stream_TypeDef* DMA_In = DMAHandler->getInputStream();
+	DMA_In->M0AR = (uint32_t)Buffer;
+	// set number of data items
+	DMA_In->NDTR = BufferSize;
+	// activate stream
+	DMA_In->CR |= DMA_SxCR_EN;
+
+
 	// TODO: redo this whole buffer stuff.. got unreadable with this additional scan mode
 
 	// Tell ADC to start conversion
@@ -79,7 +95,7 @@ void ADC_Dev::startTransmission() {
 void ADC_Dev::DMA_TX_Callback() {
 	if(!scanmode) {
 		// clear input stream DMA interrupt flags
-		DMA2->LIFCR = (1<<27 | 1<<26 | 1<<25);
+		DMA2->LIFCR |= (1<<27 | 1<<26 | 1<<25);
 		return;
 	}
 

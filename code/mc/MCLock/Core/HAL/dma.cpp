@@ -128,14 +128,31 @@ void SPI_DMA_Handler::Transfer(uint8_t *ReadBuffer, uint8_t *WriteBuffer, uint16
 	if(DMA_Out!=NULL)
 	{
 		// Give DMA Controller pointer to write buffer
-		setupDMAStream(DMA_Out, WriteBuffer, BufferSize);
+
+		// Somehow this doesnt work with this static function
+		// setupDMAStream(DMA_Out, WriteBuffer, BufferSize);
+
+		// The memory address is iterated with each transfered byte while the number of items left is decremented. Therefore, both numbers have to be reset with each transfer block
+		// point memory address to buffer
+		DMA_Out->M0AR = (uint32_t)WriteBuffer;
+		// set number of data items
+		DMA_Out->NDTR = BufferSize;
+		// activate stream
+		DMA_Out->CR |= DMA_SxCR_EN;
 		// Enable SPI TX DMA
 		ActivateSPI_DMA |= SPI_CR2_TXDMAEN;
 	}
 	if(DMA_In!=NULL)
 	{
 		// Give DMA Controller pointer to read buffer
-		setupDMAStream(DMA_In, ReadBuffer, BufferSize);
+
+		// The memory address is iterated with each transfered byte while the number of items left is decremented. Therefore, both numbers have to be reset with each transfer block
+		// point memory address to buffer
+		DMA_In->M0AR = (uint32_t)ReadBuffer;
+		// set number of data items
+		DMA_In->NDTR = BufferSize;
+		// activate stream
+		DMA_In->CR |= DMA_SxCR_EN;
 		// Enable SPI RX DMA
 		ActivateSPI_DMA |= SPI_CR2_RXDMAEN;
 	}
