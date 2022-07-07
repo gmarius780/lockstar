@@ -6,6 +6,7 @@ class PIDnew {
 		float integral;
 		float error;
 		float oldError;
+		float dError;
 		float Kp;
 		float Ki;
 		float Kd;

@@ -21,6 +21,9 @@
 #include "../Lib/PIDnew.hpp"
 #include "../Lib/PIDsmith.hpp"
 
+// FOR DEBUGGING
+//#include "cortexm/ExceptionHandlers.h"
+
 // Peripheral devices
 DAC_Dev *DAC_2, *DAC_1;
 ADC_Dev *ADC_DEV;
@@ -103,6 +106,7 @@ void DMA2_Stream6_IRQHandler(void)
 	// no action required
 }
 
+__attribute__((section("sram_func")))
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 	if(htim->Instance == TIM4) {
 		ADC_DEV->startTransmission();
@@ -148,7 +152,7 @@ void cppmain(void)
 							/* DMA Channel Out */ 			3,
 							/* conversion pin port */ 		ADC_CNV_GPIO_Port,
 							/* conversion pin number */		ADC_CNV_Pin,
-							/* scanmode */					true);
+							/* scanmode */					false);
 
 	ADC_DEV->Channel1->Setup(ADC_UNIPOLAR_10V);
 	ADC_DEV->Channel2->Setup(ADC_UNIPOLAR_10V);
@@ -190,8 +194,9 @@ void cppmain(void)
 	//turn_LED6_on();
 
 
-	/************ TIMER TEST *********************/
+	/************ TIMER FOR MAINLOOP *********************/
 
+	const float TIM3freq = 90e6;
 	// 1. Enable Peripheral Clock for TIM3 (bit 1 in APB1ENR)
 	RCC->APB1ENR |= 1<<1;
 	// 2. Set Prescaler to 68
@@ -203,13 +208,17 @@ void cppmain(void)
 	// 6. Enable Counter
 	TIM3->CR1 = 1;
 
-	// 1. Enable Peripheral Clock for TIM3 (bit 1 in APB1ENR)
-	RCC->APB1ENR |= 1<<1;
+	/******** TIMER FOR SCANMODE OF ADC_DEV *******************/
+
+	// 1. Enable Peripheral Clock for TIM4 (bit 2 in APB1ENR)
+	RCC->APB1ENR |= 1<<2;
 	// 2. Set Prescaler to 1
 	TIM4->PSC = (uint16_t) 1;
-	// 3. Set the Auto Reload Register to 180 (2us to overflow)
-	TIM4->ARR = 0xFFFF;
-	// 4. Enable update interrupt (bit 0)
+	// 3. Set the Auto Reload Register to 200 (2.2us to overflow)
+	TIM4->ARR = 200;
+	// 4. Clear the interrupt flag
+	TIM4->SR &= ~(TIM_SR_UIF);
+	// 5. Enable update interrupt (bit 0)
 	TIM4->DIER |= 1;
 
 
@@ -217,26 +226,44 @@ void cppmain(void)
 	float setpoint = 0;
 	float systemOutput = 0;
 
-	// OK-ish tuning for PID controller
-	/*float P = 0.025;
-	float I = 11e3;
-	float D = 0;
+	// OK-ish tuned PID controller
+	const float P = 0.025;
+	const float I = 11e3;
+	const float D = 0;
 
-	PIDnew* PIDcontroller = new PIDnew(P,I,D);*/
+	PIDnew* PIDcontroller = new PIDnew(P,I,D);
 
 	/*********************************************/
 
-	float P = 0.025;
-	float I = 11e3;
-	float D = 0;
+	const float Ps = 0.01;
+	const float Is = 10200;
+	const float Ds = 0.09;
 
-	const float dtSim = 1.3e-5;
-	const int deadtime = 0;
-	const int order = 2;
-	PIDsmith* smithController = new PIDsmith(P,I,D,order,deadtime,dtSim);
-	const float A[2] = {0.38108794, 0.38108794};
-	const float B[2] = {1.0, 0.93844733};
+	// Measured with hardware timer:
+	// const float dtSim = 4.286e-6;
+	// Measured with delta t of 0 deadtime and 1 deadtime:
+	const float dtSim = 12e-6;
+	const int deadtime = 1; // deadtime is given in # of samples
+	const int order = 3;
+	PIDsmith* smithController = new PIDsmith(Ps,Is,Ds,order,deadtime,dtSim);
+
+
+	// first order rise time and dead time model
+	//const float A[order] = {1.34996824, 1.34996824};
+	//const float B[order] = {1.        , 0.99995294};
+	//const float A[order] = {1.0125, 1.0125};
+	//const float B[order] = {1. , 0.5};
+
+	// second order matlab sysid
+	const float A[order] = {2.30448274,  0.16284164, -2.1416411};
+	const float B[order] = {1.        , -0.79898939,  0.15670471};
+
 	smithController->setModelParameter(A,B,order);
+
+	// Offset for the FODT model
+	//smithController->setModelOffset(-2.3f);
+	// Offset for the second order matlab sysid model
+	smithController->setModelOffset(-0.9f);
 
 	float controlOutput = 0;
 
@@ -244,32 +271,34 @@ void cppmain(void)
 	uint16_t t = TIM3->CNT;
 	uint16_t psc = TIM3->PSC;
 
-	float dtAcc = 0.0f;
-	int n = 0;
+	volatile float dtAcc = 0.0f;
+	volatile uint32_t n = 0;
 
-	ADC_DEV->startScanmode();
+	//ADC_DEV->startScanmode();
+
+	volatile bool smith = true;
+	volatile int offset = deadtime;
+
+	volatile float maxerr =  2.0f;
 
 	while(true) {
 
-		/*while(!ADC_DEV->isReady());
 		ADC_DEV->Read();
 		setpoint = ADC_DEV->Channel1->GetFloat();
 		systemOutput = ADC_DEV->Channel2->GetFloat();
 
 		t = TIM3->CNT - t;
-		dt = t/90e6*psc;
+		dt = t/TIM3freq*psc;
 
 		dtAcc += dt;
 		n++;
-		if(n == 60000) {
-			n = 0;
-			dtAcc = 0;
-		}
 
 		t = TIM3->CNT;
 
-		controlOutput = smithController->calcControlOutput(setpoint,systemOutput,dt);
-
+		if(smith)
+			controlOutput = smithController->calcControlOutput(setpoint,systemOutput,dt);
+		else
+			controlOutput = PIDcontroller->calcControlOutput(setpoint, systemOutput, dt);
 
 		if(controlOutput < 0)
 			controlOutput = 0;
@@ -277,31 +306,9 @@ void cppmain(void)
 			controlOutput = 10;
 
 		while(!DAC_1->isReady() && !DAC_2->isReady());
-		DAC_2->WriteFloat(controlOutput);
-		//DAC_1->WriteFloat(smithController->getLatestModelOutput());
-		DAC_1->WriteFloat(dtAcc/n*1000);*/
-
-		while(!ADC_DEV->isReady());
-		ADC_DEV->Read();
-		setpoint = ADC_DEV->Channel1->GetFloat();
-		while(!DAC_1->isReady());
-		DAC_1->WriteFloat(setpoint);
-
-		/*
-		flag = !flag;
-		if(flag)
-			DAC_1->WriteFloat(3.0f);
-		else
-			DAC_1->WriteFloat(0.0f);
-		 */
-
-
-		/* normal main loop operation:
-		 * - read from analog-digital converter
-		 * - calculate feedback
-		 * - write to digital-analog converter
-		 * - input data to oscilloscope
-		 */
+		DAC_1->WriteFloat(controlOutput);
+		//DAC_2->WriteFloat(smithController->getModelOutput(offset));
+		DAC_2->WriteFloat(setpoint);
 	}
 }
 

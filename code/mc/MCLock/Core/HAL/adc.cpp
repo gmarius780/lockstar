@@ -47,7 +47,7 @@ ADC_Dev::ADC_Dev(uint8_t SPI, uint8_t DMA_Stream_In, uint8_t DMA_Channel_In, uin
 	this->DMAHandler = new SPI_DMA_Handler(SPI, DMA_Stream_In, DMA_Channel_In, DMA_Stream_Out, DMA_Channel_Out, 2);
 	if(scanmode) {
 		SPI_DMA_Handler::enableCircularMode(DMAHandler->getInputStream());
-		SPI_DMA_Handler::enableCircularMode(DMAHandler->getOutputStream());
+		// SPI_DMA_Handler::enableCircularMode(DMAHandler->getOutputStream());
 	}
 }
 
@@ -58,6 +58,11 @@ void ADC_Dev::startScanmode() {
 
 	//SPI_DMA_Handler::setupDMAStream(DMAHandler->getOutputStream(), Softspan, 6);
 	DMA_Stream_TypeDef* DMA_Out = DMAHandler->getOutputStream();
+
+	// Make sure DMA Stream is disabled
+	DMA_Out->CR &= ~DMA_SxCR_EN;
+	while(DMA_Out->CR & DMA_SxCR_EN);
+
 	DMA_Out->M0AR = (uint32_t)Softspan;
 	// set number of data items
 	DMA_Out->NDTR = 6;
@@ -67,6 +72,10 @@ void ADC_Dev::startScanmode() {
 
 	//SPI_DMA_Handler::setupDMAStream(DMAHandler->getInputStream(), Buffer, BufferSize);
 	DMA_Stream_TypeDef* DMA_In = DMAHandler->getInputStream();
+	// Make sure DMA Stream is disabled
+	DMA_In->CR &= ~DMA_SxCR_EN;
+	while(DMA_In->CR & DMA_SxCR_EN);
+
 	DMA_In->M0AR = (uint32_t)Buffer;
 	// set number of data items
 	DMA_In->NDTR = BufferSize;
@@ -83,21 +92,21 @@ void ADC_Dev::startScanmode() {
 	TIM4->CR1 |= TIM_CR1_CEN;
 }
 
+__attribute__((section("sram_func")))
 void ADC_Dev::startTransmission() {
 	// Disable Counter
 	TIM4->CR1 &= ~(TIM_CR1_CEN);
 	// Turn DMA back on
+	DMAHandler->getOutputStream()->CR |= DMA_SxCR_EN;
 	SPI1->CR2 |= (SPI_CR2_TXDMAEN | SPI_CR2_RXDMAEN);
 	// Clear the interrupt flag
 	TIM4->SR &= ~(TIM_SR_UIF);
 }
 
+__attribute__((section("sram_func")))
 void ADC_Dev::DMA_TX_Callback() {
-	if(!scanmode) {
-		// clear input stream DMA interrupt flags
-		DMA2->LIFCR |= (1<<27 | 1<<26 | 1<<25);
+	if(!scanmode)
 		return;
-	}
 
 	// Disable SPI_DMA
 	SPI1->CR2 &= ~(SPI_CR2_TXDMAEN | SPI_CR2_RXDMAEN);
@@ -106,17 +115,20 @@ void ADC_Dev::DMA_TX_Callback() {
 	DMA2->LIFCR = (1<<27 | 1<<26 | 1<<25);
 
 	// wait while SPI is busy
-	while(SPI1->SR & SPI_SR_BSY);
+	//while(SPI1->SR & SPI_SR_BSY);
 
 	if(scanmodeReadoutPointer == (SCANBUFFER_SIZE-1)*6)
 		scanmodeReadoutPointer = 0;
 	else
 		scanmodeReadoutPointer += 6;
 
+
+	//Buffer[scanmodeReadoutPointer+5] = SPI1->DR;
+
 	// Tell ADC to start conversion
 	CNV_Port->BSRR = CNV_Pin;
-	volatile int32_t delay = 0;//0,1
-	while (delay--);
+//	volatile int32_t delay = 0;//0,1
+//	while (delay--);
 	CNV_Port->BSRR = (uint32_t)CNV_Pin << 16U;
 	// Wait for conversion, enable timer
 	TIM4->CR1 |= TIM_CR1_CEN;

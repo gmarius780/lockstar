@@ -8,6 +8,7 @@ PIDnew::PIDnew(float p, float i, float d) {
 			this->dt = 1;
 			this->error = 0;
 			this->oldError = 0;
+			this->dError = 0;
 		}
 
 float PIDnew::calcControlOutput(float sp, float pv, float dtNew) {
@@ -18,9 +19,11 @@ float PIDnew::calcControlOutput(float sp, float pv, float dtNew) {
 
 	float pControl = Kp*error;
 	float iControl = Ki*integral;
-	float dControl = Kd*(error-oldError)/dt;
+	// filtered derivative
+	dError += error*dt*0.05;
+	float dControl = Kd*(dError-oldError)/dt;
 
-	oldError = error;
+	oldError = dError;
 
 	return pControl + iControl + dControl;
 
