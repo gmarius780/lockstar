@@ -2,7 +2,7 @@
  * dma_new.hpp
  *
  *  Created on: Jul 7, 2022
- *      Author: sjele
+ *      Author: Samuel
  */
 
 #ifndef HAL_DMA_NEW_HPP_
@@ -18,6 +18,7 @@ typedef struct DMA_config_struct {
     __IO uint32_t M1AR;   /*!< DMA stream x memory 1 address register   */
     uint8_t channel;
     uint8_t stream;
+    uint8_t priority;
 } DMA_config_t;
 
 // All reserved bits in CR register (represented as 1: reserved, 0: rw)
@@ -27,7 +28,15 @@ class DMA {
 public:
 	DMA(DMA_config_t config);
 
+	/* Configurations */
+	void setMemeroyAddress(volatile uint32_t* addr, char M0M1);
+	void setPeripheralAddress(volatile uint32_t* addr);
+	void setNumberOfData(uint32_t n);
+    uint32_t getControlReg() { return DMA_regs->CR; };
+
     /* Enables/Disables */
+	void enableCircMode();
+	void disableCircMode();
     void enableDMA();
     void disableDMA();
 
@@ -35,6 +44,7 @@ private:
     DMA_Stream_TypeDef* DMA_regs;
     uint32_t TCIFBit;
     volatile uint32_t *clear_ISR;
+    bool enabled;
 };
 
 #endif /* HAL_DMA_NEW_HPP_ */

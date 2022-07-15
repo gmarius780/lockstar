@@ -2,7 +2,7 @@
  * dma_new.cpp
  *
  *  Created on: Jul 7, 2022
- *      Author: sjele
+ *      Author: Samuel
  */
 
 #include "dma_new.hpp"
@@ -22,11 +22,12 @@ DMA::DMA(DMA_config_t config) {
     default: DMA_regs = NULL;
     }
 
+    enabled = false;
     disableDMA();
-    // Clear all bits that are not reserved
-    DMA_regs->CR &= ~DMA_CR_RESERVED_BITS_MASK;
-    // Update the DMA configuration register
-    DMA_regs->CR |= config.CR;
+    // Read the current CR
+    uint32_t CR_temp = DMA_regs->CR;
+    // Update the DMA configuration register, but leave reserved bits as they are
+    DMA_regs->CR = ((CR_temp & DMA_CR_RESERVED_BITS_MASK) | (config.CR & ~DMA_CR_RESERVED_BITS_MASK));
     // Peripheral address register
     DMA_regs->PAR = config.PAR;
     // Number of data register
@@ -35,9 +36,39 @@ DMA::DMA(DMA_config_t config) {
     DMA_regs->M0AR = config.M0AR;
     // Memory 1 address (only used in double buffer mode)
     DMA_regs->M1AR = config.M1AR;
-
 }
 
-void DMA::enableDMA() { DMA_regs->CR |= DMA_SxCR_EN; }
+void DMA::setMemeroyAddress(volatile uint32_t* addr, char mem) {
+	bool wasEnabled = enabled;
+	disableDMA();
+	if(mem == 0)
+		DMA_regs->M0AR = (uint32_t) addr;
+	else if(mem == 1)
+		DMA_regs->M1AR = (uint32_t) addr;
+	if(wasEnabled)
+		enableDMA();
+}
 
-void DMA::disableDMA() { DMA_regs->CR &= ~DMA_SxCR_EN; }
+void DMA::setPeripheralAddress(volatile uint32_t* addr) {
+	bool wasEnabled = enabled;
+	disableDMA();
+	DMA_regs->PAR = (uint32_t) addr;
+	if(wasEnabled)
+		enableDMA();
+}
+
+void DMA::setNumberOfData(uint32_t n) {
+	bool wasEnabled = enabled;
+	disableDMA();
+	DMA_regs->NDTR = n;
+	if(wasEnabled)
+		enableDMA();
+}
+
+void DMA::enableCircMode() { DMA_regs->CR |= DMA_SxCR_CIRC; }
+
+void DMA::disableCircMode() { DMA_regs->CR &= ~DMA_SxCR_CIRC; }
+
+void DMA::enableDMA() { DMA_regs->CR |= DMA_SxCR_EN; enabled = true; }
+
+void DMA::disableDMA() { DMA_regs->CR &= ~DMA_SxCR_EN; enabled = false; }

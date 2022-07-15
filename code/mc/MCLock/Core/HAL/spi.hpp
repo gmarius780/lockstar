@@ -2,7 +2,7 @@
  * spi.h
  *
  *  Created on: Jul 7, 2022
- *      Author: sjele
+ *      Author: Samuel
  */
 
 #ifndef HAL_SPI_HPP_
@@ -19,20 +19,23 @@ public:
     // Constructor for SPI w/o DMA
 	SPI(uint8_t spi_number);
     // Constructor for SPI with DMA
-    SPI(uint8_t spi_number, uint8_t DMA_Stream_In, uint8_t DMA_Channel_In, uint8_t DMA_Stream_Out, uint8_t DMA_Channel_Out, uint32_t DMAprio);
+    SPI(uint8_t spi_number, DMA* TxHandler, DMA* RxHandler);
     
     /* Data operations */
     int16_t readData();
     void writeData(int16_t d);
-    void armDMA(uint32_t* destinationAddress, uint32_t* sourceAddress, uint16_t bufferSize);
-    void disarmDMA();
+    volatile uint32_t* getDRAddress() { return &SPI_regs->DR; };
     
+    /* Configurations */
+    void bindDMAHandlers(DMA* TxHandler, DMA* RxHandler);
+    void unbindDMAHandlers();
+
     /* Enables/Disables */
     void enableSPI();
     void disableSPI();
-    void enableTxIRQ();
+    void enableTxIRQ(); // Tx Buffer empty interrupt
     void disableTxIRQ();
-    void enableRxIRQ();
+    void enableRxIRQ(); // Rx Buffer not empty interrupt
     void disableRxIRQ();
     void enableSPI_DMA();
     void disableSPI_DMA();
@@ -41,6 +44,9 @@ public:
 private:
     SPI_TypeDef* SPI_regs;
     DMA  *DMATxHandler, *DMARxHandler;
+    bool DMAHandlersValid;
+    void checkDMAHandlers();
+
 };
 
 #endif /* HAL_SPI_HPP_ */
