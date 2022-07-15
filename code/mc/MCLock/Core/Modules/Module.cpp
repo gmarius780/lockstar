@@ -17,11 +17,13 @@ Module::~Module() {
 	// TODO Auto-generated destructor stub
 }
 
-/**
- * Interrupts change the modules corresponding states
- */
+/**INTERRUPTS*/
 
-void Module::rpi_interrupt() {
+void Module::rpi_spi_interrupt() {
+
+}
+
+void Module::rpi_dma_interrupt() {
 	this->rpi_input_state = rpi_input_pending;
 }
 
