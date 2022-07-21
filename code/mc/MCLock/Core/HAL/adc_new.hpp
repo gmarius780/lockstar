@@ -52,14 +52,14 @@ public:
     void startConversion();
     void DMATransmissionCallback();
     void clearBuffer();
-    uint8_t* getDataBuffer() { return dataBuffer; }
+    volatile uint8_t* getDataBuffer() { return dataBuffer; }
 
 private:
     void armDMA();
     void disarmDMA();
 
-    uint8_t* dataBuffer;
-    uint8_t* ADC_configBuffer;
+    volatile uint8_t* dataBuffer;
+    volatile uint8_t* ADC_configBuffer;
 
     uint16_t CNVPin;
     GPIO_TypeDef* CNVPort;

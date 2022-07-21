@@ -38,7 +38,7 @@ DMA::DMA(DMA_config_t config) {
     DMA_regs->M1AR = config.M1AR;
 }
 
-void DMA::setMemeroyAddress(volatile uint32_t* addr, char mem) {
+void DMA::setMemoryAddress(volatile uint8_t* addr, char mem) {
 	bool wasEnabled = enabled;
 	disableDMA();
 	if(mem == 0)

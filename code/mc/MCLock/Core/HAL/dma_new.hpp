@@ -29,7 +29,7 @@ public:
 	DMA(DMA_config_t config);
 
 	/* Configurations */
-	void setMemeroyAddress(volatile uint32_t* addr, char M0M1);
+	void setMemoryAddress(volatile uint8_t* addr, char M0M1);
 	void setPeripheralAddress(volatile uint32_t* addr);
 	void setNumberOfData(uint32_t n);
     uint32_t getControlReg() { return DMA_regs->CR; };
