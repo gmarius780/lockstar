@@ -32,9 +32,13 @@ public:
 	void loop();
 
 	void adc_interrupt();
-	void rpi_interrupt();
+	void rpi_dma_interrupt();
+	void rpi_spi_interrupt();
 	void trigger_interrupt();
 	void timer_interrupt();
+
+	void initiate_rpi_communication(uint32_t nbr_of_bytes);
+
 
 	virtual uint8_t handle_rpi_input();
 	void rpi_init();

@@ -22,6 +22,7 @@ public:
     SPI(uint8_t spi_number, DMA* TxHandler, DMA* RxHandler);
     
     /* Data operations */
+    //M: Nicht immer 16 bit?
     int16_t readData();
     void writeData(int16_t d);
     volatile uint32_t* getDRAddress() { return &SPI_regs->DR; };

@@ -100,6 +100,7 @@ void ADC_Device::startConversion() {
     CNVPort->BSRR = (uint32_t)CNVPin << 16U;
     delay = 5;
     while(delay--);
+    //M: sleep?
 
     armDMA();
 }

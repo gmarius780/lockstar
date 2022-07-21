@@ -80,7 +80,7 @@ static void MX_TIM3_Init(void);
 static void MX_TIM4_Init(void);
 static void MX_ADC3_Init(void);
 /* USER CODE BEGIN PFP */
-void cppmain(void);
+//void cppmain(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -134,17 +134,18 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 
-  FLASH->ACR |= ((uint32_t)1)<<8 | ((uint32_t)1)<<9; // enable flash prefetch and instruction cache
+//  FLASH->ACR |= ((uint32_t)1)<<8 | ((uint32_t)1)<<9; // enable flash prefetch and instruction cache
 
-  cppmain();
+//  cppmain();
 
-  //while (1)
-  //{
-    /* USER CODE END WHILE */
+	#define TEST_MODULE
 
-    /* USER CODE BEGIN 3 */
-  //}
-  /* USER CODE END 3 */
+	#ifdef TEST_MODULE
+
+	#include "../Modules/TestModule.cpp"
+
+	start();
+	#endif
 }
 
 /**
@@ -303,6 +304,10 @@ static void MX_SPI4_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN SPI4_Init 2 */
+  //enable interrupt of SPI4 (rpi)
+  SPI4->CR2 &= ~(SPI_CR2_TXEIE | SPI_CR2_RXNEIE | SPI_CR2_ERRIE);
+  HAL_NVIC_SetPriority(SPI4_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(SPI4_IRQn);
 
   /* USER CODE END SPI4_Init 2 */
 
