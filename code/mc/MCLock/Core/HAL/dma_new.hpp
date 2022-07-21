@@ -23,6 +23,8 @@ typedef struct DMA_config_struct {
 
 // All reserved bits in CR register (represented as 1: reserved, 0: rw)
 #define DMA_CR_RESERVED_BITS_MASK 0xF0100000
+// LIFCR reserved bits
+#define DMA_LIFCR_RESERVED_BITS_MASK 0xF082F082
 
 class DMA {
 public:
@@ -33,6 +35,7 @@ public:
 	void setPeripheralAddress(volatile uint32_t* addr);
 	void setNumberOfData(uint32_t n);
     uint32_t getControlReg() { return DMA_regs->CR; };
+    void resetTransferCompleteInterruptFlag();
 
     /* Enables/Disables */
 	void enableCircMode();
@@ -43,7 +46,7 @@ public:
 private:
     DMA_Stream_TypeDef* DMA_regs;
     uint32_t TCIFBit;
-    volatile uint32_t *clear_ISR;
+    volatile uint32_t *LIFCRreg;
     bool enabled;
 };
 

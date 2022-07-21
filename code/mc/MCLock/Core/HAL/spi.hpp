@@ -26,6 +26,7 @@ public:
     int16_t readData();
     void writeData(int16_t d);
     volatile uint32_t* getDRAddress() { return &SPI_regs->DR; };
+    void dataTransmissionFinished();
     
     /* Configurations */
     void bindDMAHandlers(DMA* TxHandler, DMA* RxHandler);

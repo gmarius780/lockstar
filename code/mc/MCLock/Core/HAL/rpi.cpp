@@ -6,7 +6,7 @@
  */
 
 #include "rpi.h"
-
+/*
 RPI::RPI() {
 	read_buffer = new uint8_t[2550];
 	write_buffer = new uint8_t[4096];
@@ -24,7 +24,7 @@ RPI::RPI() {
 	// reset 3 bits that define channel
 	dma_in_config.CR &= ~(DMA_SxCR_CHSEL);
 	// set channel via 3 control bits
-	dma_in_config.CR |= DMAChannelIn * DMA_SxCR_CHSEL_0;
+	dma_in_config.CR |= 4 * DMA_SxCR_CHSEL_0;
 	// set stream priority from very low (00) to very high (11)
 	dma_in_config.CR &= ~(DMA_SxCR_PL);
 	// reset 2 bits that define priority
@@ -41,7 +41,7 @@ RPI::RPI() {
 	dma_in_config.CR  |= DMA_SxCR_TCIE;
 
 
-	this->dma_in = DMA(dma_in_config);
+	this->dma_in = new DMA(dma_in_config);
 	this->dma_in->disableCircMode();
 	is_communicating = false;
 
@@ -69,3 +69,4 @@ void RPI::start_dma_communication(uint32_t nbr_of_bytes) {
 	this->dma_in->setNumberOfData(nbr_of_bytes);
 	this->dma_in->enableDMA();
 }
+*/
