@@ -4,8 +4,15 @@
  *  Created on: Jul 15, 2022
  *      Author: marius
  */
-#include "../HAL/spi.hpp"
+#include "TestModule.h"
+#include "stm32f427xx.h"
+#include "stm32f4xx_hal.h"
+#include "stm32f4xx_it.h"
+#include "stm32f4xx_hal_gpio.h"
+
 #include "../HAL/rpi.h"
+#include "../HAL/leds.hpp"
+
 
 class TestModule {
 public:
@@ -13,7 +20,12 @@ public:
 		this->rpi = new RPI();
 	}
 	void run() {
-
+		while(1) {
+			turn_LED5_on();
+			HAL_Delay(500);
+			turn_LED5_off();
+			HAL_Delay(500);
+		}
 	}
 
 	void rpi_dma_interrupt() {
@@ -28,7 +40,7 @@ private:
 	RPI *rpi;
 };
 
-TestModule *module = new TestModule();
+TestModule *module;
 
 /******************************
  *         INTERRUPTS          *
@@ -105,7 +117,7 @@ void DMA2_Stream6_IRQHandler(void)
 
 __attribute__((section("sram_func")))
 void SPI4_IRQHandler(void) {
-	module->rpi_spi_interrupt();
+//	module->rpi_spi_interrupt();
 }
 
 /******************************
@@ -128,7 +140,7 @@ void start(void)
 
 	/* After power on, give all devices a moment to properly start up */
 	HAL_Delay(200);
-
+	module = new TestModule();
 	module->run();
 
 }

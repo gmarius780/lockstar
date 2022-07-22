@@ -97,7 +97,7 @@ void ADC_Device::startConversion() {
     CNVPort->BSRR = CNVPin;
     volatile uint8_t delay = 0;
     while(delay--);
-    CNVPort->BSRR = (uint32_t)CNV_Pin << 16U;
+    CNVPort->BSRR = (uint32_t)CNVPin << 16U;
     delay = 5;
     while(delay--);
     //M: sleep?
@@ -106,10 +106,10 @@ void ADC_Device::startConversion() {
 }
 
 void ADC_Device::armDMA() {
-    DMAOutputHandler->setMemoryAddress(ADC_configBuffer,0);
+    DMAOutputHandler->setMemoryAddress((uint32_t)ADC_configBuffer,0);
     DMAOutputHandler->setNumberOfData(6);
     
-    DMAInputHandler->setMemoryAddress(dataBuffer,0);
+    DMAInputHandler->setMemoryAddress((uint32_t)dataBuffer,0);
     DMAInputHandler->setNumberOfData(6);
 
     DMAOutputHandler->enableDMA();

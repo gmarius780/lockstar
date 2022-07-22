@@ -11,24 +11,25 @@ RPI::RPI() {
 	read_buffer = new uint8_t[2550];
 	write_buffer = new uint8_t[4096];
 
-	this->spi = SPI(4);
-	DMA_config_struct dma_in_config;
+	spi = new SPI(4);
+
+	/*Configure DMA IN */
 	dma_in_config.channel = 4;
 	dma_in_config.stream = 0;
 	dma_in_config.priority = 1;
-	dma_in_config.PAR = this->spi->getDRAddress();
-	dma_in_config.M0AR = this->read_buffer;
+	dma_in_config.PAR = (uint32_t)spi->getDRAddress();
+	dma_in_config.M0AR = (uint32_t)read_buffer;
 
 	uint8_t DMAprio = 1;
 	dma_in_config.priority = DMAprio;
 	// reset 3 bits that define channel
 	dma_in_config.CR &= ~(DMA_SxCR_CHSEL);
 	// set channel via 3 control bits
-	dma_in_config.CR |= DMAChannelIn * DMA_SxCR_CHSEL_0;
+	dma_in_config.CR |= dma_in_config.channel * DMA_SxCR_CHSEL_0;
 	// set stream priority from very low (00) to very high (11)
 	dma_in_config.CR &= ~(DMA_SxCR_PL);
 	// reset 2 bits that define priority
-	dma_in_config.CR |= DMAprio * DMA_SxCR_PL_0; // set priority via 2 control bits
+	dma_in_config.CR |= dma_in_config.priority * DMA_SxCR_PL_0; // set priority via 2 control bits
 	// increment the memory address with each transfer
 	dma_in_config.CR |= DMA_SxCR_MINC;
 	// do not increment peripheral address
@@ -41,9 +42,42 @@ RPI::RPI() {
 	dma_in_config.CR  |= DMA_SxCR_TCIE;
 
 
-	this->dma_in = DMA(dma_in_config);
-	this->dma_in->disableCircMode();
+	dma_in = new DMA(dma_in_config);
+	dma_in->disableCircMode();
+
+
+	/*configure DMA out*/
+	dma_out_config.stream     = 1;
+	dma_out_config.channel    = 4;
+	dma_out_config.PAR        = (uint32_t)spi->getDRAddress();
+	dma_out_config.M0AR       = (uint32_t)write_buffer;
+	dma_out_config.NDTR       = 0;
+	dma_out_config.priority = 1;
+
+	dma_out_config.CR &= ~(DMA_SxCR_CHSEL); // reset 3 bits that define channel
+	dma_out_config.CR |= dma_out_config.channel * DMA_SxCR_CHSEL_0; // set channel via 3 control bits
+	// set stream priority from very low (00) to very high (11)
+	dma_out_config.CR &= ~(DMA_SxCR_PL); // reset 2 bits that define priority
+	dma_out_config.CR |= dma_out_config.priority * DMA_SxCR_PL_0; // set priority via 2 control bits
+	// increment the memory address with each transfer
+	dma_out_config.CR |= DMA_SxCR_MINC;
+	// do not increment peripheral address
+	dma_out_config.CR &= ~DMA_SxCR_PINC;
+	// set direction of transfer to "memory to peripheral"
+	dma_out_config.CR &= ~DMA_SxCR_DIR_1;
+	dma_out_config.CR |= DMA_SxCR_DIR_0;
+	// Clear DBM bit
+	dma_out_config.CR &= (uint32_t)(~DMA_SxCR_DBM);
+	// Program transmission-complete interrupt
+	dma_out_config.CR  |= DMA_SxCR_TCIE;
+
+
+	dma_out        = new DMA(dma_out_config);
+
+	spi->bindDMAHandlers(dma_out, dma_in);
+
 	is_communicating = false;
+	spi->enableSPI();
 
 }
 
@@ -54,9 +88,9 @@ RPI::~RPI() {
 void RPI::spi_interrupt() {
 	if(is_communicating == false) {
 		is_communicating = true;
-		this->current_nbr_of_bytes = 10 * ((uint32_t)*(volatile uint8_t *)spi->getDRAddress());
+		current_nbr_of_bytes = 10 * ((uint32_t)*(volatile uint8_t *)spi->getDRAddress());
 
-		this->start_dma_communication(this->current_nbr_of_bytes);
+//		this->start_dma_communication(this->current_nbr_of_bytes);
 	}
 }
 

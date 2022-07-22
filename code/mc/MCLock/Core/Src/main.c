@@ -136,16 +136,9 @@ int main(void)
 
 //  FLASH->ACR |= ((uint32_t)1)<<8 | ((uint32_t)1)<<9; // enable flash prefetch and instruction cache
 
-//  cppmain();
+  cppmain();
 
-	#define TEST_MODULE
 
-	#ifdef TEST_MODULE
-
-	#include "../Modules/TestModule.cpp"
-
-	start();
-	#endif
 }
 
 /**

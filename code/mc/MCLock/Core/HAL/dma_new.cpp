@@ -38,7 +38,9 @@ DMA::DMA(DMA_config_t config) {
     DMA_regs->M1AR = config.M1AR;
 }
 
-void DMA::setMemeroyAddress(volatile uint32_t* addr, char mem) {
+//M:richtig?
+//void DMA::setMemoryAddress(volatile uint32_t* addr, char mem) {
+void DMA::setMemoryAddress(uint32_t addr, char mem) {
 	bool wasEnabled = enabled;
 	disableDMA();
 	if(mem == 0)
@@ -49,7 +51,9 @@ void DMA::setMemeroyAddress(volatile uint32_t* addr, char mem) {
 		enableDMA();
 }
 
-void DMA::setPeripheralAddress(volatile uint32_t* addr) {
+//M:richtig?
+//void DMA::setPeripheralAddress(volatile uint32_t* addr) {
+void DMA::setPeripheralAddress(uint32_t addr) {
 	bool wasEnabled = enabled;
 	disableDMA();
 	DMA_regs->PAR = (uint32_t) addr;

@@ -45,8 +45,11 @@ void SPI::bindDMAHandlers(DMA* TxHandler, DMA* RxHandler) {
 	this->DMARxHandler = DMARxHandler;
 	this->DMATxHandler = DMATxHandler;
 
-	DMATxHandler->setPeripheralAddress(&SPI_regs->DR);
-	DMARxHandler->setPeripheralAddress(&SPI_regs->DR);
+	//M:richtig?
+	//DMATxHandler->setPeripheralAddress(&SPI_regs->DR);
+	//DMARxHandler->setPeripheralAddress(&SPI_regs->DR);
+	DMATxHandler->setPeripheralAddress(SPI_regs->DR);
+	DMARxHandler->setPeripheralAddress(SPI_regs->DR);
 
 	checkDMAHandlers();
 }

@@ -7,9 +7,10 @@
 
 #ifndef HAL_RPI_H_
 #define HAL_RPI_H_
-
-#include "../HAL/spi.hpp"
+#include "stm32f427xx.h"
 #include "../HAL/dma_new.hpp"
+#include "../HAL/spi.hpp"
+
 
 class RPI {
 public:
@@ -23,12 +24,14 @@ private:
 	SPI *spi;
 	DMA *dma_in;
 	DMA *dma_out;
-	bool is_communicating;
+	DMA_config_t dma_in_config, dma_out_config;
+
+	bool is_communicating; //true after spi interrupt was fired until dma communication is finished
 	uint32_t current_nbr_of_bytes;
 	uint8_t *read_buffer;
+	uint8_t *write_buffer;
 
 	void start_dma_communication(uint32_t nbr_of_bytes);
-
 };
 
 #endif /* HAL_RPI_H_ */

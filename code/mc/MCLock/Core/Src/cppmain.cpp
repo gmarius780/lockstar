@@ -1,32 +1,38 @@
-#include <lock.hpp>
 #include <main.h>
-#include <signals.hpp>
-#include <stm32f427xx.h>
-#include <stm32f4xx_hal_gpio.h>
-#include <stm32f4xx_hal_spi.h>
-#include <stm32f4xx_hal_tim.h>
-#include <sys/_stdint.h>
-#include "stm32f4xx_it.h"
-#include <queue>
-#include "misc_func.hpp"
-#include "FFTCorrection.hpp"
-#include "../HAL/adc.hpp"
-#include "../HAL/dac.hpp"
-#include "../HAL/flashmemory.hpp"
-#include "../HAL/leds.hpp"
-#include "../HAL/raspberrypi.hpp"
-#include "../Lib/oscilloscope.hpp"
-#include "../Lib/pid.hpp"
+//#include <stm32f427xx.h>
+//#include <sys/_stdint.h>
+//#include <cstring>
+//#include "stm32f4xx_it.h"
+//#include "stm32f4xx_hal_gpio.h"
+////HAL INCLUDES
+//#include "../HAL/spi.hpp"
+//#include "../HAL/rpi.h"
+//#include "../HAL/leds.hpp"
+//#include "../Inc/misc_func.hpp"
 
 
 #define TEST_MODULE
 
 #ifdef TEST_MODULE
-
-#include "../Modules/TestModule.cpp"
-
-start();
+#include "../Modules/TestModule.h"
 #endif
+
+
+
+void cppmain(void) {
+	start();
+
+}
+
+
+//#define TEST_MODULE
+//
+//#ifdef TEST_MODULE
+//
+//#include "../Modules/TestModule.cpp"
+//
+//start();
+//#endif
 
 
 
