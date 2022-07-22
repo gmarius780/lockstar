@@ -102,8 +102,7 @@ void cppmain(void) {
 	}
 	HAL_Delay(200);
 
-    // Note: ADC_CNV_Pin etc are defined in main.h
-
+    // Note: ADC_CNV_Pin and GPIO_PORT are defined in main.h
 	ADC_Dev = new ADC_Device(	/* SPI number */ 				1,
 								/* DMA Stream In */ 			2,
 								/* DMA Channel In */ 			3,
@@ -140,6 +139,7 @@ void cppmain(void) {
 
     float measure = 0;
     float measure2 = 0;
+
     while(true) {
 
         ADC_Dev->startConversion();
