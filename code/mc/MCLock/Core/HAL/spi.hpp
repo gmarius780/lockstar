@@ -43,7 +43,7 @@ public:
     void disableSPI_DMA();
     
 
-private:
+//private:
     SPI_TypeDef* SPI_regs;
     DMA  *DMATxHandler, *DMARxHandler;
     bool DMAHandlersValid;

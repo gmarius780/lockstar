@@ -87,7 +87,7 @@ ADC_Device::ADC_Device(uint8_t SPILane, uint8_t DMAStreamIn, uint8_t DMAChannelI
     DMAOutConfig.CR  &= ~DMA_SxCR_TCIE;
 
     DMAOutConfig.stream     = DMAStreamOut;
-    DMAOutConfig.channel    = DMAStreamOut;
+    DMAOutConfig.channel    = DMAChannelOut;
     DMAOutConfig.PAR        = (uint32_t)SPIHandler->getDRAddress();
     DMAOutConfig.M0AR       = (uint32_t)dataBuffer;
     DMAOutConfig.M1AR		= 0;
@@ -158,10 +158,10 @@ void ADC_Device::startConversion() {
 }
 
 void ADC_Device::armDMA() {
-    DMAOutputHandler->setMemoryAddress((uint32_t)ADC_configBuffer,0);
+    DMAOutputHandler->setMemoryAddress(ADC_configBuffer,0);
     DMAOutputHandler->setNumberOfData(6);
     
-    DMAInputHandler->setMemoryAddress((uint32_t)dataBuffer,0);
+    DMAInputHandler->setMemoryAddress(dataBuffer,0);
     DMAInputHandler->setNumberOfData(6);
 
     DMAOutputHandler->enableDMA();

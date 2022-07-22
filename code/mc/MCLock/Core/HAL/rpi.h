@@ -18,7 +18,8 @@ public:
 	virtual ~RPI();
 
 	void spi_interrupt();
-	void dma_interrupt();
+	void dma_out_interrupt();
+	void dma_in_interrupt();
 
 private:
 	SPI *spi;

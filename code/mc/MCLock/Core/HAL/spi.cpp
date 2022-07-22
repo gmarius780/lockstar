@@ -47,11 +47,8 @@ void SPI::bindDMAHandlers(DMA* DMATxHandler, DMA* DMARxHandler) {
 	this->DMARxHandler = DMARxHandler;
 	this->DMATxHandler = DMATxHandler;
 
-	//M:richtig?
-	//DMATxHandler->setPeripheralAddress(&SPI_regs->DR);
-	//DMARxHandler->setPeripheralAddress(&SPI_regs->DR);
-	DMATxHandler->setPeripheralAddress(SPI_regs->DR);
-	DMARxHandler->setPeripheralAddress(SPI_regs->DR);
+	DMATxHandler->setPeripheralAddress(&SPI_regs->DR);
+	DMARxHandler->setPeripheralAddress(&SPI_regs->DR);
 
 	checkDMAHandlers();
 }
@@ -72,11 +69,14 @@ void SPI::unbindDMAHandlers() {
 void SPI::enableSPI_DMA() {
 	if(!DMAHandlersValid)
 		return;
-
+	//while(SPI_regs->SR & SPI_SR_BSY);
 	SPI_regs->CR2 |= (SPI_CR2_TXDMAEN | SPI_CR2_RXDMAEN);
 }
 
-void SPI::disableSPI_DMA() { SPI_regs->CR2 &= ~(SPI_CR2_TXDMAEN | SPI_CR2_RXDMAEN); }
+void SPI::disableSPI_DMA() {
+	//while(SPI_regs->SR & SPI_SR_BSY);
+	SPI_regs->CR2 &= ~(SPI_CR2_TXDMAEN | SPI_CR2_RXDMAEN);
+}
 
 void SPI::enableSPI() { SPI_regs->CR1 |= SPI_CR1_SPE; }
 

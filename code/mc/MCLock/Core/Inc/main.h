@@ -56,6 +56,9 @@ void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
 void cppmain(void);
+
+//HAS to be implemented by the modules
+void start(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
@@ -123,6 +126,8 @@ void cppmain(void);
 #define Lock_And_Measure 			0x0108
 #define Continuous_Lock 			0x0109
 
+//DEFINE WHICH MODULE TO RUN!!
+#define IO_TEST_MODULE
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

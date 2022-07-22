@@ -31,14 +31,6 @@
 
 
 
-#define TEST_MODULE
-
-#ifdef TEST_MODULE
-#include "../Modules/TestModule.h"
-#endif
-
-
-
 void cppmain(void) {
 	start();
 

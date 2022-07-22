@@ -43,6 +43,9 @@ public:
     void enableDMA();
     void disableDMA();
 
+    void enable_tc_irq();
+    void disable_tc_irq();
+
 private:
     DMA_Stream_TypeDef* DMA_regs;
     uint32_t TCIFBit;

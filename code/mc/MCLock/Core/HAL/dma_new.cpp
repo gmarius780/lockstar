@@ -70,16 +70,27 @@ void DMA::setNumberOfData(uint32_t n) {
 }
 
 void DMA::resetTransferCompleteInterruptFlag() {
-    *LIFCRreg |= TCIFBit;
+    *(this->LIFCRreg) |= this->TCIFBit;
+//	DMA2->LIFCR |= 1UL<<5;
 }
 
 void DMA::enableCircMode() { DMA_regs->CR |= DMA_SxCR_CIRC; }
 
-void DMA::disableCircMode() { DMA_regs->CR &= ~DMA_SxCR_CIRC; }
+void DMA::disableCircMode() {
+	DMA_regs->CR &= ~DMA_SxCR_CIRC;
+}
 
 void DMA::enableDMA() { DMA_regs->CR |= DMA_SxCR_EN; enabled = true; }
 
 void DMA::disableDMA() {
 	DMA_regs->CR &= ~DMA_SxCR_EN;
 	enabled = false;
+}
+
+void DMA::disable_tc_irq() {
+	DMA_regs->CR  &= ~DMA_SxCR_TCIE;
+}
+
+void DMA::enable_tc_irq() {
+	DMA_regs->CR  |= DMA_SxCR_TCIE;
 }

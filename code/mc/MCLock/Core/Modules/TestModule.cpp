@@ -4,8 +4,7 @@
  *  Created on: Jul 15, 2022
  *      Author: marius
  */
-
-#include "TestModule.h"
+#include "main.h"
 #include "stm32f427xx.h"
 #include "stm32f4xx_hal.h"
 #include "stm32f4xx_it.h"
@@ -16,6 +15,7 @@
 #include "../HAL/rpi.h"
 #include "../HAL/leds.hpp"
 
+#ifdef TEST_MODULE
 
 class TestModule {
 public:
@@ -24,6 +24,7 @@ public:
 	}
 	void run() {
 		while(1) {
+			//Problem: dma_in irq reset does not work. Spi busy flag is always high
 			turn_LED5_on();
 			HAL_Delay(500);
 			turn_LED5_off();
@@ -31,20 +32,16 @@ public:
 		}
 	}
 
-	void rpi_dma_interrupt() {
-		this->rpi->dma_interrupt();
-		//handle rpi input
-	}
 	void rpi_spi_interrupt() {
 		this->rpi->spi_interrupt();
 	}
 
-private:
+public:
 	RPI *rpi;
 };
 
 
-TestModule *module;
+__weak TestModule *module;
 
 /******************************
  *         INTERRUPTS          *
@@ -54,30 +51,30 @@ TestModule *module;
 // Interrupt for Digital In line (Trigger)
 //ram_func: https://rhye.org/post/stm32-with-opencm3-4-memory-sections/
 
-__attribute__((section("sram_func")))
-void HAL_GPIO_EXTI_Callback (uint16_t GPIO_Pin)
-{
-//	module->trigger_interrupt();
-	// Falling Edge = Trigger going High
-	/*if(GPIO_Pin == DigitalIn_Pin && HAL_GPIO_ReadPin(DigitalIn_GPIO_Port, DigitalIn_Pin)==GPIO_PIN_RESET){
-		locking = true;
-		PIDLoop->Reset();
-		PIDLoop2->Reset();
-		PIDLoop2->pre_output=2.5;
-		turn_LED6_on();
-
-	}
-	// Rising Edge = Trigger going Low
-	if(GPIO_Pin == DigitalIn_Pin && HAL_GPIO_ReadPin(DigitalIn_GPIO_Port, DigitalIn_Pin)==GPIO_PIN_SET){
-		locking = false;
-		turn_LED6_off();
-	}*/
-
-}
+//__attribute__((section("sram_func")))
+//void HAL_GPIO_EXTI_Callback (uint16_t GPIO_Pin)
+//{
+////	module->trigger_interrupt();
+//	// Falling Edge = Trigger going High
+//	/*if(GPIO_Pin == DigitalIn_Pin && HAL_GPIO_ReadPin(DigitalIn_GPIO_Port, DigitalIn_Pin)==GPIO_PIN_RESET){
+//		locking = true;
+//		PIDLoop->Reset();
+//		PIDLoop2->Reset();
+//		PIDLoop2->pre_output=2.5;
+//		turn_LED6_on();
+//
+//	}
+//	// Rising Edge = Trigger going Low
+//	if(GPIO_Pin == DigitalIn_Pin && HAL_GPIO_ReadPin(DigitalIn_GPIO_Port, DigitalIn_Pin)==GPIO_PIN_SET){
+//		locking = false;
+//		turn_LED6_off();
+//	}*/
+//
+//}
 
 // DMA Interrupts. You probably don't want to change these, they are neccessary for the low-level communications between MCU, converters and RPi
 __attribute__((section("sram_func")))
-void DMA2_Stream4_IRQHandler(void)
+__weak void DMA2_Stream4_IRQHandler(void)
 {
 //	module->dac_2->Callback();
 }
@@ -106,12 +103,14 @@ void DMA2_Stream0_IRQHandler(void)
 	//module->rpi->Callback();
 //	module->rpi_dma_interrupt();
 	//module->rpi->ResetIntPin();
+	module->rpi->dma_in_interrupt();
 }
 __attribute__((section("sram_func")))
 void DMA2_Stream1_IRQHandler(void)
 {
 	// SPI 4 Tx
 	// no action required
+	module->rpi->dma_out_interrupt();
 }
 __attribute__((section("sram_func")))
 void DMA2_Stream6_IRQHandler(void)
@@ -145,8 +144,14 @@ void start(void)
 
 	/* After power on, give all devices a moment to properly start up */
 	HAL_Delay(200);
+
 	module = new TestModule();
+//	while(1) {
+//		HAL_Delay(200);
+//	}
 	module->run();
 
 
 }
+
+#endif
