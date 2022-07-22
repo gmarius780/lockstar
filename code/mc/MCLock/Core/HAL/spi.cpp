@@ -41,7 +41,9 @@ void SPI::writeData(int16_t data) { SPI_regs->DR = data; }
 
 int16_t SPI::readData() { return SPI_regs->DR; }
 
-void SPI::bindDMAHandlers(DMA* TxHandler, DMA* RxHandler) {
+void SPI::bindDMAHandlers(DMA* DMATxHandler, DMA* DMARxHandler) {
+	int i = 15;
+
 	this->DMARxHandler = DMARxHandler;
 	this->DMATxHandler = DMATxHandler;
 

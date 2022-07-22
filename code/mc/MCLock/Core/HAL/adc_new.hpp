@@ -19,7 +19,6 @@
 #define ADC_OFF             (uint8_t)0b000
 
 #define DATAWIDTH           6
-#define BUFFERSIZE          DATAWIDTH*10
 
 class ADC_Device;
 
@@ -28,13 +27,14 @@ public:
     ADC_Device_Channel(ADC_Device* parentDevice, uint16_t ChannelId, uint8_t setup);
     float getResult() { return result; };
     uint8_t getChannelCode() { return channelCode; };
+    void updateResult(int16_t result);
 
 private:
-    void updateResult();
     volatile float result;
     float stepSize;
     bool twoComp;
-    uint8_t ChannelId, channelCode;
+    ADC_Device *parentDevice;
+    uint8_t channelID, channelCode;
 };
 
 class ADC_Device {
@@ -47,19 +47,21 @@ public:
                 GPIO_TypeDef* CNV_Port, 
                 uint16_t CNV_Pin, 
                 uint8_t Channel1Config, 
-                uint8_t Channel2Config);
+                uint8_t Channel2Config,
+                uint8_t bufferSize);
     ADC_Device_Channel *channel1, *channel2;
     void startConversion();
     void DMATransmissionCallback();
     void clearBuffer();
-    uint8_t* getDataBuffer() { return dataBuffer; }
+    volatile uint8_t* getDataBuffer() { return dataBuffer; }
 
 private:
     void armDMA();
     void disarmDMA();
 
-    uint8_t* dataBuffer;
-    uint8_t* ADC_configBuffer;
+    volatile uint8_t* dataBuffer;
+    volatile uint8_t* ADC_configBuffer;
+    uint8_t bufferSize;
 
     uint16_t CNVPin;
     GPIO_TypeDef* CNVPort;

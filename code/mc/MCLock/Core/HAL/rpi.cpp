@@ -41,7 +41,6 @@ RPI::RPI() {
 	// Program transmission-complete interrupt
 	dma_in_config.CR  |= DMA_SxCR_TCIE;
 
-
 	dma_in = new DMA(dma_in_config);
 	dma_in->disableCircMode();
 
@@ -72,7 +71,7 @@ RPI::RPI() {
 	dma_out_config.CR  |= DMA_SxCR_TCIE;
 
 
-	dma_out        = new DMA(dma_out_config);
+	dma_out = new DMA(dma_out_config);
 
 	spi->bindDMAHandlers(dma_out, dma_in);
 
@@ -103,3 +102,4 @@ void RPI::start_dma_communication(uint32_t nbr_of_bytes) {
 	this->dma_in->setNumberOfData(nbr_of_bytes);
 	this->dma_in->enableDMA();
 }
+

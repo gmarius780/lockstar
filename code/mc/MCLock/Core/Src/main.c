@@ -80,7 +80,7 @@ static void MX_TIM3_Init(void);
 static void MX_TIM4_Init(void);
 static void MX_ADC3_Init(void);
 /* USER CODE BEGIN PFP */
-//void cppmain(void);
+void cppmain(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/

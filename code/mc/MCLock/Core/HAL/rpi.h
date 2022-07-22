@@ -4,7 +4,7 @@
  *  Created on: Jul 15, 2022
  *      Author: marius
  */
-
+/*
 #ifndef HAL_RPI_H_
 #define HAL_RPI_H_
 #include "stm32f427xx.h"
@@ -35,3 +35,4 @@ private:
 };
 
 #endif /* HAL_RPI_H_ */
+

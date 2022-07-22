@@ -4,12 +4,15 @@
  *  Created on: Jul 15, 2022
  *      Author: marius
  */
+
 #include "TestModule.h"
 #include "stm32f427xx.h"
 #include "stm32f4xx_hal.h"
 #include "stm32f4xx_it.h"
 #include "stm32f4xx_hal_gpio.h"
 
+
+#include "../HAL/spi.hpp"
 #include "../HAL/rpi.h"
 #include "../HAL/leds.hpp"
 
@@ -40,6 +43,7 @@ private:
 	RPI *rpi;
 };
 
+
 TestModule *module;
 
 /******************************
@@ -48,7 +52,8 @@ TestModule *module;
  * Callbacks are functions that are executed in response to events such as SPI communication finished, change on trigger line etc */
 
 // Interrupt for Digital In line (Trigger)
-//sram_func: https://rhye.org/post/stm32-with-opencm3-4-memory-sections/
+//ram_func: https://rhye.org/post/stm32-with-opencm3-4-memory-sections/
+
 __attribute__((section("sram_func")))
 void HAL_GPIO_EXTI_Callback (uint16_t GPIO_Pin)
 {
@@ -81,13 +86,13 @@ void DMA2_Stream5_IRQHandler(void)
 {
 //	module->dac_1->Callback();
 }
-__attribute__((section("sram_func")))
-void DMA2_Stream2_IRQHandler(void)
-{
+//s __attribute__((section("sram_func")))
+//s void DMA2_Stream2_IRQHandler(void)
+//s {
 	// SPI 1 rx
 //	module->adc_dev->Callback();
 //	module->adc_interrupt();
-}
+//s }
 __attribute__((section("sram_func")))
 void DMA2_Stream3_IRQHandler(void)
 {
@@ -117,7 +122,7 @@ void DMA2_Stream6_IRQHandler(void)
 
 __attribute__((section("sram_func")))
 void SPI4_IRQHandler(void) {
-//	module->rpi_spi_interrupt();
+	module->rpi_spi_interrupt();
 }
 
 /******************************
@@ -142,5 +147,6 @@ void start(void)
 	HAL_Delay(200);
 	module = new TestModule();
 	module->run();
+
 
 }
