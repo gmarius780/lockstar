@@ -21,21 +21,23 @@ typedef struct DMA_config_struct {
     uint8_t priority;
 } DMA_config_t;
 
-// All reserved bits in CR register (represented as 1: reserved, 0: rw)
-#define DMA_CR_RESERVED_BITS_MASK 0xF0100000
-// LIFCR reserved bits
-#define DMA_LIFCR_RESERVED_BITS_MASK 0xF082F082
+// Reserved bits (represented as 1: reserved, 0: not reserved)
+#define DMA_CR_RESERVED_BITS_MASK 0xF0100000 	// CR
+#define DMA_LIFCR_RESERVED_BITS_MASK 0xF082F082 // LIFCR
 
 class DMA {
 public:
 	DMA(DMA_config_t config);
 
 	/* Configurations */
-	void setMemoryAddress(volatile uint8_t* addr, char M0M1);
+	uint32_t getControlReg() { return DMA_regs->CR; };
+	void resetTransferCompleteInterruptFlag();
+	/* NOTE: DMA has to be disabled before using following methods! */
+	void setMemory0Address(volatile uint8_t* addr);
+	void setMemory1Address(volatile uint8_t* addr);
 	void setPeripheralAddress(volatile uint32_t* addr);
 	void setNumberOfData(uint32_t n);
-    uint32_t getControlReg() { return DMA_regs->CR; };
-    void resetTransferCompleteInterruptFlag();
+
 
     /* Enables/Disables */
 	void enableCircMode();

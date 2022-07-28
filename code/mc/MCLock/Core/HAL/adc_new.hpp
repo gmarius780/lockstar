@@ -27,9 +27,11 @@ public:
     ADC_Device_Channel(ADC_Device* parentDevice, uint16_t ChannelId, uint8_t setup);
     float getResult();
     uint8_t getChannelCode() { return channelCode; };
-    void updateResult(int16_t result);
+
+    friend class ADC_Device;
 
 private:
+    void updateResult(int16_t result);
     volatile float result;
     float stepSize;
     bool twoComp;
@@ -53,7 +55,8 @@ public:
     void startConversion();
     void DMATransmissionCallback();
     void clearBuffer();
-    volatile uint8_t* getDataBuffer() { return dataBuffer; }
+    volatile uint8_t* getDataBuffer() { return dataBuffer; };
+    bool isBusy() { return busy; };
 
 private:
     void armDMA();
@@ -67,6 +70,7 @@ private:
     GPIO_TypeDef* CNVPort;
 
     bool singleChannelMode;
+    bool busy;
 
     DMA *DMAInputHandler, *DMAOutputHandler;
     SPI *SPIHandler;

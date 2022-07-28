@@ -23,10 +23,11 @@ public:
     
     /* Data operations */
     //M: Nicht immer 16 bit?
-    int16_t readData();
+    int16_t read16bitData() { return (int16_t)SPI_regs->DR; }
+    int8_t read8bitData() { return (int8_t)SPI_regs->DR; };
     void writeData(int16_t d);
     volatile uint32_t* getDRAddress() { return &SPI_regs->DR; };
-    void dataTransmissionFinished();
+    bool isBusy() { return (bool)(SPI_regs->SR & SPI_SR_BSY); };
     
     /* Configurations */
     void bindDMAHandlers(DMA* TxHandler, DMA* RxHandler);
@@ -43,7 +44,7 @@ public:
     void disableSPI_DMA();
     
 
-//private:
+private:
     SPI_TypeDef* SPI_regs;
     DMA  *DMATxHandler, *DMARxHandler;
     bool DMAHandlersValid;

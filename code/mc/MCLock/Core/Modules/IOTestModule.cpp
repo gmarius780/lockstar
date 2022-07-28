@@ -62,8 +62,34 @@ public:
 		DAC_2->ConfigOutputs(&hadc3, ADC_CHANNEL_8, ADC_CHANNEL_15);
 
 		float m1 = 0;
-		float m2= 0;
+		float m2 = 0;
+
+		const uint16_t psc = 68;
+		const float TIM3freq = 90e6;
+		// 1. Enable Peripheral Clock for TIM3 (bit 1 in APB1ENR)
+		RCC->APB1ENR |= 1<<1;
+		// 2. Set Prescaler to 68
+		TIM3->PSC = (uint16_t) psc;
+		// 3. Set the Auto Reload Register to max. value
+		TIM3->ARR = 0xFFFF;
+		// 4. Enable update interrupt (bit 0)
+		//TIM3->DIER |= 1;
+		// 6. Enable Counter
+		TIM3->CR1 = 1;
+
+		volatile uint32_t n = 0;
+		volatile float dtAcc = 0;
+		volatile float dt = 0;
+		volatile uint16_t t = 0;
+
 		while(true) {
+
+//			t = TIM3->CNT - t;
+//			dt = t/TIM3freq*psc;
+//			dtAcc += dt;
+//			n++;
+//			t = TIM3->CNT;
+
 			ADC_Dev->startConversion();
 			m1 = ADC_Dev->channel1->getResult();
 			m2 = ADC_Dev->channel2->getResult();

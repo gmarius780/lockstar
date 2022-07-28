@@ -9,7 +9,6 @@
 
 ADC_Device::ADC_Device(uint8_t SPILane, uint8_t DMAStreamIn, uint8_t DMAChannelIn, uint8_t DMAStreamOut, uint8_t DMAChannelOut, GPIO_TypeDef* CNVPort, uint16_t CNVPin, uint8_t channel1Config, uint8_t channel2Config, uint8_t bufferSize) {
     
-    // Setup of the relevant datastructures
     this->bufferSize = bufferSize;
     dataBuffer      = new uint8_t[bufferSize]();
     this->CNVPort   = CNVPort;
@@ -21,9 +20,10 @@ ADC_Device::ADC_Device(uint8_t SPILane, uint8_t DMAStreamIn, uint8_t DMAChannelI
 
     ADC_configBuffer = new uint8_t[DATAWIDTH]();
 
-    // Initialize the two channels of the ADC Device
     channel1 = new ADC_Device_Channel(this, 1, channel1Config);
     channel2 = new ADC_Device_Channel(this, 2, channel2Config);
+
+    busy = false;
 
     /*
     * Calculate the ADC configuration based on channel configurations
@@ -151,6 +151,11 @@ float ADC_Device_Channel::getResult() { return result; }
 
 __attribute__((section("sram_func")))
 void ADC_Device::startConversion() {
+	if(busy)
+		return;
+
+	// busy flag gets reset when DMA transfer is finished
+	busy = true;
 
     CNVPort->BSRR = CNVPin;
     volatile uint8_t delay = 0;
@@ -165,16 +170,19 @@ void ADC_Device::startConversion() {
 
 __attribute__((section("sram_func")))
 void ADC_Device::armDMA() {
-    DMAOutputHandler->setMemoryAddress(ADC_configBuffer,0);
+	DMAOutputHandler->disableDMA();
+	DMAInputHandler->disableDMA();
+
+    DMAOutputHandler->setMemory0Address(ADC_configBuffer);
     DMAOutputHandler->setNumberOfData(6);
     
-    DMAInputHandler->setMemoryAddress(dataBuffer,0);
+    DMAInputHandler->setMemory0Address(dataBuffer);
     DMAInputHandler->setNumberOfData(6);
 
     DMAOutputHandler->enableDMA();
     DMAInputHandler->enableDMA();
 
-    SPIHandler->enableSPI_DMA();   
+    SPIHandler->enableSPI_DMA();
 }
 
 __attribute__((section("sram_func")))
@@ -185,5 +193,7 @@ void ADC_Device::DMATransmissionCallback() {
 
     channel2->updateResult(((int16_t)(dataBuffer[0] << 8)) + ((int16_t)dataBuffer[1]));
     channel1->updateResult(((int16_t)(dataBuffer[3] << 8)) + ((int16_t)dataBuffer[4]));
+
+    busy = false;
 }
 
