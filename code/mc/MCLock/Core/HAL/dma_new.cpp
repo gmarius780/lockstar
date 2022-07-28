@@ -39,7 +39,7 @@ DMA::DMA(DMA_config_t config) {
     DMA_regs->M1AR = config.M1AR;
 }
 
-
+__attribute__((section("sram_func")))
 void DMA::setMemoryAddress(volatile uint8_t* addr, char mem) {
 	bool wasEnabled = enabled;
 	disableDMA();
@@ -51,7 +51,7 @@ void DMA::setMemoryAddress(volatile uint8_t* addr, char mem) {
 		enableDMA();
 }
 
-
+__attribute__((section("sram_func")))
 void DMA::setPeripheralAddress(volatile uint32_t* addr) {
 
 	bool wasEnabled = enabled;
@@ -61,6 +61,7 @@ void DMA::setPeripheralAddress(volatile uint32_t* addr) {
 		enableDMA();
 }
 
+__attribute__((section("sram_func")))
 void DMA::setNumberOfData(uint32_t n) {
 	bool wasEnabled = enabled;
 	disableDMA();
@@ -70,18 +71,17 @@ void DMA::setNumberOfData(uint32_t n) {
 }
 
 void DMA::resetTransferCompleteInterruptFlag() {
-    *(this->LIFCRreg) |= this->TCIFBit;
+	*(this->LIFCRreg) |= this->TCIFBit;
 //	DMA2->LIFCR |= 1UL<<5;
 }
 
 void DMA::enableCircMode() { DMA_regs->CR |= DMA_SxCR_CIRC; }
 
-void DMA::disableCircMode() {
-	DMA_regs->CR &= ~DMA_SxCR_CIRC;
-}
+void DMA::disableCircMode() { DMA_regs->CR &= ~DMA_SxCR_CIRC; }
 
 void DMA::enableDMA() { DMA_regs->CR |= DMA_SxCR_EN; enabled = true; }
 
+__attribute__((section("sram_func")))
 void DMA::disableDMA() {
 	DMA_regs->CR &= ~DMA_SxCR_EN;
 	enabled = false;

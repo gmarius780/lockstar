@@ -95,6 +95,7 @@ ADC_Device::ADC_Device(uint8_t SPILane, uint8_t DMAStreamIn, uint8_t DMAChannelI
     DMAOutputHandler        = new DMA(DMAOutConfig);
 
     SPIHandler->bindDMAHandlers(DMAOutputHandler, DMAInputHandler);
+    SPIHandler->enableSPI();
 }
 
 ADC_Device_Channel::ADC_Device_Channel(ADC_Device* parentDevice, uint16_t channelID, uint8_t config){
@@ -138,12 +139,17 @@ ADC_Device_Channel::ADC_Device_Channel(ADC_Device* parentDevice, uint16_t channe
     }
 }
 
+__attribute__((section("sram_func")))
 void ADC_Device_Channel::updateResult(int16_t result) {
     // convert to float
     this->result = twoComp ? (stepSize *  result) : (stepSize * (uint16_t)result);
     // TODO: implement lowpass
 }
 
+__attribute__((section("sram_func")))
+float ADC_Device_Channel::getResult() { return result; }
+
+__attribute__((section("sram_func")))
 void ADC_Device::startConversion() {
 
     CNVPort->BSRR = CNVPin;
@@ -157,6 +163,7 @@ void ADC_Device::startConversion() {
     armDMA();
 }
 
+__attribute__((section("sram_func")))
 void ADC_Device::armDMA() {
     DMAOutputHandler->setMemoryAddress(ADC_configBuffer,0);
     DMAOutputHandler->setNumberOfData(6);
@@ -170,12 +177,13 @@ void ADC_Device::armDMA() {
     SPIHandler->enableSPI_DMA();   
 }
 
+__attribute__((section("sram_func")))
 void ADC_Device::DMATransmissionCallback() {
     SPIHandler->disableSPI_DMA();
     DMAInputHandler->resetTransferCompleteInterruptFlag();
     DMAOutputHandler->resetTransferCompleteInterruptFlag();
 
-    channel1->updateResult(((int16_t)(dataBuffer[0] << 8)) + ((int16_t)dataBuffer[1]));
-    channel2->updateResult(((int16_t)(dataBuffer[3] << 8)) + ((int16_t)dataBuffer[4]));
+    channel2->updateResult(((int16_t)(dataBuffer[0] << 8)) + ((int16_t)dataBuffer[1]));
+    channel1->updateResult(((int16_t)(dataBuffer[3] << 8)) + ((int16_t)dataBuffer[4]));
 }
 

@@ -25,7 +25,7 @@ class ADC_Device;
 class ADC_Device_Channel {
 public:
     ADC_Device_Channel(ADC_Device* parentDevice, uint16_t ChannelId, uint8_t setup);
-    float getResult() { return result; };
+    float getResult();
     uint8_t getChannelCode() { return channelCode; };
     void updateResult(int16_t result);
 
