@@ -7,10 +7,9 @@
 
 #include "adc_new.hpp"
 
-ADC_Device::ADC_Device(uint8_t SPILane, uint8_t DMAStreamIn, uint8_t DMAChannelIn, uint8_t DMAStreamOut, uint8_t DMAChannelOut, GPIO_TypeDef* CNVPort, uint16_t CNVPin, uint8_t channel1Config, uint8_t channel2Config, uint8_t bufferSize) {
+ADC_Device::ADC_Device(uint8_t SPILane, uint8_t DMAStreamIn, uint8_t DMAChannelIn, uint8_t DMAStreamOut, uint8_t DMAChannelOut, GPIO_TypeDef* CNVPort, uint16_t CNVPin, uint8_t channel1Config, uint8_t channel2Config) {
     
-    this->bufferSize = bufferSize;
-    dataBuffer      = new uint8_t[bufferSize]();
+    dma_buffer      = new uint8_t[DATAWIDTH]();
     this->CNVPort   = CNVPort;
     this->CNVPin    = CNVPin;
 
@@ -62,7 +61,7 @@ ADC_Device::ADC_Device(uint8_t SPILane, uint8_t DMAStreamIn, uint8_t DMAChannelI
     DMAInConfig.stream      = DMAStreamIn;
     DMAInConfig.channel     = DMAChannelIn;
     DMAInConfig.PAR         = (uint32_t)SPIHandler->getDRAddress();
-    DMAInConfig.M0AR        = (uint32_t)dataBuffer;
+    DMAInConfig.M0AR        = (uint32_t)dma_buffer;
     DMAInConfig.M1AR		= 0;
     DMAInConfig.NDTR        = 0;
     DMAInputHandler         = new DMA(DMAInConfig);
@@ -89,7 +88,7 @@ ADC_Device::ADC_Device(uint8_t SPILane, uint8_t DMAStreamIn, uint8_t DMAChannelI
     DMAOutConfig.stream     = DMAStreamOut;
     DMAOutConfig.channel    = DMAChannelOut;
     DMAOutConfig.PAR        = (uint32_t)SPIHandler->getDRAddress();
-    DMAOutConfig.M0AR       = (uint32_t)dataBuffer;
+    DMAOutConfig.M0AR       = (uint32_t)dma_buffer;
     DMAOutConfig.M1AR		= 0;
     DMAOutConfig.NDTR       = 0;
     DMAOutputHandler        = new DMA(DMAOutConfig);
@@ -111,7 +110,7 @@ ADC_Device_Channel::ADC_Device_Channel(ADC_Device* parentDevice, uint16_t channe
      *          000     channel off
      */
 
-    switch(config){
+    switch(config) {
     case ADC_BIPOLAR_10V:
         channelCode = 0b111;
         this->stepSize = 20.48f / 0xffff;
@@ -140,14 +139,9 @@ ADC_Device_Channel::ADC_Device_Channel(ADC_Device* parentDevice, uint16_t channe
 }
 
 __attribute__((section("sram_func")))
-void ADC_Device_Channel::updateResult(int16_t result) {
-    // convert to float
-    this->result = twoComp ? (stepSize *  result) : (stepSize * (uint16_t)result);
-    // TODO: implement lowpass
+void ADC_Device_Channel::update_result(int16_t result) {
+	this->result = twoComp ? (stepSize*result) : (stepSize*(uint16_t)result);
 }
-
-__attribute__((section("sram_func")))
-float ADC_Device_Channel::getResult() { return result; }
 
 __attribute__((section("sram_func")))
 void ADC_Device::startConversion() {
@@ -173,10 +167,11 @@ void ADC_Device::armDMA() {
 	DMAOutputHandler->disableDMA();
 	DMAInputHandler->disableDMA();
 
+    // TODO: create a arm_dma method in the DMA class
     DMAOutputHandler->setMemory0Address(ADC_configBuffer);
     DMAOutputHandler->setNumberOfData(6);
     
-    DMAInputHandler->setMemory0Address(dataBuffer);
+    DMAInputHandler->setMemory0Address(dma_buffer);
     DMAInputHandler->setNumberOfData(6);
 
     DMAOutputHandler->enableDMA();
@@ -191,8 +186,8 @@ void ADC_Device::DMATransmissionCallback() {
     DMAInputHandler->resetTransferCompleteInterruptFlag();
     DMAOutputHandler->resetTransferCompleteInterruptFlag();
 
-    channel2->updateResult(((int16_t)(dataBuffer[0] << 8)) + ((int16_t)dataBuffer[1]));
-    channel1->updateResult(((int16_t)(dataBuffer[3] << 8)) + ((int16_t)dataBuffer[4]));
+    channel2->update_result(((int16_t)(dma_buffer[0] << 8)) + ((int16_t)dma_buffer[1]));
+    channel1->update_result(((int16_t)(dma_buffer[3] << 8)) + ((int16_t)dma_buffer[4]));
 
     busy = false;
 }

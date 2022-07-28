@@ -25,14 +25,15 @@ class ADC_Device;
 class ADC_Device_Channel {
 public:
     ADC_Device_Channel(ADC_Device* parentDevice, uint16_t ChannelId, uint8_t setup);
-    float getResult();
-    uint8_t getChannelCode() { return channelCode; };
+    float get_result() { return result; }
+    uint8_t getChannelCode() { return channelCode; }
 
     friend class ADC_Device;
 
 private:
-    void updateResult(int16_t result);
-    volatile float result;
+    void update_result(int16_t result);
+    // Samuel: Maybe it makes more sense to move the channel buffer to the modules using the ADC?
+    float result;
     float stepSize;
     bool twoComp;
     ADC_Device *parentDevice;
@@ -49,22 +50,19 @@ public:
                 GPIO_TypeDef* CNV_Port, 
                 uint16_t CNV_Pin, 
                 uint8_t Channel1Config, 
-                uint8_t Channel2Config,
-                uint8_t bufferSize);
+                uint8_t Channel2Config);
+
     ADC_Device_Channel *channel1, *channel2;
     void startConversion();
     void DMATransmissionCallback();
-    void clearBuffer();
-    volatile uint8_t* getDataBuffer() { return dataBuffer; };
     bool isBusy() { return busy; };
 
 private:
     void armDMA();
     void disarmDMA();
 
-    volatile uint8_t* dataBuffer;
+    volatile uint8_t* dma_buffer;
     volatile uint8_t* ADC_configBuffer;
-    uint8_t bufferSize;
 
     uint16_t CNVPin;
     GPIO_TypeDef* CNVPort;

@@ -79,6 +79,26 @@ void SPI::disableSPI_DMA() {
 	SPI_regs->CR2 &= ~(SPI_CR2_TXDMAEN | SPI_CR2_RXDMAEN);
 }
 
+__attribute__((section("sram_func")))
+void SPI::enable_spi_rx_dma() {
+	SPI_regs->CR2 |= SPI_CR2_RXDMAEN;
+}
+
+__attribute__((section("sram_func")))
+void SPI::disable_spi_rx_dma() {
+	SPI_regs->CR2 &= ~SPI_CR2_RXDMAEN;
+}
+
+__attribute__((section("sram_func")))
+void SPI::enable_spi_tx_dma() {
+	SPI_regs->CR2 |= SPI_CR2_TXDMAEN;
+}
+
+__attribute__((section("sram_func")))
+void SPI::disable_spi_tx_dma() {
+	SPI_regs->CR2 &= ~SPI_CR2_TXDMAEN;
+}
+
 void SPI::enableSPI() { SPI_regs->CR1 |= SPI_CR1_SPE; }
 
 void SPI::disableSPI() { SPI_regs->CR1 &= ~SPI_CR1_SPE; }

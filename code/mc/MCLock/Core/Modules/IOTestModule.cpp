@@ -15,6 +15,7 @@
 #include "../HAL/spi.hpp"
 #include "../HAL/leds.hpp"
 #include "../HAL/adc_new.hpp"
+#include "../HAL/dac_new.hpp"
 #include "../HAL/dac.hpp"
 
 #ifdef IO_TEST_MODULE
@@ -35,14 +36,11 @@ public:
 									/* conversion pin port */ 		ADC_CNV_GPIO_Port,
 									/* conversion pin number */		ADC_CNV_Pin,
 									/* Channel 1 config */			ADC_UNIPOLAR_10V,
-									/* Channel 2 config */			ADC_UNIPOLAR_10V,
-									/* Data buffer size */			1);
+									/* Channel 2 config */			ADC_UNIPOLAR_10V);
 
-		DAC_1 = new DAC_Dev(    /*SPI number*/              6,
+		DAC_1 = new DAC_Device( /*SPI number*/              6,
 								/*DMA Stream Out*/          5,
 								/*DMA Channel Out*/         1,
-								/*DMA Stream In*/           6,
-								/*DMA Channel In*/          1,
 								/* sync pin port*/          DAC_1_Sync_GPIO_Port,
 								/* sync pin number*/        DAC_1_Sync_Pin,
 								/* clear pin port*/         CLR6_GPIO_Port,
@@ -58,7 +56,7 @@ public:
 								/* clear pin port*/         CLR5_GPIO_Port,
 								/* clear pin number*/       CLR5_Pin);
 
-		DAC_1->ConfigOutputs(&hadc3, ADC_CHANNEL_14, ADC_CHANNEL_9);
+		DAC_1->config_output(&hadc3, ADC_CHANNEL_14, ADC_CHANNEL_9);
 		DAC_2->ConfigOutputs(&hadc3, ADC_CHANNEL_8, ADC_CHANNEL_15);
 
 		float m1 = 0;
@@ -84,16 +82,16 @@ public:
 
 		while(true) {
 
-//			t = TIM3->CNT - t;
-//			dt = t/TIM3freq*psc;
-//			dtAcc += dt;
-//			n++;
-//			t = TIM3->CNT;
+			t = TIM3->CNT - t;
+			dt = t/TIM3freq*psc;
+			dtAcc += dt;
+			n++;
+			t = TIM3->CNT;
 
 			ADC_Dev->startConversion();
-			m1 = ADC_Dev->channel1->getResult();
-			m2 = ADC_Dev->channel2->getResult();
-			DAC_1->WriteFloat(m1);
+			m1 = ADC_Dev->channel1->get_result();
+			m2 = ADC_Dev->channel2->get_result();
+			DAC_1->write(m1);
 			DAC_2->WriteFloat(m2);
 		}
 	}
@@ -101,7 +99,8 @@ public:
 
 public:
 	ADC_Device *ADC_Dev;
-	DAC_Dev *DAC_1, *DAC_2;
+	DAC_Device* DAC_1;
+	DAC_Dev* DAC_2;
 };
 
 
@@ -120,7 +119,7 @@ void DMA2_Stream4_IRQHandler(void)
 __attribute__((section("sram_func")))
 void DMA2_Stream5_IRQHandler(void)
 {
-	module->DAC_1->Callback();
+	module->DAC_1->dma_transmission_callback();
 }
 
 __attribute__((section("sram_func")))
