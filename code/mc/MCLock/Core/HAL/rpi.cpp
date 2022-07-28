@@ -103,7 +103,7 @@ void RPI::spi_interrupt() {
 void RPI::dma_in_interrupt() {
 	// wait while SPI is busy
 
-	while(spi->SPI_regs->SR & SPI_SR_BSY);
+	while(spi->isBusy());
 	spi->disableSPI_DMA();
 	dma_in->disableDMA();
 	dma_in->resetTransferCompleteInterruptFlag();

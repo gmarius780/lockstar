@@ -39,8 +39,6 @@ SPI::SPI(uint8_t spi_number, DMA* TxHandler, DMA* RxHandler) {
 
 void SPI::writeData(int16_t data) { SPI_regs->DR = data; }
 
-int16_t SPI::readData() { return SPI_regs->DR; }
-
 void SPI::bindDMAHandlers(DMA* DMATxHandler, DMA* DMARxHandler) {
 //	int i = 15;
 
@@ -66,6 +64,7 @@ void SPI::unbindDMAHandlers() {
 	DMAHandlersValid = false;
 }
 
+__attribute__((section("sram_func")))
 void SPI::enableSPI_DMA() {
 	if(!DMAHandlersValid)
 		return;
@@ -73,8 +72,10 @@ void SPI::enableSPI_DMA() {
 	SPI_regs->CR2 |= (SPI_CR2_TXDMAEN | SPI_CR2_RXDMAEN);
 }
 
+__attribute__((section("sram_func")))
 void SPI::disableSPI_DMA() {
 	//while(SPI_regs->SR & SPI_SR_BSY);
+	// TODO: implement busy() method
 	SPI_regs->CR2 &= ~(SPI_CR2_TXDMAEN | SPI_CR2_RXDMAEN);
 }
 

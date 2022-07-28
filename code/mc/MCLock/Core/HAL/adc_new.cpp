@@ -9,7 +9,6 @@
 
 ADC_Device::ADC_Device(uint8_t SPILane, uint8_t DMAStreamIn, uint8_t DMAChannelIn, uint8_t DMAStreamOut, uint8_t DMAChannelOut, GPIO_TypeDef* CNVPort, uint16_t CNVPin, uint8_t channel1Config, uint8_t channel2Config, uint8_t bufferSize) {
     
-    // Setup of the relevant datastructures
     this->bufferSize = bufferSize;
     dataBuffer      = new uint8_t[bufferSize]();
     this->CNVPort   = CNVPort;
@@ -21,9 +20,10 @@ ADC_Device::ADC_Device(uint8_t SPILane, uint8_t DMAStreamIn, uint8_t DMAChannelI
 
     ADC_configBuffer = new uint8_t[DATAWIDTH]();
 
-    // Initialize the two channels of the ADC Device
     channel1 = new ADC_Device_Channel(this, 1, channel1Config);
     channel2 = new ADC_Device_Channel(this, 2, channel2Config);
+
+    busy = false;
 
     /*
     * Calculate the ADC configuration based on channel configurations
@@ -95,6 +95,7 @@ ADC_Device::ADC_Device(uint8_t SPILane, uint8_t DMAStreamIn, uint8_t DMAChannelI
     DMAOutputHandler        = new DMA(DMAOutConfig);
 
     SPIHandler->bindDMAHandlers(DMAOutputHandler, DMAInputHandler);
+    SPIHandler->enableSPI();
 }
 
 ADC_Device_Channel::ADC_Device_Channel(ADC_Device* parentDevice, uint16_t channelID, uint8_t config){
@@ -138,13 +139,23 @@ ADC_Device_Channel::ADC_Device_Channel(ADC_Device* parentDevice, uint16_t channe
     }
 }
 
+__attribute__((section("sram_func")))
 void ADC_Device_Channel::updateResult(int16_t result) {
     // convert to float
     this->result = twoComp ? (stepSize *  result) : (stepSize * (uint16_t)result);
     // TODO: implement lowpass
 }
 
+__attribute__((section("sram_func")))
+float ADC_Device_Channel::getResult() { return result; }
+
+__attribute__((section("sram_func")))
 void ADC_Device::startConversion() {
+	if(busy)
+		return;
+
+	// busy flag gets reset when DMA transfer is finished
+	busy = true;
 
     CNVPort->BSRR = CNVPin;
     volatile uint8_t delay = 0;
@@ -157,25 +168,32 @@ void ADC_Device::startConversion() {
     armDMA();
 }
 
+__attribute__((section("sram_func")))
 void ADC_Device::armDMA() {
-    DMAOutputHandler->setMemoryAddress(ADC_configBuffer,0);
+	DMAOutputHandler->disableDMA();
+	DMAInputHandler->disableDMA();
+
+    DMAOutputHandler->setMemory0Address(ADC_configBuffer);
     DMAOutputHandler->setNumberOfData(6);
     
-    DMAInputHandler->setMemoryAddress(dataBuffer,0);
+    DMAInputHandler->setMemory0Address(dataBuffer);
     DMAInputHandler->setNumberOfData(6);
 
     DMAOutputHandler->enableDMA();
     DMAInputHandler->enableDMA();
 
-    SPIHandler->enableSPI_DMA();   
+    SPIHandler->enableSPI_DMA();
 }
 
+__attribute__((section("sram_func")))
 void ADC_Device::DMATransmissionCallback() {
     SPIHandler->disableSPI_DMA();
     DMAInputHandler->resetTransferCompleteInterruptFlag();
     DMAOutputHandler->resetTransferCompleteInterruptFlag();
 
-    channel1->updateResult(((int16_t)(dataBuffer[0] << 8)) + ((int16_t)dataBuffer[1]));
-    channel2->updateResult(((int16_t)(dataBuffer[3] << 8)) + ((int16_t)dataBuffer[4]));
+    channel2->updateResult(((int16_t)(dataBuffer[0] << 8)) + ((int16_t)dataBuffer[1]));
+    channel1->updateResult(((int16_t)(dataBuffer[3] << 8)) + ((int16_t)dataBuffer[4]));
+
+    busy = false;
 }
 
