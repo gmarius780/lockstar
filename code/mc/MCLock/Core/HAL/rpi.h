@@ -20,7 +20,7 @@ public:
 	void spi_interrupt();
 	void dma_out_interrupt();
 	void dma_in_interrupt();
-
+	void start_dma_communication(uint32_t nbr_of_bytes);
 private:
 	SPI *spi;
 	DMA *dma_in;
@@ -29,10 +29,10 @@ private:
 
 	bool is_communicating; //true after spi interrupt was fired until dma communication is finished
 	uint32_t current_nbr_of_bytes;
-	uint8_t *read_buffer;
-	uint8_t *write_buffer;
+	volatile uint8_t *read_buffer;
+	volatile uint8_t *write_buffer;
 
-	void start_dma_communication(uint32_t nbr_of_bytes);
+
 };
 
 #endif /* HAL_RPI_H_ */

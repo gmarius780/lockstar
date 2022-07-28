@@ -8,8 +8,8 @@
 #include "rpi.h"
 
 RPI::RPI() {
-	read_buffer = new uint8_t[2550];
-	write_buffer = new uint8_t[4096];
+	read_buffer = new uint8_t[2550]();
+	write_buffer = new uint8_t[4096]();
 
 	spi = new SPI(4);
 	spi->disableSPI();
@@ -108,6 +108,7 @@ void RPI::dma_in_interrupt() {
 	dma_in->disableDMA();
 	dma_in->resetTransferCompleteInterruptFlag();
 	is_communicating = false;
+	spi->enableRxIRQ();
 	//clear interrupt
 }
 
@@ -123,6 +124,5 @@ void RPI::start_dma_communication(uint32_t nbr_of_bytes) {
 	this->dma_in->setNumberOfData(nbr_of_bytes);
 	this->dma_in->enableDMA();
 	spi->enableSPI_DMA();
-	//spi->enableSPI();
 }
 
