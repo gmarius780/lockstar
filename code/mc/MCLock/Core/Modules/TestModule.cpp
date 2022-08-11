@@ -20,11 +20,10 @@
 class TestModule {
 public:
 	TestModule() {
-
+		this->rpi = new RPI();
 	}
 	void run() {
-		this->rpi = new RPI();
-		this->rpi->start_dma_communication(10);
+
 		while(1) {
 			//Problem: dma_in irq reset does not work. Spi busy flag is always high
 			turn_LED5_on();
@@ -43,7 +42,7 @@ public:
 };
 
 
-__weak TestModule *module;
+TestModule *module;
 
 /******************************
  *         INTERRUPTS          *
@@ -105,6 +104,7 @@ void DMA2_Stream0_IRQHandler(void)
 	//module->rpi->Callback();
 //	module->rpi_dma_interrupt();
 	//module->rpi->ResetIntPin();
+	//todo: check if error or transmission complete!!
 	module->rpi->dma_in_interrupt();
 }
 __attribute__((section("sram_func")))
