@@ -20,9 +20,11 @@
 class TestModule {
 public:
 	TestModule() {
-		this->rpi = new RPI();
+
 	}
 	void run() {
+		this->rpi = new RPI();
+		this->rpi->start_dma_communication(10);
 		while(1) {
 			//Problem: dma_in irq reset does not work. Spi busy flag is always high
 			turn_LED5_on();
