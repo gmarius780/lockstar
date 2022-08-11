@@ -52,7 +52,7 @@ public:
 private:
     DMA_Stream_TypeDef* DMA_regs;
     uint32_t TCIFBit;
-    volatile uint32_t *LIFCRreg;
+    volatile uint32_t *IFCRreg;
     bool enabled;
 };
 

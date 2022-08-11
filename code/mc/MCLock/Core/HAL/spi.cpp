@@ -17,66 +17,42 @@ SPI::SPI(uint8_t spi_number) {
         case 5: this->SPI_regs = SPI5; break;
         case 6: this->SPI_regs = SPI6; break;
     }
-
-    DMAHandlersValid = false;
-    DMATxHandler = NULL;
-    DMARxHandler = NULL;
-}
-
-SPI::SPI(uint8_t spi_number, DMA* TxHandler, DMA* RxHandler) {
-    switch(spi_number) {
-        case 1: this->SPI_regs = SPI1; break;
-        case 4: this->SPI_regs = SPI4; break;
-        case 5: this->SPI_regs = SPI5; break;
-        case 6: this->SPI_regs = SPI6; break;
-    }
-
-    DMAHandlersValid = false;
-    this->DMARxHandler = RxHandler;
-    this->DMATxHandler = TxHandler;
-    checkDMAHandlers();
 }
 
 void SPI::writeData(int16_t data) { SPI_regs->DR = data; }
 
-void SPI::bindDMAHandlers(DMA* DMATxHandler, DMA* DMARxHandler) {
-//	int i = 15;
-
-	this->DMARxHandler = DMARxHandler;
-	this->DMATxHandler = DMATxHandler;
-
-	DMATxHandler->setPeripheralAddress(&SPI_regs->DR);
-	DMARxHandler->setPeripheralAddress(&SPI_regs->DR);
-
-	checkDMAHandlers();
-}
-
-void SPI::checkDMAHandlers() {
-	// TODO: More elaborate checking (e.g. no periph address increment, etc)
-	DMAHandlersValid = false;
-	if(DMARxHandler != NULL && DMATxHandler != NULL)
-		DMAHandlersValid = true;
-}
-
-void SPI::unbindDMAHandlers() {
-	DMARxHandler = NULL;
-	DMATxHandler = NULL;
-	DMAHandlersValid = false;
-}
-
 __attribute__((section("sram_func")))
 void SPI::enableSPI_DMA() {
-	if(!DMAHandlersValid)
-		return;
-	//while(SPI_regs->SR & SPI_SR_BSY);
+	while(SPI_regs->SR & SPI_SR_BSY);
 	SPI_regs->CR2 |= (SPI_CR2_TXDMAEN | SPI_CR2_RXDMAEN);
 }
 
 __attribute__((section("sram_func")))
 void SPI::disableSPI_DMA() {
-	//while(SPI_regs->SR & SPI_SR_BSY);
+	while(SPI_regs->SR & SPI_SR_BSY);
 	// TODO: implement busy() method
 	SPI_regs->CR2 &= ~(SPI_CR2_TXDMAEN | SPI_CR2_RXDMAEN);
+}
+
+__attribute__((section("sram_func")))
+void SPI::enable_spi_rx_dma() {
+	SPI_regs->CR2 |= SPI_CR2_RXDMAEN;
+}
+
+__attribute__((section("sram_func")))
+void SPI::disable_spi_rx_dma() {
+	SPI_regs->CR2 &= ~SPI_CR2_RXDMAEN;
+}
+
+__attribute__((section("sram_func")))
+void SPI::enable_spi_tx_dma() {
+	SPI_regs->CR2 |= SPI_CR2_TXDMAEN;
+}
+
+__attribute__((section("sram_func")))
+void SPI::disable_spi_tx_dma() {
+	while(SPI_regs->SR & SPI_SR_BSY);
+	SPI_regs->CR2 &= ~SPI_CR2_TXDMAEN;
 }
 
 void SPI::enableSPI() { SPI_regs->CR1 |= SPI_CR1_SPE; }

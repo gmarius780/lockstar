@@ -7,18 +7,17 @@
 
 #include "adc_new.hpp"
 
-ADC_Device::ADC_Device(uint8_t SPILane, uint8_t DMAStreamIn, uint8_t DMAChannelIn, uint8_t DMAStreamOut, uint8_t DMAChannelOut, GPIO_TypeDef* CNVPort, uint16_t CNVPin, uint8_t channel1Config, uint8_t channel2Config, uint8_t bufferSize) {
+ADC_Device::ADC_Device(uint8_t SPILane, uint8_t DMAStreamIn, uint8_t DMAChannelIn, uint8_t DMAStreamOut, uint8_t DMAChannelOut, GPIO_TypeDef* CNVPort, uint16_t CNVPin, uint8_t channel1Config, uint8_t channel2Config) {
     
-    this->bufferSize = bufferSize;
-    dataBuffer      = new uint8_t[bufferSize]();
-    this->CNVPort   = CNVPort;
-    this->CNVPin    = CNVPin;
+    dma_buffer      = new uint8_t[DATAWIDTH]();
+    this->cnv_port   = CNVPort;
+    this->cnv_pin    = CNVPin;
 
-    singleChannelMode = false;
+    single_channel_mode = false;
     if(channel1Config == ADC_OFF || channel2Config == ADC_OFF)
-        singleChannelMode = true;
+        single_channel_mode = true;
 
-    ADC_configBuffer = new uint8_t[DATAWIDTH]();
+    adc_config_buffer = new uint8_t[DATAWIDTH]();
 
     channel1 = new ADC_Device_Channel(this, 1, channel1Config);
     channel2 = new ADC_Device_Channel(this, 2, channel2Config);
@@ -30,77 +29,78 @@ ADC_Device::ADC_Device(uint8_t SPILane, uint8_t DMAStreamIn, uint8_t DMAChannelI
     * This is send at every conversion to the ADC device
     */
     volatile uint8_t code = 0b11111100; //TODO: magic number.. nice!
-    code = ((code&0b00011111) | (channel1->getChannelCode()<<5));
-    code = ((code&0b11100011) | (channel2->getChannelCode()<<2));
-    ADC_configBuffer[0] = code;
+    code = ((code&0b00011111) | (channel1->get_channel_code()<<5));
+    code = ((code&0b11100011) | (channel2->get_channel_code()<<2));
+    adc_config_buffer[0] = code;
 
     // Setup perhipherals
-    SPIHandler = new SPI(SPILane);
+    spi_handler = new SPI(SPILane);
 
     uint8_t DMAprio = 2;
-    DMAInConfig.priority = DMAprio;
-    DMAInConfig.CR = 0;
+    dma_in_config.priority = DMAprio;
+    dma_in_config.CR = 0;
     // reset 3 bits that define channel
-    DMAInConfig.CR &= ~(DMA_SxCR_CHSEL);
+    dma_in_config.CR &= ~(DMA_SxCR_CHSEL);
     // set channel via 3 control bits
-    DMAInConfig.CR |= DMAChannelIn * DMA_SxCR_CHSEL_0; 
+    dma_in_config.CR |= DMAChannelIn * DMA_SxCR_CHSEL_0; 
     // set stream priority from very low (00) to very high (11)
-    DMAInConfig.CR &= ~(DMA_SxCR_PL); 
+    dma_in_config.CR &= ~(DMA_SxCR_PL); 
     // reset 2 bits that define priority
-    DMAInConfig.CR |= DMAprio * DMA_SxCR_PL_0; // set priority via 2 control bits
+    dma_in_config.CR |= DMAprio * DMA_SxCR_PL_0; // set priority via 2 control bits
     // increment the memory address with each transfer
-    DMAInConfig.CR |= DMA_SxCR_MINC;
+    dma_in_config.CR |= DMA_SxCR_MINC;
     // do not increment peripheral address
-    DMAInConfig.CR &= ~DMA_SxCR_PINC;
+    dma_in_config.CR &= ~DMA_SxCR_PINC;
     // set direction of transfer to "peripheral to memory"
-    DMAInConfig.CR &= ~(DMA_SxCR_DIR_0 | DMA_SxCR_DIR_1);
+    dma_in_config.CR &= ~(DMA_SxCR_DIR_0 | DMA_SxCR_DIR_1);
     // Clear DBM bit
-    DMAInConfig.CR &= (uint32_t)(~DMA_SxCR_DBM);
+    dma_in_config.CR &= (uint32_t)(~DMA_SxCR_DBM);
     // Program transmission-complete interrupt
-    DMAInConfig.CR  |= DMA_SxCR_TCIE;
+    dma_in_config.CR  |= DMA_SxCR_TCIE;
 
-    DMAInConfig.stream      = DMAStreamIn;
-    DMAInConfig.channel     = DMAChannelIn;
-    DMAInConfig.PAR         = (uint32_t)SPIHandler->getDRAddress();
-    DMAInConfig.M0AR        = (uint32_t)dataBuffer;
-    DMAInConfig.M1AR		= 0;
-    DMAInConfig.NDTR        = 0;
-    DMAInputHandler         = new DMA(DMAInConfig);
+    dma_in_config.stream      = DMAStreamIn;
+    dma_in_config.channel     = DMAChannelIn;
+    dma_in_config.PAR         = (uint32_t)spi_handler->getDRAddress();
+    dma_in_config.M0AR        = (uint32_t)dma_buffer;
+    dma_in_config.M1AR		= 0;
+    dma_in_config.NDTR        = 0;
 
-    DMAOutConfig.priority = DMAprio;
-    DMAOutConfig.CR = 0;
-    DMAOutConfig.CR &= ~(DMA_SxCR_CHSEL); // reset 3 bits that define channel
-    DMAOutConfig.CR |= DMAChannelOut * DMA_SxCR_CHSEL_0; // set channel via 3 control bits
+    dma_input_handler         = new DMA(dma_in_config);
+
+    dma_out_config.priority = DMAprio;
+    dma_out_config.CR = 0;
+    dma_out_config.CR &= ~(DMA_SxCR_CHSEL); // reset 3 bits that define channel
+    dma_out_config.CR |= DMAChannelOut * DMA_SxCR_CHSEL_0; // set channel via 3 control bits
     // set stream priority from very low (00) to very high (11)
-    DMAOutConfig.CR &= ~(DMA_SxCR_PL); // reset 2 bits that define priority
-    DMAOutConfig.CR |= DMAprio * DMA_SxCR_PL_0; // set priority via 2 control bits
+    dma_out_config.CR &= ~(DMA_SxCR_PL); // reset 2 bits that define priority
+    dma_out_config.CR |= DMAprio * DMA_SxCR_PL_0; // set priority via 2 control bits
     // increment the memory address with each transfer
-    DMAOutConfig.CR |= DMA_SxCR_MINC;
+    dma_out_config.CR |= DMA_SxCR_MINC;
     // do not increment peripheral address
-    DMAOutConfig.CR &= ~DMA_SxCR_PINC;
+    dma_out_config.CR &= ~DMA_SxCR_PINC;
     // set direction of transfer to "memory to peripheral"
-    DMAOutConfig.CR &= ~DMA_SxCR_DIR_1;
-    DMAOutConfig.CR |= DMA_SxCR_DIR_0;
+    dma_out_config.CR &= ~DMA_SxCR_DIR_1;
+    dma_out_config.CR |= DMA_SxCR_DIR_0;
     // Clear DBM bit
-    DMAOutConfig.CR &= (uint32_t)(~DMA_SxCR_DBM);
+    dma_out_config.CR &= (uint32_t)(~DMA_SxCR_DBM);
     // Disable transmission-complete interrupt
-    DMAOutConfig.CR  &= ~DMA_SxCR_TCIE;
+    dma_out_config.CR  &= ~DMA_SxCR_TCIE;
 
-    DMAOutConfig.stream     = DMAStreamOut;
-    DMAOutConfig.channel    = DMAChannelOut;
-    DMAOutConfig.PAR        = (uint32_t)SPIHandler->getDRAddress();
-    DMAOutConfig.M0AR       = (uint32_t)dataBuffer;
-    DMAOutConfig.M1AR		= 0;
-    DMAOutConfig.NDTR       = 0;
-    DMAOutputHandler        = new DMA(DMAOutConfig);
+    dma_out_config.stream     = DMAStreamOut;
+    dma_out_config.channel    = DMAChannelOut;
+    dma_out_config.PAR        = (uint32_t)spi_handler->getDRAddress();
+    dma_out_config.M0AR       = (uint32_t)dma_buffer;
+    dma_out_config.M1AR		= 0;
+    dma_out_config.NDTR       = 0;
 
-    SPIHandler->bindDMAHandlers(DMAOutputHandler, DMAInputHandler);
-    SPIHandler->enableSPI();
+    dma_output_handler        = new DMA(dma_out_config);
+
+    spi_handler->enableSPI();
 }
 
 ADC_Device_Channel::ADC_Device_Channel(ADC_Device* parentDevice, uint16_t channelID, uint8_t config){
-    this->parentDevice = parentDevice;
-    this->channelID = channelID;
+    this->parent_device = parentDevice;
+    this->channel_id = channelID;
     this->result = 0;
 
     /* from the LTC2353-16 Datasheet:
@@ -111,88 +111,84 @@ ADC_Device_Channel::ADC_Device_Channel(ADC_Device* parentDevice, uint16_t channe
      *          000     channel off
      */
 
-    switch(config){
+    switch(config) {
     case ADC_BIPOLAR_10V:
-        channelCode = 0b111;
-        this->stepSize = 20.48f / 0xffff;
-        this->twoComp = true;
+        channel_code = 0b111;
+        this->step_size = 20.48f / 0xffff;
+        this->two_comp = true;
         break;
     case ADC_BIPOLAR_5V:
-        channelCode = 0b011;
-        this->stepSize = 10.24f / 0xffff;
-        this->twoComp = true;
+        channel_code = 0b011;
+        this->step_size = 10.24f / 0xffff;
+        this->two_comp = true;
         break;
     case ADC_UNIPOLAR_10V:
-        channelCode = 0b101;
-        this->stepSize = 10.24f / 0xffff;
-        this->twoComp = false;
+        channel_code = 0b101;
+        this->step_size = 10.24f / 0xffff;
+        this->two_comp = false;
         break;
     case ADC_UNIPOLAR_5V:
-        channelCode = 0b001;
-        this->stepSize = 5.12f / 0xffff;
-        this->twoComp = false;
+        channel_code = 0b001;
+        this->step_size = 5.12f / 0xffff;
+        this->two_comp = false;
         break;
     default:
-        channelCode = 0b000;
-        this->stepSize = 0.0f;
-        this->twoComp = false;
+        channel_code = 0b000;
+        this->step_size = 0.0f;
+        this->two_comp = false;
     }
 }
 
 __attribute__((section("sram_func")))
-void ADC_Device_Channel::updateResult(int16_t result) {
-    // convert to float
-    this->result = twoComp ? (stepSize *  result) : (stepSize * (uint16_t)result);
-    // TODO: implement lowpass
+void ADC_Device_Channel::update_result(int16_t result) {
+	this->result = two_comp ? (step_size*result) : (step_size*(uint16_t)result);
 }
 
 __attribute__((section("sram_func")))
-float ADC_Device_Channel::getResult() { return result; }
-
-__attribute__((section("sram_func")))
-void ADC_Device::startConversion() {
+void ADC_Device::start_conversion() {
 	if(busy)
 		return;
 
 	// busy flag gets reset when DMA transfer is finished
 	busy = true;
 
-    CNVPort->BSRR = CNVPin;
+    cnv_port->BSRR = cnv_pin;
     volatile uint8_t delay = 0;
     while(delay--);
-    CNVPort->BSRR = (uint32_t)CNVPin << 16U;
+    cnv_port->BSRR = (uint32_t)cnv_pin << 16U;
     delay = 5;
     while(delay--);
     //M: sleep?
 
-    armDMA();
+    arm_dma();
 }
 
 __attribute__((section("sram_func")))
-void ADC_Device::armDMA() {
-	DMAOutputHandler->disableDMA();
-	DMAInputHandler->disableDMA();
+void ADC_Device::arm_dma() {
+	dma_output_handler->disableDMA();
+	dma_input_handler->disableDMA();
 
-    DMAOutputHandler->setMemory0Address(ADC_configBuffer);
-    DMAOutputHandler->setNumberOfData(6);
+    // TODO: create a arm_dma method in the DMA class
+    dma_output_handler->setMemory0Address(adc_config_buffer);
+    dma_output_handler->setNumberOfData(6);
     
-    DMAInputHandler->setMemory0Address(dataBuffer);
-    DMAInputHandler->setNumberOfData(6);
+    dma_input_handler->setMemory0Address(dma_buffer);
+    dma_input_handler->setNumberOfData(6);
 
-    DMAOutputHandler->enableDMA();
-    DMAInputHandler->enableDMA();
+    dma_output_handler->enableDMA();
+    dma_input_handler->enableDMA();
 
-    SPIHandler->enableSPI_DMA();
+    spi_handler->enableSPI_DMA();
 }
 
 __attribute__((section("sram_func")))
-void ADC_Device::DMATransmissionCallback() {
-    SPIHandler->disableSPI_DMA();
-    DMAInputHandler->resetTransferCompleteInterruptFlag();
-    DMAOutputHandler->resetTransferCompleteInterruptFlag();
+void ADC_Device::dma_transmission_callback() {
+    spi_handler->disableSPI_DMA();
+    dma_input_handler->resetTransferCompleteInterruptFlag();
+    dma_output_handler->resetTransferCompleteInterruptFlag();
 
-    channel2->updateResult(((int16_t)(dataBuffer[0] << 8)) + ((int16_t)dataBuffer[1]));
-    channel1->updateResult(((int16_t)(dataBuffer[3] << 8)) + ((int16_t)dataBuffer[4]));
+    channel2->update_result(((int16_t)(dma_buffer[0] << 8)) + ((int16_t)dma_buffer[1]));
+    channel1->update_result(((int16_t)(dma_buffer[3] << 8)) + ((int16_t)dma_buffer[4]));
 
     busy = false;
 }

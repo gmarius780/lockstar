@@ -42,14 +42,15 @@ public:
     void disableRxIRQ();
     void enableSPI_DMA();
     void disableSPI_DMA();
+    void enable_spi_rx_dma();
+    void disable_spi_rx_dma();
+    void enable_spi_tx_dma();
+    void disable_spi_tx_dma();
+
     
 
 private:
     SPI_TypeDef* SPI_regs;
-    DMA  *DMATxHandler, *DMARxHandler;
-    bool DMAHandlersValid;
-    void checkDMAHandlers();
-
 };
 
 #endif /* HAL_SPI_HPP_ */

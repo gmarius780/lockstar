@@ -24,57 +24,55 @@ class ADC_Device;
 
 class ADC_Device_Channel {
 public:
-    ADC_Device_Channel(ADC_Device* parentDevice, uint16_t ChannelId, uint8_t setup);
-    float getResult();
-    uint8_t getChannelCode() { return channelCode; };
+    ADC_Device_Channel(ADC_Device* parent_device, uint16_t channel_id, uint8_t setup);
+    float get_result() { return result; }
+    uint8_t get_channel_code() { return channel_code; }
 
     friend class ADC_Device;
 
 private:
-    void updateResult(int16_t result);
-    volatile float result;
-    float stepSize;
-    bool twoComp;
-    ADC_Device *parentDevice;
-    uint8_t channelID, channelCode;
+    void update_result(int16_t result);
+    // Samuel: Maybe it makes more sense to move the channel buffer to the modules using the ADC?
+    float result;
+    float step_size;
+    bool two_comp;
+    ADC_Device *parent_device;
+    uint8_t channel_id, channel_code;
 };
 
 class ADC_Device {
 public:
-    ADC_Device(uint8_t SPILane, 
-                uint8_t DMA_Stream_In, 
-                uint8_t DMA_Channel_In, 
-                uint8_t DMA_Stream_Out, 
-                uint8_t DMA_Channel_Out, 
-                GPIO_TypeDef* CNV_Port, 
-                uint16_t CNV_Pin, 
-                uint8_t Channel1Config, 
-                uint8_t Channel2Config,
-                uint8_t bufferSize);
+    ADC_Device(uint8_t spi_lane, 
+                uint8_t dma_stream_in,
+                uint8_t dma_channel_in,
+                uint8_t dma_stream_out,
+                uint8_t dma_channel_out,
+                GPIO_TypeDef* cnv_port,
+                uint16_t cnv_pin,
+                uint8_t channel1_config,
+                uint8_t channel2_config);
+
     ADC_Device_Channel *channel1, *channel2;
-    void startConversion();
-    void DMATransmissionCallback();
-    void clearBuffer();
-    volatile uint8_t* getDataBuffer() { return dataBuffer; };
-    bool isBusy() { return busy; };
+    void start_conversion();
+    void dma_transmission_callback();
+    bool is_busy() { return busy; };
 
 private:
-    void armDMA();
-    void disarmDMA();
+    void arm_dma();
+    void disarm_dma();
 
-    volatile uint8_t* dataBuffer;
-    volatile uint8_t* ADC_configBuffer;
-    uint8_t bufferSize;
+    volatile uint8_t* dma_buffer;
+    volatile uint8_t* adc_config_buffer;
 
-    uint16_t CNVPin;
-    GPIO_TypeDef* CNVPort;
+    uint16_t cnv_pin;
+    GPIO_TypeDef* cnv_port;
 
-    bool singleChannelMode;
+    bool single_channel_mode;
     bool busy;
 
-    DMA *DMAInputHandler, *DMAOutputHandler;
-    SPI *SPIHandler;
-    DMA_config_t DMAInConfig, DMAOutConfig;
+    DMA *dma_input_handler, *dma_output_handler;
+    SPI *spi_handler;
+    DMA_config_t dma_in_config, dma_out_config;
 };
 
 
