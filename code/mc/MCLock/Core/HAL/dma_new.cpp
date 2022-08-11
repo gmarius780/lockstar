@@ -11,14 +11,14 @@
 DMA::DMA(DMA_config_t config) {
 	
     switch(config.stream) {
-    case 0: DMA_regs = DMA2_Stream0; LIFCRreg = &(DMA2->LIFCR); TCIFBit = 1UL<<5; break;
-    case 1: DMA_regs = DMA2_Stream1; LIFCRreg = &(DMA2->LIFCR); TCIFBit = 1UL<<11; break;
-    case 2: DMA_regs = DMA2_Stream2; LIFCRreg = &(DMA2->LIFCR); TCIFBit = 1UL<<21; break;
-    case 3: DMA_regs = DMA2_Stream3; LIFCRreg = &(DMA2->LIFCR); TCIFBit = 1UL<<27; break;
-    case 4: DMA_regs = DMA2_Stream4; LIFCRreg = &(DMA2->HIFCR); TCIFBit = 1UL<<5; break;
-    case 5: DMA_regs = DMA2_Stream5; LIFCRreg = &(DMA2->HIFCR); TCIFBit = 1UL<<11; break;
-    case 6: DMA_regs = DMA2_Stream6; LIFCRreg = &(DMA2->HIFCR); TCIFBit = 1UL<<21; break;
-    case 7: DMA_regs = DMA2_Stream7; LIFCRreg = &(DMA2->HIFCR); TCIFBit = 1UL<<27; break;
+    case 0: DMA_regs = DMA2_Stream0; IFCRreg = &(DMA2->LIFCR); TCIFBit = 1UL<<5; break;
+    case 1: DMA_regs = DMA2_Stream1; IFCRreg = &(DMA2->LIFCR); TCIFBit = 1UL<<11; break;
+    case 2: DMA_regs = DMA2_Stream2; IFCRreg = &(DMA2->LIFCR); TCIFBit = 1UL<<21; break;
+    case 3: DMA_regs = DMA2_Stream3; IFCRreg = &(DMA2->LIFCR); TCIFBit = 1UL<<27; break;
+    case 4: DMA_regs = DMA2_Stream4; IFCRreg = &(DMA2->HIFCR); TCIFBit = 1UL<<5; break;
+    case 5: DMA_regs = DMA2_Stream5; IFCRreg = &(DMA2->HIFCR); TCIFBit = 1UL<<11; break;
+    case 6: DMA_regs = DMA2_Stream6; IFCRreg = &(DMA2->HIFCR); TCIFBit = 1UL<<21; break;
+    case 7: DMA_regs = DMA2_Stream7; IFCRreg = &(DMA2->HIFCR); TCIFBit = 1UL<<27; break;
     default: DMA_regs = NULL;
     }
 
@@ -60,7 +60,7 @@ void DMA::setNumberOfData(uint32_t n) {
 }
 
 void DMA::resetTransferCompleteInterruptFlag() {
-	*(this->LIFCRreg) |= this->TCIFBit;
+	*(this->IFCRreg) |= this->TCIFBit;
 }
 
 void DMA::enableCircMode() {

@@ -51,10 +51,6 @@ public:
 
 private:
     SPI_TypeDef* SPI_regs;
-    DMA  *DMATxHandler, *DMARxHandler;
-    bool DMAHandlersValid;
-    void checkDMAHandlers();
-
 };
 
 #endif /* HAL_SPI_HPP_ */
