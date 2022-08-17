@@ -14,6 +14,7 @@
 #include "../HAL/spi.hpp"
 #include "../HAL/rpi.h"
 #include "../HAL/leds.hpp"
+#include "../Lib/rpi_data_package.h"
 
 #ifdef TEST_MODULE
 
@@ -32,11 +33,50 @@ public:
 		}
 	}
 
+	void handle_rpi_input() {
+		RPIDataPackage* read_package = rpi->get_read_package();
+
+		switch (read_package->pop_from_buffer<uint32_t>()) {
+		case 1:
+			method_one(read_package);
+			break;
+		case 2:
+			method_two(read_package);
+			break;
+		}
+
+
+		//rpi->send_package(((uint32_t*)rpi->get_read_buffer())[0], ((uint32_t*)rpi->get_read_buffer())[1]);
+	}
+
+	void method_one(RPIDataPackage* read_package) {
+		RPIDataPackage* write_package = rpi->get_write_package();
+
+		uint32_t p = read_package->pop_from_buffer<uint32_t>();
+		uint32_t i = read_package->pop_from_buffer<uint32_t>();
+
+		write_package->push_to_buffer<uint32_t>(p);
+		write_package->push_to_buffer<uint32_t>(i);
+
+		rpi->send_package(write_package);
+	}
+
+	void method_two(RPIDataPackage* read_package) {
+		RPIDataPackage* write_package = rpi->get_write_package();
+
+		read_package->pop_from_buffer<uint32_t>();
+
+		write_package->push_to_buffer<uint32_t>(read_package->pop_from_buffer<uint32_t>());
+		write_package->push_to_buffer<uint32_t>(read_package->pop_from_buffer<uint32_t>());
+
+		rpi->send_package(write_package);
+	}
+
 	void rpi_dma_in_interrupt() {
 
 		if(rpi->dma_in_interrupt())
-		{ /*got new command from rpi*/
-
+		{ /*got new package from rpi*/
+			handle_rpi_input();
 		} else
 		{ /* error */
 
@@ -129,7 +169,7 @@ void DMA2_Stream6_IRQHandler(void)
 
 __attribute__((section("sram_func")))
 void SPI4_IRQHandler(void) {
-	module->rpi->rpi_spi_interrupt();
+	module->rpi->spi_interrupt();
 }
 
 /******************************

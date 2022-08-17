@@ -100,6 +100,7 @@ RPI::RPI() {
 
 	is_communicating = false;
 	spi->enableRxIRQ();
+	spi->disableTxIRQ();
 	spi->enableSPI();
 
 }
@@ -110,9 +111,11 @@ RPI::~RPI() {
 
 void RPI::spi_interrupt() {
 	if(is_communicating == false) {
-		is_communicating = true;
 		current_nbr_of_bytes = 10 * ((uint32_t)*(volatile uint8_t *)spi->getDRAddress());
-		this->start_dma_in_communication(this->current_nbr_of_bytes);
+		if (current_nbr_of_bytes != 0) {
+			is_communicating = true;
+			this->start_dma_in_communication(this->current_nbr_of_bytes);
+		}
 	}
 }
 
@@ -168,5 +171,24 @@ void RPI::start_dma_out_communication(uint32_t nbr_of_bytes) {
 	this->dma_out->setNumberOfData(nbr_of_bytes);
 	this->dma_out->enableDMA();
 	spi->enableSPI_DMA();
+}
+
+volatile uint8_t* RPI::get_read_buffer() {
+	return read_buffer;
+}
+
+RPIDataPackage* RPI::get_read_package() {
+	return new RPIDataPackage((uint8_t*)read_buffer);
+}
+
+RPIDataPackage* RPI::get_write_package() {
+	// +4 to make room for the number of bytes
+	return new RPIDataPackage((uint8_t*)write_buffer+4);
+}
+
+void RPI::send_package(RPIDataPackage* write_package) {
+	//+4 to make room for the number of bytes
+	((volatile uint32_t*)write_buffer)[0] = (uint32_t)(write_package->nbr_of_bytes_to_send());
+	start_dma_out_communication(write_package->nbr_of_bytes_to_send());
 }
 

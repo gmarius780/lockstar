@@ -10,6 +10,7 @@
 #include "stm32f427xx.h"
 #include "../HAL/dma_new.hpp"
 #include "../HAL/spi.hpp"
+#include "../Lib/rpi_data_package.h"
 
 
 class RPI {
@@ -22,9 +23,12 @@ public:
 	void dma_out_error_interrupt();
 	bool dma_in_interrupt(); //true if communication was successful
 	void dma_in_error_interrupt();
-	void start_dma_in_communication(uint32_t nbr_of_bytes);
-	void start_dma_out_communication(uint32_t nbr_of_bytes);
 
+	RPIDataPackage* get_read_package();
+	RPIDataPackage* get_write_package();
+
+	void send_package(RPIDataPackage* write_package);
+	volatile uint8_t* get_read_buffer();
 private:
 	SPI *spi;
 	DMA *dma_in;
@@ -35,6 +39,9 @@ private:
 	uint32_t current_nbr_of_bytes;
 	volatile uint8_t *read_buffer;
 	volatile uint8_t *write_buffer;
+
+	void start_dma_in_communication(uint32_t nbr_of_bytes);
+	void start_dma_out_communication(uint32_t nbr_of_bytes);
 
 
 };
