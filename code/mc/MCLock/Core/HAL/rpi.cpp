@@ -8,8 +8,8 @@
 #include "rpi.h"
 
 RPI::RPI() {
-	read_buffer = new uint8_t[2550]();
-	write_buffer = new uint8_t[4096]();
+	read_buffer = new uint8_t[2550];
+	write_buffer = new uint8_t[4096];
 
 	spi = new SPI(4);
 	spi->disableSPI();
@@ -23,6 +23,8 @@ RPI::RPI() {
 
 	uint8_t DMAprio = 1;
 	dma_in_config.priority = DMAprio;
+	//initialize CR to be zero
+	dma_in_config.CR = 0;
 	//important to explicitly disable otherwise the DMA constructor will enable it
 	dma_in_config.CR &= ~DMA_SxCR_EN;
 	// reset 3 bits that define channel
@@ -41,6 +43,17 @@ RPI::RPI() {
 	dma_in_config.CR &= ~(DMA_SxCR_DIR_0 | DMA_SxCR_DIR_1);
 	// Clear DBM bit
 	dma_in_config.CR &= (uint32_t)(~DMA_SxCR_DBM);
+
+	//disable peripheral flow control -> the MC knows how many bytes to expect (the rpi tells it via spi)
+	dma_in_config.CR &= ~DMA_SxCR_PFCTRL;
+
+	//set memory 'unit' to 8-bit
+	dma_in_config.CR &= ~DMA_SxCR_PSIZE_0;
+	dma_in_config.CR &= ~DMA_SxCR_PSIZE_1;
+	dma_in_config.CR &= ~DMA_SxCR_MSIZE_0;
+	dma_in_config.CR &= ~DMA_SxCR_MSIZE_1;
+
+
 	// disable transmission-complete / halftransmission; enable error interrupt
 	dma_in_config.CR  &= ~DMA_SxCR_TCIE;
 	dma_in_config.CR  &= ~DMA_SxCR_HTIE;
@@ -57,6 +70,9 @@ RPI::RPI() {
 	dma_out_config.M0AR       = (uint32_t)write_buffer;
 	dma_out_config.NDTR       = 0;
 	dma_out_config.priority = 1;
+
+	//initialize CR to be zero
+	dma_out_config.CR = 0;
 
 	//important to explicitly disable otherwise the DMA constructor will enable it
 	dma_out_config.CR &= ~DMA_SxCR_EN;
@@ -77,6 +93,8 @@ RPI::RPI() {
 	// Program transmission-complete interrupt
 	dma_out_config.CR  &= ~DMA_SxCR_TCIE;
 	dma_out_config.CR  &= ~DMA_SxCR_TEIE;
+	//disable peripheral flow control -> the MC knows how many bytes to expect (the rpi tells it via spi)
+	dma_out_config.CR &= ~DMA_SxCR_PFCTRL;
 
 	dma_out = new DMA(dma_out_config);
 
@@ -102,14 +120,15 @@ void RPI::spi_interrupt() {
 
 void RPI::dma_in_interrupt() {
 	// wait while SPI is busy
-
-	while(spi->isBusy());
-	spi->disableSPI_DMA();
-	dma_in->disableDMA();
-	dma_in->resetTransferCompleteInterruptFlag();
-	is_communicating = false;
-	spi->enableRxIRQ();
-	//clear interrupt
+	if (dma_in->getNumberOfData() <= 0) {
+		while(spi->isBusy());
+		spi->disableSPI_DMA();
+		dma_in->disableDMA();
+		dma_in->resetTransferCompleteInterruptFlag();
+		is_communicating = false;
+//		((uint32_t)*(volatile uint8_t *)spi->getDRAddress());
+		spi->enableRxIRQ();
+	}
 }
 
 void RPI::dma_out_interrupt() {

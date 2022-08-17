@@ -127,7 +127,7 @@ void start(void);
 #define Continuous_Lock 			0x0109
 
 //DEFINE WHICH MODULE TO RUN!!
-#define IO_TEST_MODULE
+#define TEST_MODULE
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

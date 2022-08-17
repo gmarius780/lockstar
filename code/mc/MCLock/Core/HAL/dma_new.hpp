@@ -37,6 +37,7 @@ public:
 	void setMemory1Address(volatile uint8_t* addr);
 	void setPeripheralAddress(volatile uint32_t* addr);
 	void setNumberOfData(uint32_t n);
+	uint32_t getNumberOfData();
 
 
     /* Enables/Disables */

@@ -59,6 +59,11 @@ void DMA::setNumberOfData(uint32_t n) {
 	DMA_regs->NDTR = n;
 }
 
+__attribute__((section("sram_func")))
+uint32_t DMA::getNumberOfData() {
+	return DMA_regs->NDTR;
+}
+
 void DMA::resetTransferCompleteInterruptFlag() {
 	*(this->IFCRreg) |= this->TCIFBit;
 }
@@ -74,12 +79,16 @@ void DMA::disableCircMode() {
 __attribute__((section("sram_func")))
 void DMA::enableDMA() {
 	DMA_regs->CR |= DMA_SxCR_EN;
+	//wait for dma to be disabled
+	while(!(DMA_regs->CR & DMA_SxCR_EN));
 	enabled = true;
 }
 
 __attribute__((section("sram_func")))
 void DMA::disableDMA() {
 	DMA_regs->CR &= ~DMA_SxCR_EN;
+	//wait for dma to be enabled otherwise this can lead to errors
+	while(DMA_regs->CR & DMA_SxCR_EN);
 	enabled = false;
 }
 
