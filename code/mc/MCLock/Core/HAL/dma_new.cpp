@@ -10,15 +10,23 @@
 
 DMA::DMA(DMA_config_t config) {
 	
+	if (config.stream >= 0 && config.stream <= 3) {
+		IFCRreg = &(DMA2->LIFCR);
+		interrupt_status_reg = &(DMA2->LISR);
+	} else {
+		IFCRreg = &(DMA2->HIFCR);
+		interrupt_status_reg = &(DMA2->HISR);
+	}
+
     switch(config.stream) {
-    case 0: DMA_regs = DMA2_Stream0; IFCRreg = &(DMA2->LIFCR); TCIFBit = 1UL<<5; break;
-    case 1: DMA_regs = DMA2_Stream1; IFCRreg = &(DMA2->LIFCR); TCIFBit = 1UL<<11; break;
-    case 2: DMA_regs = DMA2_Stream2; IFCRreg = &(DMA2->LIFCR); TCIFBit = 1UL<<21; break;
-    case 3: DMA_regs = DMA2_Stream3; IFCRreg = &(DMA2->LIFCR); TCIFBit = 1UL<<27; break;
-    case 4: DMA_regs = DMA2_Stream4; IFCRreg = &(DMA2->HIFCR); TCIFBit = 1UL<<5; break;
-    case 5: DMA_regs = DMA2_Stream5; IFCRreg = &(DMA2->HIFCR); TCIFBit = 1UL<<11; break;
-    case 6: DMA_regs = DMA2_Stream6; IFCRreg = &(DMA2->HIFCR); TCIFBit = 1UL<<21; break;
-    case 7: DMA_regs = DMA2_Stream7; IFCRreg = &(DMA2->HIFCR); TCIFBit = 1UL<<27; break;
+    case 0: DMA_regs = DMA2_Stream0; transfer_complete_bit = DMA_LISR_TCIF0; TCIFBit = DMA_LIFCR_CTCIF0; break;
+    case 1: DMA_regs = DMA2_Stream1; transfer_complete_bit = DMA_LISR_TCIF1; TCIFBit = DMA_LIFCR_CTCIF1; break;
+    case 2: DMA_regs = DMA2_Stream2; transfer_complete_bit = DMA_LISR_TCIF2; TCIFBit = DMA_LIFCR_CTCIF2; break;
+    case 3: DMA_regs = DMA2_Stream3; transfer_complete_bit = DMA_LISR_TCIF3; TCIFBit = DMA_LIFCR_CTCIF3; break;
+    case 4: DMA_regs = DMA2_Stream4; transfer_complete_bit = DMA_HISR_TCIF4; TCIFBit = DMA_HIFCR_CTCIF4; break;
+    case 5: DMA_regs = DMA2_Stream5; transfer_complete_bit = DMA_HISR_TCIF5; TCIFBit = DMA_HIFCR_CTCIF5; break;
+    case 6: DMA_regs = DMA2_Stream6; transfer_complete_bit = DMA_HISR_TCIF6; TCIFBit = DMA_HIFCR_CTCIF6; break;
+    case 7: DMA_regs = DMA2_Stream7; transfer_complete_bit = DMA_HISR_TCIF7; TCIFBit = DMA_HIFCR_CTCIF7; break;
     default: DMA_regs = NULL;
     }
 
@@ -66,6 +74,10 @@ uint32_t DMA::getNumberOfData() {
 
 void DMA::resetTransferCompleteInterruptFlag() {
 	*(this->IFCRreg) |= this->TCIFBit;
+}
+
+bool DMA::transfer_complete() {
+	return *(interrupt_status_reg) & transfer_complete_bit;
 }
 
 void DMA::enableCircMode() {

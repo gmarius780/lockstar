@@ -98,8 +98,6 @@ RPI::RPI() {
 
 	dma_out = new DMA(dma_out_config);
 
-	spi->bindDMAHandlers(dma_out, dma_in);
-
 	is_communicating = false;
 	spi->enableRxIRQ();
 	spi->enableSPI();
@@ -114,34 +112,61 @@ void RPI::spi_interrupt() {
 	if(is_communicating == false) {
 		is_communicating = true;
 		current_nbr_of_bytes = 10 * ((uint32_t)*(volatile uint8_t *)spi->getDRAddress());
-		this->start_dma_communication(this->current_nbr_of_bytes);
+		this->start_dma_in_communication(this->current_nbr_of_bytes);
 	}
 }
 
-void RPI::dma_in_interrupt() {
-	// wait while SPI is busy
-	if (dma_in->getNumberOfData() <= 0) {
-		while(spi->isBusy());
-		spi->disableSPI_DMA();
-		dma_in->disableDMA();
-		dma_in->resetTransferCompleteInterruptFlag();
-		is_communicating = false;
-//		((uint32_t)*(volatile uint8_t *)spi->getDRAddress());
-		spi->enableRxIRQ();
+bool RPI::dma_in_interrupt() {
+	if (dma_in->transfer_complete()) {
+		if (dma_in->getNumberOfData() <= 0) {
+			while(spi->isBusy());
+			spi->disableSPI_DMA();
+			dma_in->disableDMA();
+			dma_in->resetTransferCompleteInterruptFlag();
+			is_communicating = false;
+			spi->enableRxIRQ();
+			return true;
+		} else {
+			return false;
+		}
+	} else {
+		dma_in_error_interrupt();
+		return false;
 	}
+}
+
+void RPI::dma_in_error_interrupt() {
 }
 
 void RPI::dma_out_interrupt() {
-	spi->disableSPI_DMA();
-	dma_out->resetTransferCompleteInterruptFlag();
+	if (dma_out->transfer_complete()) {
+		while(spi->isBusy());
+		spi->disableSPI_DMA();
+		dma_out->disableDMA();
+		dma_out->resetTransferCompleteInterruptFlag();
+	} else {
+		dma_out_error_interrupt();
+	}
 }
 
-void RPI::start_dma_communication(uint32_t nbr_of_bytes) {
+void RPI::dma_out_error_interrupt() {
+
+}
+
+void RPI::start_dma_in_communication(uint32_t nbr_of_bytes) {
 	spi->disableRxIRQ();
 	dma_in->enable_tc_irq();
 
 	this->dma_in->setNumberOfData(nbr_of_bytes);
 	this->dma_in->enableDMA();
+	spi->enableSPI_DMA();
+}
+
+void RPI::start_dma_out_communication(uint32_t nbr_of_bytes) {
+	dma_out->enable_tc_irq();
+
+	this->dma_out->setNumberOfData(nbr_of_bytes);
+	this->dma_out->enableDMA();
 	spi->enableSPI_DMA();
 }
 

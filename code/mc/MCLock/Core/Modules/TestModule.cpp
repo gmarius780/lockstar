@@ -25,7 +25,6 @@ public:
 	void run() {
 
 		while(1) {
-			//Problem: dma_in irq reset does not work. Spi busy flag is always high
 			turn_LED5_on();
 			HAL_Delay(500);
 			turn_LED5_off();
@@ -33,8 +32,15 @@ public:
 		}
 	}
 
-	void rpi_spi_interrupt() {
-		this->rpi->spi_interrupt();
+	void rpi_dma_in_interrupt() {
+
+		if(rpi->dma_in_interrupt())
+		{ /*got new command from rpi*/
+
+		} else
+		{ /* error */
+
+		}
 	}
 
 public:
@@ -105,7 +111,7 @@ void DMA2_Stream0_IRQHandler(void)
 //	module->rpi_dma_interrupt();
 	//module->rpi->ResetIntPin();
 	//todo: check if error or transmission complete!!
-	module->rpi->dma_in_interrupt();
+	module->rpi_dma_in_interrupt();
 }
 __attribute__((section("sram_func")))
 void DMA2_Stream1_IRQHandler(void)
@@ -123,7 +129,7 @@ void DMA2_Stream6_IRQHandler(void)
 
 __attribute__((section("sram_func")))
 void SPI4_IRQHandler(void) {
-	module->rpi_spi_interrupt();
+	module->rpi->rpi_spi_interrupt();
 }
 
 /******************************
