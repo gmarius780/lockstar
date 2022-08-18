@@ -105,6 +105,10 @@ class MC:
 
     #=== WRITE METHODS 
     async def write_mc_data_package(self, mc_data_package):
+        try:
+            await self.initiate_communication(mc_data_package.get_nbr_of_bytes())
+        except Exception as ex:
+            logging.error(f'MC:write_mc_data_package: invalid data package: {ex}')
         await self.write(mc_data_package.get_bytes())
 
     async def initiate_communication(self, tens_of_bytes_to_read):

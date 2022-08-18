@@ -26,6 +26,9 @@ class MCDataPackage:
     def get_bytes(self):
         return pack(f'<{"".join([a[0] for a in self.buffer])}', *[a[1] for a in self.buffer])
 
+    def get_nbr_of_bytes(self):
+        return MCDataPackage.get_buffer_length([a[0] for a in self.buffer])
+
     @staticmethod
     def pop_from_buffer(list_str_cpp_dtype, lst_bytes):
         list_struct_type = []
