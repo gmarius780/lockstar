@@ -12,6 +12,7 @@
 #include <math.h>
 #include "../HAL/leds.hpp"
 
+#ifdef OLD
 float* RecordTrace(ADC_Dev* ADC_DEV, uint8_t ADC_Channel, DAC_Dev* DAC_DEV, uint16_t Steps)
 {
 	uint32_t Range = 1048576UL; // 2 ^ 20
@@ -369,3 +370,5 @@ void SelfTest(ADC_Dev* ADC_DEV, DAC_Dev* DAC_1, DAC_Dev* DAC_2, RaspberryPi* RPi
 	//DAC_2->MakeDMA1Way();
 	//turn_LED6_off();
 }
+
+#endif

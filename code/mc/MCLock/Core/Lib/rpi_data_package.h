@@ -25,6 +25,9 @@ public:
 		current_buffer = current_buffer + sizeof(value);
 	}
 
+	void push_ack(); //ack = 221194(uint32_t)
+	void push_nack(); //nack = 999999(uint32_t)
+
 	template <typename T>
 	T pop_from_buffer() {
 		current_buffer += sizeof(T);

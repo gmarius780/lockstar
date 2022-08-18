@@ -15,10 +15,10 @@
 #include "../HAL/spi.hpp"
 #include "../HAL/leds.hpp"
 #include "../HAL/adc_new.hpp"
-
+#include "../HAL/dac_new.hpp"
 
 #ifdef IO_TEST_MODULE
-#include "../HAL/dac_new.hpp"
+
 
 extern ADC_HandleTypeDef hadc3;
 

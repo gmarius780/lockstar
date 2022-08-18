@@ -17,9 +17,7 @@ class SinglePIDModule(IOModule_):
         self.out_range_max = None
         self.useTTL = None
         self.locked = None
-        self.err_channel = None
-        self.setpoint_channel = None
-        self.out_channel = None
+
 
     # ==== START: client methods 
     async def initialize(self, p: float, i: float, d: float, out_range_min: float, out_range_max: float, useTTL: bool, locked: bool,

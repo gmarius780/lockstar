@@ -7,134 +7,34 @@
 
 #include "pid.hpp"
 
-__attribute__((section("sram_func")))
-float PID::CalculateFeedback(float pv)
-{
-	this->CalculateFeedback(this->set_point, pv);
+
+PID::PID(float p, float i, float d) {
+	this->integral = 0;
+	this->p = p;
+	this->i = i;
+	this->d = d;
+	this->error = 0;
+	this->old_error = 0;
+	this->diff_error = 0;
+	this->p_control = 0;
+	this->i_control = 0;
+	this->d_control = 0;
 }
 
 __attribute__((section("sram_func")))
-float PID::CalculateFeedback(float setpoint, float pv)
-{
-	// Calculate error
-	    float error = pol ? (setpoint - pv) : (pv - setpoint);
+float PID::calculate_output(float setpoint,float mesured,float dt) {
+	error = setpoint - mesured;
 
-	    // Proportional term
-	    float Pout = Kp * error;
+	integral += error*dt;
 
-	    float Iout;
-	    // Integral term
-	    //if(counter>10000) {
-	    	integral += error * dt;
-	    	Iout = Ki * integral;
-	    //}
-	    //else
-	    //	Iout = 0;
-	    //counter++;
+	p_control = p*error;
+	i_control = i*integral;
+	// filtered derivative
+	diff_error += error*dt*0.05;
+	d_control = d*(diff_error-old_error)/dt;
 
-	    // Derivative term
-	    float derivative = (error - pre_error) / dt;
-	    float Dout = Kd * derivative;
+	old_error = diff_error;
 
-	    // Calculate total output
-	    float output = Pout + Iout + Dout;
+	return p_control + i_control + d_control;
 
-	    output += pre_output;
-
-	    // Restrict to max/min
-	    if( output > max )
-	        output = max;
-	    else if( output < min )
-	        output = min;
-
-	    // Save error to previous error
-	    pre_error = error;
-
-	    pre_output = output;
-
-	    return output;
-}
-
-__attribute__((section("sram_func")))
-float PID::CalculateLimitedFeedback(float pv, float limit)
-{
-	// Calculate error
-	    float error = pol ? (this->set_point - pv) : (pv - this->set_point);
-
-	    // Proportional term
-	    float Pout = Kp * error;
-
-	    float Iout;
-	    // Integral term
-	    //if(counter>10000) {
-	    	integral += error * dt;
-	    	Iout = Ki * integral;
-	    //}
-	    //else
-	    //	Iout = 0;
-	    //counter++;
-
-	    // Derivative term
-	    float derivative = (error - pre_error) / dt;
-	    float Dout = Kd * derivative;
-
-	    // Calculate total output
-	    float output = Pout + Iout + Dout;
-	    if(output>limit)
-	    	output=limit;
-	    if(output<-limit)
-	    	output=-limit;
-
-
-	    output += pre_output;
-
-	    // Restrict to max/min
-	    if( output > max )
-	        output = max;
-	    else if( output < min )
-	        output = min;
-
-	    // Save error to previous error
-	    pre_error = error;
-
-	    pre_output = output;
-
-	    return output;
-}
-
-void PID::SetVars(float* Vars){
-	Kp = *Vars;
-	Ki = *(Vars+1);
-	Kd = *(Vars+2);
-	max = *(Vars+3);
-	min = *(Vars+4);
-}
-
-void PID::SetPIDParam(float* Vars){
-	Kp = *Vars;
-	Ki = *(Vars+1);
-	Kd = *(Vars+2);
-	integral=0;
-}
-
-float PID::Diff(float setpoint, float pv)
-{
-	// Calculate error
-	    float error = pol ? (setpoint - pv) : (pv - setpoint);
-
-	    // Proportional term
-	    float Pout = Kp * error;
-
-	    float Iout;
-	    integral += error * dt;
-	    Iout = Ki * integral;
-
-	    // Derivative term
-	    float derivative = (error - pre_error) / dt;
-	    float Dout = Kd * derivative;
-
-	    // Calculate total output
-	    float output = Pout + Iout + Dout;
-
-	    return output;
 }
