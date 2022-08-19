@@ -112,7 +112,7 @@ class MC:
         try:
             logging.info(f'nbr of bytes: {mc_data_package.get_nbr_of_bytes()}')
             await self.initiate_communication(mc_data_package.get_nbr_of_bytes())
-            sleep(1)
+            sleep(0.2)#sleep to wait for the mc to start DMA
         except Exception as ex:
             logging.error(f'MC:write_mc_data_package: invalid data package: {ex}')
 
@@ -177,9 +177,7 @@ if __name__ == "__main__":
         if sys.argv[1] == 'lock':
             mc_data_package = MCDataPackage()
             mc_data_package.push_to_buffer('uint32_t', 12) # method_identifier
-            print(mc_data_package.get_nbr_of_bytes())
             asyncio.run(MC.I().write_mc_data_package(mc_data_package))
-            sleep(5)
             print(asyncio.run(MC.I().read_ack()))
 
         elif sys.argv[1] == 'unlock':
