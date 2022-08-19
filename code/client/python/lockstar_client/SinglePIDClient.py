@@ -2,7 +2,6 @@ import asyncio
 import logging
 from lockstar_client.LockstarClient import LockstarClient
 from lockstar_general.backend.BackendResponse import BackendResponse
-from lockstar_general.hardware import HardwareComponents
 from lockstar_general.backend.BackendCall import BackendCall
 
 class SinglePIDClient(LockstarClient):
@@ -10,13 +9,10 @@ class SinglePIDClient(LockstarClient):
         super().__init__(lockstar_ip, lockstar_port, client_id)
 
 
-    def initialize(self, p: float, i: float, d: float, out_range_min: float, out_range_max: float, useTTL: bool, locked: bool,
-                err_channel: HardwareComponents, setpoint_channel: HardwareComponents, out_channel: HardwareComponents):
+    def initialize(self, p: float, i: float, d: float, out_range_min: float, out_range_max: float, useTTL: bool, locked: bool):
         bc = BackendCall(self.client_id, 'SinglePIDModule', 'initialize',
                         args={'p': p, 'i': i, 'd': d, 'out_range_min': out_range_min, 
-                                'out_range_max': out_range_max, 'useTTL': useTTL, 
-                                'locked': locked, 'err_channel': err_channel.value, 
-                                'setpoint_channel': setpoint_channel.value, 'out_channel': out_channel.value}
+                                'out_range_max': out_range_max, 'useTTL': useTTL, 'locked': locked}
                         )
         
         return asyncio.run(self._call_lockstar(bc))
@@ -49,20 +45,14 @@ if __name__ == "__main__":
     )
     client = SinglePIDClient('192.168.88.13', 10780, 1234)
 
-    response = client.initialize(1,2,3,4,5,True, False, 
-                                HardwareComponents.analog_in_one, 
-                                HardwareComponents.analog_in_two, 
-                                HardwareComponents.analog_out_two)
+    response = client.initialize(1,2,3,4,5,True, False)
     
     initialized = False
 
     if response.is_wrong_client_id():
         if client.register_client_id():
             logging.info(f'Registered my client id: {client.client_id}')
-            response = client.initialize(1,2,3,4,5,True, False, 
-                                HardwareComponents.analog_in_one, 
-                                HardwareComponents.analog_in_two, 
-                                HardwareComponents.analog_out_two)
+            response = client.initialize(1,2,3,4,5,True, False)
 
             initialized = response.is_ACK()
         else:

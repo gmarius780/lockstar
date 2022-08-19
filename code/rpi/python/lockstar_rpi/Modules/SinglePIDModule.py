@@ -34,13 +34,13 @@ class SinglePIDModule(IOModule_):
         logging.debug('Starting initialization: SinglePIDModule')
 
         #=== sequentially send configuration to MC
-        ack = self.set_pid(p, i, d, writer, respond=False)
-        ack = ack and self.set_output_limits(out_range_min, out_range_max, writer, respond=False)
+        ack = await self.set_pid(p, i, d, writer, respond=False)
+        ack = ack and await self.set_output_limits(out_range_min, out_range_max, writer, respond=False)
 
         if locked:
-            ack = ack and self.lock(writer, respond=False)
+            ack = ack and await self.lock(writer, respond=False)
         else:
-            ack = ack and self.unlock(writer, respond=False)
+            ack = ack and await self.unlock(writer, respond=False)
 
         if writer is not None:
             if ack:
