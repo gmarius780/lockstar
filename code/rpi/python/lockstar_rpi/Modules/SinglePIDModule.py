@@ -81,8 +81,8 @@ class SinglePIDModule(IOModule_):
         mc_data_package.push_to_buffer('float', p) # p
         mc_data_package.push_to_buffer('float', i) # i
         mc_data_package.push_to_buffer('float', d) # d
-        asyncio.run(MC.I().write_mc_data_package(mc_data_package))
-        if asyncio.run(MC.I().read_ack()):
+        await MC.I().write_mc_data_package(mc_data_package)
+        if await MC.I().read_ack():
             writer.write(BackendResponse.ACK())
         else:
             writer.write(BackendResponse.NACK())
@@ -92,8 +92,8 @@ class SinglePIDModule(IOModule_):
     async def lock(self, writer):
         mc_data_package = MCDataPackage()
         mc_data_package.push_to_buffer('uint32_t', 12) # method_identifier
-        asyncio.run(MC.I().write_mc_data_package(mc_data_package))
-        if asyncio.run(MC.I().read_ack()):
+        await MC.I().write_mc_data_package(mc_data_package)
+        if await MC.I().read_ack():
             self.locked = True
             writer.write(BackendResponse.ACK())
         else:
@@ -104,8 +104,8 @@ class SinglePIDModule(IOModule_):
     async def unlock(self, writer):
         mc_data_package = MCDataPackage()
         mc_data_package.push_to_buffer('uint32_t', 13) # method_identifier
-        asyncio.run(MC.I().write_mc_data_package(mc_data_package))
-        if asyncio.run(MC.I().read_ack()):
+        await MC.I().write_mc_data_package(mc_data_package)
+        if await MC.I().read_ack():
             self.locked = False
             writer.write(BackendResponse.ACK())
         else:
