@@ -83,9 +83,9 @@ class SinglePIDModule(IOModule_):
         mc_data_package.push_to_buffer('float', d) # d
         await MC.I().write_mc_data_package(mc_data_package)
         if await MC.I().read_ack():
-            writer.write(BackendResponse.ACK())
+            writer.write(BackendResponse.ACK().to_bytes())
         else:
-            writer.write(BackendResponse.NACK())
+            writer.write(BackendResponse.NACK().to_bytes())
         
         await writer.drain()
 
@@ -95,9 +95,9 @@ class SinglePIDModule(IOModule_):
         await MC.I().write_mc_data_package(mc_data_package)
         if await MC.I().read_ack():
             self.locked = True
-            writer.write(BackendResponse.ACK())
+            writer.write(BackendResponse.ACK().to_bytes())
         else:
-            writer.write(BackendResponse.NACK())
+            writer.write(BackendResponse.NACK().to_bytes())
         
         await writer.drain()
 
@@ -107,9 +107,9 @@ class SinglePIDModule(IOModule_):
         await MC.I().write_mc_data_package(mc_data_package)
         if await MC.I().read_ack():
             self.locked = False
-            writer.write(BackendResponse.ACK())
+            writer.write(BackendResponse.ACK().to_bytes())
         else:
-            writer.write(BackendResponse.NACK())
+            writer.write(BackendResponse.NACK().to_bytes())
         
         await writer.drain()
 
