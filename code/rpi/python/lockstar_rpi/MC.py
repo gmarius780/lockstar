@@ -61,7 +61,7 @@ class MC:
             return MCDataPackage.pop_ack_nack_from_buffer(bytes(raw_data))
         except Exception as ex:
             logging.error(f'MC.read_mc_data_package: cannot unpack data: {payload_length}: {ex}: {raw_data}')
-            raise ex
+            return False
 
     async def read_mc_data_package(self, list_str_cpp_dtype):
         #unpack data
@@ -89,7 +89,7 @@ class MC:
             except Exception as ex:
                 logging.error(f'MC.read_mc_data_package: {read_bytes} cannot parse payload length: {ex}')
             
-            if payload_length is not None:
+            if payload_length is not None and payload_length > 0:
                 bytes_left = payload_length
                 output = []
                 try:
@@ -112,7 +112,7 @@ class MC:
         try:
             logging.info(f'nbr of bytes: {mc_data_package.get_nbr_of_bytes()}')
             await self.initiate_communication(mc_data_package.get_nbr_of_bytes())
-            sleep(2)
+            sleep(1)
         except Exception as ex:
             logging.error(f'MC:write_mc_data_package: invalid data package: {ex}')
 
@@ -179,7 +179,8 @@ if __name__ == "__main__":
             mc_data_package.push_to_buffer('uint32_t', 12) # method_identifier
             print(mc_data_package.get_nbr_of_bytes())
             asyncio.run(MC.I().write_mc_data_package(mc_data_package))
-            # print(asyncio.run(MC.I().read_ack()))
+            sleep(1)
+            print(asyncio.run(MC.I().read_ack()))
 
         elif sys.argv[1] == 'unlock':
             mc_data_package = MCDataPackage()
