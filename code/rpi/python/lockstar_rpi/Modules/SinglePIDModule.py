@@ -82,7 +82,6 @@ class SinglePIDModule(IOModule_):
         mc_data_package.push_to_buffer('float', min)
         mc_data_package.push_to_buffer('float', max)
         await MC.I().write_mc_data_package(mc_data_package)
-        sleep(1)
         if await MC.I().read_ack():
             writer.write(BackendResponse.ACK().to_bytes())
         else:
