@@ -5,5 +5,5 @@ class BackendSettings:
     current_module_config_file = './current_module.config'
     mc_communication_speed_Hz = 1000000
     mc_gpio_input_channel = 8
-    debug_mode = False
+    debug_mode = True
     mc_write_buffer_size = 4096

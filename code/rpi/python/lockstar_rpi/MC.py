@@ -1,12 +1,14 @@
 from lockstar_rpi.BackendSettings import BackendSettings
-from spidev import SpiDev
-import RPi.GPIO as GPIO
 import asyncio
 import logging
 from struct import pack, unpack, calcsize # https://docs.python.org/3/library/struct.html
 from lockstar_rpi.MCDataPackage import MCDataPackage
 from math import ceil
 from time import sleep
+
+if not BackendSettings.debug_mode:
+    from spidev import SpiDev
+    import RPi.GPIO as GPIO
 
 class MC:
     """Represents the Microcontroller: Sends and receives MCDP's to/from the MC
@@ -108,7 +110,7 @@ class MC:
     #=== WRITE METHODS 
     async def write_mc_data_package(self, mc_data_package):
         try:
-            print(f'nbr of bytes: {mc_data_package.get_nbr_of_bytes()}')
+            logging.info(f'nbr of bytes: {mc_data_package.get_nbr_of_bytes()}')
             await self.initiate_communication(mc_data_package.get_nbr_of_bytes())
             sleep(0.2)
         except Exception as ex:
@@ -173,8 +175,9 @@ if __name__ == "__main__":
         if sys.argv[1] == 'lock':
             mc_data_package = MCDataPackage()
             mc_data_package.push_to_buffer('uint32_t', 12) # method_identifier
-            asyncio.run(MC.I().write_mc_data_package(mc_data_package))
-            print(asyncio.run(MC.I().read_ack()))
+            print(mc_data_package.get_nbr_of_bytes())
+            # asyncio.run(MC.I().write_mc_data_package(mc_data_package))
+            # print(asyncio.run(MC.I().read_ack()))
 
         elif sys.argv[1] == 'unlock':
             mc_data_package = MCDataPackage()
@@ -191,5 +194,7 @@ if __name__ == "__main__":
             print(asyncio.run(MC.I().read_ack()))
 
     else:
-        print('give argument')
+        mc_data_package = MCDataPackage()
+        mc_data_package.push_to_buffer('uint32_t', 12) # method_identifier
+        print(mc_data_package.get_nbr_of_bytes())
 
