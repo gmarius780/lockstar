@@ -37,6 +37,7 @@ public:
 		turn_LED6_off();
 		turn_LED5_on();
 		pid = new PID(0, 0, 0);
+		p = i = d = output_min = output_max = 0;
 	}
 
 	void run() {

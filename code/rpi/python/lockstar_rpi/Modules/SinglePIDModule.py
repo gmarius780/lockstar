@@ -115,7 +115,7 @@ class SinglePIDModule(IOModule_):
     async def launch_from_config(self, config_dict):
         try:
             await self.initialize(config_dict['p'], config_dict['i'], config_dict['d'], config_dict['out_range_min'],
-                                config_dict['out_range_max'], config_dict['useTTL'], config_dict['locking'], None)
+                                config_dict['out_range_max'], config_dict['useTTL'], config_dict['locked'], None)
 
             await super().launch_from_config(config_dict)
         except Exception as ex:
