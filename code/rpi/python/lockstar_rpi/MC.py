@@ -115,7 +115,12 @@ class MC:
             sleep(0.2)
         except Exception as ex:
             logging.error(f'MC:write_mc_data_package: invalid data package: {ex}')
-        await self.write(mc_data_package.get_bytes())
+
+        #fill up bytes such that len is a multiple of 10, because MC expects multiples of 10
+        arr_bytes = mc_data_package.get_bytes()
+        if len(arr_bytes) % 10 != 0:
+            arr_bytes += bytes((len(arr_bytes) % 10)*[0])
+        await self.write(arr_bytes)
 
     async def initiate_communication(self, nbr_of_bytes_to_send):
         """Sends one byte via SPI to the MC. The value of the bytes tells the MC how many 'tens-of-bytes' it should expect via DMA
@@ -125,16 +130,13 @@ class MC:
         """
         await self.write(pack('<B', ceil(nbr_of_bytes_to_send/10)))
 
-    async def write(self, bytes):
+    async def write(self, arr_bytes):
         async with self._rpi_lock:
             try:
-                #fill up bytes such that len is a multiple of 10, because MC expects multiples of 10
-                if len(bytes) % 10 != 0:
-                    bytes += bytes((len(bytes) % 10)*[0])
-                self._spi.writebytes2(bytes)
-                logging.info(f'write stuff to MC:{bytes}')
+                self._spi.writebytes2(arr_bytes)
+                logging.info(f'write stuff to MC:{arr_bytes}')
             except Exception as ex:
-                logging.error(f'MC: Cannot send bytes to rpi: {ex}. len-bytes: {len(bytes)}')
+                logging.error(f'MC: Cannot send bytes to rpi: {ex}. len-bytes: {len(arr_bytes)}')
 
 
     #=== GPIO PIN
