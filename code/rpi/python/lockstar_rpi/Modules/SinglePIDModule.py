@@ -30,22 +30,20 @@ class SinglePIDModule(IOModule_):
         self.out_range_max = out_range_max
         self.useTTL = useTTL
         self.locked = locked
-        
-        # Send to MC and await answer
 
-        logging.debug('Initialized SinglePIDModule')
+        logging.debug('Starting initialization: SinglePIDModule')
 
-        error = False
-        # === MC CALL:
-        #float p, float i, float d, float out_range_min, float out_range_max, bool useTTL,
-        #	bool locked, HardwareComponents err_channel, HardwareComponents setpoint_channel, HardwareComponents out_channel
-        write_bytes = SinglePIDModuleDP.write_initialize_call(p, i, d, out_range_min, out_range_max, useTTL, locked, self.err_channel, self.setpoint_channel, self.out_channel)
-        await MC.I().write(write_bytes)
+        #=== sequentially send configuration to MC
+        ack = self.set_pid(p, i, d, writer, respond=False)
+        ack = ack and self.set_output_limits(out_range_min, out_range_max, writer, respond=False)
 
-        ack = await MC.I().read_ack()
+        if locked:
+            ack = ack and self.lock(writer, respond=False)
+        else:
+            ack = ack and self.unlock(writer, respond=False)
 
         if writer is not None:
-            if not error and ack:
+            if ack:
                 writer.write(BackendResponse.ACK().to_bytes())
             else:
                 writer.write(BackendResponse.NACK().to_bytes())
@@ -53,7 +51,18 @@ class SinglePIDModule(IOModule_):
         
         return ack
 
-    async def set_pid(self, p: float, i: float, d: float, writer):
+    async def check_for_ack(self, writer=None):
+        ack =  await MC.I().read_ack()
+        if ack and writer is not None:
+            writer.write(BackendResponse.ACK().to_bytes())
+        else:
+            writer.write(BackendResponse.NACK().to_bytes())
+        if writer is not None:
+            await writer.drain()
+        
+        return ack
+
+    async def set_pid(self, p: float, i: float, d: float, writer, respond=True):
         self.p = p
         self.i = i
         self.d = d
@@ -65,14 +74,10 @@ class SinglePIDModule(IOModule_):
         mc_data_package.push_to_buffer('float', i) # i
         mc_data_package.push_to_buffer('float', d) # d
         await MC.I().write_mc_data_package(mc_data_package)
-        if await MC.I().read_ack():
-            writer.write(BackendResponse.ACK().to_bytes())
-        else:
-            writer.write(BackendResponse.NACK().to_bytes())
         
-        await writer.drain()
+        return await self.check_for_ack(writer=(writer if respond else None))
 
-    async def set_output_limits(self, min: float, max: float, writer):
+    async def set_output_limits(self, min: float, max: float, writer, respond=True):
         self.out_range_min = min
         self.out_range_max = max
 
@@ -82,36 +87,19 @@ class SinglePIDModule(IOModule_):
         mc_data_package.push_to_buffer('float', min)
         mc_data_package.push_to_buffer('float', max)
         await MC.I().write_mc_data_package(mc_data_package)
-        if await MC.I().read_ack():
-            writer.write(BackendResponse.ACK().to_bytes())
-        else:
-            writer.write(BackendResponse.NACK().to_bytes())
-        
-        await writer.drain()
+        return await self.check_for_ack(writer=(writer if respond else None))
 
-    async def lock(self, writer):
+    async def lock(self, writer, respond=True):
         mc_data_package = MCDataPackage()
         mc_data_package.push_to_buffer('uint32_t', 12) # method_identifier
         await MC.I().write_mc_data_package(mc_data_package)
-        if await MC.I().read_ack():
-            self.locked = True
-            writer.write(BackendResponse.ACK().to_bytes())
-        else:
-            writer.write(BackendResponse.NACK().to_bytes())
-        
-        await writer.drain()
+        return await self.check_for_ack(writer=(writer if respond else None))
 
-    async def unlock(self, writer):
+    async def unlock(self, writer, respond=True):
         mc_data_package = MCDataPackage()
         mc_data_package.push_to_buffer('uint32_t', 13) # method_identifier
         await MC.I().write_mc_data_package(mc_data_package)
-        if await MC.I().read_ack():
-            self.locked = False
-            writer.write(BackendResponse.ACK().to_bytes())
-        else:
-            writer.write(BackendResponse.NACK().to_bytes())
-        
-        await writer.drain()
+        return await self.check_for_ack(writer=(writer if respond else None))
     
     # ==== END: client methods
 
