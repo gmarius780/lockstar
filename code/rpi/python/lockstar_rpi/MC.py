@@ -5,6 +5,8 @@ import asyncio
 import logging
 from struct import pack, unpack, calcsize # https://docs.python.org/3/library/struct.html
 from lockstar_rpi.MCDataPackage import MCDataPackage
+from math import ceil
+from time import sleep
 
 class MC:
     """Represents the Microcontroller: Sends and receives MCDP's to/from the MC
@@ -108,21 +110,25 @@ class MC:
         try:
             print(f'nbr of bytes: {mc_data_package.get_nbr_of_bytes()}')
             await self.initiate_communication(mc_data_package.get_nbr_of_bytes())
+            sleep(0.2)
         except Exception as ex:
             logging.error(f'MC:write_mc_data_package: invalid data package: {ex}')
         await self.write(mc_data_package.get_bytes())
 
-    async def initiate_communication(self, tens_of_bytes_to_read):
+    async def initiate_communication(self, nbr_of_bytes_to_send):
         """Sends one byte via SPI to the MC. The value of the bytes tells the MC how many 'tens-of-bytes' it should expect via DMA
 
         Args:
             tens_of_bytes_to_read (int): dens of bytes to expect for the MC via DMA
         """
-        await self.write(pack('<B', tens_of_bytes_to_read))
+        await self.write(pack('<B', ceil(nbr_of_bytes_to_send/10)))
 
     async def write(self, bytes):
         async with self._rpi_lock:
             try:
+                #fill up bytes such that len is a multiple of 10, because MC expects multiples of 10
+                if len(bytes) % 10 != 0:
+                    bytes += bytes((len(bytes) % 10)*[0])
                 self._spi.writebytes2(bytes)
                 logging.info(f'write stuff to MC:{bytes}')
             except Exception as ex:
