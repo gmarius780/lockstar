@@ -119,7 +119,7 @@ class MC:
         #fill up bytes such that len is a multiple of 10, because MC expects multiples of 10
         arr_bytes = mc_data_package.get_bytes()
         if len(arr_bytes) % 10 != 0:
-            arr_bytes += bytes((len(arr_bytes) % 10)*[0])
+            arr_bytes += bytes((10*ceil(len(arr_bytes)/10) - len(arr_bytes))*[0])
         await self.write(arr_bytes)
 
     async def initiate_communication(self, nbr_of_bytes_to_send):
