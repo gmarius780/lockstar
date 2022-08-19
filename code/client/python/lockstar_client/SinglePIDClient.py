@@ -25,6 +25,10 @@ class SinglePIDClient(LockstarClient):
         bc = BackendCall(self.client_id, 'SinglePIDModule', 'set_pid', args={'p': p, 'i': i, 'd': d})
         return asyncio.run(self._call_lockstar(bc))
 
+    def set_output_limits(self,  min: float, max: float):
+        bc = BackendCall(self.client_id, 'SinglePIDModule', 'set_output_limits', args={'min': min, 'max': max})
+        return asyncio.run(self._call_lockstar(bc))
+
     def lock(self):
         bc = BackendCall(self.client_id, 'SinglePIDModule', 'lock', args={})
         return asyncio.run(self._call_lockstar(bc))
@@ -33,34 +37,6 @@ class SinglePIDClient(LockstarClient):
         bc = BackendCall(self.client_id, 'SinglePIDModule', 'unlock', args={})
         return asyncio.run(self._call_lockstar(bc))
 
-    def enable_live_channel(self, ch: HardwareComponents):
-        """Enables buffering on the MC of the ADC data for channel ch such that it can be polled from
-        time to time with get_channel_data
-
-        Args:
-            ch (HardwareComponents): channel for which it should be enabled
-        """
-        bc = BackendCall(self.client_id, 'SinglePIDModule', 'enable_live_channel', args={'ch': ch.value})
-        return asyncio.run(self._call_lockstar(bc))
-
-    def disable_live_channel(self, ch: HardwareComponents):
-        """disable buffering on the MC of the ADC data for channel ch such that it can be polled from
-        time to time with get_channel_data
-
-        Args:
-            ch (HardwareComponents): channel for which it should be enabled
-        """
-        bc = BackendCall(self.client_id, 'SinglePIDModule', 'disable_live_channel', args={'ch': ch.value})
-        return asyncio.run(self._call_lockstar(bc))
-
-    def get_channel_data(self, ch: HardwareComponents):
-        """read recend ADC data of a channel for which live mode is enabled
-
-        Args:
-            ch (HardwareComponents): channel from which data should be read
-        """
-        bc = BackendCall(self.client_id, 'SinglePIDModule', 'get_channel_data', args={'ch': ch.value})
-        return asyncio.run(self._call_lockstar(bc))
 
 if __name__ == "__main__":
     logging.basicConfig(

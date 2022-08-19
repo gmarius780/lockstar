@@ -27,6 +27,8 @@
 
 #ifdef SINGLE_PID_MODULE
 
+
+
 class SinglePIDModule: public Module {
 public:
 	SinglePIDModule() {
@@ -110,9 +112,9 @@ public:
 	static const uint32_t METHOD_SET_PID = 11;
 	void set_pid(RPIDataPackage* read_package) {
 		/***Read arguments***/
-		float p = read_package->pop_from_buffer<float>();
-		float i = read_package->pop_from_buffer<float>();
-		float d = read_package->pop_from_buffer<float>();
+		p = read_package->pop_from_buffer<float>();
+		i = read_package->pop_from_buffer<float>();
+		d = read_package->pop_from_buffer<float>();
 
 		this->pid->set_pid(p, i, d);
 
@@ -144,6 +146,21 @@ public:
 		rpi->send_package(write_package);
 	}
 
+	static const uint32_t METHOD_SET_OUTPUT_LIMITS = 14;
+	void set_output_limits(RPIDataPackage* read_package) {
+		/***Read arguments***/
+		output_min = read_package->pop_from_buffer<float>();
+		output_max = read_package->pop_from_buffer<float>();
+
+		this->dac_1->set_min_output(output_min);
+		this->dac_1->set_max_output(output_max);
+
+		/*** send ACK ***/
+		RPIDataPackage* write_package = rpi->get_write_package();
+		write_package->push_ack();
+		rpi->send_package(write_package);
+	}
+
 	/*** END: METHODS ACCESSIBLE FROM THE RPI ***/
 
 	void rpi_dma_in_interrupt() {
@@ -158,6 +175,7 @@ public:
 	}
 
 public:
+	float p, i, d, output_min, output_max; //declared here to save space (no garbage collector)
 	PID* pid;
 	bool locked;
 };

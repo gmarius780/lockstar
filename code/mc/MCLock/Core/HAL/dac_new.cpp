@@ -73,10 +73,7 @@ void DAC_Device::write(float output) {
 
     busy = true;
 
-    if(output < min_output)
-        output = min_output;
-    if(output > max_output)
-        output = max_output;
+    output = std::min(max_output, std::max(output, min_output));
 
     int32_t int_output = (int32_t)((output-zero_voltage) * inv_step_size - 0.5f);
     

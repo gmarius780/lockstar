@@ -7,6 +7,8 @@
 
 #include "Module.hpp"
 
+extern ADC_HandleTypeDef hadc3;
+
 Module::Module() {
 
 }
@@ -43,6 +45,9 @@ void Module::initialize_dac() {
 							/* sync pin number*/        DAC_2_Sync_Pin,
 							/* clear pin port*/         CLR5_GPIO_Port,
 							/* clear pin number*/       CLR5_Pin);
+
+	dac_1->config_output(&hadc3, ADC_CHANNEL_14, ADC_CHANNEL_9);
+	dac_2->config_output(&hadc3, ADC_CHANNEL_8, ADC_CHANNEL_15);
 }
 
 void Module::initialize_rpi() {

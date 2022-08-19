@@ -1,5 +1,4 @@
 from lockstar_rpi.Modules.IOModule_ import IOModule_
-from lockstar_general.hardware import HardwareComponents
 from lockstar_general.backend.BackendResponse import BackendResponse
 from lockstar_general.mc_modules import SinglePIDModuleDP
 from lockstar_general.utils import int_to_HardwareComponents
@@ -22,8 +21,7 @@ class SinglePIDModule(IOModule_):
 
 
     # ==== START: client methods 
-    async def initialize(self, p: float, i: float, d: float, out_range_min: float, out_range_max: float, useTTL: bool, locked: bool,
-                err_channel: HardwareComponents, setpoint_channel: HardwareComponents, out_channel: HardwareComponents, writer):
+    async def initialize(self, p: float, i: float, d: float, out_range_min: float, out_range_max: float, useTTL: bool, locked: bool, writer):
         self.p = p
         self.i = i
         self.d = d
@@ -32,34 +30,18 @@ class SinglePIDModule(IOModule_):
         self.useTTL = useTTL
         self.locked = locked
         
+        # Send to MC and await answer
+
+        logging.debug('Initialized SinglePIDModule')
+
         error = False
-        
-        try:
-            self.err_channel = err_channel if isinstance(err_channel, HardwareComponents) else int_to_HardwareComponents(err_channel)
-        except:
-            error = True
+        # === MC CALL:
+        #float p, float i, float d, float out_range_min, float out_range_max, bool useTTL,
+        #	bool locked, HardwareComponents err_channel, HardwareComponents setpoint_channel, HardwareComponents out_channel
+        write_bytes = SinglePIDModuleDP.write_initialize_call(p, i, d, out_range_min, out_range_max, useTTL, locked, self.err_channel, self.setpoint_channel, self.out_channel)
+        await MC.I().write(write_bytes)
 
-        try:
-            self.setpoint_channel = setpoint_channel if isinstance(setpoint_channel, HardwareComponents) else int_to_HardwareComponents(setpoint_channel)
-        except:
-            error = True
-        try:
-            self.out_channel = out_channel if isinstance(out_channel, HardwareComponents) else int_to_HardwareComponents(out_channel)
-        except:
-            error = True
-
-        if not error:
-            # Send to MC and await answer
-
-            logging.debug('Initialized SinglePIDModule')
-
-            # === MC CALL:
-            #float p, float i, float d, float out_range_min, float out_range_max, bool useTTL,
-            #	bool locked, HardwareComponents err_channel, HardwareComponents setpoint_channel, HardwareComponents out_channel
-            write_bytes = SinglePIDModuleDP.write_initialize_call(p, i, d, out_range_min, out_range_max, useTTL, locked, self.err_channel, self.setpoint_channel, self.out_channel)
-            await MC.I().write(write_bytes)
-
-            ack = await MC.I().read_ack()
+        ack = await MC.I().read_ack()
 
         if writer is not None:
             if not error and ack:
@@ -81,6 +63,23 @@ class SinglePIDModule(IOModule_):
         mc_data_package.push_to_buffer('float', p) # p
         mc_data_package.push_to_buffer('float', i) # i
         mc_data_package.push_to_buffer('float', d) # d
+        await MC.I().write_mc_data_package(mc_data_package)
+        if await MC.I().read_ack():
+            writer.write(BackendResponse.ACK().to_bytes())
+        else:
+            writer.write(BackendResponse.NACK().to_bytes())
+        
+        await writer.drain()
+
+    async def set_output_limits(self, min: float, max: float, writer):
+        self.out_range_min = min
+        self.out_range_max = max
+
+        logging.debug('Backend: set output limits')
+        mc_data_package = MCDataPackage()
+        mc_data_package.push_to_buffer('uint32_t', 14) # method_identifier
+        mc_data_package.push_to_buffer('float', min)
+        mc_data_package.push_to_buffer('float', max)
         await MC.I().write_mc_data_package(mc_data_package)
         if await MC.I().read_ack():
             writer.write(BackendResponse.ACK().to_bytes())
@@ -112,32 +111,6 @@ class SinglePIDModule(IOModule_):
             writer.write(BackendResponse.NACK().to_bytes())
         
         await writer.drain()
-
-    async def get_channel_data(self, ch: HardwareComponents):
-        """read recend ADC data of a channel for which live mode is enabled
-
-        Args:
-            ch (HardwareComponents): channel from which data should be read
-        """
-        pass
-
-    async def enable_live_channel(self, ch: HardwareComponents):
-        """Enables buffering on the MC of the ADC data for channel ch such that it can be polled from
-        time to time with get_channel_data
-
-        Args:
-            ch (HardwareComponents): channel for which it should be enabled
-        """
-        pass
-
-    async def disable_live_channel(self, ch: HardwareComponents):
-        """disable buffering on the MC of the ADC data for channel ch such that it can be polled from
-        time to time with get_channel_data
-
-        Args:
-            ch (HardwareComponents): channel for which it should be enabled
-        """
-        pass
     
     # ==== END: client methods
 
@@ -147,19 +120,13 @@ class SinglePIDModule(IOModule_):
     
         for key in self.__dict__:
             if key not in config:
-                if isinstance(self.__dict__[key], HardwareComponents):
-                    config[key] = self.__dict__[key].value
-                else:
-                    config[key] = self.__dict__[key]
+                config[key] = self.__dict__[key]
         return config
 
     async def launch_from_config(self, config_dict):
         try:
             await self.initialize(config_dict['p'], config_dict['i'], config_dict['d'], config_dict['out_range_min'],
-                                config_dict['out_range_max'], config_dict['useTTL'], config_dict['locking'], 
-                                HardwareComponents.from_int(config_dict['err_channel']),
-                                HardwareComponents.from_int(config_dict['setpoint_channel']),
-                                HardwareComponents.from_int(config_dict['out_channel']), None)
+                                config_dict['out_range_max'], config_dict['useTTL'], config_dict['locking'], None)
 
             await super().launch_from_config(config_dict)
         except Exception as ex:
