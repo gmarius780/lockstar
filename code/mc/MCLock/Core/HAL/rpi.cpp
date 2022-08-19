@@ -189,6 +189,6 @@ RPIDataPackage* RPI::get_write_package() {
 void RPI::send_package(RPIDataPackage* write_package) {
 	//+4 to make room for the number of bytes
 	((volatile uint32_t*)write_buffer)[0] = (uint32_t)(write_package->nbr_of_bytes_to_send());
-	start_dma_out_communication(write_package->nbr_of_bytes_to_send());
+	start_dma_out_communication(write_package->nbr_of_bytes_to_send()+4);
 }
 

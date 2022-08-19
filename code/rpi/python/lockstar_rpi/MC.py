@@ -179,7 +179,7 @@ if __name__ == "__main__":
             mc_data_package.push_to_buffer('uint32_t', 12) # method_identifier
             print(mc_data_package.get_nbr_of_bytes())
             asyncio.run(MC.I().write_mc_data_package(mc_data_package))
-            sleep(1)
+            sleep(2)
             print(asyncio.run(MC.I().read_ack()))
 
         elif sys.argv[1] == 'unlock':
