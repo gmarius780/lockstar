@@ -53,11 +53,11 @@ class SinglePIDModule(IOModule_):
 
     async def check_for_ack(self, writer=None):
         ack =  await MC.I().read_ack()
-        if ack and writer is not None:
-            writer.write(BackendResponse.ACK().to_bytes())
-        else:
-            writer.write(BackendResponse.NACK().to_bytes())
         if writer is not None:
+            if ack:
+                writer.write(BackendResponse.ACK().to_bytes())
+            else:
+                writer.write(BackendResponse.NACK().to_bytes())
             await writer.drain()
         
         return ack
