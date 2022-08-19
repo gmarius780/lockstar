@@ -88,7 +88,7 @@ class MC:
                 payload_length = unpack('<I', bytes(read_bytes))[0]
             except Exception as ex:
                 logging.error(f'MC.read_mc_data_package: {read_bytes} cannot parse payload length: {ex}')
-            
+            logging.info(f'MC.read_MC_data: payload_length: {payload_length}')
             if payload_length is not None and payload_length > 0:
                 bytes_left = payload_length
                 output = []
@@ -104,7 +104,7 @@ class MC:
                 return payload_length, output
 
             else:
-                return None
+                return 0, []
 
 
     #=== WRITE METHODS 

@@ -57,7 +57,10 @@ class MCDataPackage:
 
     @staticmethod
     def pop_ack_nack_from_buffer(lst_bytes):
-        ack_nack = MCDataPackage.pop_from_buffer(['uint32_t'], lst_bytes)[0]
+        try:
+            ack_nack = MCDataPackage.pop_from_buffer(['uint32_t'], lst_bytes)[0]
+        except Exception as ex:
+            raise ex
 
         if ack_nack == 221194:
             return True
