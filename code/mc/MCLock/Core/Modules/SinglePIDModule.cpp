@@ -98,6 +98,8 @@ public:
 		case METHOD_UNLOCK:
 			unlock(read_package);
 			break;
+		case METHOD_SET_OUTPUT_LIMITS:
+			set_output_limits(read_package);
 		default:
 			/*** send NACK because the method_identifier is not valid ***/
 			RPIDataPackage* write_package = rpi->get_write_package();
