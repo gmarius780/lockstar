@@ -5,6 +5,8 @@ from lockstar_general.mc_modules import SinglePIDModuleDP
 from lockstar_general.utils import int_to_HardwareComponents
 import logging
 from lockstar_rpi.MC import MC
+from lockstar_rpi.MCDataPackage import MCDataPackage
+import asyncio
 
 
 class SinglePIDModule(IOModule_):
@@ -73,18 +75,43 @@ class SinglePIDModule(IOModule_):
         self.i = i
         self.d = d
 
-        # Send to MC and await answer
-
-        logging.debug('Initialized set_pid')
-
-        writer.write(BackendResponse.ACK())
+        logging.debug('Backend: set_pid')
+        mc_data_package = MCDataPackage()
+        mc_data_package.push_to_buffer('uint32_t', 11) # method_identifier
+        mc_data_package.push_to_buffer('float', p) # p
+        mc_data_package.push_to_buffer('float', i) # i
+        mc_data_package.push_to_buffer('float', d) # d
+        asyncio.run(MC.I().write_mc_data_package(mc_data_package))
+        if asyncio.run(MC.I().read_ack()):
+            writer.write(BackendResponse.ACK())
+        else:
+            writer.write(BackendResponse.NACK())
+        
         await writer.drain()
 
-    async def lock(self):
-        self.locked = True
+    async def lock(self, writer):
+        mc_data_package = MCDataPackage()
+        mc_data_package.push_to_buffer('uint32_t', 12) # method_identifier
+        asyncio.run(MC.I().write_mc_data_package(mc_data_package))
+        if asyncio.run(MC.I().read_ack()):
+            self.locked = True
+            writer.write(BackendResponse.ACK())
+        else:
+            writer.write(BackendResponse.NACK())
+        
+        await writer.drain()
 
-    async def unlock(self):
-        self.locked = False
+    async def unlock(self, writer):
+        mc_data_package = MCDataPackage()
+        mc_data_package.push_to_buffer('uint32_t', 13) # method_identifier
+        asyncio.run(MC.I().write_mc_data_package(mc_data_package))
+        if asyncio.run(MC.I().read_ack()):
+            self.locked = False
+            writer.write(BackendResponse.ACK())
+        else:
+            writer.write(BackendResponse.NACK())
+        
+        await writer.drain()
 
     async def get_channel_data(self, ch: HardwareComponents):
         """read recend ADC data of a channel for which live mode is enabled
