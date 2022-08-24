@@ -63,7 +63,7 @@ public:
 		const uint16_t psc = 68;
 		const float TIM3freq = 90e6;
 		// 1. Enable Peripheral Clock for TIM3 (bit 1 in APB1ENR)
-		RCC->APB1ENR |= 1<<1;
+		RCC->APB1ENR |= 1<<RCC_APB1ENR_TIM3EN;
 		// 2. Set Prescaler to 68
 		TIM3->PSC = (uint16_t) psc;
 		// 3. Set the Auto Reload Register to max. value
@@ -131,6 +131,23 @@ void DMA2_Stream3_IRQHandler(void)
 {
 	// SPI 1 tx - SPI 5 rx
 }
+
+__attribute__((section("sram_func")))
+void HAL_GPIO_EXTI_Callback (uint16_t gpio_pin)
+{
+	if(gpio_pin == DigitalIn_Pin) {
+		// Falling Edge
+		if(HAL_GPIO_ReadPin(DigitalIn_GPIO_Port, DigitalIn_Pin) == GPIO_PIN_RESET)
+			turn_LED6_on();
+
+		// Rising Edge
+		if(HAL_GPIO_ReadPin(DigitalIn_GPIO_Port, DigitalIn_Pin) == GPIO_PIN_SET)
+			turn_LED6_off();
+	}
+
+	// Note: Tested with square wave input. Rising and falling edge seem to be inverted?
+}
+
 
 /******************************
  *       MAIN FUNCTION        *
