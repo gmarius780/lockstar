@@ -128,6 +128,7 @@ void start(void);
 
 //DEFINE WHICH MODULE TO RUN!!
 #define SINGLE_PID_MODULE
+
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
