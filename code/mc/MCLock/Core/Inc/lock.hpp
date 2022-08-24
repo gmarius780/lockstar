@@ -15,7 +15,7 @@
 #include "../HAL/dac.hpp"
 #include "../Lib/pid.hpp"
 
-
+#ifdef OLD
 class lockparameters
 {
 private:
@@ -65,3 +65,4 @@ public:
 };
 
 #endif /* LOCK_H_ */
+#endif

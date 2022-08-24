@@ -32,6 +32,7 @@ public:
 	/* Configurations */
 	uint32_t getControlReg() { return DMA_regs->CR; };
 	void resetTransferCompleteInterruptFlag();
+	bool transfer_complete();
 	/* NOTE: DMA has to be disabled before using following methods! */
 	void setMemory0Address(volatile uint8_t* addr);
 	void setMemory1Address(volatile uint8_t* addr);
@@ -53,6 +54,8 @@ private:
     DMA_Stream_TypeDef* DMA_regs;
     uint32_t TCIFBit;
     volatile uint32_t *IFCRreg;
+    volatile uint32_t *interrupt_status_reg;
+    uint32_t transfer_complete_bit;
     bool enabled;
 };
 

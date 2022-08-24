@@ -19,6 +19,7 @@
 
 #ifdef IO_TEST_MODULE
 
+
 extern ADC_HandleTypeDef hadc3;
 
 class IOTestModule {

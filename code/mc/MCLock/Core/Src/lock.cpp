@@ -6,6 +6,7 @@
 
 #define max(x,y) ((x<y)?y:x)
 
+#ifdef OLD
 void lockparameters::AddWaypoint(float wp)
 {
 	this->waypoints.push_back(wp);
@@ -124,3 +125,5 @@ float lockparameters::LockStep(){
 	}
 	return this->currentvalue;
 }
+
+#endif

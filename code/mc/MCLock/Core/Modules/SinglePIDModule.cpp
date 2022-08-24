@@ -1,171 +1,270 @@
 /*
  * SinglePIDModule.cpp
  *
- *  Created on: Mar 9, 2022
- *      Author: qo
+ *  Implements a PID controller with
+ *  Setpoint: INPUT 1
+ *  Errorsignal: INPUT 2
+ *  Control-output: OUTPUT 1
+ *
+ *  Created on: Aug 18, 2022
+ *      Author: marius
  */
+#include "main.h"
+#include "stm32f427xx.h"
+#include "stm32f4xx_hal.h"
+#include "stm32f4xx_it.h"
+#include "stm32f4xx_hal_gpio.h"
 
-#include "SinglePIDModule.hpp"
-#include "SinglePIDModuleDP.hpp"
-#include <functional>
-#include <cstdio>
 
-SinglePIDModule::SinglePIDModule() : Module(){
+#include "../HAL/spi.hpp"
+#include "../HAL/rpi.h"
+#include "../HAL/leds.hpp"
+#include "../Lib/rpi_data_package.h"
+#include "../Lib/pid.hpp"
+#include "../HAL/adc_new.hpp"
+#include "../HAL/dac_new.hpp"
+#include "Module.hpp"
 
-}
+#ifdef SINGLE_PID_MODULE
 
-SinglePIDModule::~SinglePIDModule() {
-	// TODO Auto-generated destructor stub
-}
 
-void SinglePIDModule::init() {
-	Module::init();
-	/* Set up PID functionality */
-	this->pid_loop = new PID();
-	this->pid_loop->max = 10.0;//2.0;
-	this->pid_loop->min = -10;//1.6;
-	this->pid_loop->Kp = 0.05;
-	this->pid_loop->Ki = 0.00000;
-	this->pid_loop->pol = true;
 
-	//read in pid values --> new state??
-
-	this->oscilloscope = new Oscilloscope(this->rpi, this->adc_dev, this->dac_1, this->dac_2);
-	this->oscilloscope->AddChannel(OSCILLOSCOPE_REC_ADC1);
-	this->oscilloscope->AddChannel(OSCILLOSCOPE_REC_ADC2);
-	this->oscilloscope->Setup(0.01, 200000.0f);
-
-	turn_LED5_on();
-}
-
-void SinglePIDModule::work() {
-	this->adc_dev->Read();
-	while(!this->adc_dev->isReady());
-
-	if(this->pid_state == pid_locked) {
-		DigitalOutLow();
-		this->dac_2->WriteFloat(this->pid_loop->CalculateFeedback(this->adc_dev->Channel1->GetFloat(), this->adc_dev->Channel2->GetFloat()));
-		//PhilipL: dac_2->WriteFloat(PIDLoop->CalculateFeedback(PIDLoop->set_point, FFTCorr->CalculateCorrection(adc_dev->Channel2->GetFloat())));
-	}
-	else {
-		this->dac_2->WriteFloat(0.0);//dac_2->GetMin());
-		DigitalOutHigh();
+class SinglePIDModule: public Module {
+public:
+	SinglePIDModule() {
+		initialize_rpi();
+		locked = false;
+		turn_LED6_off();
+		turn_LED5_on();
+		pid = new PID(0, 0, 0);
+		p = i = d = output_min = output_max = 0;
 	}
 
-	this->oscilloscope->Input();
+	void run() {
+		initialize_adc(ADC_UNIPOLAR_10V, ADC_UNIPOLAR_10V);
+		initialize_dac();
 
-}
+		/*** TIMER FOR MAINLOOP TO EXTRACT DT ***/
 
-uint8_t SinglePIDModule::handle_rpi_input() {
-	SinglePIDMethods method_identifier = (SinglePIDMethods)Module::handle_rpi_input();
+		const float TIM3freq = 90e6;
+		// 1. Enable Peripheral Clock for TIM3 (bit 1 in APB1ENR)
+		RCC->APB1ENR |= 1<<1;
+		// 2. Set Prescaler to 68
+		TIM3->PSC = (uint16_t) 68;
+		// 3. Set the Auto Reload Register to max. value
+		TIM3->ARR = 0xFFFF;
+		// 4. Enable update interrupt (bit 0)
+		//TIM3->DIER |= 1;
+		// 6. Enable Counter
+		TIM3->CR1 = 1;
+
+		float dt = 0;
+		uint16_t t = TIM3->CNT;
+		uint16_t psc = TIM3->PSC;
 
 
-	switch(method_identifier) {
-	case SinglePIDMethods::INITIALIZE:
-		std::apply(&SinglePIDModule::initialize, std::tuple_cat(std::make_tuple(this), SinglePIDModuleDP::read_initialize_call(this->rpi->ReadBuffer)));
-		break;
-	case SinglePIDMethods::SET_PID:
-		break;
-//		case RPi_Command_SetPIDParameters:
-//		{
-////			volatile uint8_t Channel  = this->rpi->ReadBuffer[1];
-//			this->pid_loop->SetPIDParam((float*)(this->rpi->ReadBuffer+2));
-//			//	#if defined(DOUBLE_PID) || defined(NESTED_LOCK)
-//			//			PIDLoop2->SetPIDParam((float*)(RPi->ReadBuffer+2));
-//			//	#endif
-//			break;
-//		}
+		/*** work loop ***/
+		while(true) {
+			// optimize /w function pointer?
+			if(locked == false) {
+				HAL_Delay(500);
+			} else {
+				turn_LED5_on();
+				HAL_Delay(500);
+				turn_LED5_off();
+				HAL_Delay(500);
+
+				// calculate dt
+//				dt = (TIM3->CNT - t)/TIM3freq*psc;
+//				t = TIM3->CNT;
 //
-//		case RPi_Command_StopLock:
-//			this->pid_state = pid_unlocked;
-//			turn_LED6_off();
-//			break;
-//
-//		case RPi_Command_StartLock:
-//			this->pid_state = pid_locked;
-//			turn_LED6_on();
-//			break;
-//
-//		case RPi_Command_MeasureAOMResponse:
-//		{
-//			uint8_t ADC_Channel = this->rpi->ReadBuffer[1];
-//			uint8_t DAC_Channel = this->rpi->ReadBuffer[2];
-//			this->dac_2->Cal->CalibrationOn = false;
-//			this->dac_2->WriteFloat(0.00f);
-//			while(!this->dac_2->isReady());
-//			this->adc_dev->Read();
-//			while(!this->adc_dev->isReady());
-//			HAL_Delay(1000);
-//			//float* data = RecordTrace(ADC_DEV, ADC_Channel, (DAC_Channel==1) ? DAC_1 : DAC_2, 1000);
-//			float* data = RecordTrace(this->adc_dev, ADC_Channel==1 ? true : false, ADC_Channel==2 ? true : false, (DAC_Channel==1) ? this->dac_1 : this->dac_2, 0.0f, 5.0f, 1000);
-//			// send
-//			this->rpi->Transfer(this->rpi->ReadBuffer, (uint8_t*)data, 4000);
-//			while(!this->rpi->isReady());
-//			// wait until done
-//			delete data;
-//			break;
-//		}
-//
-//		case RPi_Command_RecordTrace:
-//		{
-//			// read parameters
-//			bool Channel1 = this->rpi->ReadBuffer[1];
-//			bool Channel2  = this->rpi->ReadBuffer[2];
-//			uint8_t DAC_Channel  = this->rpi->ReadBuffer[3];
-//			float From = *((float*)(this->rpi->ReadBuffer+4));
-//			float To = *((float*)(this->rpi->ReadBuffer+8));
-//			uint32_t Steps = *((uint16_t*)(this->rpi->ReadBuffer+12));
-//			// move to starting position
-//			Move2Voltage((DAC_Channel==1) ? this->dac_1 : this->dac_2, From);
-//			// turn low pass on
-//			/*if (Channel1)
-//				ADC_DEV->Channel1->SetLowPass(true, 0.9f);
-//			if (Channel2)
-//				ADC_DEV->Channel2->SetLowPass(true, 0.9f);*/
-//			// measure trace
-//			float* data = RecordTrace(this->adc_dev, Channel1, Channel2, (DAC_Channel==1) ? this->dac_1 : this->dac_2, From, To, Steps);
-//			// turn off low pass
-//			/*if (Channel1)
-//				ADC_DEV->Channel1->SetLowPass(false, 0.9f);
-//			if (Channel2)
-//				ADC_DEV->Channel2->SetLowPass(false, 0.9f);*/
-//			// send data
-//			this->rpi->Write((uint8_t*)data, (Channel1 && Channel2) ? 8*Steps : 4*Steps);
-//			while(!this->rpi->isReady());
-//			// wait until done
-//			delete data;
-//			break;
-//		}
-//
-//		case RPi_Command_ProgramCalibration:
-//		{
-//			// read parameters
-////			volatile uint8_t DAC_Channel = RPi->ReadBuffer[1];
-////			volatile float Min = *((float*)(this->rpi->ReadBuffer+2));
-////			volatile float Max = *((float*)(this->rpi->ReadBuffer+6));
-////			volatile uint32_t NumberPivots = *((uint32_t*)(this->rpi->ReadBuffer+10));
-////
-////			// transfer data
-////			float* Pivots = new float[NumberPivots];
-////			float* Dummy = new float[NumberPivots];
-////			this->rpi->Transfer((uint8_t*)Pivots, (uint8_t*)Dummy, 4*NumberPivots);
-////			while(!this->rpi->isReady());
-////
-////			// calibrate DAC
-////			this->dac_2->Calibrate(Min, Max, Pivots, NumberPivots);
-////
-////			// clean up
-////			delete Pivots;
-////			delete Dummy;
-//			break;
-//		}
+//				this->adc->start_conversion();
+//				this->dac_1->write(this->pid->calculate_output(adc->channel1->get_result(), adc->channel2->get_result(), dt));
+			}
+		}
 	}
 
-	return (uint8_t)method_identifier;
+	void handle_rpi_input() {
+		/*** Package format: method_identifier (uint32_t) | method specific arguments (defined in the methods directly) ***/
+		RPIDataPackage* read_package = rpi->get_read_package();
+
+		// switch between method_identifier
+		switch (read_package->pop_from_buffer<uint32_t>()) {
+		case METHOD_SET_PID:
+			set_pid(read_package);
+			break;
+		case METHOD_LOCK:
+			lock(read_package);
+			break;
+		case METHOD_UNLOCK:
+			unlock(read_package);
+			break;
+		case METHOD_SET_OUTPUT_LIMITS:
+			set_output_limits(read_package);
+			break;
+		default:
+			/*** send NACK because the method_identifier is not valid ***/
+			RPIDataPackage* write_package = rpi->get_write_package();
+			write_package->push_nack();
+			rpi->send_package(write_package);
+			break;
+		}
+
+	}
+
+	/*** START: METHODS ACCESSIBLE FROM THE RPI ***/
+	static const uint32_t METHOD_SET_PID = 11;
+	void set_pid(RPIDataPackage* read_package) {
+		/***Read arguments***/
+		p = read_package->pop_from_buffer<float>();
+		i = read_package->pop_from_buffer<float>();
+		d = read_package->pop_from_buffer<float>();
+
+		this->pid->set_pid(p, i, d);
+
+		/*** send ACK ***/
+		RPIDataPackage* write_package = rpi->get_write_package();
+		write_package->push_ack();
+		rpi->send_package(write_package);
+	}
+
+	static const uint32_t METHOD_LOCK = 12;
+	void lock(RPIDataPackage* read_package) {
+		this->locked = true;
+		turn_LED6_on();
+
+		/*** send ACK ***/
+		RPIDataPackage* write_package = rpi->get_write_package();
+		write_package->push_ack();
+		rpi->send_package(write_package);
+	}
+
+	static const uint32_t METHOD_UNLOCK = 13;
+	void unlock(RPIDataPackage* read_package) {
+		this->locked = false;
+		turn_LED6_off();
+
+		/*** send ACK ***/
+		RPIDataPackage* write_package = rpi->get_write_package();
+		write_package->push_ack();
+		rpi->send_package(write_package);
+	}
+
+	static const uint32_t METHOD_SET_OUTPUT_LIMITS = 14;
+	void set_output_limits(RPIDataPackage* read_package) {
+		/***Read arguments***/
+		output_min = read_package->pop_from_buffer<float>();
+		output_max = read_package->pop_from_buffer<float>();
+
+		this->dac_1->set_min_output(output_min);
+		this->dac_1->set_max_output(output_max);
+
+		/*** send ACK ***/
+		RPIDataPackage* write_package = rpi->get_write_package();
+		write_package->push_ack();
+		rpi->send_package(write_package);
+	}
+
+	/*** END: METHODS ACCESSIBLE FROM THE RPI ***/
+
+	void rpi_dma_in_interrupt() {
+
+		if(rpi->dma_in_interrupt())
+		{ /*got new package from rpi*/
+			handle_rpi_input();
+		} else
+		{ /* error */
+
+		}
+	}
+
+public:
+	float p, i, d, output_min, output_max; //declared here to save space (no garbage collector)
+	PID* pid;
+	bool locked;
+};
+
+
+SinglePIDModule *module;
+
+/******************************
+ *         INTERRUPTS          *
+ ******************************
+ * Callbacks are functions that are executed in response to events such as SPI communication finished, change on trigger line etc */
+
+
+
+// DMA Interrupts. You probably don't want to change these, they are neccessary for the low-level communications between MCU, converters and RPi
+__attribute__((section("sram_func")))
+__weak void DMA2_Stream4_IRQHandler(void)
+{
+	module->dac_2->dma_transmission_callback();
+}
+__attribute__((section("sram_func")))
+void DMA2_Stream5_IRQHandler(void)
+{
+	module->dac_1->dma_transmission_callback();
+}
+__attribute__((section("sram_func")))
+void DMA2_Stream2_IRQHandler(void)
+{
+	// SPI 1 rx
+	module->adc->dma_transmission_callback();
+}
+__attribute__((section("sram_func")))
+void DMA2_Stream3_IRQHandler(void)
+{
+	// SPI 1 tx - SPI 5 rx
+	// no action required
+}
+__attribute__((section("sram_func")))
+void DMA2_Stream0_IRQHandler(void)
+{
+	module->rpi_dma_in_interrupt();
+}
+__attribute__((section("sram_func")))
+void DMA2_Stream1_IRQHandler(void)
+{
+	// SPI 4 Tx
+	module->rpi->dma_out_interrupt();
+}
+__attribute__((section("sram_func")))
+void DMA2_Stream6_IRQHandler(void)
+{
+	// SPI 6 Rx
+	// no action required
 }
 
-void SinglePIDModule::initialize(float p, float i, float d, float out_range_min, float out_range_max, bool useTTL, bool locked,
-		HardwareComponents err_channel, HardwareComponents setpoint_channel, HardwareComponents out_channel) {
-	this->rpi_init();
-	printf("asdf");
+__attribute__((section("sram_func")))
+void SPI4_IRQHandler(void) {
+	module->rpi->spi_interrupt();
 }
+
+/******************************
+ *       MAIN FUNCTION        *
+ ******************************/
+void start(void)
+{
+	/* To speed up the access to functions, that are often called, we store them in the RAM instead of the FLASH memory.
+	 * RAM is volatile. We therefore need to load the code into RAM at startup time. For background and explanations,
+	 * check https://rhye.org/post/stm32-with-opencm3-4-memory-sections/
+	 * */
+	extern unsigned __sram_func_start, __sram_func_end, __sram_func_loadaddr;
+	volatile unsigned *src = &__sram_func_loadaddr;
+	volatile unsigned *dest = &__sram_func_start;
+	while (dest < &__sram_func_end) {
+	  *dest = *src;
+	  src++;
+	  dest++;
+	}
+
+	/* After power on, give all devices a moment to properly start up */
+	HAL_Delay(200);
+
+	module = new SinglePIDModule();
+
+	module->run();
+
+}
+
+#endif

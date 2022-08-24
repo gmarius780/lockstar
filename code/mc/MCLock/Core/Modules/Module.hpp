@@ -8,49 +8,34 @@
 #ifndef MODULES_MODULE_HPP_
 #define MODULES_MODULE_HPP_
 
-#include "../Inc/main.h"
-#include "../HAL/adc.hpp"
-#include "../HAL/dac.hpp"
-#include "../HAL/raspberrypi.hpp"
+#include "main.h"
+#include "stm32f427xx.h"
+#include "stm32f4xx_hal.h"
+#include "stm32f4xx_it.h"
+#include "stm32f4xx_hal_gpio.h"
+
+#include <main.h>
+#include "../HAL/spi.hpp"
 #include "../HAL/leds.hpp"
-#include "../Inc/misc_func.hpp"
+#include "../HAL/adc_new.hpp"
+#include "../HAL/dac_new.hpp"
+#include "../HAL/rpi.h"
 
 #include <cstring>
-
-extern ADC_HandleTypeDef hadc3;
-
-enum ModuleState {module_state_rpi_init_pending, module_state_running, module_state_failed};
-enum RpiInputState {rpi_input_pending, rpi_input_none};
 
 class Module {
 public:
 	Module();
 	virtual ~Module();
 
-	void run();
-	virtual void init();
-	void loop();
+	void initialize_adc(uint8_t ch1_config, uint8_t ch2_config);
+	void initialize_dac();
+	void initialize_rpi();
 
-	void adc_interrupt();
-	void rpi_dma_interrupt();
-	void rpi_spi_interrupt();
-	void trigger_interrupt();
-	void timer_interrupt();
-
-	void initiate_rpi_communication(uint32_t nbr_of_bytes);
-
-
-	virtual uint8_t handle_rpi_input();
-	void rpi_init();
-	virtual void work();
-
-	DAC_Dev *dac_2, *dac_1;
-	ADC_Dev *adc_dev;
-	RaspberryPi *rpi;
-
-	ModuleState module_state;
-	RpiInputState rpi_input_state;
-
+public:
+	ADC_Device *adc;
+	DAC_Device *dac_1, *dac_2;
+	RPI *rpi;
 };
 
 #endif /* MODULES_MODULE_HPP_ */

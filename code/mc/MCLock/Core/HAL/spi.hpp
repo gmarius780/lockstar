@@ -29,9 +29,6 @@ public:
     volatile uint32_t* getDRAddress() { return &SPI_regs->DR; };
     bool isBusy() { return (bool)(SPI_regs->SR & SPI_SR_BSY); };
     
-    /* Configurations */
-    void bindDMAHandlers(DMA* TxHandler, DMA* RxHandler);
-    void unbindDMAHandlers();
 
     /* Enables/Disables */
     void enableSPI();

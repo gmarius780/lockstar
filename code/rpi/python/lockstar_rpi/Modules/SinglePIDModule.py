@@ -1,10 +1,12 @@
 from lockstar_rpi.Modules.IOModule_ import IOModule_
-from lockstar_general.hardware import HardwareComponents
 from lockstar_general.backend.BackendResponse import BackendResponse
 from lockstar_general.mc_modules import SinglePIDModuleDP
 from lockstar_general.utils import int_to_HardwareComponents
 import logging
 from lockstar_rpi.MC import MC
+from lockstar_rpi.MCDataPackage import MCDataPackage
+import asyncio
+from time import sleep
 
 
 class SinglePIDModule(IOModule_):
@@ -17,13 +19,10 @@ class SinglePIDModule(IOModule_):
         self.out_range_max = None
         self.useTTL = None
         self.locked = None
-        self.err_channel = None
-        self.setpoint_channel = None
-        self.out_channel = None
+
 
     # ==== START: client methods 
-    async def initialize(self, p: float, i: float, d: float, out_range_min: float, out_range_max: float, useTTL: bool, locked: bool,
-                err_channel: HardwareComponents, setpoint_channel: HardwareComponents, out_channel: HardwareComponents, writer):
+    async def initialize(self, p: float, i: float, d: float, out_range_min: float, out_range_max: float, useTTL: bool, locked: bool, writer):
         self.p = p
         self.i = i
         self.d = d
@@ -31,38 +30,20 @@ class SinglePIDModule(IOModule_):
         self.out_range_max = out_range_max
         self.useTTL = useTTL
         self.locked = locked
-        
-        error = False
-        
-        try:
-            self.err_channel = err_channel if isinstance(err_channel, HardwareComponents) else int_to_HardwareComponents(err_channel)
-        except:
-            error = True
 
-        try:
-            self.setpoint_channel = setpoint_channel if isinstance(setpoint_channel, HardwareComponents) else int_to_HardwareComponents(setpoint_channel)
-        except:
-            error = True
-        try:
-            self.out_channel = out_channel if isinstance(out_channel, HardwareComponents) else int_to_HardwareComponents(out_channel)
-        except:
-            error = True
+        logging.debug('Starting initialization: SinglePIDModule')
 
-        if not error:
-            # Send to MC and await answer
+        #=== sequentially send configuration to MC
+        ack = await self.set_pid(p, i, d, writer, respond=False)
+        ack = ack and await self.set_output_limits(out_range_min, out_range_max, writer, respond=False)
 
-            logging.debug('Initialized SinglePIDModule')
-
-            # === MC CALL:
-            #float p, float i, float d, float out_range_min, float out_range_max, bool useTTL,
-            #	bool locked, HardwareComponents err_channel, HardwareComponents setpoint_channel, HardwareComponents out_channel
-            write_bytes = SinglePIDModuleDP.write_initialize_call(p, i, d, out_range_min, out_range_max, useTTL, locked, self.err_channel, self.setpoint_channel, self.out_channel)
-            await MC.I().write(write_bytes)
-
-            ack = await MC.I().read_ack()
+        if locked:
+            ack = ack and await self.lock(writer, respond=False)
+        else:
+            ack = ack and await self.unlock(writer, respond=False)
 
         if writer is not None:
-            if not error and ack:
+            if ack:
                 writer.write(BackendResponse.ACK().to_bytes())
             else:
                 writer.write(BackendResponse.NACK().to_bytes())
@@ -70,49 +51,55 @@ class SinglePIDModule(IOModule_):
         
         return ack
 
-    async def set_pid(self, p: float, i: float, d: float, writer):
+    async def check_for_ack(self, writer=None):
+        ack =  await MC.I().read_ack()
+        if writer is not None:
+            if ack:
+                writer.write(BackendResponse.ACK().to_bytes())
+            else:
+                writer.write(BackendResponse.NACK().to_bytes())
+            await writer.drain()
+        
+        return ack
+
+    async def set_pid(self, p: float, i: float, d: float, writer, respond=True):
         self.p = p
         self.i = i
         self.d = d
 
-        # Send to MC and await answer
+        logging.debug('Backend: set_pid')
+        mc_data_package = MCDataPackage()
+        mc_data_package.push_to_buffer('uint32_t', 11) # method_identifier
+        mc_data_package.push_to_buffer('float', p) # p
+        mc_data_package.push_to_buffer('float', i) # i
+        mc_data_package.push_to_buffer('float', d) # d
+        await MC.I().write_mc_data_package(mc_data_package)
+        
+        return await self.check_for_ack(writer=(writer if respond else None))
 
-        logging.debug('Initialized set_pid')
+    async def set_output_limits(self, min: float, max: float, writer, respond=True):
+        self.out_range_min = min
+        self.out_range_max = max
 
-        writer.write(BackendResponse.ACK())
-        await writer.drain()
+        logging.debug('Backend: set output limits')
+        mc_data_package = MCDataPackage()
+        mc_data_package.push_to_buffer('uint32_t', 14) # method_identifier
+        mc_data_package.push_to_buffer('float', min)
+        mc_data_package.push_to_buffer('float', max)
+        await MC.I().write_mc_data_package(mc_data_package)
+        return await self.check_for_ack(writer=(writer if respond else None))
 
-    async def lock(self):
-        self.locked = True
+    async def lock(self, writer, respond=True):
+        mc_data_package = MCDataPackage()
+        mc_data_package.push_to_buffer('uint32_t', 12) # method_identifier
+        await MC.I().write_mc_data_package(mc_data_package)
+        return await self.check_for_ack(writer=(writer if respond else None))
 
-    async def unlock(self):
-        self.locked = False
-
-    async def get_channel_data(self, ch: HardwareComponents):
-        """read recend ADC data of a channel for which live mode is enabled
-
-        Args:
-            ch (HardwareComponents): channel from which data should be read
-        """
-        pass
-
-    async def enable_live_channel(self, ch: HardwareComponents):
-        """Enables buffering on the MC of the ADC data for channel ch such that it can be polled from
-        time to time with get_channel_data
-
-        Args:
-            ch (HardwareComponents): channel for which it should be enabled
-        """
-        pass
-
-    async def disable_live_channel(self, ch: HardwareComponents):
-        """disable buffering on the MC of the ADC data for channel ch such that it can be polled from
-        time to time with get_channel_data
-
-        Args:
-            ch (HardwareComponents): channel for which it should be enabled
-        """
-        pass
+    async def unlock(self, writer, respond=True):
+        mc_data_package = MCDataPackage()
+        mc_data_package.push_to_buffer('uint32_t', 13) # method_identifier
+        await MC.I().write_mc_data_package(mc_data_package)
+        return await self.check_for_ack(writer=(writer if respond else None))
     
     # ==== END: client methods
 
@@ -122,19 +109,13 @@ class SinglePIDModule(IOModule_):
     
         for key in self.__dict__:
             if key not in config:
-                if isinstance(self.__dict__[key], HardwareComponents):
-                    config[key] = self.__dict__[key].value
-                else:
-                    config[key] = self.__dict__[key]
+                config[key] = self.__dict__[key]
         return config
 
     async def launch_from_config(self, config_dict):
         try:
             await self.initialize(config_dict['p'], config_dict['i'], config_dict['d'], config_dict['out_range_min'],
-                                config_dict['out_range_max'], config_dict['useTTL'], config_dict['locking'], 
-                                HardwareComponents.from_int(config_dict['err_channel']),
-                                HardwareComponents.from_int(config_dict['setpoint_channel']),
-                                HardwareComponents.from_int(config_dict['out_channel']), None)
+                                config_dict['out_range_max'], config_dict['useTTL'], config_dict['locked'], None)
 
             await super().launch_from_config(config_dict)
         except Exception as ex:
