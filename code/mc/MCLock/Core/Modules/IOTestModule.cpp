@@ -16,6 +16,7 @@
 #include "../HAL/leds.hpp"
 #include "../HAL/adc_new.hpp"
 #include "../HAL/dac_new.hpp"
+#include "../HAL/basic_timer.hpp"
 
 #ifdef IO_TEST_MODULE
 
@@ -63,35 +64,34 @@ public:
 
 		const uint16_t psc = 68;
 		const float TIM3freq = 90e6;
-		// 1. Enable Peripheral Clock for TIM3 (bit 1 in APB1ENR)
-		RCC->APB1ENR |= 1<<RCC_APB1ENR_TIM3EN;
-		// 2. Set Prescaler to 68
-		TIM3->PSC = (uint16_t) psc;
-		// 3. Set the Auto Reload Register to max. value
-		TIM3->ARR = 0xFFFF;
-		// 4. Enable update interrupt (bit 0)
-		//TIM3->DIER |= 1;
-		// 6. Enable Counter
-		TIM3->CR1 = 1;
+		BasicTimer* timer = new BasicTimer(3, 0xFFFF, psc, false);
+		timer->enable();
 
 		volatile uint32_t n = 0;
 		volatile float dtAcc = 0;
 		volatile float dt = 0;
 		volatile uint16_t t = 0;
 
+		turn_led_on(6);
+		turn_led_off(6);
+		turn_led_on(5);
+		turn_led_off(5);
+
 		while(true) {
 			ADC_Dev->start_conversion();
 
-			t = TIM3->CNT - t;
+			t = timer->get_counter() - t;
 			dt = t/TIM3freq*psc;
 			dtAcc += dt;
 			n++;
-			t = TIM3->CNT;
+			t = timer->get_counter();
 
 			m1 = ADC_Dev->channel1->get_result();
 
 			DAC_1->write(m1);
 			DAC_2->write(m1);
+
+
 		}
 	}
 

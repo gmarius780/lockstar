@@ -19,10 +19,12 @@
 #include "../HAL/spi.hpp"
 #include "../HAL/rpi.h"
 #include "../HAL/leds.hpp"
-#include "../Lib/rpi_data_package.h"
-#include "../Lib/pid.hpp"
 #include "../HAL/adc_new.hpp"
 #include "../HAL/dac_new.hpp"
+#include "../HAL/basic_timer.hpp"
+#include "../Lib/rpi_data_package.h"
+#include "../Lib/pid.hpp"
+
 #include "Module.hpp"
 
 #ifdef SINGLE_PID_MODULE
@@ -36,7 +38,7 @@ public:
 		locked = false;
 		turn_LED6_off();
 		turn_LED5_on();
-		pid = new PID(0, 0, 0);
+		pid = new PID(0.025, 11e3, 0);
 		p = i = d = output_min = output_max = 0;
 	}
 
@@ -46,41 +48,29 @@ public:
 
 		/*** TIMER FOR MAINLOOP TO EXTRACT DT ***/
 
+		const uint16_t psc = 68;
 		const float TIM3freq = 90e6;
-		// 1. Enable Peripheral Clock for TIM3 (bit 1 in APB1ENR)
-		RCC->APB1ENR |= 1<<1;
-		// 2. Set Prescaler to 68
-		TIM3->PSC = (uint16_t) 68;
-		// 3. Set the Auto Reload Register to max. value
-		TIM3->ARR = 0xFFFF;
-		// 4. Enable update interrupt (bit 0)
-		//TIM3->DIER |= 1;
-		// 6. Enable Counter
-		TIM3->CR1 = 1;
+		BasicTimer* timer = new BasicTimer(3, 0xFFFF, psc, false);
+		timer->enable();
 
 		float dt = 0;
-		uint16_t t = TIM3->CNT;
-		uint16_t psc = TIM3->PSC;
+		uint16_t t = 0;
 
 
 		/*** work loop ***/
 		while(true) {
 			// optimize /w function pointer?
-			if(locked == false) {
-				HAL_Delay(500);
-			} else {
-				turn_LED5_on();
-				HAL_Delay(500);
-				turn_LED5_off();
-				HAL_Delay(500);
 
-				// calculate dt
-//				dt = (TIM3->CNT - t)/TIM3freq*psc;
-//				t = TIM3->CNT;
-//
-//				this->adc->start_conversion();
-//				this->dac_1->write(this->pid->calculate_output(adc->channel1->get_result(), adc->channel2->get_result(), dt));
-			}
+			// This version does not work for some reason?
+			// dt = (TIM3->CNT - t)/TIM3freq*psc;
+
+			// Measuring elapsed time per work loop
+			t = timer->get_counter() - t;
+			dt = t/TIM3freq*psc;
+			t = timer->get_counter();
+
+			this->adc->start_conversion();
+			this->dac_1->write(this->pid->calculate_output(adc->channel1->get_result(), adc->channel2->get_result(), dt));
 		}
 	}
 
