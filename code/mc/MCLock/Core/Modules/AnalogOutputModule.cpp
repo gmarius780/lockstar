@@ -97,6 +97,7 @@ public:
 		this->is_output_ttl = false;
 		this->dac_1->write(this->output_value_one);
 		this->dac_2->write(this->output_value_two);
+		turn_LED6_on();
 
 		/*** send ACK ***/
 		RPIDataPackage* write_package = rpi->get_write_package();
@@ -110,6 +111,7 @@ public:
 		this->is_output_ttl = false;
 		this->dac_1->write(0);
 		this->dac_2->write(0);
+		turn_LED6_off();
 
 		/*** send ACK ***/
 		RPIDataPackage* write_package = rpi->get_write_package();
@@ -121,6 +123,7 @@ public:
 	void output_ttl(RPIDataPackage* read_package) {
 		this->is_output_on = false;
 		this->is_output_ttl = true;
+		turn_LED6_off();
 
 		/*** send ACK ***/
 		RPIDataPackage* write_package = rpi->get_write_package();
@@ -156,7 +159,8 @@ public:
 	void set_ch_one_output(RPIDataPackage* read_package) {
 		/***Read arguments***/
 		output_value_one = read_package->pop_from_buffer<float>();
-		this->dac_1->write(output_value_one);
+		if (this->is_output_on)
+			this->dac_1->write(output_value_one);
 
 		/*** send ACK ***/
 		RPIDataPackage* write_package = rpi->get_write_package();
@@ -168,7 +172,8 @@ public:
 	void set_ch_two_output(RPIDataPackage* read_package) {
 		/***Read arguments***/
 		output_value_two = read_package->pop_from_buffer<float>();
-		this->dac_2->write(output_value_two);
+		if (this->is_output_on)
+			this->dac_2->write(output_value_two);
 
 		/*** send ACK ***/
 		RPIDataPackage* write_package = rpi->get_write_package();
@@ -193,6 +198,7 @@ public:
 		if (this->is_output_ttl) {
 			this->dac_1->write(this->output_value_one);
 			this->dac_2->write(this->output_value_two);
+			turn_LED6_on();
 		}
 	}
 
@@ -200,6 +206,7 @@ public:
 		if (this->is_output_ttl) {
 			this->dac_1->write(0);
 			this->dac_2->write(0);
+			turn_LED6_off();
 		}
 	}
 
