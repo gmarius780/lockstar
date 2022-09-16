@@ -22,8 +22,8 @@ public:
     void write(float value);
     void dma_transmission_callback();
     bool is_busy() { return busy; }
-    void set_min_output(float m) {this->min_output = std::max(this->min_output, m);} // can only set the minimum higher than set with jumpers
-    void set_max_output(float m) {this->max_output = std::min(this->max_output, m);} // can only set the maximum lower than set with jumpers
+    void set_min_output(float m) {this->min_output = std::max(this->min_hardware_output, m);} // can only set the minimum higher than set with jumpers
+    void set_max_output(float m) {this->max_output = std::min(this->max_hardware_output, m);} // can only set the maximum lower than set with jumpers
     float get_min_output() {return this->min_output;}
     float get_max_output() {return this->max_output;}
 
@@ -33,6 +33,7 @@ private:
     float zero_voltage;
     float full_range;
     float max_output, min_output;
+    float max_hardware_output, min_hardware_output; // as set with jumpers
     bool busy;
     bool invert;
 

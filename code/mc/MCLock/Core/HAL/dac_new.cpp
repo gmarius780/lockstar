@@ -127,11 +127,14 @@ void DAC_Device::config_output(ADC_HandleTypeDef* hadc, uint32_t ADC_SENL, uint3
 
     float low = 3.3 * adc_result / 4096.0f;
     if (low>=2.6)
-        min_output = 0.0f;
+        min_hardware_output = 0.0f;
+    	min_output = 0.0f;
     if (low<2.6 && low>=1.0)
-        min_output = -5.0f;
+        min_hardware_output = -5.0f;
+    	min_output = -5.0f;
     if (low < 1.0)
-        min_output = -10.0f;
+        min_hardware_output = -10.0f;
+    	min_output = -10.0f;
 
     // read ADC value of upper voltage
     adc_config.Channel = ADC_SENH;
@@ -143,9 +146,11 @@ void DAC_Device::config_output(ADC_HandleTypeDef* hadc, uint32_t ADC_SENL, uint3
 
     float high = 3.3 * adc_result / 4096.0f;
     if (high>=2.4)
-        this->max_output = 10.0f;
+        max_hardware_output = 10.0f;
+    	max_output = 10.0f;
     if (high < 2.4)
-        this->max_output = 5.0f;
+        max_hardware_output = 5.0f;
+    	max_output = 5.0f;
 
     full_range    		= max_output - min_output;
     zero_voltage        = (max_output + min_output)/2.0f;

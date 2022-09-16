@@ -22,7 +22,7 @@
 #include "../HAL/adc_new.hpp"
 #include "../HAL/dac_new.hpp"
 #include "../HAL/basic_timer.hpp"
-#include "../Lib/rpi_data_package.h"
+#include "../Lib/RPIDataPackage.h"
 #include "../Lib/pid.hpp"
 
 #include "Module.hpp"

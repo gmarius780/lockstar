@@ -5,7 +5,8 @@
  *      Author: marius
  */
 
-#include "rpi_data_package.h"
+#include "RPIDataPackage.h"
+
 #include <cmath>        // std::abs
 
 RPIDataPackage::RPIDataPackage(uint8_t *buffer) {

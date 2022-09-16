@@ -5,8 +5,8 @@
  *      Author: marius
  */
 
-#ifndef LIB_RPI_DATA_PACKAGE_H_
-#define LIB_RPI_DATA_PACKAGE_H_
+#ifndef LIB_RPIDATAPACKAGE_H_
+#define LIB_RPIDATAPACKAGE_H_
 #include "stm32f427xx.h"
 #include <cstddef>
 
@@ -41,4 +41,4 @@ private:
 	uint8_t *current_buffer;
 };
 
-#endif /* LIB_RPI_DATA_PACKAGE_H_ */
+#endif /* LIB_RPIDATAPACKAGE_H_ */

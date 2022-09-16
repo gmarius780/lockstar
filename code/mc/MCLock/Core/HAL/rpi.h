@@ -10,7 +10,7 @@
 #include "stm32f427xx.h"
 #include "../HAL/dma_new.hpp"
 #include "../HAL/spi.hpp"
-#include "../Lib/rpi_data_package.h"
+#include "../Lib/RPIDataPackage.h"
 
 
 class RPI {

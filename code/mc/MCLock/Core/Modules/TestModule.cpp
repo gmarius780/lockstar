@@ -14,7 +14,7 @@
 #include "../HAL/spi.hpp"
 #include "../HAL/rpi.h"
 #include "../HAL/leds.hpp"
-#include "../Lib/rpi_data_package.h"
+#include "../Lib/RPIDataPackage.h"
 
 #ifdef TEST_MODULE
 
