@@ -1,3 +1,4 @@
+from time import sleep
 from lockstar_rpi.BackendSettings import BackendSettings
 from lockstar_rpi.Modules.IOModule_ import IOModule_
 from lockstar_general.backend.BackendResponse import BackendResponse
@@ -158,10 +159,10 @@ class AWGModule(IOModule_):
             prescaler = fraction.denominator
             counter_max = fraction.numerator
 
-            self.buffer_one_size = buffer_one_size
-            self.buffer_two_size = buffer_two_size
-            self.chunks_one_size = chunks_one_size
-            self.chunks_two_size = chunks_two_size
+            self.buffer_one_size = int(buffer_one_size)
+            self.buffer_two_size = int(buffer_two_size)
+            self.chunks_one_size = int(chunks_one_size)
+            self.chunks_two_size = int(chunks_two_size)
             self.sampling_rate = sampling_rate
 
             logging.debug('Backend: initialize_buffers')
@@ -174,6 +175,7 @@ class AWGModule(IOModule_):
             mc_data_package.push_to_buffer('uint32_t', int(prescaler))
             mc_data_package.push_to_buffer('uint32_t', int(counter_max))
             await MC.I().write_mc_data_package(mc_data_package)
+            sleep(0.1)
             return await self.check_for_ack(writer=(writer if respond else None))
 
     async def set_sampling_rate(self, sampling_rate:int, writer, respond=True):

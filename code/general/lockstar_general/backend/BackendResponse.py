@@ -56,3 +56,6 @@ class BackendResponse:
         except Exception as ex:
             logging.error(f'BackendResponse.to_bytes: Could not parse dict to json bytes: {ex}')
             raise ex
+
+    def __repr__(self) -> str:
+        return self.response
