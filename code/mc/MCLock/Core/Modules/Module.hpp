@@ -32,6 +32,8 @@ public:
 	void initialize_dac();
 	void initialize_rpi();
 
+	void set_ch_output_limit(RPIDataPackage* read_package, DAC_Device *dac);
+
 public:
 	ADC_Device *adc;
 	DAC_Device *dac_1, *dac_2;

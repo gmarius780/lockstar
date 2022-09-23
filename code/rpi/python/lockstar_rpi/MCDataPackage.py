@@ -6,6 +6,8 @@ from numpy import uint32
 
 
 class MCDataPackage:
+    MAX_NBR_BYTES = 2550
+
     def __init__(self) -> None:
         self.buffer = []
 
@@ -13,6 +15,7 @@ class MCDataPackage:
     def struct_type_from_cpp_type(str_cpp_type):
         if str_cpp_type == 'uint32_t': return 'I'
         elif str_cpp_type == 'float': return 'f'
+        elif str_cpp_type == 'bool': return '?'
         else: raise ValueError(f'Datatype: {str_cpp_type} not recognized.')
 
     def push_to_buffer(self, str_cpp_dtype, data):

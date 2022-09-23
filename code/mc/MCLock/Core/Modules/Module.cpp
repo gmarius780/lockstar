@@ -53,3 +53,14 @@ void Module::initialize_dac() {
 void Module::initialize_rpi() {
 	rpi = new RPI();
 }
+
+void Module::set_ch_output_limit(RPIDataPackage* read_package, DAC_Device *dac) {
+	/***Read arguments***/
+	dac->set_min_output(read_package->pop_from_buffer<float>());
+	dac->set_max_output(read_package->pop_from_buffer<float>());
+
+	/*** send ACK ***/
+	RPIDataPackage* write_package = rpi->get_write_package();
+	write_package->push_ack();
+	rpi->send_package(write_package);
+}

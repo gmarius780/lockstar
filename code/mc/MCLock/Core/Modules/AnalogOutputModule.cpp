@@ -1,10 +1,5 @@
 /*
- * SinglePIDModule.cpp
- *
- *  Implements a PID controller with
- *  Setpoint: INPUT 1
- *  Errorsignal: INPUT 2
- *  Control-output: OUTPUT 1
+ * AnalogOutputModule.cpp
  *
  *  Created on: Aug 18, 2022
  *      Author: marius
@@ -48,7 +43,6 @@ public:
 
 		/*** work loop ***/
 		while(true) {
-
 			//this->dac_1->write(this->pid->calculate_output(adc->channel1->get_result(), adc->channel2->get_result(), dt));
 		}
 	}
@@ -227,13 +221,13 @@ __attribute__((section("sram_func")))
 void HAL_GPIO_EXTI_Callback (uint16_t gpio_pin)
 {
 	if(gpio_pin == DigitalIn_Pin) {
-		// Falling Edge
-		if(HAL_GPIO_ReadPin(DigitalIn_GPIO_Port, DigitalIn_Pin) == GPIO_PIN_RESET)
-			module->digital_in_falling_edge();
-
 		// Rising Edge
-		if(HAL_GPIO_ReadPin(DigitalIn_GPIO_Port, DigitalIn_Pin) == GPIO_PIN_SET)
+		if(HAL_GPIO_ReadPin(DigitalIn_GPIO_Port, DigitalIn_Pin) == GPIO_PIN_RESET)
 			module->digital_in_rising_edge();
+
+		// Falling Edge
+		if(HAL_GPIO_ReadPin(DigitalIn_GPIO_Port, DigitalIn_Pin) == GPIO_PIN_SET)
+			module->digital_in_falling_edge();
 	}
 
 	// Note: Tested with square wave input. Rising and falling edge seem to be inverted?

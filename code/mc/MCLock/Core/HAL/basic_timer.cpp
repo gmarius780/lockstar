@@ -9,7 +9,7 @@
 
 BasicTimer::BasicTimer(uint8_t timer_x, uint32_t auto_reload, uint32_t prescaler, bool interrupt) {
 	switch(timer_x) {
-		case 2: tim_regs = TIM1; APBxENR_bit = RCC_APB1ENR_TIM2EN; break;
+		case 2: tim_regs = TIM2; APBxENR_bit = RCC_APB1ENR_TIM2EN; break;
 		case 3: tim_regs = TIM3; APBxENR_bit = RCC_APB1ENR_TIM3EN; break;
 		case 4: tim_regs = TIM4; APBxENR_bit = RCC_APB1ENR_TIM4EN; break;
 		case 5: tim_regs = TIM5; APBxENR_bit = RCC_APB1ENR_TIM5EN; break;
@@ -20,10 +20,6 @@ BasicTimer::BasicTimer(uint8_t timer_x, uint32_t auto_reload, uint32_t prescaler
 
 	set_auto_reload(auto_reload);
 	set_prescaler(prescaler);
-}
-
-void BasicTimer::update_frequency(float f) {
-	return;
 }
 
 void BasicTimer::set_auto_reload(uint32_t value) { tim_regs->ARR = value; }

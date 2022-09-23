@@ -137,11 +137,11 @@ __attribute__((section("sram_func")))
 void HAL_GPIO_EXTI_Callback (uint16_t gpio_pin)
 {
 	if(gpio_pin == DigitalIn_Pin) {
-		// Falling Edge
+		// Rising Edge
 		if(HAL_GPIO_ReadPin(DigitalIn_GPIO_Port, DigitalIn_Pin) == GPIO_PIN_RESET)
 			turn_LED6_on();
 
-		// Rising Edge
+		// Falling Edge
 		if(HAL_GPIO_ReadPin(DigitalIn_GPIO_Port, DigitalIn_Pin) == GPIO_PIN_SET)
 			turn_LED6_off();
 	}

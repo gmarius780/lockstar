@@ -127,7 +127,7 @@ void start(void);
 #define Continuous_Lock 			0x0109
 
 //DEFINE WHICH MODULE TO RUN!!
-#define ANALOG_OUTPUT_MODULE
+#define AWG_MODULE
 
 /* USER CODE END Private defines */
 
