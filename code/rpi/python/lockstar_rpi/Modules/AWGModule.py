@@ -171,8 +171,8 @@ class AWGModule(IOModule_):
             mc_data_package.push_to_buffer('uint32_t', buffer_two_size)
             mc_data_package.push_to_buffer('uint32_t', chunks_one_size)
             mc_data_package.push_to_buffer('uint32_t', chunks_two_size)
-            mc_data_package.push_to_buffer('uint32_t', prescaler)
-            mc_data_package.push_to_buffer('uint32_t', counter_max)
+            mc_data_package.push_to_buffer('uint32_t', int(prescaler))
+            mc_data_package.push_to_buffer('uint32_t', int(counter_max))
             await MC.I().write_mc_data_package(mc_data_package)
             return await self.check_for_ack(writer=(writer if respond else None))
 
