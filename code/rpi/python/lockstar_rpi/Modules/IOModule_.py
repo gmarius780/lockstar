@@ -1,5 +1,4 @@
 from lockstar_rpi.Modules.Module import Module
-from lockstar_general.hardware import HardwareComponents
 from lockstar_general.backend.BackendResponse import BackendResponse
 
 class IOModule_(Module):
@@ -12,7 +11,7 @@ class IOModule_(Module):
         self.calibration = {}
 
 
-    async def calibrate(self, out_channel: HardwareComponents, out_range_min: float, out_range_max: float, writer):
+    async def calibrate(self, out_channel: int, out_range_min: float, out_range_max: float, writer):
         """Starts the calibration process of the DAC"""
         self.calibration[out_channel.value] = {
             'out_range_min': out_range_min,
