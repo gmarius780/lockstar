@@ -160,9 +160,9 @@ class AWGModule(IOModule_):
             return False
         else:
             fraction = Fraction.from_float(sampling_rate / BackendSettings.mc_internal_clock_rate)
-            fraction = fraction.limit_denominator(BackendSettings.mc_max_prescaler)
-            prescaler = fraction.denominator
-            counter_max = fraction.numerator+1
+            fraction = fraction.limit_denominator(BackendSettings.mc_max_counter)
+            counter_max = fraction.denominator
+            prescaler = fraction.numerator
 
             logging.info(f'initialize: sampling rate: {sampling_rate}, prescaler: {prescaler}, counter_max: {counter_max}')
 
