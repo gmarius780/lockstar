@@ -159,10 +159,10 @@ class AWGModule(IOModule_):
             prescaler = fraction.denominator
             counter_max = fraction.numerator
 
-            self.buffer_one_size = int(buffer_one_size)
-            self.buffer_two_size = int(buffer_two_size)
-            self.chunks_one_size = int(chunks_one_size)
-            self.chunks_two_size = int(chunks_two_size)
+            self.buffer_one_size = buffer_one_size
+            self.buffer_two_size = buffer_two_size
+            self.chunks_one_size = chunks_one_size
+            self.chunks_two_size = chunks_two_size
             self.sampling_rate = sampling_rate
 
             logging.debug('Backend: initialize_buffers')

@@ -87,7 +87,7 @@ if __name__ == "__main__":
     if client.register_client_id():
         logging.info(f'Successfully initialized AWG module')
 
-        buffer_one_size = buffer_two_size = 25e3
+        buffer_one_size = buffer_two_size = 25000
         sampling_rate = 1000
         
         ch_one_chunks = [999, 4999, 7999, 11999, 24999]
@@ -97,21 +97,21 @@ if __name__ == "__main__":
                                         np.linspace(1, 5, num=4000),
                                         np.linspace(5, 1, num=3000),
                                         np.cos(np.linspace(0, 10, num=4000)),
-                                        -2*np.ones(13000)))
+                                        -2*np.ones(13000))).tolist()
 
         ch_two_buffer = np.concatenate((np.sin(np.linspace(0, 10, num=5000)),
                                         np.linspace(1, 5, num=5000),
                                         np.linspace(5, 1, num=5000),
                                         np.cos(np.linspace(0, 10, num=5000),
-                                        -2*np.ones(5000))))
+                                        -2*np.ones(5000)))).tolist()
 
         # print(client.set_ch_one_output_limits(0, 1))
-        print(client.initialize_buffers(int(buffer_one_size), int(buffer_two_size), 10, 10, sampling_rate))
-        client.set_ch_one_output_limits(-5, 5)
-        client.set_ch_two_output_limits(-5, 5)
-        client.set_ch_one_chunks(ch_one_chunks)
-        client.set_ch_two_chunks(ch_two_chunks)
-        client.set_ch_one_buffer(ch_one_buffer)
-        client.set_ch_two_buffer(ch_two_buffer)
-        client.output_ttl()
+        print(client.initialize_buffers(buffer_one_size, buffer_two_size, 10, 10, sampling_rate))
+        print(client.set_ch_one_output_limits(-5, 5))
+        print(client.set_ch_two_output_limits(-5, 5))
+        # print(client.set_ch_one_chunks(ch_one_chunks))
+        # print(client.set_ch_two_chunks(ch_two_chunks))
+        # print(client.set_ch_one_buffer(ch_one_buffer))
+        # print(client.set_ch_two_buffer(ch_two_buffer))
+        # client.output_ttl()
 
