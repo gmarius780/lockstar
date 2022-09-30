@@ -161,12 +161,13 @@ class AWGModule(IOModule_):
             await writer.drain()
             return False
         else:
-            fraction = Fraction.from_float(sampling_rate / BackendSettings.mc_internal_clock_rate)
-            fraction = fraction.limit_denominator(BackendSettings.mc_max_counter)
-            counter_max = fraction.denominator
-            prescaler = fraction.numerator
+            # fraction = Fraction.from_float(sampling_rate / BackendSettings.mc_internal_clock_rate)
+            # fraction = fraction.limit_denominator(BackendSettings.mc_max_counter)
+            # counter_max = fraction.denominator
+            # prescaler = fraction.numerator
+            self.prescaler, self.counter_max = AWGModule.calculate_prescaler_counter(sampling_rate)
 
-            logging.info(f'initialize: sampling rate: {sampling_rate}, prescaler: {prescaler}, counter_max: {counter_max}')
+            logging.info(f'initialize: sampling rate: {sampling_rate}, prescaler: {self.prescaler}, counter_max: {self.counter_max}')
 
             self.buffer_one_size = buffer_one_size
             self.buffer_two_size = buffer_two_size
@@ -181,8 +182,8 @@ class AWGModule(IOModule_):
             mc_data_package.push_to_buffer('uint32_t', buffer_two_size)
             mc_data_package.push_to_buffer('uint32_t', chunks_one_size)
             mc_data_package.push_to_buffer('uint32_t', chunks_two_size)
-            mc_data_package.push_to_buffer('uint32_t', prescaler)
-            mc_data_package.push_to_buffer('uint32_t', counter_max)
+            mc_data_package.push_to_buffer('uint32_t', self.prescaler)
+            mc_data_package.push_to_buffer('uint32_t', self.counter_max)
             await MC.I().write_mc_data_package(mc_data_package)
             sleep(0.1)
             return await self.check_for_ack(writer=(writer if respond else None))
@@ -203,19 +204,18 @@ class AWGModule(IOModule_):
             return False
         else:
             # get counter_max and prescaler for desired sampling rate
-            fraction = Fraction.from_float(BackendSettings.mc_internal_clock_rate/sampling_rate)
-            fraction = fraction.limit_denominator(BackendSettings.mc_max_counter)
-            counter_max = fraction.denominator
-            prescaler = fraction.numerator
+            # fraction = Fraction.from_float(BackendSettings.mc_internal_clock_rate/sampling_rate)
+            # fraction = fraction.limit_denominator(BackendSettings.mc_max_counter)
+            # counter_max = fraction.denominator
+            # prescaler = fraction.numerator
 
-            self.prescaler = prescaler
-            self.counter_max = counter_max
+            self.prescaler, self.counter_max = AWGModule.calculate_prescaler_counter(sampling_rate)
 
             logging.debug('Backend: set_sampling_rate')
             mc_data_package = MCDataPackage()
             mc_data_package.push_to_buffer('uint32_t', 19) # method_identifier
-            mc_data_package.push_to_buffer('uint32_t', prescaler)
-            mc_data_package.push_to_buffer('uint32_t', counter_max)
+            mc_data_package.push_to_buffer('uint32_t', self.prescaler)
+            mc_data_package.push_to_buffer('uint32_t', self.counter_max)
             await MC.I().write_mc_data_package(mc_data_package)
             return await self.check_for_ack(writer=(writer if respond else None))
 
