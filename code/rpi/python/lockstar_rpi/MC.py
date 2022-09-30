@@ -134,7 +134,7 @@ class MC:
         async with self._rpi_lock:
             try:
                 self._spi.writebytes2(arr_bytes)
-                logging.info(f'write stuff to MC:{arr_bytes}')
+                logging.info(f'write stuff to MC:{arr_bytes if len(arr_bytes) < 50 else arr_bytes[0:50]}')
             except Exception as ex:
                 logging.error(f'MC: Cannot send bytes to rpi: {ex}. len-bytes: {len(arr_bytes)}')
 

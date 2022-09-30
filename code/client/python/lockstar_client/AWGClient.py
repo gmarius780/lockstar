@@ -87,26 +87,30 @@ if __name__ == "__main__":
     if client.register_client_id():
         logging.info(f'Successfully initialized AWG module')
 
-        buffer_one_size = buffer_two_size = 25000
-        sampling_rate = 1000
+        buffer_one_size = buffer_two_size = 100
+        sampling_rate = 10
         
-        ch_one_chunks = [999, 4999, 7999, 11999, 24999]
-        ch_two_chunks = [4999, 9999, 14999, 19999, 24999]
-        
-        ch_one_buffer = np.concatenate((np.sin(np.linspace(0, 10, num=1000)),
-                                        np.linspace(1, 5, num=4000),
-                                        np.linspace(5, 1, num=3000),
-                                        np.cos(np.linspace(0, 10, num=4000)),
-                                        -2*np.ones(13000))).tolist()
+        ch_one_chunks = [50, 99]
+        ch_two_chunks = [20, 50, 99]
+        ch_one_buffer = np.sin(np.linspace(0, 10, num=100))
+        ch_two_buffer = np.cos(np.linspace(0, 10, num=100))
 
-        ch_two_buffer = np.concatenate((np.sin(np.linspace(0, 10, num=5000)),
-                                        np.linspace(1, 5, num=5000),
-                                        np.linspace(5, 1, num=5000),
-                                        np.cos(np.linspace(0, 10, num=5000),
-                                        -2*np.ones(5000)))).tolist()
+        # ch_one_chunks = [999, 4999, 7999, 11999, 19999]
+        # ch_two_chunks = [4999, 9999, 14999, 19999]
+        
+        # ch_one_buffer = np.concatenate((np.sin(np.linspace(0, 10, num=1000)),
+        #                                 np.linspace(1, 5, num=4000),
+        #                                 np.linspace(5, 1, num=3000),
+        #                                 np.cos(np.linspace(0, 10, num=4000)),
+        #                                 -2*np.ones(8000))).tolist()
+
+        # ch_two_buffer = np.concatenate((np.sin(np.linspace(0, 10, num=5000)),
+        #                                 np.linspace(1, 5, num=5000),
+        #                                 np.linspace(5, 1, num=5000),
+        #                                 np.cos(np.linspace(0, 10, num=5000)))).tolist()
 
         # print(client.set_ch_one_output_limits(0, 1))
-        print(client.initialize_buffers(buffer_one_size, buffer_two_size, 10, 10, sampling_rate))
+        print(client.initialize_buffers(buffer_one_size, buffer_two_size, 2, 3, sampling_rate))
         print(client.set_ch_one_output_limits(-5, 5))
         print(client.set_ch_two_output_limits(-5, 5))
         # print(client.set_ch_one_chunks(ch_one_chunks))
