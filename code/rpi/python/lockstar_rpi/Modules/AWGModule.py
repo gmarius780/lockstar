@@ -8,7 +8,7 @@ from lockstar_rpi.MCDataPackage import MCDataPackage
 from fractions import Fraction
 
 class AWGModule(IOModule_):
-    BUFFER_LIMIT_kBYTES = 200
+    BUFFER_LIMIT_kBYTES = 180
     MAX_NBR_OF_CHUNKS = 100
 
 

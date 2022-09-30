@@ -105,12 +105,13 @@ if __name__ == "__main__":
                                         np.cos(np.linspace(0, 10, num=5000),
                                         -2*np.ones(5000))))
 
+        # print(client.set_ch_one_output_limits(0, 1))
         print(client.initialize_buffers(int(buffer_one_size), int(buffer_two_size), 10, 10, sampling_rate))
-        # client.set_ch_one_output_limits(-5, 5)
-        # client.set_ch_two_output_limits(-5, 5)
-        # client.set_ch_one_chunks(ch_one_chunks)
-        # client.set_ch_two_chunks(ch_two_chunks)
-        # client.set_ch_one_buffer(ch_one_buffer)
-        # client.set_ch_two_buffer(ch_two_buffer)
-        # client.output_ttl()
+        client.set_ch_one_output_limits(-5, 5)
+        client.set_ch_two_output_limits(-5, 5)
+        client.set_ch_one_chunks(ch_one_chunks)
+        client.set_ch_two_chunks(ch_two_chunks)
+        client.set_ch_one_buffer(ch_one_buffer)
+        client.set_ch_two_buffer(ch_two_buffer)
+        client.output_ttl()
 

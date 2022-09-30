@@ -50,23 +50,24 @@ if __name__ == "__main__":
         ]
     )
     client = AnalogOutputClient('192.168.88.13', 10780, 1234)
-
-    response = client.initialize(1,2,3,4,5,True, False)
+    client.register_client_id()
+    client.set_ch_one_output_limits(0,1)
+    # response = client.initialize(1,2,3,4,5,True, False)
     
-    initialized = False
+    # initialized = False
 
-    if response.is_wrong_client_id():
-        if client.register_client_id():
-            logging.info(f'Registered my client id: {client.client_id}')
-            response = client.initialize(1,2,3,4,5,True, False)
+    # if response.is_wrong_client_id():
+    #     if client.register_client_id():
+    #         logging.info(f'Registered my client id: {client.client_id}')
+    #         response = client.initialize(1,2,3,4,5,True, False)
 
-            initialized = response.is_ACK()
-        else:
-            logging.info(f'Failed to register my client id: {client.client_id}')
+    #         initialized = response.is_ACK()
+    #     else:
+    #         logging.info(f'Failed to register my client id: {client.client_id}')
 
-    else:
-        initialized = True
+    # else:
+    #     initialized = True
     
-    if initialized:
-        logging.info(f'Successfully initialized Single PID module')
+    # if initialized:
+    #     logging.info(f'Successfully initialized Single PID module')
 

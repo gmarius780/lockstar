@@ -28,7 +28,7 @@
 
 
 class AWGModule: public Module {
-	static const uint32_t BUFFER_LIMIT_kBYTES = 200;
+	static const uint32_t BUFFER_LIMIT_kBYTES = 180; //if this is chosen to large (200) there is no warning, the MC simply crashes (hangs in syscalls.c _exit())
 	static const uint32_t MAX_NBR_OF_CHUNKS = 100;
 public:
 	AWGModule() {
