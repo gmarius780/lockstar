@@ -6,6 +6,8 @@ import logging
 from lockstar_rpi.MC import MC
 from lockstar_rpi.MCDataPackage import MCDataPackage
 from fractions import Fraction
+import numpy as np
+from math import ceil
 
 class AWGModule(IOModule_):
     BUFFER_LIMIT_kBYTES = 180
@@ -184,6 +186,15 @@ class AWGModule(IOModule_):
             await MC.I().write_mc_data_package(mc_data_package)
             sleep(0.1)
             return await self.check_for_ack(writer=(writer if respond else None))
+
+    @staticmethod
+    def calculate_prescaler_counter(sampling_rate):
+        rate = BackendSettings.mc_internal_clock_rate / sampling_rate
+        possible_prescalers = np.flip(np.arange(ceil(rate/BackendSettings.mc_max_counter), BackendSettings.mc_max_counter))
+        possible_counters = rate/possible_prescalers
+        best_counter = int(possible_counters[np.abs(possible_counters - possible_counters.astype(int)).argmin()])
+        best_prescaler = int(rate/best_counter)
+        return best_prescaler , best_counter
 
     async def set_sampling_rate(self, sampling_rate:int, writer, respond=True):
         if sampling_rate > BackendSettings.mc_internal_clock_rate:
