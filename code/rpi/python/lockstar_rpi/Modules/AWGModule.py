@@ -145,13 +145,14 @@ class AWGModule(IOModule_):
         Returns:
             _type_: _description_
         """
-        logging.debug('Backend: initialize_buffers - arguments: buffer_sizes: ({buffer_one_size},{buffer_two_size})' + 
-                    'chunksize: ({chunks_one_size},{chunks_two_size})')
+        
         if buffer_one_size + buffer_two_size > AWGModule.BUFFER_LIMIT_kBYTES*250:
+            logging.warning(f'initialize_buffers wrong arguments: buffer_sizes: ({buffer_one_size},{buffer_two_size})')
             writer.write(BackendResponse.NACK().to_bytes())
             await writer.drain()
             return False
         elif chunks_one_size + chunks_two_size > AWGModule.MAX_NBR_OF_CHUNKS:
+            logging.warning(f'initialize_buffers wrong arguments: chunksize: ({chunks_one_size},{chunks_two_size})')
             writer.write(BackendResponse.NACK().to_bytes())
             await writer.drain()
             return False
