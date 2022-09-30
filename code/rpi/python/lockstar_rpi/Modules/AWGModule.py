@@ -79,6 +79,7 @@ class AWGModule(IOModule_):
 
     async def set_ch_one_buffer(self, buffer, writer, respond=True):
         if len(buffer) > self.buffer_one_size:
+            logging.error(f'set_ch_one_buffer - buffer too large: {len(buffer)}')
             writer.write(BackendResponse.NACK().to_bytes())
             await writer.drain()
             return False
@@ -96,11 +97,11 @@ class AWGModule(IOModule_):
                 else:
                     mc_data_package.push_to_buffer('bool', True) #append to buffer
                     
-                    nbr_values_to_read = MCDataPackage.MAX_NBR_BYTES - 64
-                    if i + MCDataPackage.MAX_NBR_BYTES - 64 > len(buffer):
-                        nbr_values_to_read = len(buffer) - i
-                    
-                    mc_data_package.push_to_buffer('uint32_t', nbr_values_to_read)
+                nbr_values_to_read = MCDataPackage.MAX_NBR_BYTES - 64
+                if i + MCDataPackage.MAX_NBR_BYTES - 64 > len(buffer):
+                    nbr_values_to_read = len(buffer) - i
+                
+                mc_data_package.push_to_buffer('uint32_t', nbr_values_to_read)
                 for f in buffer[i:i+MCDataPackage.MAX_NBR_BYTES]: #doesn't matter if index is too large
                     mc_data_package.push_to_buffer('float', f)
                 await MC.I().write_mc_data_package(mc_data_package)
@@ -108,6 +109,7 @@ class AWGModule(IOModule_):
 
     async def set_ch_two_buffer(self, buffer, writer, respond=True):
         if len(buffer) > self.buffer_two_size:
+            logging.error(f'set_ch_two_buffer - buffer too large: {len(buffer)}')
             writer.write(BackendResponse.NACK().to_bytes())
             await writer.drain()
             return False
