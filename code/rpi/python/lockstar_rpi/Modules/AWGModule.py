@@ -145,6 +145,8 @@ class AWGModule(IOModule_):
         Returns:
             _type_: _description_
         """
+        logging.debug('Backend: initialize_buffers - arguments: buffer_sizes: ({buffer_one_size},{buffer_two_size})' + 
+                    'chunksize: ({chunks_one_size},{chunks_two_size})')
         if buffer_one_size + buffer_two_size > AWGModule.BUFFER_LIMIT_kBYTES*250:
             writer.write(BackendResponse.NACK().to_bytes())
             await writer.drain()
