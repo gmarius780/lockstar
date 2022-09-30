@@ -164,6 +164,8 @@ class AWGModule(IOModule_):
             prescaler = fraction.denominator
             counter_max = fraction.numerator
 
+            logging.info(f'initialize: sampling rate: {sampling_rate}, prescaler: {prescaler}, counter_max: {counter_max}')
+
             self.buffer_one_size = buffer_one_size
             self.buffer_two_size = buffer_two_size
             self.chunks_one_size = chunks_one_size
@@ -177,8 +179,8 @@ class AWGModule(IOModule_):
             mc_data_package.push_to_buffer('uint32_t', buffer_two_size)
             mc_data_package.push_to_buffer('uint32_t', chunks_one_size)
             mc_data_package.push_to_buffer('uint32_t', chunks_two_size)
-            mc_data_package.push_to_buffer('uint32_t', int(prescaler))
-            mc_data_package.push_to_buffer('uint32_t', int(counter_max))
+            mc_data_package.push_to_buffer('uint32_t', prescaler)
+            mc_data_package.push_to_buffer('uint32_t', counter_max)
             await MC.I().write_mc_data_package(mc_data_package)
             sleep(0.1)
             return await self.check_for_ack(writer=(writer if respond else None))

@@ -127,6 +127,8 @@ public:
 		} else {
 			//set pointers according to the received buffer sizes
 			this->reset_output();
+			this->sampling_timer->set_auto_reload(counter_max);
+			this->sampling_timer->set_prescaler(prescaler);
 		}
 
 		/*** send ACK ***/
@@ -186,8 +188,8 @@ public:
 		this->is_output_ttl = false;
 		turn_LED6_on();
 
-		this->enable_sampling();
 		this->output_next_chunk();
+		this->enable_sampling();
 
 		/*** send ACK ***/
 		RPIDataPackage* write_package = rpi->get_write_package();
@@ -252,8 +254,8 @@ public:
 			current_read = channel_buffer;
 
 		//read in the given number of values
-		while (current_read_one < current_read_one + nbr_values_to_read and current_read < buffer_end) {
-			*(current_read_one++) = read_package->pop_from_buffer<float>();
+		while (current_read < current_read + nbr_values_to_read and current_read < buffer_end) {
+			*(current_read++) = read_package->pop_from_buffer<float>();
 		}
 
 		this->reset_output();
