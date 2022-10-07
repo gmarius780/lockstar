@@ -367,6 +367,7 @@ public:
 
 	void sampling_timer_interrupt() {
 		//if we are currently outputing a chunk, put the next value
+		//optimize in order to get higher sampling rate
 		if (currently_outputting_chunk_one == true) {
 			if (current_output_one < current_end_chunk_one) {
 				this->dac_1->write(*(current_output_one++));
