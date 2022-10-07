@@ -122,7 +122,14 @@ class AWGModule(IOModule_):
                 ack = await self.check_for_ack(writer=None)
                 if not ack:
                     logging.error(f'set ch {"one" if buffer_one else "two"} buffer: could not send packet!!')
-                    return False
+                    if writer is not None:
+                        writer.write(BackendResponse.NACK().to_bytes())
+                        await writer.drain()
+                        return False
+            if writer is not None:
+                writer.write(BackendResponse.ACK().to_bytes())
+                await writer.drain()
+            return True
 
     async def initialize_buffers(self, buffer_one_size: int, buffer_two_size: int, chunks_one_size: int, 
                                 chunks_two_size: int, sampling_rate:int, writer, respond=True):
