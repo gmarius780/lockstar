@@ -126,7 +126,7 @@ class AWGModule(IOModule_):
                         writer.write(BackendResponse.NACK().to_bytes())
                         await writer.drain()
                         return False
-                sleep(1)
+                sleep(3)
                 
             if writer is not None:
                 writer.write(BackendResponse.ACK().to_bytes())

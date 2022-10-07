@@ -41,8 +41,8 @@ public:
 		this->sampling_timer = new BasicTimer(2, counter_max, prescaler, false);
 
 		// allocate buffer and chunk space
-		this->buffer = new float[BUFFER_LIMIT_kBYTES*250]; //contains buffer_one and buffer_two sequencially
-		this->chunks = new uint32_t[MAX_NBR_OF_CHUNKS]; //contains chuncks_one and chunks_two sequencially
+		this->buffer = new float[BUFFER_LIMIT_kBYTES*250]; //contains buffer_one and buffer_two sequentially
+		this->chunks = new uint32_t[MAX_NBR_OF_CHUNKS]; //contains chuncks_one and chunks_two sequentially
 		currently_outputting_chunk_one = currently_outputting_chunk_two = false;
 	}
 
