@@ -116,11 +116,12 @@ class AWGModule(IOModule_):
                 mc_data_package.push_to_buffer('uint32_t', nbr_values_to_read)
                 for f in buffer[i:i+nbr_values_to_read]:
                     mc_data_package.push_to_buffer('float', f)
-                logging.debug(f'send chunk of length: {nbr_values_to_read}')
+                logging.debug(f'send packet of length: {nbr_values_to_read}')
                 await MC.I().write_mc_data_package(mc_data_package)
                 #wait for acknowledgment of reception by MC
                 ack = await self.check_for_ack(writer=(writer if respond else None))
                 if not ack:
+                    logging.error(f'set ch {"one" if buffer_one else "two"} buffer: could not send packet!!')
                     return False
 
     async def initialize_buffers(self, buffer_one_size: int, buffer_two_size: int, chunks_one_size: int, 
