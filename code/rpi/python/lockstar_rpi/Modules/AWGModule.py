@@ -111,7 +111,7 @@ class AWGModule(IOModule_):
         #     return await self.check_for_ack(writer=(writer if respond else None))
 
     async def set_ch_buffer(self, buffer, writer, respond, buffer_one=True):
-        if len(buffer) > self.buffer_one_size if buffer_one else self.buffer_two_size:
+        if len(buffer) > (self.buffer_one_size if buffer_one else self.buffer_two_size):
             logging.error(f'set_ch_{"one" if buffer_one else "two"}_buffer - buffer too large: {len(buffer)}')
             writer.write(BackendResponse.NACK().to_bytes())
             await writer.drain()
