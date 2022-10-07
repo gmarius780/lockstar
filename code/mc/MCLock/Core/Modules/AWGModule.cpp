@@ -234,12 +234,12 @@ public:
 
 	static const uint32_t METHOD_SET_CH_ONE_BUFFER = 16;
 	void set_ch_one_buffer(RPIDataPackage* read_package) {
-		this->set_ch_buffer(read_package, this->current_read_one, this->buffer_one, this->buffer_one + buffer_one_size, true);
+		this->set_ch_buffer(read_package, this->current_read_one, this->buffer_one, (this->buffer_one + buffer_one_size), true);
 	}
 
 	static const uint32_t METHOD_SET_CH_TWO_BUFFER = 17;
 	void set_ch_two_buffer(RPIDataPackage* read_package) {
-		this->set_ch_buffer(read_package, this->current_read_two, this->buffer_two, this->buffer_two + buffer_two_size, false);
+		this->set_ch_buffer(read_package, this->current_read_two, this->buffer_two, (this->buffer_two + buffer_two_size), false);
 	}
 
 	void set_ch_buffer(RPIDataPackage* read_package, float *current_read, float *channel_buffer, float *buffer_end, bool buffer_one) {
@@ -254,7 +254,8 @@ public:
 			current_read = channel_buffer;
 
 		//read in the given number of values
-		while (current_read < current_read + nbr_values_to_read and current_read < buffer_end) {
+		float *end_read = current_read + nbr_values_to_read;
+		while (current_read < end_read and current_read < buffer_end) {
 			*(current_read++) = read_package->pop_from_buffer<float>();
 		}
 
