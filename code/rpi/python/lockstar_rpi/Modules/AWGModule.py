@@ -118,7 +118,10 @@ class AWGModule(IOModule_):
                     mc_data_package.push_to_buffer('float', f)
                 logging.debug(f'send chunk of length: {nbr_values_to_read}')
                 await MC.I().write_mc_data_package(mc_data_package)
-            return await self.check_for_ack(writer=(writer if respond else None))
+                #wait for acknowledgment of reception by MC
+                ack = await self.check_for_ack(writer=(writer if respond else None))
+                if not ack:
+                    return False
 
     async def initialize_buffers(self, buffer_one_size: int, buffer_two_size: int, chunks_one_size: int, 
                                 chunks_two_size: int, sampling_rate:int, writer, respond=True):
