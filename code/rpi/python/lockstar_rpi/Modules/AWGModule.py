@@ -119,7 +119,7 @@ class AWGModule(IOModule_):
                 logging.debug(f'send packet of length: {nbr_values_to_read}')
                 await MC.I().write_mc_data_package(mc_data_package)
                 #wait for acknowledgment of reception by MC
-                ack = await self.check_for_ack(writer=(writer if respond else None))
+                ack = await self.check_for_ack(writer=None)
                 if not ack:
                     logging.error(f'set ch {"one" if buffer_one else "two"} buffer: could not send packet!!')
                     return False
