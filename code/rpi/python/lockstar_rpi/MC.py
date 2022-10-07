@@ -89,7 +89,7 @@ class MC:
             except Exception as ex:
                 logging.error(f'MC.read_mc_data_package: {read_bytes} cannot parse payload length: {ex}')
             logging.info(f'MC.read_MC_data: payload_length: {payload_length}')
-            if payload_length is not None and payload_length > 0:
+            if payload_length is not None and payload_length > 0 and payload_length < 100000:
                 bytes_left = payload_length
                 output = []
                 try:
@@ -104,6 +104,7 @@ class MC:
                 return payload_length, output
 
             else:
+                logging.error(f'MC.read_MC_data: payload_length invalid: {payload_length}')
                 return 0, []
 
 
