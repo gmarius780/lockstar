@@ -103,7 +103,7 @@ class AWGModule(IOModule_):
             for i in range(0, len(buffer), number_of_floats_per_package):
                 
                 mc_data_package = MCDataPackage()
-                mc_data_package.push_to_buffer('uint32_t', 16 if buffer_one else 17) # method_identifier
+                mc_data_package.push_to_buffer('uint32_t', (16 if buffer_one else 17)) # method_identifier
                 if i == 0:
                     mc_data_package.push_to_buffer('bool', False) #overwrite buffer
                 else:
