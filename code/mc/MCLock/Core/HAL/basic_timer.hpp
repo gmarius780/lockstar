@@ -26,8 +26,6 @@ public:
 private:
 	TIM_TypeDef* tim_regs;
 	uint32_t APBxENR_bit;
-	uint32_t PSC;
-	uint32_t ARR;
 
 };
 

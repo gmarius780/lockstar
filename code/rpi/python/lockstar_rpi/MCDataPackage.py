@@ -79,11 +79,12 @@ if __name__ == "__main__":
 
     test.push_to_buffer('uint32_t', uint32(55))
     test.push_to_buffer('uint32_t', uint32(66))
-    test.push_to_buffer('float', float(99.10))
+    for f in range(10000):
+        test.push_to_buffer('float', f)
 
     byte_arr = test.get_bytes()
+    print(len(byte_arr))
+    # list_dtype = ['uint32_t', 'uint32_t', 'float']
 
-    list_dtype = ['uint32_t', 'uint32_t', 'float']
-
-    print(f'buffer_length: {MCDataPackage.get_buffer_length(list_dtype)}')
-    print(f'buffer: {MCDataPackage.pop_from_buffer(list_dtype, byte_arr)}')
+    # print(f'buffer_length: {MCDataPackage.get_buffer_length(list_dtype)}')
+    # print(f'buffer: {MCDataPackage.pop_from_buffer(list_dtype, byte_arr)}')

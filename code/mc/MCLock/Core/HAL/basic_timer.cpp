@@ -18,6 +18,9 @@ BasicTimer::BasicTimer(uint8_t timer_x, uint32_t auto_reload, uint32_t prescaler
 
 	RCC->APB1ENR |= (1<<APBxENR_bit);
 
+	//ARPE: Auto-reload preload enable - enable chaning of sampling rate on the fly
+	tim_regs->CR1 |= (1<<7);
+
 	set_auto_reload(auto_reload);
 	set_prescaler(prescaler);
 }
