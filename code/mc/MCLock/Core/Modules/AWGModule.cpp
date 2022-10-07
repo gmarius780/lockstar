@@ -304,10 +304,12 @@ public:
 		if (currently_outputting_chunk_one == true or currently_outputting_chunk_two == true) {
 			return false;
 		} else {
-
+			//The chunk 'array' goes from chunks_one to chunks_one + chunks_one_size - 1.
+			//It contains the buffer-indices which correspond to the end of the respective chunk
+			//meaning: the values of the n-th chunk in the buffer are: buffer[chunks_one[n-1]] ... buffer[chunks_one[n]-1]
 			this->disable_sampling();
 			//set current_output_one to start of current chunk and current_end_chunk_one to end
-			if (current_chunk_one > chunks_one + chunks_one_size) { // check if last chunk is reached
+			if (current_chunk_one >= chunks_one + chunks_one_size) { // check if last chunk is reached
 				current_chunk_one = chunks_one;
 			}
 
@@ -318,7 +320,7 @@ public:
 			}
 			current_end_chunk_one = buffer_one + *(current_chunk_one++);
 
-			if (current_chunk_two > chunks_two + chunks_two_size) { // check if last chunk is reached
+			if (current_chunk_two >= chunks_two + chunks_two_size) { // check if last chunk is reached
 				current_chunk_two = chunks_two;
 			}
 			if (current_chunk_two == chunks_two) {//first chunk
@@ -371,7 +373,7 @@ public:
 
 		if (currently_outputting_chunk_two == true) {
 			if (current_output_two < current_end_chunk_two) {
-				this->dac_1->write(*(current_output_two++));
+				this->dac_2->write(*(current_output_two++));
 			} else {
 				currently_outputting_chunk_two = false;
 				if (currently_outputting_chunk_one == false) {

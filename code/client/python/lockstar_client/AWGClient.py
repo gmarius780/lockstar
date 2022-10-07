@@ -90,7 +90,7 @@ if __name__ == "__main__":
         buffer_one_size = buffer_two_size = 100
         sampling_rate = 100
         
-        ch_one_chunks = [99]
+        ch_one_chunks = [20, 50, 99]
         ch_two_chunks = [20, 50, 99]
         ch_one_buffer = np.sin(np.linspace(0, 2*np.pi, num=100)).tolist()
         ch_two_buffer = np.cos(np.linspace(0, 2*np.pi, num=100)).tolist()
@@ -110,7 +110,8 @@ if __name__ == "__main__":
         #                                 np.cos(np.linspace(0, 10, num=5000)))).tolist()
 
         # print(client.set_ch_one_output_limits(0, 1))
-        print(client.initialize_buffers(buffer_one_size, buffer_two_size, 1, 3, sampling_rate))
+        print(client.initialize_buffers(buffer_one_size, buffer_two_size, len(ch_one_chunks), 
+                                        len(ch_two_chunks), sampling_rate))
         print(client.set_ch_one_output_limits(-5, 5))
         print(client.set_ch_two_output_limits(-5, 5))
         print(client.set_ch_one_chunks(ch_one_chunks))

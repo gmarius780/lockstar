@@ -80,20 +80,54 @@ class AWGModule(IOModule_):
         return await self.check_for_ack(writer=(writer if respond else None))
 
     async def set_ch_one_buffer(self, buffer, writer, respond=True):
-        if len(buffer) > self.buffer_one_size:
-            logging.error(f'set_ch_one_buffer - buffer too large: {len(buffer)}')
+        return await self.set_ch_buffer(buffer, writer, respond, buffer_one=True)
+        # if len(buffer) > self.buffer_one_size:
+        #     logging.error(f'set_ch_one_buffer - buffer too large: {len(buffer)}')
+        #     writer.write(BackendResponse.NACK().to_bytes())
+        #     await writer.drain()
+        #     return False
+        # else:
+        #     self.buffer_one = buffer
+
+        #     logging.debug('Backend: set ch one buffer')
+        #     # send buffer in chunks of MCDataPackage.MAX_NBR_BYTES
+        #     for i in range(0, len(buffer), MCDataPackage.MAX_NBR_BYTES - 64):
+        #         logging.debug('send chunk')
+        #         mc_data_package = MCDataPackage()
+        #         mc_data_package.push_to_buffer('uint32_t', 16) # method_identifier
+        #         if i == 0:
+        #             mc_data_package.push_to_buffer('bool', False) #overwrite buffer
+        #         else:
+        #             mc_data_package.push_to_buffer('bool', True) #append to buffer
+                    
+        #         nbr_values_to_read = MCDataPackage.MAX_NBR_BYTES - 64
+        #         if i + MCDataPackage.MAX_NBR_BYTES - 64 > len(buffer):
+        #             nbr_values_to_read = len(buffer) - i
+                
+        #         mc_data_package.push_to_buffer('uint32_t', nbr_values_to_read)
+        #         for f in buffer[i:i+MCDataPackage.MAX_NBR_BYTES]: #doesn't matter if index is too large
+        #             mc_data_package.push_to_buffer('float', f)
+        #         await MC.I().write_mc_data_package(mc_data_package)
+        #     return await self.check_for_ack(writer=(writer if respond else None))
+
+    async def set_ch_buffer(self, buffer, writer, respond, buffer_one=True):
+        if len(buffer) > self.buffer_one_size if buffer_one else self.buffer_two_size:
+            logging.error(f'set_ch_{"one" if buffer_one else "two"}_buffer - buffer too large: {len(buffer)}')
             writer.write(BackendResponse.NACK().to_bytes())
             await writer.drain()
             return False
         else:
-            self.buffer_one = buffer
+            if buffer_one:
+                self.buffer_one = buffer
+            else:
+                self.buffer_two = buffer
 
-            logging.debug('Backend: set ch one buffer')
+            logging.debug(f'Backend: set ch {"one" if buffer_one else "two"} buffer')
             # send buffer in chunks of MCDataPackage.MAX_NBR_BYTES
             for i in range(0, len(buffer), MCDataPackage.MAX_NBR_BYTES - 64):
                 logging.debug('send chunk')
                 mc_data_package = MCDataPackage()
-                mc_data_package.push_to_buffer('uint32_t', 16) # method_identifier
+                mc_data_package.push_to_buffer('uint32_t', 16 if buffer_one else 17) # method_identifier
                 if i == 0:
                     mc_data_package.push_to_buffer('bool', False) #overwrite buffer
                 else:
@@ -110,28 +144,29 @@ class AWGModule(IOModule_):
             return await self.check_for_ack(writer=(writer if respond else None))
 
     async def set_ch_two_buffer(self, buffer, writer, respond=True):
-        if len(buffer) > self.buffer_two_size:
-            logging.error(f'set_ch_two_buffer - buffer too large: {len(buffer)}')
-            writer.write(BackendResponse.NACK().to_bytes())
-            await writer.drain()
-            return False
-        else:
-            self.buffer_two = buffer
+        return await self.set_ch_buffer(buffer, writer, respond, buffer_one=False)
+        # if len(buffer) > self.buffer_two_size:
+        #     logging.error(f'set_ch_two_buffer - buffer too large: {len(buffer)}')
+        #     writer.write(BackendResponse.NACK().to_bytes())
+        #     await writer.drain()
+        #     return False
+        # else:
+        #     self.buffer_two = buffer
 
-            logging.debug('Backend: set ch two buffer')
-            # send buffer in chunks of MCDataPackage.MAX_NBR_BYTES
-            for i in range(0, len(buffer), MCDataPackage.MAX_NBR_BYTES):
-                logging.debug('send chunk')
-                mc_data_package = MCDataPackage()
-                mc_data_package.push_to_buffer('uint32_t', 17) # method_identifier
-                if i == 0:
-                    mc_data_package.push_to_buffer('bool', False) #overwrite buffer
-                else:
-                    mc_data_package.push_to_buffer('bool', True) #append to buffer
-                for f in buffer[i:i+MCDataPackage.MAX_NBR_BYTES]: #doesn't matter if index is too large
-                    mc_data_package.push_to_buffer('float', f)
-                await MC.I().write_mc_data_package(mc_data_package)
-            return await self.check_for_ack(writer=(writer if respond else None))
+        #     logging.debug('Backend: set ch two buffer')
+        #     # send buffer in chunks of MCDataPackage.MAX_NBR_BYTES
+        #     for i in range(0, len(buffer), MCDataPackage.MAX_NBR_BYTES):
+        #         logging.debug('send chunk')
+        #         mc_data_package = MCDataPackage()
+        #         mc_data_package.push_to_buffer('uint32_t', 17) # method_identifier
+        #         if i == 0:
+        #             mc_data_package.push_to_buffer('bool', False) #overwrite buffer
+        #         else:
+        #             mc_data_package.push_to_buffer('bool', True) #append to buffer
+        #         for f in buffer[i:i+MCDataPackage.MAX_NBR_BYTES]: #doesn't matter if index is too large
+        #             mc_data_package.push_to_buffer('float', f)
+        #         await MC.I().write_mc_data_package(mc_data_package)
+        #     return await self.check_for_ack(writer=(writer if respond else None))
 
     async def initialize_buffers(self, buffer_one_size: int, buffer_two_size: int, chunks_one_size: int, 
                                 chunks_two_size: int, sampling_rate:int, writer, respond=True):
