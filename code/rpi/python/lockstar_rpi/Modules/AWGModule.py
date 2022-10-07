@@ -7,7 +7,7 @@ from lockstar_rpi.MC import MC
 from lockstar_rpi.MCDataPackage import MCDataPackage
 from fractions import Fraction
 import numpy as np
-from math import ceil
+from math import ceil, floor
 
 class AWGModule(IOModule_):
     BUFFER_LIMIT_kBYTES = 180
@@ -98,8 +98,9 @@ class AWGModule(IOModule_):
                 self.buffer_two = buffer
 
             logging.debug(f'Backend: set ch {"one" if buffer_one else "two"} buffer')
-            # send buffer in chunks of MCDataPackage.MAX_NBR_BYTES
-            for i in range(0, len(buffer), MCDataPackage.MAX_NBR_BYTES - 64):
+            # send buffer in packets of floor(MCDataPackage.MAX_NBR_BYTES - 100)/4 floats
+            number_of_floats_per_package = floor((MCDataPackage.MAX_NBR_BYTES - 100)/4)
+            for i in range(0, len(buffer), number_of_floats_per_package):
                 
                 mc_data_package = MCDataPackage()
                 mc_data_package.push_to_buffer('uint32_t', 16 if buffer_one else 17) # method_identifier
@@ -108,12 +109,12 @@ class AWGModule(IOModule_):
                 else:
                     mc_data_package.push_to_buffer('bool', True) #append to buffer
                     
-                nbr_values_to_read = MCDataPackage.MAX_NBR_BYTES - 100
-                if i + MCDataPackage.MAX_NBR_BYTES - 100 > len(buffer):
+                nbr_values_to_read = number_of_floats_per_package
+                if i + number_of_floats_per_package > len(buffer):
                     nbr_values_to_read = len(buffer) - i
                 
                 mc_data_package.push_to_buffer('uint32_t', nbr_values_to_read)
-                for f in buffer[i:i+MCDataPackage.MAX_NBR_BYTES]: #doesn't matter if index is too large
+                for f in buffer[i:i+nbr_values_to_read]:
                     mc_data_package.push_to_buffer('float', f)
                 logging.debug(f'send chunk of length: {nbr_values_to_read}')
                 await MC.I().write_mc_data_package(mc_data_package)
