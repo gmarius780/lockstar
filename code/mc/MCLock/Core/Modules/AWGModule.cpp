@@ -242,7 +242,7 @@ public:
 		this->set_ch_buffer(read_package, this->current_read_two, this->buffer_two, this->buffer_two + buffer_two_size);
 	}
 
-	void set_ch_buffer(RPIDataPackage* read_package, float *current_read, float *channel_buffer, float *buffer_end) {
+	void set_ch_buffer(RPIDataPackage* read_package, float * &current_read, float *channel_buffer, float *buffer_end) {
 		this->turn_output_off();
 
 		/***Read arguments***/
