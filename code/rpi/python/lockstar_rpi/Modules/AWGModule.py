@@ -107,7 +107,7 @@ class AWGModule(IOModule_):
                 if i == 0:
                     mc_data_package.push_to_buffer('bool', False) #overwrite buffer
                 else:
-                    mc_data_package.push_to_buffer('bool', False) #append to buffer
+                    mc_data_package.push_to_buffer('bool', True) #append to buffer
                     
                 nbr_values_to_read = number_of_floats_per_package
                 if i + number_of_floats_per_package > len(buffer):

@@ -255,7 +255,8 @@ public:
 
 		//read in the given number of values
 		while (*current_read < *current_read + nbr_values_to_read and *current_read < buffer_end) {
-			*((*current_read)++) = read_package->pop_from_buffer<float>();
+			**current_read = read_package->pop_from_buffer<float>();
+			*current_read += 1;
 		}
 
 		this->reset_output();
