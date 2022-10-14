@@ -81,7 +81,7 @@ if __name__ == "__main__":
             logging.StreamHandler()
         ]
     )
-    client = AWGClient('192.168.88.220', 10780, 1234)
+    client = AWGClient('192.168.88.13', 10780, 1234)
 
     
     if client.register_client_id():
@@ -91,16 +91,17 @@ if __name__ == "__main__":
         
         ch_one_chunks = [999, 1999, 2999, 3999, 4999]
         ch_two_chunks = [1999, 2999]
-        ch_one_buffer = np.concatenate((np.sin(np.linspace(0, 2*np.pi, num=1000)),
-                                        np.linspace(0, 1, num=1000),
-                                        np.cos(np.linspace(0, 6*np.pi, num=1000)),
-                                        np.linspace(1, -3, num=1000),
-                                        np.linspace(-3, 0, num=1000))).tolist()
-        # ch_one_buffer = np.concatenate((np.sin(np.linspace(0, 50*2*np.pi, num=1000)),
-        #                                 np.sin(np.linspace(0, 50*2*np.pi, num=1000)),
-        #                                 np.sin(np.linspace(0, 50*2*np.pi, num=1000)),
-        #                                 np.sin(np.linspace(0, 50*2*np.pi, num=1000)),
-        #                                 np.sin(np.linspace(0, 50*2*np.pi, num=1000)))).tolist()
+        # ch_one_buffer = np.concatenate((np.sin(np.linspace(0, 2*np.pi, num=1000)),
+        #                                 np.linspace(0, 1, num=1000),
+        #                                 np.cos(np.linspace(0, 6*np.pi, num=1000)),
+        #                                 np.linspace(1, -3, num=1000),
+        #                                 np.linspace(-3, 0, num=1000))).tolist()
+        ch_one_buffer = np.concatenate((np.sin(np.linspace(0, 50*2*np.pi, num=1000)),
+                                        np.sin(np.linspace(0, 50*2*np.pi, num=1000)),
+                                        np.sin(np.linspace(0, 50*2*np.pi, num=1000)),
+                                        np.sin(np.linspace(0, 50*2*np.pi, num=1000)),
+                                        np.sin(np.linspace(0, 50*2*np.pi, num=1000)))).tolist()
+
         ch_two_buffer = np.concatenate((np.cos(np.linspace(0, 50*4*np.pi, num=2000)),
                                         np.linspace(1, 4, num=500), np.linspace(4, 1, num=500))).tolist()
         

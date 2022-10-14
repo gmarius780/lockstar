@@ -66,7 +66,7 @@ DAC_Device::DAC_Device(uint8_t spi_lane, uint8_t dma_stream_out, uint8_t dma_cha
 	HAL_GPIO_WritePin(clear_port, clear_pin, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(sync_port, sync_pin, GPIO_PIN_SET);
 }
-
+__attribute__((section("sram_func")))
 void DAC_Device::write(float output) {
     if(busy)
         return;
@@ -90,7 +90,7 @@ void DAC_Device::write(float output) {
 
     arm_dma();
 }
-
+__attribute__((section("sram_func")))
 void DAC_Device::dma_transmission_callback() {
     spi_handler->disable_spi_tx_dma();
 
@@ -197,7 +197,7 @@ void DAC_Device::send_output_range() {
     // Wait till configuration is sent
     while(is_busy());
 }
-
+__attribute__((section("sram_func")))
 void DAC_Device::arm_dma() {
     dma_output_handler->disableDMA();
 

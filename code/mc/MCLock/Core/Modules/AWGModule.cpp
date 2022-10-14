@@ -43,7 +43,6 @@ public:
 		// allocate buffer and chunk space
 		this->buffer = new float[BUFFER_LIMIT_kBYTES*250]; //contains buffer_one and buffer_two sequentially
 		this->chunks = new uint32_t[MAX_NBR_OF_CHUNKS]; //contains chuncks_one and chunks_two sequentially
-		currently_outputting_chunk_one = currently_outputting_chunk_two = false;
 	}
 
 	void run() {
@@ -130,7 +129,7 @@ public:
 			this->sampling_timer->set_auto_reload(counter_max);
 			this->sampling_timer->set_prescaler(prescaler);
 		}
-
+		this->reset_output();
 		/*** send ACK ***/
 		RPIDataPackage* write_package = rpi->get_write_package();
 		write_package->push_ack();
@@ -281,6 +280,8 @@ public:
 		buffer_two = buffer_one + buffer_one_size;
 		current_output_one = buffer_one;
 		current_output_two = buffer_two;
+		current_end_chunk_one = buffer_one;
+		current_end_chunk_two = buffer_two;
 		chunks_one = chunks;
 		chunks_two = chunks_one + chunks_one_size;
 		current_chunk_one = chunks_one;
@@ -308,7 +309,7 @@ public:
 
 	bool output_next_chunk() {
 		//if we are still outputting
-		if (currently_outputting_chunk_one == true or currently_outputting_chunk_two == true) {
+		if (current_output_one < current_end_chunk_one or current_output_two < current_end_chunk_two) {
 			return false;
 		} else {
 			//The chunk 'array' goes from chunks_one to chunks_one + chunks_one_size - 1.
@@ -337,8 +338,7 @@ public:
 			}
 			current_end_chunk_two = buffer_two + *(current_chunk_two++);
 
-			//
-			currently_outputting_chunk_one = currently_outputting_chunk_two = true;
+			//currently_outputting_chunk_one = currently_outputting_chunk_two = true;
 			turn_LED6_on();
 			this->enable_sampling();
 			return true;
@@ -364,31 +364,35 @@ public:
 
 	void digital_in_falling_edge() {
 	}
-
+	__attribute__((section("sram_func")))
 	void sampling_timer_interrupt() {
 		//if we are currently outputing a chunk, put the next value
 		//optimize in order to get higher sampling rate
-		if (currently_outputting_chunk_one == true) {
-			if (current_output_one < current_end_chunk_one) {
-				this->dac_1->write(*(current_output_one++));
-			} else {
-				currently_outputting_chunk_one = false;
-				if (currently_outputting_chunk_two == false) {
-					turn_LED6_off();
-				}
-			}
-		}
-
-		if (currently_outputting_chunk_two == true) {
+		//if (currently_outputting_chunk_one == true) {
+		if (current_output_one < current_end_chunk_one) {
+			this->dac_1->write(*(current_output_one++));
+		} else {
+			//currently_outputting_chunk_one = false;
+			//if (currently_outputting_chunk_two == false) {
 			if (current_output_two < current_end_chunk_two) {
-				this->dac_2->write(*(current_output_two++));
-			} else {
-				currently_outputting_chunk_two = false;
-				if (currently_outputting_chunk_one == false) {
-					turn_LED6_off();
-				}
+				turn_LED6_off();
+				this->disable_sampling();
 			}
 		}
+		//}
+
+		//if (currently_outputting_chunk_two == true) {
+		if (current_output_two < current_end_chunk_two) {
+			this->dac_2->write(*(current_output_two++));
+		} else {
+			//currently_outputting_chunk_two = false;
+			//if (currently_outputting_chunk_one == false) {
+			if (current_output_one < current_end_chunk_one) {
+				turn_LED6_off();
+				this->disable_sampling();
+			}
+		}
+		//}
 	}
 
 public:
@@ -404,7 +408,7 @@ public:
 	uint32_t *current_chunk_one, *current_chunk_two;
 	float *current_end_chunk_one, *current_end_chunk_two; //points to the end of the current chunk
 	uint32_t counter_max, prescaler;
-	bool currently_outputting_chunk_one, currently_outputting_chunk_two;
+	//bool currently_outputting_chunk_one, currently_outputting_chunk_two;
 	BasicTimer *sampling_timer;
 };
 
