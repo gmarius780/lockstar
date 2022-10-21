@@ -5,7 +5,7 @@
  *      Author: Samuel
  */
 
-#include "basic_timer.hpp"
+#include "BasicTimer.hpp"
 
 BasicTimer::BasicTimer(uint8_t timer_x, uint32_t auto_reload, uint32_t prescaler, bool interrupt) {
 	switch(timer_x) {

@@ -15,8 +15,8 @@
 #include "../HAL/spi.hpp"
 #include "../HAL/leds.hpp"
 #include "../HAL/adc_new.hpp"
+#include "../HAL/BasicTimer.hpp"
 #include "../HAL/dac_new.hpp"
-#include "../HAL/basic_timer.hpp"
 
 #ifdef IO_TEST_MODULE
 

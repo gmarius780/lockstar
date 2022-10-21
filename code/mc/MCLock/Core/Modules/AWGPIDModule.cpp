@@ -13,20 +13,22 @@
 
 
 #include "../HAL/leds.hpp"
+#include "../Lib/pid.hpp"
 
 #include "BufferBaseModule.h"
 
-#ifdef AWG_MODULE
+#ifdef AWG_PID_MODULE
 
 
 /**
- * User can upload buffers containing the module will then output the voltages defined in the buffers with a sampling-rate, set by the user
+ * User can upload buffers containing setpoints for both channels. The module will then be a pid controller for both outputs and use the buffer as setpoints with a
+ * sampling rate, set by the user
  */
-class AWGModule: public BufferBaseModule {
+class AWGPIDModule: public BufferBaseModule {
 	static const uint32_t BUFFER_LIMIT_kBYTES = 180; //if this is chosen to large (200) there is no warning, the MC simply crashes (hangs in syscalls.c _exit())
 	static const uint32_t MAX_NBR_OF_CHUNKS = 100;
 public:
-	AWGModule() {
+	AWGPIDModule() {
 		initialize_rpi();
 		turn_LED6_off();
 		turn_LED5_on();
@@ -38,6 +40,12 @@ public:
 		// allocate buffer and chunk space
 		this->buffer = new float[BUFFER_LIMIT_kBYTES*250]; //contains buffer_one and buffer_two sequentially
 		this->chunks = new uint32_t[MAX_NBR_OF_CHUNKS]; //contains chuncks_one and chunks_two sequentially
+
+		this->pid_one = new PID(0., 0., 0.);
+		this->pid_two = new PID(0., 0., 0.);
+
+		this->setpoint_one = this->setpoint_two = 0.;
+		this->locked = false;
 	}
 
 	void run() {
@@ -46,9 +54,26 @@ public:
 		this->dac_1->write(0);
 		this->dac_2->write(0);
 
+		//timer to measure elapsed time
+		const uint16_t psc = 68;
+		const float TIM3freq = 90e6;
+		BasicTimer* timer = new BasicTimer(3, 0xFFFF, psc, false);
+		timer->enable();
+
+		float dt = 0;
+		uint16_t t = 0;
+
 		/*** work loop ***/
 		while(true) {
-			//this->dac_1->write(this->pid->calculate_output(adc->channel1->get_result(), adc->channel2->get_result(), dt));
+			while(this->locked) {
+				// Measuring elapsed time per work loop
+				t = timer->get_counter() - t;
+				dt = t/TIM3freq*psc;
+				t = timer->get_counter();
+
+				this->dac_1->write(this->pid_one->calculate_output(this->setpoint_one, adc->channel1->get_result(), dt));
+				this->dac_2->write(this->pid_two->calculate_output(this->setpoint_two, adc->channel2->get_result(), dt));
+			}
 		}
 	}
 
@@ -58,7 +83,19 @@ public:
 			RPIDataPackage* read_package = this->rpi->get_read_package();
 			//switch between method_identifier
 			switch (read_package->pop_from_buffer<uint32_t>()) {
-				default:
+			case METHOD_SET_PID_ONE:
+				set_pid_one(read_package);
+				break;
+			case METHOD_SET_PID_TWO:
+				set_pid_two(read_package);
+				break;
+			case METHOD_LOCK:
+				lock(read_package);
+				break;
+			case METHOD_UNLOCK:
+				unlock(read_package);
+				break;
+			default:
 					/*** send NACK because the method_identifier is not valid ***/
 					RPIDataPackage* write_package = rpi->get_write_package();
 					write_package->push_nack();
@@ -70,7 +107,57 @@ public:
 	}
 
 	/*** START: METHODS ACCESSIBLE FROM THE RPI ***/
+	static const uint32_t METHOD_SET_PID_ONE = 31;
+	void set_pid_one(RPIDataPackage* read_package) {
+		/***Read arguments***/
+		float p = read_package->pop_from_buffer<float>();
+		float i = read_package->pop_from_buffer<float>();
+		float d = read_package->pop_from_buffer<float>();
 
+		this->pid_one->set_pid(p, i, d);
+
+		/*** send ACK ***/
+		RPIDataPackage* write_package = rpi->get_write_package();
+		write_package->push_ack();
+		rpi->send_package(write_package);
+	}
+
+	static const uint32_t METHOD_SET_PID_TWO = 32;
+	void set_pid_two(RPIDataPackage* read_package) {
+		/***Read arguments***/
+		float p = read_package->pop_from_buffer<float>();
+		float i = read_package->pop_from_buffer<float>();
+		float d = read_package->pop_from_buffer<float>();
+
+		this->pid_two->set_pid(p, i, d);
+
+		/*** send ACK ***/
+		RPIDataPackage* write_package = rpi->get_write_package();
+		write_package->push_ack();
+		rpi->send_package(write_package);
+	}
+
+	static const uint32_t METHOD_LOCK = 33;
+	void lock(RPIDataPackage* read_package) {
+		this->locked = true;
+		turn_LED6_on();
+
+		/*** send ACK ***/
+		RPIDataPackage* write_package = rpi->get_write_package();
+		write_package->push_ack();
+		rpi->send_package(write_package);
+	}
+
+	static const uint32_t METHOD_UNLOCK = 34;
+	void unlock(RPIDataPackage* read_package) {
+		this->locked = false;
+		turn_LED6_off();
+
+		/*** send ACK ***/
+		RPIDataPackage* write_package = rpi->get_write_package();
+		write_package->push_ack();
+		rpi->send_package(write_package);
+	}
 	/*** END: METHODS ACCESSIBLE FROM THE RPI ***/
 
 
@@ -94,10 +181,11 @@ public:
 
 	void digital_in_falling_edge() {
 	}
+
 	__attribute__((section("sram_func")))
 	void sampling_timer_interrupt() {
 		if (current_output_one < current_end_chunk_one) {
-			this->dac_1->write(*(current_output_one++));
+			this->setpoint_one = *(current_output_one++);
 		} else {
 			if (current_output_two >= current_end_chunk_two) {
 				turn_LED6_off();
@@ -106,7 +194,7 @@ public:
 		}
 
 		if (current_output_two < current_end_chunk_two) {
-			this->dac_2->write(*(current_output_two++));
+			this->setpoint_two = *(current_output_two++);
 		} else {
 			if (current_output_one >= current_end_chunk_one) {
 				turn_LED6_off();
@@ -115,10 +203,15 @@ public:
 		}
 	}
 
+public:
+	PID* pid_one;
+	PID* pid_two;
+	float setpoint_one, setpoint_two;
+	bool locked;
 };
 
 
-AWGModule *module;
+AWGPIDModule *module;
 
 /******************************
  *         INTERRUPTS          *
@@ -217,7 +310,7 @@ void start(void)
 	/* After power on, give all devices a moment to properly start up */
 	HAL_Delay(200);
 
-	module = new AWGModule();
+	module = new AWGPIDModule();
 
 	module->run();
 

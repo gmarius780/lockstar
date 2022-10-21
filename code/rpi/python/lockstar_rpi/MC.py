@@ -7,8 +7,11 @@ from math import ceil
 from time import sleep
 
 if not BackendSettings.debug_mode:
-    from spidev import SpiDev
-    import RPi.GPIO as GPIO
+    try:
+        from spidev import SpiDev
+        import RPi.GPIO as GPIO
+    except Exception as ex:
+        logging.error(f'cannot import rpi packags: {ex}')
 
 class MC:
     """Represents the Microcontroller: Sends and receives MCDP's to/from the MC
