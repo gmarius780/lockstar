@@ -5,8 +5,8 @@
  *      Author: sjele
  */
 
-#ifndef HAL_BASIC_TIMER_HPP_
-#define HAL_BASIC_TIMER_HPP_
+#ifndef HAL_BASICTIMER_HPP_
+#define HAL_BASICTIMER_HPP_
 
 #include "stm32f427xx.h"
 
@@ -29,4 +29,4 @@ private:
 
 };
 
-#endif /* HAL_BASIC_TIMER_HPP_ */
+#endif /* HAL_BASICTIMER_HPP_ */

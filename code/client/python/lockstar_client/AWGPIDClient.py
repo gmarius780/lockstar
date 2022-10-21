@@ -1,11 +1,28 @@
 import asyncio
 import logging
 from lockstar_client.BufferBaseClient_ import BufferBaseClient_
+from lockstar_general.backend.BackendCall import BackendCall
 
-class AWGClient(BufferBaseClient_):
+
+class AWGPIDClient(BufferBaseClient_):
     def __init__(self, lockstar_ip, lockstar_port, client_id) -> None:
-        super().__init__(lockstar_ip, lockstar_port, client_id, 'AWGModule')
+        super().__init__(lockstar_ip, lockstar_port, client_id, 'AWGPIDModule')
 
+    def set_pid_one(self,  p: float, i: float, d: float):
+        bc = BackendCall(self.client_id, 'AWGPIDModule', 'set_pid_one', args={'p': p, 'i': i, 'd': d})
+        return asyncio.run(self._call_lockstar(bc))
+
+    def set_pid_two(self,  p: float, i: float, d: float):
+        bc = BackendCall(self.client_id, 'AWGPIDModule', 'set_pid_two', args={'p': p, 'i': i, 'd': d})
+        return asyncio.run(self._call_lockstar(bc))
+
+    def lock(self):
+        bc = BackendCall(self.client_id, 'AWGPIDModule', 'lock', args={})
+        return asyncio.run(self._call_lockstar(bc))
+
+    def unlock(self):
+        bc = BackendCall(self.client_id, 'AWGPIDModule', 'unlock', args={})
+        return asyncio.run(self._call_lockstar(bc))
 
 if __name__ == "__main__":
     import numpy as np
@@ -17,7 +34,7 @@ if __name__ == "__main__":
             logging.StreamHandler()
         ]
     )
-    client = AWGClient('192.168.88.13', 10780, 1234)
+    client = AWGPIDClient('192.168.88.13', 10780, 1234)
 
     
     if client.register_client_id():
@@ -58,5 +75,7 @@ if __name__ == "__main__":
         print(client.set_ch_two_chunks(ch_two_chunks))
         print(client.set_ch_one_buffer(ch_one_buffer))
         print(client.set_ch_two_buffer(ch_two_buffer))
+        print(client.set_pid_one(1,1,0))
+        print(client.set_pid_two(1,0,0))
         # client.output_ttl()
 
