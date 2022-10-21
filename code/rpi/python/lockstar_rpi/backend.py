@@ -18,6 +18,12 @@ state_lock = asyncio.Lock()
 backend_state = BackendState()
 
 async def handle_client_requests(reader, writer):
+    """This method is called for each TCP/IP request, the server gets
+
+    Args:
+        reader (_type_): _description_
+        writer (_type_): _description_
+    """
     backend_call = None
     try:
         byte_backend_call = (await reader.readuntil(separator=b'\xBC'))[:-1]
@@ -58,6 +64,11 @@ async def handle_client_requests(reader, writer):
     
 
 async def main():
+    """
+    Opens a TCP/IP service which listens to address and port defined in BackendSettings.
+    If there is an existing config file (name: BackendSettings.currend_module_config_file) it will
+    launch this module such that the lockstar operates with the same settings as before the shutdown
+    """
     # initialize GeneralModule
     backend_state.general_module = GeneralModule()
 

@@ -261,8 +261,8 @@ lockstar_rpi<wbr>.Modules<wbr>.AWGPIDModule    </h1>
 </span></pre></div>
 
 
-            <div class="docstring"><p>This Module should not be used directly by the client (hence the _ at the end of the name).
-It contains functionality which is shared by most modules (e.g. calibration of the DAC)</p>
+            <div class="docstring"><p>Base class for AWGModule and AWGPIDModule. Implements the functionality to have two buffers which the user can use to 
+store arbitrary waveforms. Additionally it allows to split the buffers into chunks, which are output individually.</p>
 </div>
 
 

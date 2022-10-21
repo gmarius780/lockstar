@@ -5,6 +5,7 @@ from lockstar_rpi.MC import MC
 from lockstar_rpi.MCDataPackage import MCDataPackage
 
 class SinglePIDModule(IOModule_):
+    """Basic Module which implements a simple PID controller by using input_1 as setpoint, input_2 as error_signal and output 1 for the control signal"""
     def __init__(self) -> None:
         super().__init__()
         self.p = None
@@ -12,18 +13,27 @@ class SinglePIDModule(IOModule_):
         self.d = None
         self.out_range_min = None
         self.out_range_max = None
-        self.useTTL = None
         self.locked = None
 
 
     # ==== START: client methods 
-    async def initialize(self, p: float, i: float, d: float, out_range_min: float, out_range_max: float, useTTL: bool, locked: bool, writer):
+    async def initialize(self, p: float, i: float, d: float, out_range_min: float, out_range_max: float, locked: bool, writer):
+        """Set all system module parameters
+
+        Args:
+        :param    p (float): p
+        :param    i (float): i
+        :param    d (float): d
+        :param    out_range_min (float): output range minimum in volt
+        :param    out_range_max (float): output range maximum in volt
+        :param    locked (bool): lock
+        :param    writer (_type_): asyncio writer to reply to the client
+        """
         self.p = p
         self.i = i
         self.d = d
         self.out_range_min = out_range_min
         self.out_range_max = out_range_max
-        self.useTTL = useTTL
         self.locked = locked
 
         logging.debug('Starting initialization: SinglePIDModule')
@@ -110,7 +120,7 @@ class SinglePIDModule(IOModule_):
     async def launch_from_config(self, config_dict):
         try:
             await self.initialize(config_dict['p'], config_dict['i'], config_dict['d'], config_dict['out_range_min'],
-                                config_dict['out_range_max'], config_dict['useTTL'], config_dict['locked'], None)
+                                config_dict['out_range_max'], config_dict['locked'], None)
 
             await super().launch_from_config(config_dict)
         except Exception as ex:

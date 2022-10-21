@@ -1,10 +1,11 @@
 from lockstar_rpi.Modules.Module import Module
 from lockstar_general.backend.BackendResponse import BackendResponse
 
-"""This Module should not be used directly by the client (hence the _ at the end of the name).
+
+class IOModule_(Module):
+    """This Module should not be used directly by the client (hence the _ at the end of the name).
     It contains functionality which is shared by most modules (e.g. calibration of the DAC)
     """
-class IOModule_(Module):
  
 
     def __init__(self) -> None:

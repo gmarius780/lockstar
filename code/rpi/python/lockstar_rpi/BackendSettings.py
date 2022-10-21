@@ -1,4 +1,5 @@
 class BackendSettings:
+    """Hardcoded settings for the backend"""
     backend_ip = '0.0.0.0'
     backend_port = 10780
     read_buffer_limit_bytes = 50 * 10 ** 6

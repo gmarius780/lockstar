@@ -72,35 +72,38 @@ lockstar_rpi<wbr>.Modules<wbr>.AWGModule    </h1>
 </span><span id="L-2"><a href="#L-2"><span class="linenos"> 2</span></a><span class="kn">import</span> <span class="nn">logging</span>
 </span><span id="L-3"><a href="#L-3"><span class="linenos"> 3</span></a>
 </span><span id="L-4"><a href="#L-4"><span class="linenos"> 4</span></a><span class="k">class</span> <span class="nc">AWGModule</span><span class="p">(</span><span class="n">BufferBaseModule_</span><span class="p">):</span>
-</span><span id="L-5"><a href="#L-5"><span class="linenos"> 5</span></a>
-</span><span id="L-6"><a href="#L-6"><span class="linenos"> 6</span></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-</span><span id="L-7"><a href="#L-7"><span class="linenos"> 7</span></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+</span><span id="L-5"><a href="#L-5"><span class="linenos"> 5</span></a>    <span class="sd">&quot;&quot;&quot; Allows user to upload arbitrary waveforms into two buffers (corresponding to the two analog outputs), splitting</span>
+</span><span id="L-6"><a href="#L-6"><span class="linenos"> 6</span></a><span class="sd">    these waveforms into &#39;chunks&#39; and outputting those chunks either via digital trigger or by calling output_on()</span>
+</span><span id="L-7"><a href="#L-7"><span class="linenos"> 7</span></a><span class="sd">    &quot;&quot;&quot;</span>
 </span><span id="L-8"><a href="#L-8"><span class="linenos"> 8</span></a>
-</span><span id="L-9"><a href="#L-9"><span class="linenos"> 9</span></a>
-</span><span id="L-10"><a href="#L-10"><span class="linenos">10</span></a>    <span class="c1"># ==== START: client methods </span>
+</span><span id="L-9"><a href="#L-9"><span class="linenos"> 9</span></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="L-10"><a href="#L-10"><span class="linenos">10</span></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 </span><span id="L-11"><a href="#L-11"><span class="linenos">11</span></a>
 </span><span id="L-12"><a href="#L-12"><span class="linenos">12</span></a>
-</span><span id="L-13"><a href="#L-13"><span class="linenos">13</span></a>    <span class="c1"># ==== END: client methods</span>
+</span><span id="L-13"><a href="#L-13"><span class="linenos">13</span></a>    <span class="c1"># ==== START: client methods </span>
 </span><span id="L-14"><a href="#L-14"><span class="linenos">14</span></a>
-</span><span id="L-15"><a href="#L-15"><span class="linenos">15</span></a>    <span class="k">def</span> <span class="nf">generate_config_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="L-16"><a href="#L-16"><span class="linenos">16</span></a>        <span class="sd">&quot;&quot;&quot;Stores all the relevant information in a dictionary such that the module can be relaunched with this information&quot;&quot;&quot;</span>
-</span><span id="L-17"><a href="#L-17"><span class="linenos">17</span></a>        <span class="n">config</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">generate_config_dict</span><span class="p">()</span>
-</span><span id="L-18"><a href="#L-18"><span class="linenos">18</span></a>    
-</span><span id="L-19"><a href="#L-19"><span class="linenos">19</span></a>        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">:</span>
-</span><span id="L-20"><a href="#L-20"><span class="linenos">20</span></a>            <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">config</span><span class="p">:</span>
-</span><span id="L-21"><a href="#L-21"><span class="linenos">21</span></a>                <span class="n">config</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
-</span><span id="L-22"><a href="#L-22"><span class="linenos">22</span></a>        <span class="k">return</span> <span class="n">config</span>
-</span><span id="L-23"><a href="#L-23"><span class="linenos">23</span></a>
-</span><span id="L-24"><a href="#L-24"><span class="linenos">24</span></a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">launch_from_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_dict</span><span class="p">):</span>
-</span><span id="L-25"><a href="#L-25"><span class="linenos">25</span></a>        <span class="k">try</span><span class="p">:</span>
-</span><span id="L-26"><a href="#L-26"><span class="linenos">26</span></a>            <span class="k">pass</span>
-</span><span id="L-27"><a href="#L-27"><span class="linenos">27</span></a>            <span class="c1"># await self.initialize(config_dict[&#39;p&#39;], config_dict[&#39;i&#39;], config_dict[&#39;d&#39;], config_dict[&#39;out_range_min&#39;],</span>
-</span><span id="L-28"><a href="#L-28"><span class="linenos">28</span></a>            <span class="c1">#                     config_dict[&#39;out_range_max&#39;], config_dict[&#39;useTTL&#39;], config_dict[&#39;locked&#39;], None)</span>
-</span><span id="L-29"><a href="#L-29"><span class="linenos">29</span></a>
-</span><span id="L-30"><a href="#L-30"><span class="linenos">30</span></a>            <span class="c1"># await  super().launch_from_config(config_dict)</span>
-</span><span id="L-31"><a href="#L-31"><span class="linenos">31</span></a>        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
-</span><span id="L-32"><a href="#L-32"><span class="linenos">32</span></a>            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;AWGModule: canot launch_from_config: </span><span class="si">{</span><span class="n">ex</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-</span><span id="L-33"><a href="#L-33"><span class="linenos">33</span></a>            <span class="k">raise</span> <span class="n">ex</span>
+</span><span id="L-15"><a href="#L-15"><span class="linenos">15</span></a>
+</span><span id="L-16"><a href="#L-16"><span class="linenos">16</span></a>    <span class="c1"># ==== END: client methods</span>
+</span><span id="L-17"><a href="#L-17"><span class="linenos">17</span></a>
+</span><span id="L-18"><a href="#L-18"><span class="linenos">18</span></a>    <span class="k">def</span> <span class="nf">generate_config_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span id="L-19"><a href="#L-19"><span class="linenos">19</span></a>        <span class="sd">&quot;&quot;&quot;Stores all the relevant information in a dictionary such that the module can be relaunched with this information&quot;&quot;&quot;</span>
+</span><span id="L-20"><a href="#L-20"><span class="linenos">20</span></a>        <span class="n">config</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">generate_config_dict</span><span class="p">()</span>
+</span><span id="L-21"><a href="#L-21"><span class="linenos">21</span></a>    
+</span><span id="L-22"><a href="#L-22"><span class="linenos">22</span></a>        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">:</span>
+</span><span id="L-23"><a href="#L-23"><span class="linenos">23</span></a>            <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">config</span><span class="p">:</span>
+</span><span id="L-24"><a href="#L-24"><span class="linenos">24</span></a>                <span class="n">config</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+</span><span id="L-25"><a href="#L-25"><span class="linenos">25</span></a>        <span class="k">return</span> <span class="n">config</span>
+</span><span id="L-26"><a href="#L-26"><span class="linenos">26</span></a>
+</span><span id="L-27"><a href="#L-27"><span class="linenos">27</span></a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">launch_from_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_dict</span><span class="p">):</span>
+</span><span id="L-28"><a href="#L-28"><span class="linenos">28</span></a>        <span class="k">try</span><span class="p">:</span>
+</span><span id="L-29"><a href="#L-29"><span class="linenos">29</span></a>            <span class="k">pass</span>
+</span><span id="L-30"><a href="#L-30"><span class="linenos">30</span></a>            <span class="c1"># await self.initialize(config_dict[&#39;p&#39;], config_dict[&#39;i&#39;], config_dict[&#39;d&#39;], config_dict[&#39;out_range_min&#39;],</span>
+</span><span id="L-31"><a href="#L-31"><span class="linenos">31</span></a>            <span class="c1">#                     config_dict[&#39;out_range_max&#39;], config_dict[&#39;useTTL&#39;], config_dict[&#39;locked&#39;], None)</span>
+</span><span id="L-32"><a href="#L-32"><span class="linenos">32</span></a>
+</span><span id="L-33"><a href="#L-33"><span class="linenos">33</span></a>            <span class="c1"># await  super().launch_from_config(config_dict)</span>
+</span><span id="L-34"><a href="#L-34"><span class="linenos">34</span></a>        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+</span><span id="L-35"><a href="#L-35"><span class="linenos">35</span></a>            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;AWGModule: canot launch_from_config: </span><span class="si">{</span><span class="n">ex</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+</span><span id="L-36"><a href="#L-36"><span class="linenos">36</span></a>            <span class="k">raise</span> <span class="n">ex</span>
 </span></pre></div>
 
 
@@ -117,40 +120,43 @@ lockstar_rpi<wbr>.Modules<wbr>.AWGModule    </h1>
     </div>
     <a class="headerlink" href="#AWGModule"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="AWGModule-5"><a href="#AWGModule-5"><span class="linenos"> 5</span></a><span class="k">class</span> <span class="nc">AWGModule</span><span class="p">(</span><span class="n">BufferBaseModule_</span><span class="p">):</span>
-</span><span id="AWGModule-6"><a href="#AWGModule-6"><span class="linenos"> 6</span></a>
-</span><span id="AWGModule-7"><a href="#AWGModule-7"><span class="linenos"> 7</span></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-</span><span id="AWGModule-8"><a href="#AWGModule-8"><span class="linenos"> 8</span></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+</span><span id="AWGModule-6"><a href="#AWGModule-6"><span class="linenos"> 6</span></a>    <span class="sd">&quot;&quot;&quot; Allows user to upload arbitrary waveforms into two buffers (corresponding to the two analog outputs), splitting</span>
+</span><span id="AWGModule-7"><a href="#AWGModule-7"><span class="linenos"> 7</span></a><span class="sd">    these waveforms into &#39;chunks&#39; and outputting those chunks either via digital trigger or by calling output_on()</span>
+</span><span id="AWGModule-8"><a href="#AWGModule-8"><span class="linenos"> 8</span></a><span class="sd">    &quot;&quot;&quot;</span>
 </span><span id="AWGModule-9"><a href="#AWGModule-9"><span class="linenos"> 9</span></a>
-</span><span id="AWGModule-10"><a href="#AWGModule-10"><span class="linenos">10</span></a>
-</span><span id="AWGModule-11"><a href="#AWGModule-11"><span class="linenos">11</span></a>    <span class="c1"># ==== START: client methods </span>
+</span><span id="AWGModule-10"><a href="#AWGModule-10"><span class="linenos">10</span></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="AWGModule-11"><a href="#AWGModule-11"><span class="linenos">11</span></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 </span><span id="AWGModule-12"><a href="#AWGModule-12"><span class="linenos">12</span></a>
 </span><span id="AWGModule-13"><a href="#AWGModule-13"><span class="linenos">13</span></a>
-</span><span id="AWGModule-14"><a href="#AWGModule-14"><span class="linenos">14</span></a>    <span class="c1"># ==== END: client methods</span>
+</span><span id="AWGModule-14"><a href="#AWGModule-14"><span class="linenos">14</span></a>    <span class="c1"># ==== START: client methods </span>
 </span><span id="AWGModule-15"><a href="#AWGModule-15"><span class="linenos">15</span></a>
-</span><span id="AWGModule-16"><a href="#AWGModule-16"><span class="linenos">16</span></a>    <span class="k">def</span> <span class="nf">generate_config_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="AWGModule-17"><a href="#AWGModule-17"><span class="linenos">17</span></a>        <span class="sd">&quot;&quot;&quot;Stores all the relevant information in a dictionary such that the module can be relaunched with this information&quot;&quot;&quot;</span>
-</span><span id="AWGModule-18"><a href="#AWGModule-18"><span class="linenos">18</span></a>        <span class="n">config</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">generate_config_dict</span><span class="p">()</span>
-</span><span id="AWGModule-19"><a href="#AWGModule-19"><span class="linenos">19</span></a>    
-</span><span id="AWGModule-20"><a href="#AWGModule-20"><span class="linenos">20</span></a>        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">:</span>
-</span><span id="AWGModule-21"><a href="#AWGModule-21"><span class="linenos">21</span></a>            <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">config</span><span class="p">:</span>
-</span><span id="AWGModule-22"><a href="#AWGModule-22"><span class="linenos">22</span></a>                <span class="n">config</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
-</span><span id="AWGModule-23"><a href="#AWGModule-23"><span class="linenos">23</span></a>        <span class="k">return</span> <span class="n">config</span>
-</span><span id="AWGModule-24"><a href="#AWGModule-24"><span class="linenos">24</span></a>
-</span><span id="AWGModule-25"><a href="#AWGModule-25"><span class="linenos">25</span></a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">launch_from_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_dict</span><span class="p">):</span>
-</span><span id="AWGModule-26"><a href="#AWGModule-26"><span class="linenos">26</span></a>        <span class="k">try</span><span class="p">:</span>
-</span><span id="AWGModule-27"><a href="#AWGModule-27"><span class="linenos">27</span></a>            <span class="k">pass</span>
-</span><span id="AWGModule-28"><a href="#AWGModule-28"><span class="linenos">28</span></a>            <span class="c1"># await self.initialize(config_dict[&#39;p&#39;], config_dict[&#39;i&#39;], config_dict[&#39;d&#39;], config_dict[&#39;out_range_min&#39;],</span>
-</span><span id="AWGModule-29"><a href="#AWGModule-29"><span class="linenos">29</span></a>            <span class="c1">#                     config_dict[&#39;out_range_max&#39;], config_dict[&#39;useTTL&#39;], config_dict[&#39;locked&#39;], None)</span>
-</span><span id="AWGModule-30"><a href="#AWGModule-30"><span class="linenos">30</span></a>
-</span><span id="AWGModule-31"><a href="#AWGModule-31"><span class="linenos">31</span></a>            <span class="c1"># await  super().launch_from_config(config_dict)</span>
-</span><span id="AWGModule-32"><a href="#AWGModule-32"><span class="linenos">32</span></a>        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
-</span><span id="AWGModule-33"><a href="#AWGModule-33"><span class="linenos">33</span></a>            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;AWGModule: canot launch_from_config: </span><span class="si">{</span><span class="n">ex</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-</span><span id="AWGModule-34"><a href="#AWGModule-34"><span class="linenos">34</span></a>            <span class="k">raise</span> <span class="n">ex</span>
+</span><span id="AWGModule-16"><a href="#AWGModule-16"><span class="linenos">16</span></a>
+</span><span id="AWGModule-17"><a href="#AWGModule-17"><span class="linenos">17</span></a>    <span class="c1"># ==== END: client methods</span>
+</span><span id="AWGModule-18"><a href="#AWGModule-18"><span class="linenos">18</span></a>
+</span><span id="AWGModule-19"><a href="#AWGModule-19"><span class="linenos">19</span></a>    <span class="k">def</span> <span class="nf">generate_config_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span id="AWGModule-20"><a href="#AWGModule-20"><span class="linenos">20</span></a>        <span class="sd">&quot;&quot;&quot;Stores all the relevant information in a dictionary such that the module can be relaunched with this information&quot;&quot;&quot;</span>
+</span><span id="AWGModule-21"><a href="#AWGModule-21"><span class="linenos">21</span></a>        <span class="n">config</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">generate_config_dict</span><span class="p">()</span>
+</span><span id="AWGModule-22"><a href="#AWGModule-22"><span class="linenos">22</span></a>    
+</span><span id="AWGModule-23"><a href="#AWGModule-23"><span class="linenos">23</span></a>        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">:</span>
+</span><span id="AWGModule-24"><a href="#AWGModule-24"><span class="linenos">24</span></a>            <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">config</span><span class="p">:</span>
+</span><span id="AWGModule-25"><a href="#AWGModule-25"><span class="linenos">25</span></a>                <span class="n">config</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+</span><span id="AWGModule-26"><a href="#AWGModule-26"><span class="linenos">26</span></a>        <span class="k">return</span> <span class="n">config</span>
+</span><span id="AWGModule-27"><a href="#AWGModule-27"><span class="linenos">27</span></a>
+</span><span id="AWGModule-28"><a href="#AWGModule-28"><span class="linenos">28</span></a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">launch_from_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_dict</span><span class="p">):</span>
+</span><span id="AWGModule-29"><a href="#AWGModule-29"><span class="linenos">29</span></a>        <span class="k">try</span><span class="p">:</span>
+</span><span id="AWGModule-30"><a href="#AWGModule-30"><span class="linenos">30</span></a>            <span class="k">pass</span>
+</span><span id="AWGModule-31"><a href="#AWGModule-31"><span class="linenos">31</span></a>            <span class="c1"># await self.initialize(config_dict[&#39;p&#39;], config_dict[&#39;i&#39;], config_dict[&#39;d&#39;], config_dict[&#39;out_range_min&#39;],</span>
+</span><span id="AWGModule-32"><a href="#AWGModule-32"><span class="linenos">32</span></a>            <span class="c1">#                     config_dict[&#39;out_range_max&#39;], config_dict[&#39;useTTL&#39;], config_dict[&#39;locked&#39;], None)</span>
+</span><span id="AWGModule-33"><a href="#AWGModule-33"><span class="linenos">33</span></a>
+</span><span id="AWGModule-34"><a href="#AWGModule-34"><span class="linenos">34</span></a>            <span class="c1"># await  super().launch_from_config(config_dict)</span>
+</span><span id="AWGModule-35"><a href="#AWGModule-35"><span class="linenos">35</span></a>        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+</span><span id="AWGModule-36"><a href="#AWGModule-36"><span class="linenos">36</span></a>            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;AWGModule: canot launch_from_config: </span><span class="si">{</span><span class="n">ex</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+</span><span id="AWGModule-37"><a href="#AWGModule-37"><span class="linenos">37</span></a>            <span class="k">raise</span> <span class="n">ex</span>
 </span></pre></div>
 
 
-            <div class="docstring"><p>This Module should not be used directly by the client (hence the _ at the end of the name).
-It contains functionality which is shared by most modules (e.g. calibration of the DAC)</p>
+            <div class="docstring"><p>Allows user to upload arbitrary waveforms into two buffers (corresponding to the two analog outputs), splitting
+these waveforms into 'chunks' and outputting those chunks either via digital trigger or by calling output_on()</p>
 </div>
 
 
@@ -164,8 +170,8 @@ It contains functionality which is shared by most modules (e.g. calibration of t
 
     </div>
     <a class="headerlink" href="#AWGModule.__init__"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="AWGModule.__init__-7"><a href="#AWGModule.__init__-7"><span class="linenos">7</span></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-</span><span id="AWGModule.__init__-8"><a href="#AWGModule.__init__-8"><span class="linenos">8</span></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="AWGModule.__init__-10"><a href="#AWGModule.__init__-10"><span class="linenos">10</span></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="AWGModule.__init__-11"><a href="#AWGModule.__init__-11"><span class="linenos">11</span></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 </span></pre></div>
 
 
@@ -183,14 +189,14 @@ It contains functionality which is shared by most modules (e.g. calibration of t
 
     </div>
     <a class="headerlink" href="#AWGModule.generate_config_dict"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="AWGModule.generate_config_dict-16"><a href="#AWGModule.generate_config_dict-16"><span class="linenos">16</span></a>    <span class="k">def</span> <span class="nf">generate_config_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="AWGModule.generate_config_dict-17"><a href="#AWGModule.generate_config_dict-17"><span class="linenos">17</span></a>        <span class="sd">&quot;&quot;&quot;Stores all the relevant information in a dictionary such that the module can be relaunched with this information&quot;&quot;&quot;</span>
-</span><span id="AWGModule.generate_config_dict-18"><a href="#AWGModule.generate_config_dict-18"><span class="linenos">18</span></a>        <span class="n">config</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">generate_config_dict</span><span class="p">()</span>
-</span><span id="AWGModule.generate_config_dict-19"><a href="#AWGModule.generate_config_dict-19"><span class="linenos">19</span></a>    
-</span><span id="AWGModule.generate_config_dict-20"><a href="#AWGModule.generate_config_dict-20"><span class="linenos">20</span></a>        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">:</span>
-</span><span id="AWGModule.generate_config_dict-21"><a href="#AWGModule.generate_config_dict-21"><span class="linenos">21</span></a>            <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">config</span><span class="p">:</span>
-</span><span id="AWGModule.generate_config_dict-22"><a href="#AWGModule.generate_config_dict-22"><span class="linenos">22</span></a>                <span class="n">config</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
-</span><span id="AWGModule.generate_config_dict-23"><a href="#AWGModule.generate_config_dict-23"><span class="linenos">23</span></a>        <span class="k">return</span> <span class="n">config</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="AWGModule.generate_config_dict-19"><a href="#AWGModule.generate_config_dict-19"><span class="linenos">19</span></a>    <span class="k">def</span> <span class="nf">generate_config_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span id="AWGModule.generate_config_dict-20"><a href="#AWGModule.generate_config_dict-20"><span class="linenos">20</span></a>        <span class="sd">&quot;&quot;&quot;Stores all the relevant information in a dictionary such that the module can be relaunched with this information&quot;&quot;&quot;</span>
+</span><span id="AWGModule.generate_config_dict-21"><a href="#AWGModule.generate_config_dict-21"><span class="linenos">21</span></a>        <span class="n">config</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">generate_config_dict</span><span class="p">()</span>
+</span><span id="AWGModule.generate_config_dict-22"><a href="#AWGModule.generate_config_dict-22"><span class="linenos">22</span></a>    
+</span><span id="AWGModule.generate_config_dict-23"><a href="#AWGModule.generate_config_dict-23"><span class="linenos">23</span></a>        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">:</span>
+</span><span id="AWGModule.generate_config_dict-24"><a href="#AWGModule.generate_config_dict-24"><span class="linenos">24</span></a>            <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">config</span><span class="p">:</span>
+</span><span id="AWGModule.generate_config_dict-25"><a href="#AWGModule.generate_config_dict-25"><span class="linenos">25</span></a>                <span class="n">config</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+</span><span id="AWGModule.generate_config_dict-26"><a href="#AWGModule.generate_config_dict-26"><span class="linenos">26</span></a>        <span class="k">return</span> <span class="n">config</span>
 </span></pre></div>
 
 
@@ -210,16 +216,16 @@ It contains functionality which is shared by most modules (e.g. calibration of t
 
     </div>
     <a class="headerlink" href="#AWGModule.launch_from_config"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="AWGModule.launch_from_config-25"><a href="#AWGModule.launch_from_config-25"><span class="linenos">25</span></a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">launch_from_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_dict</span><span class="p">):</span>
-</span><span id="AWGModule.launch_from_config-26"><a href="#AWGModule.launch_from_config-26"><span class="linenos">26</span></a>        <span class="k">try</span><span class="p">:</span>
-</span><span id="AWGModule.launch_from_config-27"><a href="#AWGModule.launch_from_config-27"><span class="linenos">27</span></a>            <span class="k">pass</span>
-</span><span id="AWGModule.launch_from_config-28"><a href="#AWGModule.launch_from_config-28"><span class="linenos">28</span></a>            <span class="c1"># await self.initialize(config_dict[&#39;p&#39;], config_dict[&#39;i&#39;], config_dict[&#39;d&#39;], config_dict[&#39;out_range_min&#39;],</span>
-</span><span id="AWGModule.launch_from_config-29"><a href="#AWGModule.launch_from_config-29"><span class="linenos">29</span></a>            <span class="c1">#                     config_dict[&#39;out_range_max&#39;], config_dict[&#39;useTTL&#39;], config_dict[&#39;locked&#39;], None)</span>
-</span><span id="AWGModule.launch_from_config-30"><a href="#AWGModule.launch_from_config-30"><span class="linenos">30</span></a>
-</span><span id="AWGModule.launch_from_config-31"><a href="#AWGModule.launch_from_config-31"><span class="linenos">31</span></a>            <span class="c1"># await  super().launch_from_config(config_dict)</span>
-</span><span id="AWGModule.launch_from_config-32"><a href="#AWGModule.launch_from_config-32"><span class="linenos">32</span></a>        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
-</span><span id="AWGModule.launch_from_config-33"><a href="#AWGModule.launch_from_config-33"><span class="linenos">33</span></a>            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;AWGModule: canot launch_from_config: </span><span class="si">{</span><span class="n">ex</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-</span><span id="AWGModule.launch_from_config-34"><a href="#AWGModule.launch_from_config-34"><span class="linenos">34</span></a>            <span class="k">raise</span> <span class="n">ex</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="AWGModule.launch_from_config-28"><a href="#AWGModule.launch_from_config-28"><span class="linenos">28</span></a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">launch_from_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_dict</span><span class="p">):</span>
+</span><span id="AWGModule.launch_from_config-29"><a href="#AWGModule.launch_from_config-29"><span class="linenos">29</span></a>        <span class="k">try</span><span class="p">:</span>
+</span><span id="AWGModule.launch_from_config-30"><a href="#AWGModule.launch_from_config-30"><span class="linenos">30</span></a>            <span class="k">pass</span>
+</span><span id="AWGModule.launch_from_config-31"><a href="#AWGModule.launch_from_config-31"><span class="linenos">31</span></a>            <span class="c1"># await self.initialize(config_dict[&#39;p&#39;], config_dict[&#39;i&#39;], config_dict[&#39;d&#39;], config_dict[&#39;out_range_min&#39;],</span>
+</span><span id="AWGModule.launch_from_config-32"><a href="#AWGModule.launch_from_config-32"><span class="linenos">32</span></a>            <span class="c1">#                     config_dict[&#39;out_range_max&#39;], config_dict[&#39;useTTL&#39;], config_dict[&#39;locked&#39;], None)</span>
+</span><span id="AWGModule.launch_from_config-33"><a href="#AWGModule.launch_from_config-33"><span class="linenos">33</span></a>
+</span><span id="AWGModule.launch_from_config-34"><a href="#AWGModule.launch_from_config-34"><span class="linenos">34</span></a>            <span class="c1"># await  super().launch_from_config(config_dict)</span>
+</span><span id="AWGModule.launch_from_config-35"><a href="#AWGModule.launch_from_config-35"><span class="linenos">35</span></a>        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+</span><span id="AWGModule.launch_from_config-36"><a href="#AWGModule.launch_from_config-36"><span class="linenos">36</span></a>            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;AWGModule: canot launch_from_config: </span><span class="si">{</span><span class="n">ex</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+</span><span id="AWGModule.launch_from_config-37"><a href="#AWGModule.launch_from_config-37"><span class="linenos">37</span></a>            <span class="k">raise</span> <span class="n">ex</span>
 </span></pre></div>
 
 
