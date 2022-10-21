@@ -126,6 +126,9 @@ class AWGModule(IOModule_):
                         writer.write(BackendResponse.NACK().to_bytes())
                         await writer.drain()
                         return False
+                    ## S: 1. When is writer set to None? 
+                    ##    2. if not ack and writer IS None, no return?
+                    ##    3. What happens with the return of a module method?
                 
             if writer is not None:
                 writer.write(BackendResponse.ACK().to_bytes())
