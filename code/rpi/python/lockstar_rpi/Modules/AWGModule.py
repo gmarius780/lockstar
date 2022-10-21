@@ -2,9 +2,6 @@ from lockstar_rpi.Modules.BufferBaseModule_ import BufferBaseModule_
 import logging
 
 class AWGModule(BufferBaseModule_):
-    BUFFER_LIMIT_kBYTES = 180
-    MAX_NBR_OF_CHUNKS = 100
-
 
     def __init__(self) -> None:
         super().__init__()
