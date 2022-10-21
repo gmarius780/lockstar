@@ -20,8 +20,8 @@
 #include "../HAL/rpi.h"
 #include "../HAL/leds.hpp"
 #include "../HAL/adc_new.hpp"
+#include "../HAL/BasicTimer.hpp"
 #include "../HAL/dac_new.hpp"
-#include "../HAL/basic_timer.hpp"
 #include "../Lib/RPIDataPackage.h"
 #include "../Lib/pid.hpp"
 
@@ -58,19 +58,21 @@ public:
 
 
 		/*** work loop ***/
-		while(true) {
-			// optimize /w function pointer?
+		while(true){
+			while(locked) {
+				// optimize /w function pointer?
 
-			// This version does not work for some reason?
-			// dt = (TIM3->CNT - t)/TIM3freq*psc;
+				// This version does not work for some reason?
+				// dt = (TIM3->CNT - t)/TIM3freq*psc;
 
-			// Measuring elapsed time per work loop
-			t = timer->get_counter() - t;
-			dt = t/TIM3freq*psc;
-			t = timer->get_counter();
+				// Measuring elapsed time per work loop
+				t = timer->get_counter() - t;
+				dt = t/TIM3freq*psc;
+				t = timer->get_counter();
 
-			this->adc->start_conversion();
-			this->dac_1->write(this->pid->calculate_output(adc->channel1->get_result(), adc->channel2->get_result(), dt));
+				this->adc->start_conversion();
+				this->dac_1->write(this->pid->calculate_output(adc->channel1->get_result(), adc->channel2->get_result(), dt));
+			}
 		}
 	}
 

@@ -12,22 +12,17 @@
 #include "stm32f4xx_hal_gpio.h"
 
 
-#include "../HAL/spi.hpp"
-#include "../HAL/rpi.h"
 #include "../HAL/leds.hpp"
-#include "../HAL/adc_new.hpp"
-#include "../HAL/dac_new.hpp"
-#include "../HAL/basic_timer.hpp"
-#include "../Lib/RPIDataPackage.h"
-#include "../Lib/pid.hpp"
 
-#include "Module.hpp"
+#include "BufferBaseModule.h"
 
 #ifdef AWG_MODULE
 
 
-
-class AWGModule: public Module {
+/**
+ * User can upload buffers containing the module will then output the voltages defined in the buffers with a sampling-rate, set by the user
+ */
+class AWGModule: public BufferBaseModule {
 	static const uint32_t BUFFER_LIMIT_kBYTES = 180; //if this is chosen to large (200) there is no warning, the MC simply crashes (hangs in syscalls.c _exit())
 	static const uint32_t MAX_NBR_OF_CHUNKS = 100;
 public:
@@ -58,292 +53,26 @@ public:
 	}
 
 	void handle_rpi_input() {
-		/*** Package format: method_identifier (uint32_t) | method specific arguments (defined in the methods directly) ***/
-		RPIDataPackage* read_package = rpi->get_read_package();
+		if(this->handle_rpi_base_methods() == false) { //if base class doesn't know the called method
+			/*** Package format: method_identifier (uint32_t) | method specific arguments (defined in the methods directly) ***/
+			RPIDataPackage* read_package = this->rpi->get_read_package();
+			//switch between method_identifier
+			switch (read_package->pop_from_buffer<uint32_t>()) {
+				default:
+					/*** send NACK because the method_identifier is not valid ***/
+					RPIDataPackage* write_package = rpi->get_write_package();
+					write_package->push_nack();
+					rpi->send_package(write_package);
+					break;
+			}
 
-		// switch between method_identifier
-		switch (read_package->pop_from_buffer<uint32_t>()) {
-		case METHOD_OUTPUT_ON:
-			output_on(read_package);
-			break;
-		case METHOD_OUTPUT_OFF:
-			output_off(read_package);
-			break;
-		case METHOD_OUTPUT_TTL:
-			output_ttl(read_package);
-			break;
-		case METHOD_SET_CH_ONE_OUTPUT_LIMITS:
-			set_ch_one_output_limits(read_package);
-			break;
-		case METHOD_SET_CH_TWO_OUTPUT_LIMITS:
-			set_ch_two_output_limits(read_package);
-			break;
-		case METHOD_SET_CH_ONE_BUFFER:
-			set_ch_one_buffer(read_package);
-			break;
-		case METHOD_SET_CH_TWO_BUFFER:
-			set_ch_two_buffer(read_package);
-			break;
-		case METHOD_INITIALIZE_BUFFERS:
-			initialize_buffers(read_package);
-			break;
-		case METHOD_SET_SAMPLING_RATE:
-			set_sampling_rate(read_package);
-			break;
-		case METHOD_SET_CH_ONE_CHUNKS:
-			set_ch_one_chunks(read_package);
-			break;
-		case METHOD_SET_CH_TWO_CHUNKS:
-			set_ch_two_chunks(read_package);
-			break;
-		default:
-			/*** send NACK because the method_identifier is not valid ***/
-			RPIDataPackage* write_package = rpi->get_write_package();
-			write_package->push_nack();
-			rpi->send_package(write_package);
-			break;
 		}
-
 	}
 
 	/*** START: METHODS ACCESSIBLE FROM THE RPI ***/
-	static const uint32_t METHOD_INITIALIZE_BUFFERS = 18;
-	void initialize_buffers(RPIDataPackage* read_package) {
-		this->turn_output_off();
-		//set buffers (buffer sizes defined in number of floats)
-		buffer_one_size = read_package->pop_from_buffer<uint32_t>();
-		buffer_two_size = read_package->pop_from_buffer<uint32_t>();
-		chunks_one_size = read_package->pop_from_buffer<uint32_t>();
-		chunks_two_size = read_package->pop_from_buffer<uint32_t>();
-		prescaler = read_package->pop_from_buffer<uint32_t>();
-		counter_max = read_package->pop_from_buffer<uint32_t>();
-
-		if ((buffer_one_size + buffer_two_size > BUFFER_LIMIT_kBYTES*250) or (chunks_one_size + chunks_two_size > MAX_NBR_OF_CHUNKS)) {
-			/*** send NACK because requested buffer or chunks is too large ***/
-			RPIDataPackage* write_package = rpi->get_write_package();
-			write_package->push_nack();
-			rpi->send_package(write_package);
-		} else {
-			//set pointers according to the received buffer sizes
-			this->reset_output();
-			this->sampling_timer->set_auto_reload(counter_max);
-			this->sampling_timer->set_prescaler(prescaler);
-		}
-		this->reset_output();
-		/*** send ACK ***/
-		RPIDataPackage* write_package = rpi->get_write_package();
-		write_package->push_ack();
-		rpi->send_package(write_package);
-	}
-
-	static const uint32_t METHOD_SET_SAMPLING_RATE = 19;
-	void set_sampling_rate(RPIDataPackage* read_package) {
-		prescaler = read_package->pop_from_buffer<uint32_t>();
-		counter_max = read_package->pop_from_buffer<uint32_t>();
-
-		this->turn_output_off();
-		this->reset_output();
-		this->sampling_timer->set_auto_reload(counter_max);
-		this->sampling_timer->set_prescaler(prescaler);
-
-		/*** send ACK ***/
-		RPIDataPackage* write_package = rpi->get_write_package();
-		write_package->push_ack();
-		rpi->send_package(write_package);
-	}
-
-	static const uint32_t METHOD_SET_CH_ONE_CHUNKS = 20;
-	void set_ch_one_chunks(RPIDataPackage* read_package) {
-		this->set_ch_chunks(read_package, this->chunks_one_size, this->chunks_one);
-	}
-
-	static const uint32_t METHOD_SET_CH_TWO_CHUNKS = 21;
-	void set_ch_two_chunks(RPIDataPackage* read_package) {
-		this->set_ch_chunks(read_package, this->chunks_two_size, this->chunks_two);
-	}
-
-	void set_ch_chunks(RPIDataPackage* read_package, uint32_t chunks_size, uint32_t *ch_chunks) {
-		//chunks are the buffer-parts that should be output together when receiving a trigger
-		//an array of integers defines them. Can be used to output a sequence of different waveforms
-		this->turn_output_off();
-
-		//read in chunks (number defined with initialize)
-		for(uint32_t i = 0; i < chunks_size; i++) {
-			ch_chunks[i] = read_package->pop_from_buffer<uint32_t>();
-		}
-
-		this->reset_output();
-
-		/*** send ACK ***/
-		RPIDataPackage* write_package = rpi->get_write_package();
-		write_package->push_ack();
-		rpi->send_package(write_package);
-	}
-
-	static const uint32_t METHOD_OUTPUT_ON = 11;
-	void output_on(RPIDataPackage* read_package) {
-		//outputs the next chunk
-		this->is_output_on = true;
-		this->is_output_ttl = false;
-		turn_LED6_on();
-
-		this->output_next_chunk();
-		this->enable_sampling();
-
-		/*** send ACK ***/
-		RPIDataPackage* write_package = rpi->get_write_package();
-		write_package->push_ack();
-		rpi->send_package(write_package);
-	}
-
-	static const uint32_t METHOD_OUTPUT_OFF = 12;
-	void output_off(RPIDataPackage* read_package) {
-		this->turn_output_off();
-		this->reset_output();
-
-		/*** send ACK ***/
-		RPIDataPackage* write_package = rpi->get_write_package();
-		write_package->push_ack();
-		rpi->send_package(write_package);
-	}
-
-	static const uint32_t METHOD_OUTPUT_TTL = 13;
-	void output_ttl(RPIDataPackage* read_package) {
-		this->is_output_on = false;
-		this->is_output_ttl = true;
-		turn_LED6_off();
-
-		this->enable_sampling();
-
-		/*** send ACK ***/
-		RPIDataPackage* write_package = rpi->get_write_package();
-		write_package->push_ack();
-		rpi->send_package(write_package);
-	}
-
-	static const uint32_t METHOD_SET_CH_ONE_OUTPUT_LIMITS = 14;
-	void set_ch_one_output_limits(RPIDataPackage* read_package) {
-		set_ch_output_limit(read_package, this->dac_1);
-	}
-
-	static const uint32_t METHOD_SET_CH_TWO_OUTPUT_LIMITS = 15;
-	void set_ch_two_output_limits(RPIDataPackage* read_package) {
-		set_ch_output_limit(read_package, this->dac_2);
-	}
-
-	static const uint32_t METHOD_SET_CH_ONE_BUFFER = 16;
-	void set_ch_one_buffer(RPIDataPackage* read_package) {
-		this->set_ch_buffer(read_package, this->current_read_one, this->buffer_one, (this->buffer_one + buffer_one_size), true);
-	}
-
-	static const uint32_t METHOD_SET_CH_TWO_BUFFER = 17;
-	void set_ch_two_buffer(RPIDataPackage* read_package) {
-		this->set_ch_buffer(read_package, this->current_read_two, this->buffer_two, (this->buffer_two + buffer_two_size), false);
-	}
-
-	void set_ch_buffer(RPIDataPackage* read_package, float *current_read, float *channel_buffer, float *buffer_end, bool buffer_one) {
-		this->turn_output_off();
-
-		/***Read arguments***/
-		bool append = read_package->pop_from_buffer<bool>();
-		uint32_t nbr_values_to_read = read_package->pop_from_buffer<uint32_t>();
-
-		// start filling the buffer from scratch if neccessary
-		if (append == false)
-			current_read = channel_buffer;
-
-		//read in the given number of values
-		float *end_read = current_read + nbr_values_to_read;
-		while (current_read < end_read and current_read < buffer_end) {
-			*(current_read++) = read_package->pop_from_buffer<float>();
-		}
-
-		this->reset_output();
-
-		if (buffer_one == true) {
-			this->current_read_one = current_read;
-		} else {
-			this->current_read_two = current_read;
-		}
-
-		/*** send ACK ***/
-		RPIDataPackage* write_package = rpi->get_write_package();
-		write_package->push_ack();
-		rpi->send_package(write_package);
-	}
 
 	/*** END: METHODS ACCESSIBLE FROM THE RPI ***/
 
-	void reset_output() {
-		//set buffers and chunks to the starting point such that at the next trigger the first chunk is output
-		buffer_one = buffer;
-		buffer_two = buffer_one + buffer_one_size;
-		current_output_one = buffer_one;
-		current_output_two = buffer_two;
-		current_end_chunk_one = buffer_one;
-		current_end_chunk_two = buffer_two;
-		chunks_one = chunks;
-		chunks_two = chunks_one + chunks_one_size;
-		current_chunk_one = chunks_one;
-		current_chunk_two = chunks_two;
-	}
-
-	void turn_output_off() {
-		this->disable_sampling();
-		this->is_output_on = false;
-		this->is_output_ttl = false;
-		this->dac_1->write(0);
-		this->dac_2->write(0);
-		turn_LED6_off();
-	}
-
-	void enable_sampling() {
-		this->sampling_timer->enable_interrupt();
-		this->sampling_timer->enable();
-	}
-
-	void disable_sampling() {
-		this->sampling_timer->disable_interrupt();
-		this->sampling_timer->disable();
-	}
-
-	bool output_next_chunk() {
-		//if we are still outputting
-		if (current_output_one < current_end_chunk_one or current_output_two < current_end_chunk_two) {
-			return false;
-		} else {
-			//The chunk 'array' goes from chunks_one to chunks_one + chunks_one_size - 1.
-			//It contains the buffer-indices which correspond to the end of the respective chunk
-			//meaning: the values of the n-th chunk in the buffer are: buffer[chunks_one[n-1]] ... buffer[chunks_one[n]-1]
-			this->disable_sampling();
-			//set current_output_one to start of current chunk and current_end_chunk_one to end
-			if (current_chunk_one >= chunks_one + chunks_one_size) { // check if last chunk is reached
-				current_chunk_one = chunks_one;
-			}
-
-			if (current_chunk_one == chunks_one) {//first chunk
-				current_output_one = buffer_one;
-			} else { //n-th chunk
-				current_output_one = buffer_one + *(current_chunk_one-1);
-			}
-			current_end_chunk_one = buffer_one + *(current_chunk_one++);
-
-			if (current_chunk_two >= chunks_two + chunks_two_size) { // check if last chunk is reached
-				current_chunk_two = chunks_two;
-			}
-			if (current_chunk_two == chunks_two) {//first chunk
-				current_output_two = buffer_two;
-			} else { //n-th chunk
-				current_output_two = buffer_two + *(current_chunk_two-1);
-			}
-			current_end_chunk_two = buffer_two + *(current_chunk_two++);
-
-			//currently_outputting_chunk_one = currently_outputting_chunk_two = true;
-			turn_LED6_on();
-			this->enable_sampling();
-			return true;
-		}
-	}
 
 	void rpi_dma_in_interrupt() {
 
@@ -359,6 +88,7 @@ public:
 	void digital_in_rising_edge() {
 		if (this->is_output_ttl) {
 			this->output_next_chunk();
+			this->enable_sampling();
 		}
 	}
 
@@ -366,50 +96,25 @@ public:
 	}
 	__attribute__((section("sram_func")))
 	void sampling_timer_interrupt() {
-		//if we are currently outputing a chunk, put the next value
-		//optimize in order to get higher sampling rate
-		//if (currently_outputting_chunk_one == true) {
 		if (current_output_one < current_end_chunk_one) {
 			this->dac_1->write(*(current_output_one++));
 		} else {
-			//currently_outputting_chunk_one = false;
-			//if (currently_outputting_chunk_two == false) {
-			if (current_output_two < current_end_chunk_two) {
+			if (current_output_two >= current_end_chunk_two) {
 				turn_LED6_off();
 				this->disable_sampling();
 			}
 		}
-		//}
 
-		//if (currently_outputting_chunk_two == true) {
 		if (current_output_two < current_end_chunk_two) {
 			this->dac_2->write(*(current_output_two++));
 		} else {
-			//currently_outputting_chunk_two = false;
-			//if (currently_outputting_chunk_one == false) {
-			if (current_output_one < current_end_chunk_one) {
+			if (current_output_one >= current_end_chunk_one) {
 				turn_LED6_off();
 				this->disable_sampling();
 			}
 		}
-		//}
 	}
 
-public:
-	bool is_output_on, is_output_ttl;
-	uint32_t buffer_one_size, buffer_two_size;
-	float *buffer;
-	float *buffer_one, *buffer_two;
-	float *current_output_one, *current_output_two;
-	float *current_read_one, *current_read_two; //point to the position where the MC is currently reading values from the rpi into the buffer
-	uint32_t chunks_one_size, chunks_two_size;
-	uint32_t *chunks;
-	uint32_t *chunks_one, *chunks_two;
-	uint32_t *current_chunk_one, *current_chunk_two;
-	float *current_end_chunk_one, *current_end_chunk_two; //points to the end of the current chunk
-	uint32_t counter_max, prescaler;
-	//bool currently_outputting_chunk_one, currently_outputting_chunk_two;
-	BasicTimer *sampling_timer;
 };
 
 
