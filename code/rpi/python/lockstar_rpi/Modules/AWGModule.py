@@ -2,6 +2,9 @@ from lockstar_rpi.Modules.BufferBaseModule_ import BufferBaseModule_
 import logging
 
 class AWGModule(BufferBaseModule_):
+    """ Allows user to upload arbitrary waveforms into two buffers (corresponding to the two analog outputs), splitting
+    these waveforms into 'chunks' and outputting those chunks either via digital trigger or by calling output_on()
+    """
 
     def __init__(self) -> None:
         super().__init__()

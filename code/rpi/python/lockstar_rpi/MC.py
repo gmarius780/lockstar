@@ -14,7 +14,7 @@ if not BackendSettings.debug_mode:
         logging.error(f'cannot import rpi packags: {ex}')
 
 class MC:
-    """Represents the Microcontroller: Sends and receives MCDP's to/from the MC
+    """Represents the Microcontroller: Sends and receives MCDataPackage's to/from the MC
     """
     __instance = None
 
@@ -56,7 +56,7 @@ class MC:
     async def read_ack(self):
         """Reads two bools. if both are 1, this is interpreted as an ACK (signalling success of whatever happened before)
             
-            Returns: True if ack False otherwise
+            :Return True if ack False otherwise
         """
          #unpack data
         try:
@@ -79,8 +79,7 @@ class MC:
     async def read_mc_data(self):
         """Reads first an unsigned int, which is interpreted as the length of the payload, which the MC reponds to the RPI
 
-        Returns:
-            (unsigned int, byte-array): (payload length, payload)
+        :Return (unsigned int, byte-array): (payload length, payload)
         """
         async with self._rpi_lock:
             
@@ -130,7 +129,7 @@ class MC:
         """Sends one byte via SPI to the MC. The value of the bytes tells the MC how many 'tens-of-bytes' it should expect via DMA
 
         Args:
-            tens_of_bytes_to_read (int): dens of bytes to expect for the MC via DMA
+        :param    tens_of_bytes_to_read (int): dens of bytes to expect for the MC via DMA
         """
         await self.write(pack('<B', ceil(nbr_of_bytes_to_send/10)))
 
