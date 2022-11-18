@@ -17,7 +17,7 @@ if __name__ == "__main__":
             logging.StreamHandler()
         ]
     )
-    client = AWGClient('192.168.88.13', 10780, 1234)
+    client = AWGClient('192.168.88.220', 10780, 1234)
 
     
     if client.register_client_id():
