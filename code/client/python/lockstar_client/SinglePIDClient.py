@@ -5,14 +5,16 @@ from lockstar_general.backend.BackendResponse import BackendResponse
 from lockstar_general.backend.BackendCall import BackendCall
 
 class SinglePIDClient(LockstarClient):
+    """Basic Module which implements a simple PID controller by using input_1 as setpoint, 
+    input_2 as error_signal and output 1 for the control signal"""
     def __init__(self, lockstar_ip, lockstar_port, client_id) -> None:
         super().__init__(lockstar_ip, lockstar_port, client_id)
 
 
-    def initialize(self, p: float, i: float, d: float, out_range_min: float, out_range_max: float, useTTL: bool, locked: bool):
+    def initialize(self, p: float, i: float, d: float, out_range_min: float, out_range_max: float, locked: bool):
         bc = BackendCall(self.client_id, 'SinglePIDModule', 'initialize',
                         args={'p': p, 'i': i, 'd': d, 'out_range_min': out_range_min, 
-                                'out_range_max': out_range_max, 'useTTL': useTTL, 'locked': locked}
+                                'out_range_max': out_range_max, 'locked': locked}
                         )
         
         return asyncio.run(self._call_lockstar(bc))
@@ -43,16 +45,16 @@ if __name__ == "__main__":
             logging.StreamHandler()
         ]
     )
-    client = SinglePIDClient('192.168.88.13', 10780, 1234)
+    client = SinglePIDClient('192.168.88.201', 10780, 1234)
 
-    response = client.initialize(1,2,3,4,5,True, False)
+    response = client.initialize(1,0,0,0,5,False)
     
     initialized = False
 
     if response.is_wrong_client_id():
         if client.register_client_id():
             logging.info(f'Registered my client id: {client.client_id}')
-            response = client.initialize(1,2,3,4,5,True, False)
+            response = client.initialize(1,0,0,0,5,False)
 
             initialized = response.is_ACK()
         else:

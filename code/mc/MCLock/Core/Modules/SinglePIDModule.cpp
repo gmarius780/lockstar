@@ -38,13 +38,15 @@ public:
 		locked = false;
 		turn_LED6_off();
 		turn_LED5_on();
-		pid = new PID(0.025, 11e3, 0);
-		p = i = d = output_min = output_max = 0;
+		pid = new PID(0, 0, 0);
+		p = i = d;
 	}
 
 	void run() {
 		initialize_adc(ADC_UNIPOLAR_10V, ADC_UNIPOLAR_10V);
 		initialize_dac();
+		this->dac_1->write(0);
+		this->dac_2->write(0);
 
 		/*** TIMER FOR MAINLOOP TO EXTRACT DT ***/
 
@@ -144,17 +146,7 @@ public:
 
 	static const uint32_t METHOD_SET_OUTPUT_LIMITS = 14;
 	void set_output_limits(RPIDataPackage* read_package) {
-		/***Read arguments***/
-		output_min = read_package->pop_from_buffer<float>();
-		output_max = read_package->pop_from_buffer<float>();
-
-		this->dac_1->set_min_output(output_min);
-		this->dac_1->set_max_output(output_max);
-
-		/*** send ACK ***/
-		RPIDataPackage* write_package = rpi->get_write_package();
-		write_package->push_ack();
-		rpi->send_package(write_package);
+		set_ch_output_limit(read_package, this->dac_1);
 	}
 
 	/*** END: METHODS ACCESSIBLE FROM THE RPI ***/
@@ -171,7 +163,7 @@ public:
 	}
 
 public:
-	float p, i, d, output_min, output_max; //declared here to save space (no garbage collector)
+	float p, i, d; //declared here to save space (no garbage collector)
 	PID* pid;
 	bool locked;
 };

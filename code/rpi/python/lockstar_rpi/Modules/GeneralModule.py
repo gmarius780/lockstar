@@ -3,6 +3,8 @@ from lockstar_rpi.Modules.Module import Module
 from lockstar_general.backend.BackendResponse import BackendResponse
 
 class GeneralModule(Module):
+    """ Implements general backend functionality like register_client id.
+    """
     def __init__(self) -> None:
         super().__init__()
 

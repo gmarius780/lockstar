@@ -49,7 +49,7 @@ if __name__ == "__main__":
             logging.StreamHandler()
         ]
     )
-    client = AnalogOutputClient('192.168.88.13', 10780, 1234)
+    client = AnalogOutputClient('192.168.88.201', 10780, 1234)
     client.register_client_id()
     client.set_ch_one_output_limits(0,1)
     # response = client.initialize(1,2,3,4,5,True, False)

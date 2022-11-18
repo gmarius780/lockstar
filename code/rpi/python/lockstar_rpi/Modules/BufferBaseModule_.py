@@ -9,6 +9,9 @@ import numpy as np
 from math import ceil, floor
 
 class BufferBaseModule_(IOModule_):
+    """Base class for AWGModule and AWGPIDModule. Implements the functionality to have two buffers which the user can use to 
+    store arbitrary waveforms. Additionally it allows to split the buffers into chunks, which are output individually.
+    """
     BUFFER_LIMIT_kBYTES = 180
     MAX_NBR_OF_CHUNKS = 100
 
@@ -34,6 +37,9 @@ class BufferBaseModule_(IOModule_):
         pass
 
     async def output_on(self, writer, respond=True):
+        """Output the next chunk on both outputs. If the last chunk has been reached,
+        it starts again with the first one.
+        """
         logging.debug('Backend: output_on')
         mc_data_package = MCDataPackage()
         mc_data_package.push_to_buffer('uint32_t', 11) # method_identifier
@@ -41,6 +47,7 @@ class BufferBaseModule_(IOModule_):
         return await self.check_for_ack(writer=(writer if respond else None))
     
     async def output_off(self, writer, respond=True):
+        """Stop output. All pointers are reset to point to the first chunk"""
         logging.debug('Backend: output_off')
         mc_data_package = MCDataPackage()
         mc_data_package.push_to_buffer('uint32_t', 12) # method_identifier
@@ -48,6 +55,9 @@ class BufferBaseModule_(IOModule_):
         return await self.check_for_ack(writer=(writer if respond else None))
 
     async def output_ttl(self, writer, respond=True):
+        """Start listening to the digital input for trigger signals. Once a trigger is received,
+        it will play the next chunk
+        """
         logging.debug('Backend: output_ttl')
         mc_data_package = MCDataPackage()
         mc_data_package.push_to_buffer('uint32_t', 13) # method_identifier
@@ -55,6 +65,15 @@ class BufferBaseModule_(IOModule_):
         return await self.check_for_ack(writer=(writer if respond else None))
 
     async def set_ch_one_output_limits(self, min: float, max: float, writer, respond=True):
+        """Sets min and max output voltage in volt for channel one
+
+        
+        :param    min (float): userdefined: minimum output in volt
+        :param    max (float): userdefined: maximum output in volt
+        :param    writer (_type_): writer instance to respond to the client
+        :param    respond (bool, optional): Defaults to True only False if this method is called
+                    by launch_from_config.
+        """
         self.out_range_ch_one_min = min
         self.out_range_ch_one_max = max
 
@@ -67,6 +86,15 @@ class BufferBaseModule_(IOModule_):
         return await self.check_for_ack(writer=(writer if respond else None))
 
     async def set_ch_two_output_limits(self, min: float, max: float, writer, respond=True):
+        """Sets min and max output voltage in volt for channel two
+
+        
+        :param    min (float): userdefined: minimum output in volt
+        :param    max (float): userdefined: maximum output in volt
+        :param    writer (_type_): writer instance to respond to the client
+        :param    respond (bool, optional): Defaults to True only False if this method is called
+                    by launch_from_config.
+        """
         self.out_range_ch_two_min = min
         self.out_range_ch_two_max = max
 
@@ -79,12 +107,15 @@ class BufferBaseModule_(IOModule_):
         return await self.check_for_ack(writer=(writer if respond else None))
 
     async def set_ch_one_buffer(self, buffer, writer, respond=True):
+        """upload buffer for channel one waveforms (buffer-length has to be defined beforhand using initialize_buffers)"""
         return await self.set_ch_buffer(buffer, writer, respond, buffer_one=True)
 
     async def set_ch_two_buffer(self, buffer, writer, respond=True):
+        """upload buffer for channel one waveforms (buffer-length has to be defined beforhand using initialize_buffers)"""
         return await self.set_ch_buffer(buffer, writer, respond, buffer_one=False)
 
     async def set_ch_buffer(self, buffer, writer, respond, buffer_one=True):
+        """helper method to read in buffer from client. Buffer sent to the MC in packets of floor(MCDataPackage.MAX_NBR_BYTES - 100)/4 floats"""
         if len(buffer) > (self.buffer_one_size if buffer_one else self.buffer_two_size):
             logging.error(f'set_ch_{"one" if buffer_one else "two"}_buffer - buffer too large: {len(buffer)}')
             writer.write(BackendResponse.NACK().to_bytes())
@@ -133,19 +164,17 @@ class BufferBaseModule_(IOModule_):
 
     async def initialize_buffers(self, buffer_one_size: int, buffer_two_size: int, chunks_one_size: int, 
                                 chunks_two_size: int, sampling_rate:int, writer, respond=True):
-        """_summary_
+        """sets the sizes of the buffer_one and buffer two, numbers of chunks for buffer_one 
+        and buffer_two as well as the sampling rate
 
-        Args:
-            buffer_one_size (int): number of floats for channel one buffer
-            buffer_two_size (int): number of floats for channel two buffer
-            chunks_one_size (int): number of chunks in channel one buffer
-            chunks_two_size (int): number of chunks in channel two buffer
-            sampling_rate (int): sampling rate in Hz
-            writer (_type_): _description_
-            respond (bool, optional): _description_. Defaults to True.
-
-        Returns:
-            _type_: _description_
+        
+        :param buffer_one_size (int): number of floats for channel one buffer
+        :param buffer_two_size (int): number of floats for channel two buffer
+        :param chunks_one_size (int): number of chunks in channel one buffer
+        :param chunks_two_size (int): number of chunks in channel two buffer
+        :param sampling_rate (int): sampling rate in Hz
+        :param writer (_type_): _description_
+        :param respond (bool, optional): _description_. Defaults to True.
         """
         
         if buffer_one_size + buffer_two_size > BufferBaseModule_.BUFFER_LIMIT_kBYTES*250:
@@ -188,6 +217,9 @@ class BufferBaseModule_(IOModule_):
 
     @staticmethod
     def calculate_prescaler_counter(sampling_rate):
+        """Calculate prescaler and counter for a given sampling_rate. The MC realizes a sampling rate by scaling down 
+        the internal clock_frequency (BackendSettings.mc_internal_clock_rate) with the prescaler and then counting up to
+        <counter> --> sampling_rate = internal_clock_rate / prescaler / counter"""
         rate = BackendSettings.mc_internal_clock_rate / sampling_rate
         possible_prescalers = np.flip(np.arange(ceil(rate/BackendSettings.mc_max_counter), BackendSettings.mc_max_counter))
         possible_counters = rate/possible_prescalers
@@ -196,6 +228,12 @@ class BufferBaseModule_(IOModule_):
         return best_prescaler , best_counter
 
     async def set_sampling_rate(self, sampling_rate:int, writer, respond=True):
+        """ Set sampling rate in Hz
+
+        Args:
+        :param    sampling_rate (int): sampling rate in Hz
+
+        """
         if sampling_rate > BackendSettings.mc_internal_clock_rate:
             writer.write(BackendResponse.NACK().to_bytes())
             await writer.drain()
@@ -218,6 +256,13 @@ class BufferBaseModule_(IOModule_):
             return await self.check_for_ack(writer=(writer if respond else None))
 
     async def set_ch_one_chunks(self, chunks, writer, respond=True):
+        """Upload a list of buffer-indices which define the 'chunks': A chunk is a piece of the buffer which the lockstar outputs
+        once it receives a trigger or an output_on(). A chunk is defined by the last buffer-index which still bellongs to this chunk.
+        example: buffer-length: 10'000. To split this into 3 pieces of 5000, 2000, 3000: chunks=[4999, 6999, 9999]
+        
+        :param chunks (list of integers): corresponding to the final indices of the chunks
+        
+        """
         if len(chunks) != self.chunks_one_size:
             writer.write(BackendResponse.NACK().to_bytes())
             await writer.drain()
@@ -235,6 +280,13 @@ class BufferBaseModule_(IOModule_):
             return await self.check_for_ack(writer=(writer if respond else None))
 
     async def set_ch_two_chunks(self, chunks, writer, respond=True):
+        """Upload a list of buffer-indices which define the 'chunks': A chunk is a piece of the buffer which the lockstar outputs
+        once it receives a trigger or an output_on(). A chunk is defined by the last buffer-index which still bellongs to this chunk.
+        example: buffer-length: 10'000. To split this into 3 pieces of 5000, 2000, 3000: chunks=[4999, 6999, 9999]
+        
+        :param chunks (list of integers): corresponding to the final indices of the chunks
+        
+        """
         if len(chunks) != self.chunks_two_size:
             writer.write(BackendResponse.NACK().to_bytes())
             await writer.drain()
@@ -252,6 +304,7 @@ class BufferBaseModule_(IOModule_):
             return await self.check_for_ack(writer=(writer if respond else None))
 
     async def check_for_ack(self, writer=None):
+        """Waits for ACK/NACK from the MC and responds accordingly to the client"""
         ack =  await MC.I().read_ack()
         if writer is not None:
             if ack:
