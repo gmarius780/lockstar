@@ -11,13 +11,16 @@ class SinglePIDModule(IOModule_):
         self.p = None
         self.i = None
         self.d = None
+        self.input_offset = None
+        self.output_offset = None
         self.out_range_min = None
         self.out_range_max = None
         self.locked = None
 
 
     # ==== START: client methods 
-    async def initialize(self, p: float, i: float, d: float, out_range_min: float, out_range_max: float, locked: bool, writer):
+    async def initialize(self, p: float, i: float, d: float, out_range_min: float, out_range_max: float, locked: bool,
+                        input_offset: float, output_offset: float, writer):
         """Set all system module parameters
 
         Args:
@@ -27,6 +30,8 @@ class SinglePIDModule(IOModule_):
         :param    out_range_min (float): output range minimum in volt
         :param    out_range_max (float): output range maximum in volt
         :param    locked (bool): lock
+        :param    input_offset (float): voltage to be added to the error-signal (to compensate PD offsets)
+        :param    output_offset (float): voltage to be added to the control signal --> e.g. to compensate for 'break-through' voltages in diodes
         :param    writer (_type_): asyncio writer to reply to the client
         """
         self.p = p
@@ -35,11 +40,13 @@ class SinglePIDModule(IOModule_):
         self.out_range_min = out_range_min
         self.out_range_max = out_range_max
         self.locked = locked
+        self.input_offset = input_offset
+        self.output_offset = output_offset
 
         logging.debug('Starting initialization: SinglePIDModule')
 
         #=== sequentially send configuration to MC
-        ack = await self.set_pid(p, i, d, writer, respond=False)
+        ack = await self.set_pid(p, i, d, input_offset, output_offset, writer, respond=False)
         ack = ack and await self.set_output_limits(out_range_min, out_range_max, writer, respond=False)
 
         if locked:
@@ -67,10 +74,12 @@ class SinglePIDModule(IOModule_):
         
         return ack
 
-    async def set_pid(self, p: float, i: float, d: float, writer, respond=True):
+    async def set_pid(self, p: float, i: float, d: float, input_offset: float, output_offset: float, writer, respond=True):
         self.p = p
         self.i = i
         self.d = d
+        self.input_offset = input_offset
+        self.output_offset = output_offset
 
         logging.debug('Backend: set_pid')
         mc_data_package = MCDataPackage()
@@ -78,6 +87,8 @@ class SinglePIDModule(IOModule_):
         mc_data_package.push_to_buffer('float', p) # p
         mc_data_package.push_to_buffer('float', i) # i
         mc_data_package.push_to_buffer('float', d) # d
+        mc_data_package.push_to_buffer('float', input_offset) # d
+        mc_data_package.push_to_buffer('float', output_offset) # d
         await MC.I().write_mc_data_package(mc_data_package)
         
         return await self.check_for_ack(writer=(writer if respond else None))
@@ -120,7 +131,8 @@ class SinglePIDModule(IOModule_):
     async def launch_from_config(self, config_dict):
         try:
             await self.initialize(config_dict['p'], config_dict['i'], config_dict['d'], config_dict['out_range_min'],
-                                config_dict['out_range_max'], config_dict['locked'], None)
+                                config_dict['out_range_max'], config_dict['locked'], config_dict['input_offset'],
+                                config_dict['output_offset'], None)
 
             await super().launch_from_config(config_dict)
         except Exception as ex:

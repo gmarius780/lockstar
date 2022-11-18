@@ -38,8 +38,8 @@ public:
 		locked = false;
 		turn_LED6_off();
 		turn_LED5_on();
-		pid = new PID(0, 0, 0);
-		p = i = d;
+		pid = new PID(0, 0, 0, 0, 0);
+		p = i = d = input_offset = output_offset = 0;
 	}
 
 	void run() {
@@ -61,12 +61,8 @@ public:
 
 		/*** work loop ***/
 		while(true){
-			while(locked) {
-				// optimize /w function pointer?
-
-				// This version does not work for some reason?
-				// dt = (TIM3->CNT - t)/TIM3freq*psc;
-
+			HAL_Delay(100);
+			while(this->locked == true) {
 				// Measuring elapsed time per work loop
 				t = timer->get_counter() - t;
 				dt = t/TIM3freq*psc;
@@ -113,8 +109,10 @@ public:
 		p = read_package->pop_from_buffer<float>();
 		i = read_package->pop_from_buffer<float>();
 		d = read_package->pop_from_buffer<float>();
+		input_offset = read_package->pop_from_buffer<float>();
+		output_offset = read_package->pop_from_buffer<float>();
 
-		this->pid->set_pid(p, i, d);
+		this->pid->set_pid(p, i, d, input_offset, output_offset);
 
 		/*** send ACK ***/
 		RPIDataPackage* write_package = rpi->get_write_package();
@@ -163,7 +161,7 @@ public:
 	}
 
 public:
-	float p, i, d; //declared here to save space (no garbage collector)
+	float p, i, d, input_offset, output_offset;
 	PID* pid;
 	bool locked;
 };
