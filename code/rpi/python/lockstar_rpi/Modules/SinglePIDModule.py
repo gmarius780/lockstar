@@ -87,8 +87,8 @@ class SinglePIDModule(IOModule_):
         mc_data_package.push_to_buffer('float', p) # p
         mc_data_package.push_to_buffer('float', i) # i
         mc_data_package.push_to_buffer('float', d) # d
-        mc_data_package.push_to_buffer('float', input_offset) # d
-        mc_data_package.push_to_buffer('float', output_offset) # d
+        mc_data_package.push_to_buffer('float', input_offset)
+        mc_data_package.push_to_buffer('float', output_offset)
         await MC.I().write_mc_data_package(mc_data_package)
         
         return await self.check_for_ack(writer=(writer if respond else None))

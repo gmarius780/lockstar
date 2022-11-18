@@ -59,7 +59,7 @@ if __name__ == "__main__":
             logging.StreamHandler()
         ]
     )
-    client = SinglePIDClient('192.168.88.201', 10780, 1234
+    client = SinglePIDClient('192.168.88.201', 10780, 1234)
 
     response = client.initialize(1,0,0,0,10,False, 0, 0)
     
@@ -68,7 +68,7 @@ if __name__ == "__main__":
     if response.is_wrong_client_id():
         if client.register_client_id():
             logging.info(f'Registered my client id: {client.client_id}')
-            response = client.initialize(1,0,0,0,5,False)
+            response = client.initialize(1,0,0,0,10,False, 0, 0)
 
             initialized = response.is_ACK()
         else:

@@ -134,6 +134,7 @@ public:
 	static const uint32_t METHOD_UNLOCK = 13;
 	void unlock(RPIDataPackage* read_package) {
 		this->locked = false;
+		this->dac_1->write(0);
 		turn_LED6_off();
 
 		/*** send ACK ***/
