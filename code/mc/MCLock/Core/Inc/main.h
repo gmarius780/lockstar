@@ -129,6 +129,7 @@ void start(void);
 //DEFINE WHICH MODULE TO RUN!!
 #define LIN_MODULE
 
+
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

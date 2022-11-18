@@ -1,6 +1,11 @@
 setup.py
+lockstar_client/AWGClient.py
+lockstar_client/AWGPIDClient.py
+lockstar_client/AnalogOutputClient.py
+lockstar_client/BufferBaseClient_.py
+lockstar_client/LockstarClient.py
+lockstar_client/SinglePIDClient.py
 lockstar_client/__init__.py
-lockstar_client/test_lockstar_client.py
 lockstar_client.egg-info/PKG-INFO
 lockstar_client.egg-info/SOURCES.txt
 lockstar_client.egg-info/dependency_links.txt
