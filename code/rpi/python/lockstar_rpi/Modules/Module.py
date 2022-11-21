@@ -29,12 +29,10 @@ class Module:
         }
     
     def flash_mc(self):
-        std_out = ''
-        std_err = ''
-        subprocess.run(['openocd', '-f', join(BackendSettings.elf_directory, f'{self.__class__.__name__}.cfg')],
-        stdout=std_out, stderr=std_err)
+        output = subprocess.run(['openocd', '-f', join(BackendSettings.elf_directory, f'{self.__class__.__name__}.cfg')],
+        capture_output=True)
 
-        logging.info(f'Tried flashing mc for module: {self.__class__.__name__} - stdout: {std_out}, stderr: {std_err}')
+        logging.info(f'Tried flashing mc for module: {self.__class__.__name__} - output: {output}')
 
     async def launch_from_config(self, config_dict):
         pass
