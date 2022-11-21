@@ -17,17 +17,22 @@ private:
 		float error;
 		float old_error;
 		float diff_error;
-		float p;
-		float i;
-		float d;
-		float p_control;
-		float i_control;
-		float d_control;
+		float p, i, d;
+		float p_control, i_control, d_control;
+		float input_offset, output_offset;
 
 public:
-	PID(float p, float i, float d);
+	PID(float p, float i, float d, float input_offset, float output_offset);
 
-	void set_pid(float p,float i ,float d) { this->p = p; this->i = i; this->d = d; };
+	void set_pid(float p,float i ,float d, float input_offset, float output_offset) {
+		this->p = p;
+		this->i = i;
+		this->d = d;
+		this->input_offset = input_offset;
+		this->output_offset = output_offset;
+		this->integral = 0;
+	};
+
 	float calculate_output(float setpoint,float mesured,float dt);
 
 };

@@ -11,16 +11,30 @@ class SinglePIDClient(LockstarClient):
         super().__init__(lockstar_ip, lockstar_port, client_id)
 
 
-    def initialize(self, p: float, i: float, d: float, out_range_min: float, out_range_max: float, locked: bool):
+    def initialize(self, p: float, i: float, d: float, out_range_min: float, out_range_max: float, locked: bool,
+                    input_offset: float, output_offset: float):
+        """Set all system module parameters
+
+        Args:
+        :param    p (float): p
+        :param    i (float): i
+        :param    d (float): d
+        :param    out_range_min (float): output range minimum in volt
+        :param    out_range_max (float): output range maximum in volt
+        :param    locked (bool): lock
+        :param    input_offset (float): voltage to be added to the error-signal (to compensate PD offsets)
+        :param    output_offset (float): voltage to be added to the control signal --> e.g. to compensate for 'break-through' voltages in diodes
+        """
         bc = BackendCall(self.client_id, 'SinglePIDModule', 'initialize',
-                        args={'p': p, 'i': i, 'd': d, 'out_range_min': out_range_min, 
-                                'out_range_max': out_range_max, 'locked': locked}
+                        args={'p': p, 'i': i, 'd': d, 'out_range_min': out_range_min, 'out_range_max': out_range_max, 
+                            'locked': locked, 'input_offset': input_offset, 'output_offset': output_offset}
                         )
         
         return asyncio.run(self._call_lockstar(bc))
 
-    def set_pid(self,  p: float, i: float, d: float):
-        bc = BackendCall(self.client_id, 'SinglePIDModule', 'set_pid', args={'p': p, 'i': i, 'd': d})
+    def set_pid(self,  p: float, i: float, d: float, input_offset: float, output_offset: float):
+        bc = BackendCall(self.client_id, 'SinglePIDModule', 'set_pid', args={'p': p, 'i': i, 'd': d, 
+                    'input_offset': input_offset, 'output_offset': output_offset})
         return asyncio.run(self._call_lockstar(bc))
 
     def set_output_limits(self,  min: float, max: float):
@@ -47,14 +61,14 @@ if __name__ == "__main__":
     )
     client = SinglePIDClient('192.168.88.201', 10780, 1234)
 
-    response = client.initialize(1,0,0,0,5,False)
+    response = client.initialize(1,0,0,0,10,False, 0, 0)
     
     initialized = False
 
     if response.is_wrong_client_id():
         if client.register_client_id():
             logging.info(f'Registered my client id: {client.client_id}')
-            response = client.initialize(1,0,0,0,5,False)
+            response = client.initialize(1,0,0,0,10,False, 0, 0)
 
             initialized = response.is_ACK()
         else:

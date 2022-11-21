@@ -56,7 +56,7 @@ public:
     void start_conversion();
     void dma_transmission_callback();
     bool is_busy() { return busy; };
-
+    SPI *spi_handler;
 private:
     void arm_dma();
     void disarm_dma();
@@ -71,7 +71,7 @@ private:
     bool busy;
 
     DMA *dma_input_handler, *dma_output_handler;
-    SPI *spi_handler;
+    //SPI *spi_handler;
     DMA_config_t dma_in_config, dma_out_config;
 };
 
