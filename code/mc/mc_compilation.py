@@ -27,11 +27,12 @@ modules = [
 ]
 
 output_folder = join(dirname(__file__), '..', 'rpi', 'python', 'lockstar_rpi', 'Modules', 'mc_images')
+raspberry_elf_directory = '/home/pi/lockstar/code/rpi/python/lockstar_rpi/Modules/mc_images'
 
 def write_cfg_file_for_module(config_dict, output_folder):
     outfile_name = f'{config_dict["module_name"]}.cfg'
 
-    elf_file = join(output_folder, f'{config_dict["module_name"]}.elf')
+    elf_file = join(raspberry_elf_directory, f'{config_dict["module_name"]}.elf')
 
     with open(join(output_folder, outfile_name), 'w+') as f:
         f.writelines([
