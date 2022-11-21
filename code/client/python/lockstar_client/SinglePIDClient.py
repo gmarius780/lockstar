@@ -59,7 +59,7 @@ if __name__ == "__main__":
             logging.StreamHandler()
         ]
     )
-    client = SinglePIDClient('192.168.88.201', 10780, 1234)
+    client = SinglePIDClient('192.168.88.13', 10780, 1234)
 
     response = client.initialize(1,0,0,0,10,False, 0, 0)
     
