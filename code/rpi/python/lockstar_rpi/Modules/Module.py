@@ -32,7 +32,7 @@ class Module:
         std_out = ''
         std_err = ''
         subprocess.run(['openocd', '-f', join(BackendSettings.elf_directory, f'{self.__class__.__name__}.cfg')],
-        stdout=std_out, stderr=std_err, capture_output=True)
+        stdout=std_out, stderr=std_err)
 
         logging.info(f'Tried flashing mc for module: {self.__class__.__name__} - stdout: {std_out}, stderr: {std_err}')
 
