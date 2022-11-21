@@ -81,6 +81,7 @@ async def main():
 
             try:
                 backend_state.current_module = ModuleFactory.I().module_class_form_name(config_dict['module_name'])() ## S: should be "from_name"?
+                backend_state.current_module.flash_mc()
                 await backend_state.current_module.launch_from_config(config_dict)
 
             except Exception as ex:
