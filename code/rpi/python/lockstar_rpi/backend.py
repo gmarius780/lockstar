@@ -52,6 +52,8 @@ async def handle_client_requests(reader, writer):
                     # instantiate new module if necessary
                     if backend_state.current_module is None or backend_state.current_module.__class__.__name__ != backend_call.module_name:
                         backend_state.current_module = ModuleFactory.I().module_class_form_name(backend_call.module_name)()
+                        # flash MC
+                        backend_state.current_module.flash_mc()
 
                     await backend_state.current_module.call_method(backend_call, writer)
         

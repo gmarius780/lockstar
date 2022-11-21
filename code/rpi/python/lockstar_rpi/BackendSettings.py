@@ -1,3 +1,4 @@
+from os.path import join, dirname
 class BackendSettings:
     """Hardcoded settings for the backend"""
     backend_ip = '0.0.0.0'
@@ -10,3 +11,4 @@ class BackendSettings:
     mc_write_buffer_size = 4096
     mc_internal_clock_rate = 90e6
     mc_max_counter = 65536
+    elf_directory = join(dirname(__file__), 'Modules', 'mc_images')
