@@ -29,7 +29,7 @@ class Module:
         }
     
     def flash_mc(self):
-        output = subprocess.run(['openocd', '-f', join(BackendSettings.elf_directory, f'{self.__class__.__name__}.cfg')],
+        output = subprocess.run(['sudo','openocd', '-f', join(BackendSettings.elf_directory, f'{self.__class__.__name__}.cfg')],
         capture_output=True)
 
         logging.info(f'Tried flashing mc for module: {self.__class__.__name__} - output: {output}')
