@@ -148,7 +148,7 @@ Microcontroller/
 *.o
 *.ko
 *.obj
-*.elf
+#*.elf
 
 # Libraries
 *.lib
