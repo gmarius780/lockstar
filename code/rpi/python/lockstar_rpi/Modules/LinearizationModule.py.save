@@ -1,4 +1,5 @@
-from time import sleep
+e import sleep
+import matplotlib.pyplot as plt
 from lockstar_rpi.BackendSettings import BackendSettings
 from lockstar_rpi.Modules.IOModule_ import IOModule_
 from lockstar_general.backend.BackendResponse import BackendResponse
@@ -83,7 +84,10 @@ class LinearizationModule(IOModule_):
             writer.write(BackendResponse.NACK().to_bytes())
             await writer.drain()
             return False
-        
+
+        plt.plot(self.ramp,self.measured_gain)
+        plt.savefig('meas.png')
+
         if not self.calculate_inverse_gain():
             writer.write(BackendResponse.NACK().to_bytes())
             await writer.drain()
@@ -99,7 +103,7 @@ class LinearizationModule(IOModule_):
         await writer.drain()
 
         logging.debug('Backend: New linearization successful!')
-        
+        print(self.measured_gain)
         return True
 
     # ==== END: client methods
