@@ -44,7 +44,7 @@ class LinearizationModule(IOModule_):
         self.ramp_length = len(ramp)
         self.ramp_speed = ramp_speed
         self.mc_prescaler = 100
-        self.mc_auto_reload = 90000
+        self.mc_auto_reload = 9000
         # calculate_mc_timer_parameter()
 
         mc_data_package = MCDataPackage()
@@ -77,7 +77,7 @@ class LinearizationModule(IOModule_):
             return False
 
         logging.debug('new_linearization: Waiting for gain measurement result...')
-        sleep(4)
+        sleep(6)
 
         if not await self.send_gain_measurement(): # 16
             writer.write(BackendResponse.NACK().to_bytes())
@@ -134,6 +134,7 @@ class LinearizationModule(IOModule_):
         mc_data_package.push_to_buffer('uint32_t',self.ramp_length)
         logging.debug('initialize_new_ramp: Sending ramp_length...')
         await MC.I().write_mc_data_package(mc_data_package)
+        sleep(1)
         if not await MC.I().read_ack():
             logging.error('initialize_new_ramp: Could not set ramp length')
             return False
@@ -148,8 +149,7 @@ class LinearizationModule(IOModule_):
             mc_data_package.push_to_buffer('float',value)
         logging.debug('initialize_new_ramp: Sending ramp array...')
         await MC.I().write_mc_data_package(mc_data_package)
-        ack = await MC.I().read_ack()
-        if not ack:
+        if not await MC.I().read_ack():
             logging.error('initialize_new_ramp: Could not set ramp')
             return False
         
@@ -169,10 +169,9 @@ class LinearizationModule(IOModule_):
         mc_data_package.push_to_buffer('uint32_t', 15)
         logging.debug('trigger_gain_measurement: Sending trigger signal...')
         await MC.I().write_mc_data_package(mc_data_package)
+        sleep(1)
         if(not await MC.I().read_ack()):
             logging.error('trigger_gain_measurement: Failed to trigger gain measurement!')
-            writer.write(BackendResponse.NACK().to_bytes())
-            await writer.drain()
             return False
         logging.debug('trigger_gain_measurement: Sent trigger successfully!')
         return True        
@@ -184,9 +183,10 @@ class LinearizationModule(IOModule_):
         mc_data_package.push_to_buffer('uint32_t',16)
         logging.debug('send_gain_measurement: requesting measurement...')
         await MC.I().write_mc_data_package(mc_data_package)
-        if not await MC.I().read_ack():
-            logging.error('send_gain_measurement: Could not request gain measurement!')
-            return False
+        #if not await MC.I().read_ack():
+        #    logging.error('send_gain_measurement: Could not request gain measurement!')
+        #    return False
+        logging.debug('send_gain_measurement: sent request successfully!')
 
         response_list = ['float']*self.ramp_length
         response_length,response_list = await MC.I().read_mc_data_package(response_list)
