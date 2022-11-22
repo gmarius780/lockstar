@@ -13,24 +13,25 @@ class LinearizationClient(LockstarClient):
 		super().__init__(lockstar_ip, lockstar_port, client_id)
 		self.module_name = 'LinearizationModule'
 
-	def set_ramp_array(self,ramp):
-		ramp_list = ramp.tolist()
-		bc = BackendCall(self.client_id,self.module_name,'set_ramp_array',args={'ramp':ramp_list})
-		return asyncio.run(self._call_lockstar(bc))
+		self.ramp = None
+		self.ramp_speed = 0
+		self.measured_gain = None
+		self.inverse_gain = None
 
-	def set_ramp_speed(self,speed):
-		bc = BackendCall(self.client_id,self.module_name,'set_ramp_speed',args={'speed':speed})
-		return asyncio.run(self._call_lockstar(bc))
+	def new_linearization(self):
+		ramp_list = self.ramp.tolist()
+		bc = BackendCall(self.client_id,self.module_name,'new_linearization',args={'ramp':ramp_list,'ramp_speed':self.ramp_speed})
 
-	def start_response_measurement(self):
-		bc = BackendCall(self.client_id,self.module_name,'start_response_measurement',args={})
-		return asyncio.run(self._call_lockstar(bc))
-
-	def measure_response(self):
-		bc = BackendCall(self.client_id,self.module_name,'measure_response',args={})
 		br = asyncio.run(self._call_lockstar(bc)) ## Maybe only return the reponse itself?
+		self.measured_gain = br.response[0]
+		self.inverse_gain = br.response[1]
 
-		return np.array(br.response)		
+		fig,ax = plt.subplots(1,1)
+		ax.plot(self.ramp,self.measured_gain,label='measured gain')
+		ax.plot(self.ramp,self.inverse_gain,label='inverse gain')
+		ax.legend()
+		ax.grid('lightgray')
+		plt.show()
 
 
 if __name__ == '__main__':
@@ -41,6 +42,6 @@ if __name__ == '__main__':
 	else:
 		logging.error(f'Linearization module: Could not initialize module')
 
-	ramp = np.linspace(0,5,500)
-	client.set_ramp_array(ramp)
-	client.set_ramp_speed(1)
+	client.ramp = np.linspace(0,5,500)
+	client.ramp_speed = 1
+	#client.new_linearization()
