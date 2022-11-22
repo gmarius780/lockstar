@@ -11,11 +11,12 @@
 #define LOCK_H_
 
 #include <vector>
-#include "../HAL/adc.hpp"
+
 #include "../HAL/dac.hpp"
 #include "../Lib/pid.hpp"
 
 #ifdef OLD
+#include "../HAL/adc.hpp"
 class lockparameters
 {
 private:

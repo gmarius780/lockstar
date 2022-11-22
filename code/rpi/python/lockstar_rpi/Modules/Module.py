@@ -1,4 +1,7 @@
 import logging
+import subprocess
+from lockstar_rpi.BackendSettings import BackendSettings
+from os.path import join
 
 class Module:
     def __init__(self) -> None:
@@ -24,6 +27,16 @@ class Module:
         return {
             'module_name': self.__class__.__name__
         }
+    
+    def flash_mc(self):
+        output = subprocess.run(['sudo','openocd', '-f', join(BackendSettings.elf_directory, 'restart.cfg')],
+                                capture_output=True)
+        output = subprocess.run(['sudo','openocd', '-f', join(BackendSettings.elf_directory, f'{self.__class__.__name__}.cfg')],
+                                capture_output=True)
+        output = subprocess.run(['sudo','openocd', '-f', join(BackendSettings.elf_directory, 'restart.cfg')],
+                                capture_output=True)
+        
+        logging.info(f'Tried flashing mc for module: {self.__class__.__name__} - output: {output}')
 
     async def launch_from_config(self, config_dict):
         pass

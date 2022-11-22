@@ -10,7 +10,6 @@
 
 #include "stm32f4xx_hal.h"
 
-#include "../Lib/oscilloscope.hpp"
 #include "dma.hpp"
 
 #define DAC_BIPOLAR_10V		(uint8_t)0
@@ -121,7 +120,7 @@ public:
 	void Calibrate(float Min, float Max, float* Pivots, uint32_t NumberPivots);
 
 	// these classes have access to the private elements
-	friend class Oscilloscope;
+	//friend class Oscilloscope;
 	friend class UserData;
 
 };
