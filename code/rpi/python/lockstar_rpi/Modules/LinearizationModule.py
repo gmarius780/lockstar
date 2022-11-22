@@ -56,22 +56,22 @@ class LinearizationModule(IOModule_):
             await writer.drain()
             return False
 
-        if not self.initialize_timer(): # Method_identifier: 12
+        if not await self.initialize_timer(): # Method_identifier: 12
             writer.write(BackendResponse.NACK().to_bytes())
             await writer.drain()
             return False
 
-        if not self.initialize_new_ramp(): # 13
+        if not await self.initialize_new_ramp(): # 13
             writer.write(BackendResponse.NACK().to_bytes())
             await writer.drain()
             return False
 
-        if not self.set_ramp(): # 14
+        if not await self.set_ramp(): # 14
             writer.write(BackendResponse.NACK().to_bytes())
             await writer.drain()
             return False
 
-        if not self.trigger_gain_measurement(): # 15
+        if not await self.trigger_gain_measurement(): # 15
             writer.write(BackendResponse.NACK().to_bytes())
             await writer.drain()
             return False
@@ -79,7 +79,7 @@ class LinearizationModule(IOModule_):
         logging.debug('new_linearization: Waiting for gain measurement result...')
         sleep(4)
 
-        if not self.send_gain_measurement(): # 16
+        if not await self.send_gain_measurement(): # 16
             writer.write(BackendResponse.NACK().to_bytes())
             await writer.drain()
             return False
@@ -89,7 +89,7 @@ class LinearizationModule(IOModule_):
             await writer.drain()
             return False
 
-        if not self.set_inverse_gain(): # 17
+        if not await self.set_inverse_gain(): # 17
             writer.write(BackendResponse.NACK().to_bytes())
             await writer.drain()
             return False
