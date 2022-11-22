@@ -24,8 +24,8 @@ LinearizationModule::LinearizationModule() {
 	timer = new BasicTimer(2,timer_arr,timer_psc,false);
 
 	reset_state_machine();
-	ready_to_work = false;
-	received_linearized_ramp = false;
+	ready_to_work = true;
+	received_inverse_gain = false;
 	ramp_output_range = 0;
 }
 
@@ -36,6 +36,7 @@ void LinearizationModule::LinearizationModule::run() {
 	this->dac_2->write(0);
 
 	float output= 0;
+	ready_to_work = true;
 
 	/*** work loop ***/
 	while(true) {
@@ -51,7 +52,7 @@ float LinearizationModule::gain(float input) {
 }
 
 float LinearizationModule::linearize_output(float value) {
-	if(!received_linearized_ramp)
+	if(!received_inverse_gain)
 		return value;
 
 	int index = (int)(value*(ramp_length-1)/ramp_output_range);
@@ -62,6 +63,9 @@ float LinearizationModule::linearize_output(float value) {
 }
 
 void LinearizationModule::new_linearization() {
+	RPIDataPackage* ack = rpi->get_write_package();
+	ack->push_ack();
+	rpi->send_package(ack);
 
 	while(!received_new_ramp);
 	while(!timer_initialized);
@@ -170,9 +174,6 @@ void LinearizationModule::set_ramp(RPIDataPackage* read_package) {
 
 void LinearizationModule::trigger_gain_measurement() {
 	measurement_trigger = true;
-	RPIDataPackage* write_package = rpi->get_write_package();
-	write_package->push_ack();
-	rpi->send_package(write_package);
 }
 
 void LinearizationModule::gain_measurement() {
@@ -194,12 +195,10 @@ void LinearizationModule::gain_measurement() {
 	timer->disable_interrupt();
 	ramp_pointer = 0;
 	finished_gain_measurement = true;
-	module->dac_1->write(0);
 }
 
 void LinearizationModule::send_gain_measurement(RPIDataPackage* read_package) {
 	RPIDataPackage* write_package = rpi->get_write_package();
-
 	if(!finished_gain_measurement) {
 		write_package->push_nack();
 		rpi->send_package(write_package);
@@ -209,10 +208,11 @@ void LinearizationModule::send_gain_measurement(RPIDataPackage* read_package) {
 	inverse_gain_buffer[ramp_length-2] = 4.999;
 	inverse_gain_buffer[ramp_length-1] = 5;
 
+	RPIDataPackage* data_package = rpi->get_write_package();
 	for(uint32_t i=0;i<ramp_length;i++)
-		write_package->push_to_buffer<float>(inverse_gain_buffer[i]);
+		data_package->push_to_buffer<float>(inverse_gain_buffer[i]);
 
-	rpi->send_package(write_package);
+	rpi->send_package(data_package);
 	response_measurement_sent_to_rpi = true;
 }
 
@@ -224,7 +224,7 @@ void LinearizationModule::set_inverse_gain(RPIDataPackage* read_package) {
 	for(uint32_t i=0; i<ramp_length; i++) {
 		inverse_gain_buffer[i] = read_package->pop_from_buffer<float>();
 	}
-	received_linearized_ramp = true;
+	received_inverse_gain = true;
 
 	write_package->push_ack();
 	rpi->send_package(write_package);

@@ -15,8 +15,8 @@ class LinearizationClient(LockstarClient):
 
 		self.ramp = None
 		self.ramp_speed = 0
-		self.measured_gain = None
-		self.inverse_gain = None
+		self.measured_gain = 0
+		self.inverse_gain = 0
 
 	def new_linearization(self):
 		ramp_list = self.ramp.tolist()
@@ -42,6 +42,6 @@ if __name__ == '__main__':
 	else:
 		logging.error(f'Linearization module: Could not initialize module')
 
-	client.ramp = np.linspace(0,5,500)
+	client.ramp = np.linspace(0,5,100)
 	client.ramp_speed = 1
-	#client.new_linearization()
+	client.new_linearization()

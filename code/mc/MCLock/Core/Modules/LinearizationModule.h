@@ -52,7 +52,7 @@ class LinearizationModule: public Module {
 		bool measurement_trigger;
 		bool finished_gain_measurement;
 		bool response_measurement_sent_to_rpi;
-		bool received_linearized_ramp;
+		bool received_inverse_gain;
 		float ramp_output_range;
 
 		uint32_t ramp_length;
