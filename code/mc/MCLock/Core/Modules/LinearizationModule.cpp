@@ -67,8 +67,8 @@ void LinearizationModule::new_linearization() {
 	ack->push_ack();
 	rpi->send_package(ack);
 
-	while(!received_new_ramp);
 	while(!timer_initialized);
+	while(!received_new_ramp);
 	while(!measurement_trigger);
 	gain_measurement();
 	while(!finished_gain_measurement);
@@ -146,7 +146,7 @@ void LinearizationModule::initialize_timer(RPIDataPackage* read_package) {
 	timer->set_auto_reload(timer_arr);
 	timer->set_prescaler(timer_psc);
 	timer->enable_interrupt();
-	timer_initialized= true;
+	timer_initialized = true;
 
 	RPIDataPackage* write_package = rpi->get_write_package();
 	write_package->push_ack();
