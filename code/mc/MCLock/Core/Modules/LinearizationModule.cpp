@@ -55,8 +55,8 @@ float LinearizationModule::linearize_output(float value) {
 		return value;
 
 	int index = (int)(value*(ramp_length-1)/ramp_output_range);
-	float upper_pivot = linearized_ramp_buffer[index+1];
-	float lower_pivot = linearized_ramp_buffer[index];
+	float upper_pivot = inverse_gain_buffer[index+1];
+	float lower_pivot = inverse_gain_buffer[index];
 	float result = lower_pivot + (upper_pivot-lower_pivot)/(ramp_buffer[index+1]-ramp_buffer[index])*(value-ramp_buffer[index]);
 	return result;
 }
@@ -117,8 +117,8 @@ void LinearizationModule::handle_rpi_input() {
 			send_gain_measurement(read_package);
 			break;
 
-		case SEND_LINEARIZED_RAMP:
-			send_linearized_ramp(read_package);
+		case SET_INVERSE_GAIN:
+			set_inverse_gain(read_package);
 			break;
 
 		default: {
@@ -152,7 +152,7 @@ void LinearizationModule::initialize_timer(RPIDataPackage* read_package) {
 void LinearizationModule::initialize_new_ramp(RPIDataPackage* read_package) {
 	ramp_length = read_package->pop_from_buffer<uint32_t>();
 	ramp_buffer = new float[ramp_length]();
-	linearized_ramp_buffer = new float[ramp_length]();
+	inverse_gain_buffer = new float[ramp_length]();
 	RPIDataPackage* write_package = rpi->get_write_package();
 	write_package->push_ack();
 	rpi->send_package(write_package);
@@ -206,23 +206,23 @@ void LinearizationModule::send_gain_measurement(RPIDataPackage* read_package) {
 		return;
 	}
 
-	linearized_ramp_buffer[ramp_length-2] = 4.999;
-	linearized_ramp_buffer[ramp_length-1] = 5;
+	inverse_gain_buffer[ramp_length-2] = 4.999;
+	inverse_gain_buffer[ramp_length-1] = 5;
 
 	for(uint32_t i=0;i<ramp_length;i++)
-		write_package->push_to_buffer<float>(linearized_ramp_buffer[i]);
+		write_package->push_to_buffer<float>(inverse_gain_buffer[i]);
 
 	rpi->send_package(write_package);
 	response_measurement_sent_to_rpi = true;
 }
 
-void LinearizationModule::send_linearized_ramp(RPIDataPackage* read_package) {
+void LinearizationModule::set_inverse_gain(RPIDataPackage* read_package) {
 	RPIDataPackage* write_package = rpi->get_write_package();
 
 	ramp_output_range = ramp_buffer[ramp_length-1]-ramp_buffer[0];
 
 	for(uint32_t i=0; i<ramp_length; i++) {
-		linearized_ramp_buffer[i] = read_package->pop_from_buffer<float>();
+		inverse_gain_buffer[i] = read_package->pop_from_buffer<float>();
 	}
 	received_linearized_ramp = true;
 
@@ -329,7 +329,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 			module->adc->start_conversion();
 
 		if(module->ramp_pointer > 1 && module->ramp_pointer < module->ramp_length+1)
-			module->linearized_ramp_buffer[module->ramp_pointer-2] = module->adc->channel1->get_result();
+			module->inverse_gain_buffer[module->ramp_pointer-2] = module->adc->channel1->get_result();
 
 		module->ramp_pointer++;
 

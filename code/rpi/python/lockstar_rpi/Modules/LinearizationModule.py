@@ -40,12 +40,6 @@ class LinearizationModule(IOModule_):
 
         logging.info('Backend: new_linearization')
 
-        if not self.ramp_is_initialized():
-            logging.error('trigger_gain_measuremen: Ramp not initialized properly... Aborting')
-            writer.write(BackendResponse.NACK().to_bytes())
-            await writer.drain()
-            return False
-
         self.ramp = ramp
         self.ramp_length = len(ramp)
         self.ramp_speed = ramp_speed
@@ -62,22 +56,22 @@ class LinearizationModule(IOModule_):
             await writer.drain()
             return False
 
-        if not self.initialize_timer(): # Method_identifier: 12
+        if not await self.initialize_timer(): # Method_identifier: 12
             writer.write(BackendResponse.NACK().to_bytes())
             await writer.drain()
             return False
 
-        if not self.initialize_new_ramp(): # 13
+        if not await self.initialize_new_ramp(): # 13
             writer.write(BackendResponse.NACK().to_bytes())
             await writer.drain()
             return False
 
-        if not self.set_ramp(): # 14
+        if not await self.set_ramp(): # 14
             writer.write(BackendResponse.NACK().to_bytes())
             await writer.drain()
             return False
 
-        if not self.trigger_gain_measurement(): # 15
+        if not await self.trigger_gain_measurement(): # 15
             writer.write(BackendResponse.NACK().to_bytes())
             await writer.drain()
             return False
@@ -85,7 +79,7 @@ class LinearizationModule(IOModule_):
         logging.debug('new_linearization: Waiting for gain measurement result...')
         sleep(4)
 
-        if not self.send_gain_measurement(): # 16
+        if not await self.send_gain_measurement(): # 16
             writer.write(BackendResponse.NACK().to_bytes())
             await writer.drain()
             return False
@@ -95,7 +89,7 @@ class LinearizationModule(IOModule_):
             await writer.drain()
             return False
 
-        if not self.set_inverse_gain(): # 17
+        if not await self.set_inverse_gain(): # 17
             writer.write(BackendResponse.NACK().to_bytes())
             await writer.drain()
             return False
@@ -112,7 +106,7 @@ class LinearizationModule(IOModule_):
 
     # ==== START: helper methods
 
-    def initialize_timer(self):
+    async def initialize_timer(self):
         logging.debug('Backend: initialize_timer')
         mc_data_package = MCDataPackage()
         mc_data_package.push_to_buffer('uint32_t',12)
@@ -128,7 +122,7 @@ class LinearizationModule(IOModule_):
         return True
 
 
-    def initialize_new_ramp(self): 
+    async def initialize_new_ramp(self): 
         logging.debug('Backend: initialize_new_ramp')    
         if(self.ramp_length < 2):
             logging.error('initialize_new_ramp: ramp_length too small (ramp_length={self.ramp_length})')
@@ -146,7 +140,7 @@ class LinearizationModule(IOModule_):
         logging.debug('initialize_new_ramp: Ramp length set successfully')
         return True
 
-    def set_ramp(self):        
+    async def set_ramp(self):        
         logging.debug('Backend: set_ramp')
         mc_data_package = MCDataPackage()
         mc_data_package.push_to_buffer('uint32_t',14)
@@ -163,7 +157,7 @@ class LinearizationModule(IOModule_):
         return True       
         
 
-    def trigger_gain_measurement:(self):
+    async def trigger_gain_measurement(self):
         logging.debug('Backend: trigger_gain_measurement')
         
         if not self.is_initialized():
@@ -184,7 +178,7 @@ class LinearizationModule(IOModule_):
         return True        
 
 
-    def send_gain_measurement(self):
+    async def send_gain_measurement(self):
         logging.debug('Backend: send_gain_measurement')
         mc_data_package = MCDataPackage()
         mc_data_package.push_to_buffer('uint32_t',16)
@@ -233,7 +227,7 @@ class LinearizationModule(IOModule_):
         return True
 
 
-    def set_inverse_gain(self):
+    async def set_inverse_gain(self):
         mc_data_package = MCDataPackage()
         mc_data_package.push_to_buffer('uint32_t',17)
         for i in self.inverse_gain:
