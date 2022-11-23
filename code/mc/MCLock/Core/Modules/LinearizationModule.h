@@ -33,7 +33,7 @@ class LinearizationModule: public Module {
 		void trigger_gain_measurement();
 		void gain_measurement();
 		void send_gain_measurement(RPIDataPackage*);
-		void set_inverse_gain(RPIDataPackage*);
+		void set_inverted_pivots(RPIDataPackage*);
 		enum METHOD_IDENTIFIER {
 					NEW_LINEARIZATION = 11,
 					INITIALIZE_TIMER = 12,
@@ -41,7 +41,7 @@ class LinearizationModule: public Module {
 					SET_RAMP = 14,
 					TRIGGER_GAIN_MEASUREMENT = 15,
 					SEND_GAIN_MEASUREMENT = 16,
-					SET_INVERSE_GAIN = 17
+					SET_INVERTED_PIVOTS = 17
 				};
 		// END: rpi methods
 
@@ -54,13 +54,23 @@ class LinearizationModule: public Module {
 		bool measurement_trigger;
 		bool finished_gain_measurement;
 		bool response_measurement_sent_to_rpi;
-		bool received_inverse_gain;
-		float ramp_output_range;
+		bool received_inverted_pivots;
+		float output_range;
+		float output_min;
+		float output_max;
+		float ramp_range;
+		float pivot_spacing;
+		uint32_t number_of_ramp_packages;
+		uint32_t ramp_package_counter;
+		uint32_t number_of_received_ramp_values;
+		uint32_t* ramp_package_sizes;
+
+		bool test;
 
 		uint32_t ramp_length;
 		float* ramp_buffer;
 		volatile uint32_t ramp_pointer;
-		float* inverse_gain_buffer;
+		float* inverted_pivots_buffer;
 		BasicTimer* timer;
 		uint32_t timer_psc;
 		uint32_t timer_arr;
