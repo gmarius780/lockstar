@@ -14,6 +14,8 @@
 #ifndef MODULES_LINMODULE_H_
 #define MODULES_LINMODULE_H_
 
+#ifdef LINEARIZATION_MODULE
+
 class LinearizationModule: public Module {
 
 	public:
@@ -70,5 +72,6 @@ class LinearizationModule: public Module {
 
 
 };
-
+#endif
 #endif /* MODULES_LINMODULE_H_ */
+

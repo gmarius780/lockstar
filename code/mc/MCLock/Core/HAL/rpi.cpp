@@ -11,6 +11,14 @@ RPI::RPI() {
 	read_buffer = new uint8_t[2550];
 	write_buffer = new uint8_t[4096];
 
+	/*Configure communication_reset_timer
+	 * It is used to reset is_comminicating, in case the communication failed
+	 * */
+	comm_reset_timer = new BasicTimer(4, COMM_RESET_COUNTER_MAX, COMM_RESET_PRESCALER);
+	comm_reset_timer->disable();
+	comm_reset_timer->disable_interrupt();
+	comm_reset_timer->reset_counter();
+
 	spi = new SPI(4);
 	spi->disableSPI();
 
@@ -111,6 +119,8 @@ RPI::~RPI() {
 
 void RPI::spi_interrupt() {
 	if(is_communicating == false) {
+		comm_reset_timer->enable_interrupt();
+		comm_reset_timer->enable();
 		current_nbr_of_bytes = 10 * ((uint32_t)*(volatile uint8_t *)spi->getDRAddress());
 		if (current_nbr_of_bytes != 0) {
 			is_communicating = true;
@@ -120,7 +130,11 @@ void RPI::spi_interrupt() {
 }
 
 bool RPI::dma_in_interrupt() {
+	this->comm_reset_timer->disable();
+	this->comm_reset_timer->disable_interrupt();
+	this->comm_reset_timer->reset_counter();
 	if (dma_in->transfer_complete()) {
+
 		if (dma_in->getNumberOfData() <= 0) {
 			while(spi->isBusy());
 			spi->disableSPI_DMA();
@@ -136,6 +150,21 @@ bool RPI::dma_in_interrupt() {
 		dma_in_error_interrupt();
 		return false;
 	}
+}
+
+void RPI::comm_reset_timer_interrupt() {
+	// reset rpi-communication
+	this->is_communicating = false;
+	this->current_nbr_of_bytes = 0;
+	while(spi->isBusy());
+	spi->disableSPI_DMA();
+	dma_in->disableDMA();
+	dma_in->resetTransferCompleteInterruptFlag();
+	is_communicating = false;
+	spi->enableRxIRQ();
+	this->comm_reset_timer->disable();
+	this->comm_reset_timer->disable_interrupt();
+	this->comm_reset_timer->reset_counter();
 }
 
 void RPI::dma_in_error_interrupt() {

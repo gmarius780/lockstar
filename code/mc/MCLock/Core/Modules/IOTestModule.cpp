@@ -64,7 +64,7 @@ public:
 
 		const uint16_t psc = 68;
 		const float TIM3freq = 90e6;
-		BasicTimer* timer = new BasicTimer(3, 0xFFFF, psc, false);
+		BasicTimer* timer = new BasicTimer(3, 0xFFFF, psc);
 		timer->enable();
 
 		volatile uint32_t n = 0;

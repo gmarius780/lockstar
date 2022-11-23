@@ -52,7 +52,7 @@ public:
 
 		const uint16_t psc = 68;
 		const float TIM3freq = 90e6;
-		BasicTimer* timer = new BasicTimer(3, 0xFFFF, psc, false);
+		BasicTimer* timer = new BasicTimer(3, 0xFFFF, psc);
 		timer->enable();
 
 		float dt = 0;
@@ -221,6 +221,14 @@ void DMA2_Stream6_IRQHandler(void)
 __attribute__((section("sram_func")))
 void SPI4_IRQHandler(void) {
 	module->rpi->spi_interrupt();
+}
+
+__attribute__((section("sram_func")))
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+	if (htim->Instance == TIM4) {
+		module->rpi->comm_reset_timer_interrupt();
+	}
 }
 
 /******************************

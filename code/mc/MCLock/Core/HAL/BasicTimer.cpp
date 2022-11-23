@@ -7,7 +7,7 @@
 
 #include "BasicTimer.hpp"
 
-BasicTimer::BasicTimer(uint8_t timer_x, uint32_t auto_reload, uint32_t prescaler, bool interrupt) {
+BasicTimer::BasicTimer(uint8_t timer_x, uint32_t auto_reload, uint32_t prescaler) {
 	switch(timer_x) {
 		case 2: tim_regs = TIM2; APBxENR_bit = RCC_APB1ENR_TIM2EN; break;
 		case 3: tim_regs = TIM3; APBxENR_bit = RCC_APB1ENR_TIM3EN; break;
@@ -39,4 +39,6 @@ void BasicTimer::disable() { tim_regs->CR1 &= ~(1<<0); }
 void BasicTimer::enable_interrupt() { tim_regs->DIER |= (1<<0); }
 
 void BasicTimer::disable_interrupt() { tim_regs->DIER &= ~(1<<0); }
+
+void BasicTimer::reset_counter() {tim_regs->CNT = 0;}
 

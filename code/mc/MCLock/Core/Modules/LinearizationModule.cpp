@@ -6,7 +6,9 @@
  *      Author: Samuel
  */
 
+#ifdef LINEARIZATION_MODULE
 #include "LinearizationModule.h"
+
 
 LinearizationModule *module;
 
@@ -21,7 +23,7 @@ LinearizationModule::LinearizationModule() {
 	ramp_pointer = 0;
 	toggle = true;
 
-	timer = new BasicTimer(2,timer_arr,timer_psc,false);
+	timer = new BasicTimer(2,timer_arr,timer_psc);
 
 	reset_state_machine();
 	ready_to_work = true;
@@ -355,4 +357,6 @@ void start(void)
 	module->run();
 
 }
+
+#endif
 
