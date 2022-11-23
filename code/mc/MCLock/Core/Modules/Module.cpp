@@ -17,6 +17,24 @@ Module::~Module() {
 	// TODO Auto-generated destructor stub
 }
 
+/*
+ * Checks if the called method is implemented in this class. If not it returns false such that
+ * the derived classes know that they need to check, if they know the method
+ */
+bool Module::handle_rpi_base_methods() {
+	/*** Package format: method_identifier (uint32_t) | method specific arguments (defined in the methods directly) ***/
+	RPIDataPackage* read_package = rpi->get_read_package();
+	switch (read_package->pop_from_buffer<uint32_t>()) {
+	case METHOD_SET_LINEARIZATION_ONE:
+		set_linearization_one(read_package);
+		break;
+	default:
+		return false;
+	}
+
+	return true;
+}
+
 void Module::initialize_adc(uint8_t ch1_config, uint8_t ch2_config) {
 	adc = new ADC_Device(	/* SPI number */ 				1,
 							/* DMA Stream In */ 			2,
@@ -64,3 +82,10 @@ void Module::set_ch_output_limit(RPIDataPackage* read_package, DAC_Device *dac) 
 	write_package->push_ack();
 	rpi->send_package(write_package);
 }
+
+/*LINEARIZATION-METHODS START*/
+void Module::set_linearization_one(RPIDataPackage* read_package) {
+
+}
+/*LINEARIZATION-METHODS END*/
+

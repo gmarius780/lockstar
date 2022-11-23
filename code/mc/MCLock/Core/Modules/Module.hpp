@@ -28,11 +28,18 @@ public:
 	Module();
 	virtual ~Module();
 
+	/*LINEARIZATION-METHODS START*/
+	static const uint32_t METHOD_SET_LINEARIZATION_ONE = 80;
+	void set_linearization_one(RPIDataPackage* read_package); //set calculated linearization parameters
+	/*LINEARIZATION-METHODS END*/
+
 	void initialize_adc(uint8_t ch1_config, uint8_t ch2_config);
 	void initialize_dac();
 	void initialize_rpi();
 
 	void set_ch_output_limit(RPIDataPackage* read_package, DAC_Device *dac);
+
+	virtual bool handle_rpi_base_methods(); //handles calls send by the rpi corresponding to general methods
 
 public:
 	ADC_Device *adc;

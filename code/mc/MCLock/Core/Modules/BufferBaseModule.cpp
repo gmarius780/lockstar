@@ -24,49 +24,54 @@ BufferBaseModule::~BufferBaseModule() {
  * @return: true if it successfully dealt with the method, false otherwise
  */
 bool BufferBaseModule::handle_rpi_base_methods() {
-	/*** Package format: method_identifier (uint32_t) | method specific arguments (defined in the methods directly) ***/
-	RPIDataPackage* read_package = rpi->get_read_package();
 
-	// switch between method_identifier
-	switch (read_package->pop_from_buffer<uint32_t>()) {
-	case METHOD_OUTPUT_ON:
-		output_on(read_package);
-		break;
-	case METHOD_OUTPUT_OFF:
-		output_off(read_package);
-		break;
-	case METHOD_OUTPUT_TTL:
-		output_ttl(read_package);
-		break;
-	case METHOD_SET_CH_ONE_OUTPUT_LIMITS:
-		set_ch_one_output_limits(read_package);
-		break;
-	case METHOD_SET_CH_TWO_OUTPUT_LIMITS:
-		set_ch_two_output_limits(read_package);
-		break;
-	case METHOD_SET_CH_ONE_BUFFER:
-		set_ch_one_buffer(read_package);
-		break;
-	case METHOD_SET_CH_TWO_BUFFER:
-		set_ch_two_buffer(read_package);
-		break;
-	case METHOD_INITIALIZE_BUFFERS:
-		initialize_buffers(read_package);
-		break;
-	case METHOD_SET_SAMPLING_RATE:
-		set_sampling_rate(read_package);
-		break;
-	case METHOD_SET_CH_ONE_CHUNKS:
-		set_ch_one_chunks(read_package);
-		break;
-	case METHOD_SET_CH_TWO_CHUNKS:
-		set_ch_two_chunks(read_package);
-		break;
-	default:
-		return false;
+	if (Module::handle_rpi_base_methods() == false) { //if base class doesn't know the called method
+		/*** Package format: method_identifier (uint32_t) | method specific arguments (defined in the methods directly) ***/
+		RPIDataPackage* read_package = rpi->get_read_package();
+
+		// switch between method_identifier
+		switch (read_package->pop_from_buffer<uint32_t>()) {
+		case METHOD_OUTPUT_ON:
+			output_on(read_package);
+			break;
+		case METHOD_OUTPUT_OFF:
+			output_off(read_package);
+			break;
+		case METHOD_OUTPUT_TTL:
+			output_ttl(read_package);
+			break;
+		case METHOD_SET_CH_ONE_OUTPUT_LIMITS:
+			set_ch_one_output_limits(read_package);
+			break;
+		case METHOD_SET_CH_TWO_OUTPUT_LIMITS:
+			set_ch_two_output_limits(read_package);
+			break;
+		case METHOD_SET_CH_ONE_BUFFER:
+			set_ch_one_buffer(read_package);
+			break;
+		case METHOD_SET_CH_TWO_BUFFER:
+			set_ch_two_buffer(read_package);
+			break;
+		case METHOD_INITIALIZE_BUFFERS:
+			initialize_buffers(read_package);
+			break;
+		case METHOD_SET_SAMPLING_RATE:
+			set_sampling_rate(read_package);
+			break;
+		case METHOD_SET_CH_ONE_CHUNKS:
+			set_ch_one_chunks(read_package);
+			break;
+		case METHOD_SET_CH_TWO_CHUNKS:
+			set_ch_two_chunks(read_package);
+			break;
+		default:
+			return false;
+		}
+
+		return true;
+	} else {
+		return true;
 	}
-
-	return true;
 }
 
 /*** START: METHODS ACCESSIBLE FROM THE RPI ***/

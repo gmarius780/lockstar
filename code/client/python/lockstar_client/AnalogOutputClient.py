@@ -5,7 +5,7 @@ from lockstar_general.backend.BackendCall import BackendCall
 
 class AnalogOutputClient(LockstarClient):
     def __init__(self, lockstar_ip, lockstar_port, client_id) -> None:
-        super().__init__(lockstar_ip, lockstar_port, client_id)
+        super().__init__(lockstar_ip, lockstar_port, client_id, 'AnalogOutputModule')
 
 
     def initialize(self):

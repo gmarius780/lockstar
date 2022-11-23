@@ -22,7 +22,7 @@ public:
 	BufferBaseModule();
 	virtual ~BufferBaseModule();
 
-	bool handle_rpi_base_methods(); //handles calls send by the rpi corresponding to general methods
+	bool handle_rpi_base_methods() override;
 
 public:
 	static const uint32_t BUFFER_LIMIT_kBYTES = 180; //if this is chosen to large (200) there is no warning, the MC simply crashes (hangs in syscalls.c _exit())
