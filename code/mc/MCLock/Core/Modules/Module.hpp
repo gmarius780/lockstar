@@ -31,6 +31,10 @@ public:
 	/*LINEARIZATION-METHODS START*/
 	static const uint32_t METHOD_SET_LINEARIZATION_ONE = 80;
 	void set_linearization_one(RPIDataPackage* read_package); //set calculated linearization parameters
+
+	static const uint32_t START_LINEARIZATION_ONE = 81;
+	static const uint32_t START_LINEARIZATION_TWO = 82;
+	void start_linearization();
 	/*LINEARIZATION-METHODS END*/
 
 	void initialize_adc(uint8_t ch1_config, uint8_t ch2_config);
@@ -45,6 +49,11 @@ public:
 	ADC_Device *adc;
 	DAC_Device *dac_1, *dac_2;
 	RPI *rpi;
+
+	BasicTimer* lin_timer;
+
+	bool is_linearizing; //true if linearization process is ongoing
+	bool linearize_one; //to decide whether to linearize channel one or two
 };
 
 #endif /* MODULES_MODULE_HPP_ */

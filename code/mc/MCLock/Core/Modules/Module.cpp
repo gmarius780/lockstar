@@ -10,7 +10,8 @@
 extern ADC_HandleTypeDef hadc3;
 
 Module::Module() {
-
+	is_linearizing = true;
+	lin_timer = new BasicTimer(2,0,0);
 }
 
 Module::~Module() {
@@ -25,6 +26,14 @@ bool Module::handle_rpi_base_methods() {
 	/*** Package format: method_identifier (uint32_t) | method specific arguments (defined in the methods directly) ***/
 	RPIDataPackage* read_package = rpi->get_read_package();
 	switch (read_package->pop_from_buffer<uint32_t>()) {
+	case START_LINEARIZATION_ONE:
+		is_linearizing = true;
+		linearize_one = true;
+		break;
+	case START_LINEARIZATION_TWO:
+		is_linearizing = true;
+		linearize_one = false;
+		break;
 	case METHOD_SET_LINEARIZATION_ONE:
 		set_linearization_one(read_package);
 		break;
@@ -84,6 +93,39 @@ void Module::set_ch_output_limit(RPIDataPackage* read_package, DAC_Device *dac) 
 }
 
 /*LINEARIZATION-METHODS START*/
+void Module::start_linearization() {
+	/*while(!timer_initialized);
+	while(!received_new_ramp);
+	while(!measurement_trigger);
+	gain_measurement();
+	while(!finished_gain_measurement);
+	while(!response_measurement_sent_to_rpi);
+
+	reset_state_machine();
+	ready_to_work = true;*/
+
+	/**Initialize timer**/
+	uint32_t timer_arr = read_package->pop_from_buffer<uint32_t>();
+	uint32_t timer_psc = read_package->pop_from_buffer<uint32_t>();
+
+	lin_timer->set_auto_reload(timer_arr);
+	lin_timer->set_prescaler(timer_psc);
+	lin_timer->enable_interrupt();
+
+	/**create ramp**/
+	float ramp_start = read_package->pop_from_buffer<float>();
+	float ramp_end = read_package->pop_from_buffer<float>();
+	uint32_t ramp_length = read_package->pop_from_buffer<uint32_t>();
+
+
+
+	if (linearize_one) {
+
+	}
+
+	is_linearizing = false;
+}
+
 void Module::set_linearization_one(RPIDataPackage* read_package) {
 
 }

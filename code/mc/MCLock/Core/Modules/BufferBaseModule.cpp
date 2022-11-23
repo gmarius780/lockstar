@@ -7,7 +7,7 @@
 
 #include "BufferBaseModule.h"
 
-BufferBaseModule::BufferBaseModule() {
+BufferBaseModule::BufferBaseModule() : Module() {
 	// TODO Auto-generated constructor stub
 
 }

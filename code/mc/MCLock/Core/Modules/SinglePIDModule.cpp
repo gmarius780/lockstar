@@ -33,7 +33,7 @@
 
 class SinglePIDModule: public Module {
 public:
-	SinglePIDModule() {
+	SinglePIDModule() : Module() {
 		initialize_rpi();
 		locked = false;
 		turn_LED6_off();
@@ -62,6 +62,7 @@ public:
 		/*** work loop ***/
 		while(true){
 			HAL_Delay(100);
+			if(this->is_linearizing) { start_linearization(); }
 			while(this->locked == true) {
 				// Measuring elapsed time per work loop
 				t = timer->get_counter() - t;
