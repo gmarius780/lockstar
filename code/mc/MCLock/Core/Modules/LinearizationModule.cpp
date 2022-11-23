@@ -67,8 +67,8 @@ void LinearizationModule::new_linearization() {
 	ack->push_ack();
 	rpi->send_package(ack);
 
-	while(!received_new_ramp);
 	while(!timer_initialized);
+	while(!received_new_ramp);
 	while(!measurement_trigger);
 	gain_measurement();
 	while(!finished_gain_measurement);
@@ -146,7 +146,7 @@ void LinearizationModule::initialize_timer(RPIDataPackage* read_package) {
 	timer->set_auto_reload(timer_arr);
 	timer->set_prescaler(timer_psc);
 	timer->enable_interrupt();
-	timer_initialized= true;
+	timer_initialized = true;
 
 	RPIDataPackage* write_package = rpi->get_write_package();
 	write_package->push_ack();
@@ -182,14 +182,8 @@ void LinearizationModule::gain_measurement() {
 	rpi->send_package(write_package);
 
 	timer->enable();
-	int count = 0;
-	float input=0;
-	while(ramp_pointer < ramp_length+1) {
-		adc->start_conversion();
-		input = ramp_buffer[ramp_pointer];//adc->channel2->get_result();
-		dac_2->write(gain(input));
-		count++;
-	}
+
+	while(ramp_pointer < ramp_length+1);
 
 	timer->disable();
 	timer->disable_interrupt();
@@ -205,8 +199,7 @@ void LinearizationModule::send_gain_measurement(RPIDataPackage* read_package) {
 		return;
 	}
 
-	inverse_gain_buffer[ramp_length-2] = 4.999;
-	inverse_gain_buffer[ramp_length-1] = 5;
+	inverse_gain_buffer[ramp_length-1] = 3.431;
 
 	RPIDataPackage* data_package = rpi->get_write_package();
 	for(uint32_t i=0;i<ramp_length;i++)
@@ -315,12 +308,10 @@ void SPI4_IRQHandler(void) {
 }
 
 // This function is called whenever a timer reaches its period
-__attribute__((section("sram_func")))
+//__attribute__((section("sram_func")))
+// !!!!!! GOT HARD FAULT WITH THIS ATTRIBUTE SET, BUT ONLY ON LOCKSTAR IN D15.......??
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-	//turn_LED6_off();
-	//module->test();
-	//turn_LED5_off();
 	if (htim->Instance == TIM2) {
 		if(module->ramp_pointer < module->ramp_length-1)
 			module->dac_1->write(module->ramp_buffer[module->ramp_pointer]);
@@ -329,7 +320,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 			module->adc->start_conversion();
 
 		if(module->ramp_pointer > 1 && module->ramp_pointer < module->ramp_length+1)
-			module->inverse_gain_buffer[module->ramp_pointer-2] = module->adc->channel1->get_result();
+			module->inverse_gain_buffer[module->ramp_pointer-2] = module->adc->channel2->get_result();
 
 		module->ramp_pointer++;
 
