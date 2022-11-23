@@ -104,18 +104,18 @@ void Module::start_linearization() {
 	reset_state_machine();
 	ready_to_work = true;*/
 
-	/**Initialize timer**/
-	uint32_t timer_arr = read_package->pop_from_buffer<uint32_t>();
-	uint32_t timer_psc = read_package->pop_from_buffer<uint32_t>();
-
-	lin_timer->set_auto_reload(timer_arr);
-	lin_timer->set_prescaler(timer_psc);
-	lin_timer->enable_interrupt();
-
-	/**create ramp**/
-	float ramp_start = read_package->pop_from_buffer<float>();
-	float ramp_end = read_package->pop_from_buffer<float>();
-	uint32_t ramp_length = read_package->pop_from_buffer<uint32_t>();
+//	/**Initialize timer**/
+//	uint32_t timer_arr = read_package->pop_from_buffer<uint32_t>();
+//	uint32_t timer_psc = read_package->pop_from_buffer<uint32_t>();
+//
+//	lin_timer->set_auto_reload(timer_arr);
+//	lin_timer->set_prescaler(timer_psc);
+//	lin_timer->enable_interrupt();
+//
+//	/**create ramp**/
+//	float ramp_start = read_package->pop_from_buffer<float>();
+//	float ramp_end = read_package->pop_from_buffer<float>();
+//	uint32_t ramp_length = read_package->pop_from_buffer<uint32_t>();
 
 
 
