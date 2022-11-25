@@ -35,7 +35,7 @@ async def handle_client_requests(reader, writer):
     if backend_call is not None:
         client_id_missmatch = False
         async with state_lock:
-            if backend_state.general_module.client_id != backend_call.client_id:
+            if backend_state.general_module.client_id != backend_call.client_id and backend_state.general_module.client_id is not None: ##S
                 client_id_missmatch = True
 
         if client_id_missmatch and not (backend_call.module_name == 'GeneralModule' and backend_call.method_name == 'register_client'):
