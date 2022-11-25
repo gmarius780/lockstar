@@ -26,56 +26,44 @@ class LinearizationModule: public Module {
 		void run();
 
 		// START: rpi methods
-		void new_linearization();
-		void initialize_timer(RPIDataPackage*);
-		void initialize_new_ramp(RPIDataPackage*);
-		void set_ramp(RPIDataPackage*);
-		void trigger_gain_measurement();
-		void gain_measurement();
+		static const uint32_t SET_RAMP_PARAMETERS = 11;
+		void set_ramp_parameters(RPIDataPackage*);
+		static const uint32_t SEND_GAIN_MEASUREMENT = 12;
 		void send_gain_measurement(RPIDataPackage*);
+		static const uint32_t SET_INVERTED_PIVOTS = 13;
 		void set_inverted_pivots(RPIDataPackage*);
-		enum METHOD_IDENTIFIER {
-					NEW_LINEARIZATION = 11,
-					INITIALIZE_TIMER = 12,
-					INITIALIZE_NEW_RAMP = 13,
-					SET_RAMP = 14,
-					TRIGGER_GAIN_MEASUREMENT = 15,
-					SEND_GAIN_MEASUREMENT = 16,
-					SET_INVERTED_PIVOTS = 17
-				};
 		// END: rpi methods
 
 		float linearize_output(float value);
+		void new_linearization();
+		void perform_gain_measurement();
 
-		bool toggle;
 		bool ready_to_work;
-		bool received_new_ramp;
-		bool timer_initialized;
-		bool measurement_trigger;
+		bool received_ramp_paramters;
 		bool finished_gain_measurement;
-		bool response_measurement_sent_to_rpi;
+		bool sent_gain_measurement;
 		bool received_inverted_pivots;
+		bool linearization_active;
+
 		float output_range;
 		float output_min;
 		float output_max;
 		float ramp_range;
 		float pivot_spacing;
-		uint32_t number_of_ramp_packages;
-		uint32_t ramp_package_counter;
-		uint32_t number_of_received_ramp_values;
-		uint32_t* ramp_package_sizes;
 
 		bool test;
 
+		float ramp_start;
+		float ramp_end;
+		float ramp_stepsize;
 		uint32_t ramp_length;
-		float* ramp_buffer;
-		volatile uint32_t ramp_pointer;
+		volatile uint32_t buffer_pointer;
+		float* gain_measurement_buffer;
 		float* inverted_pivots_buffer;
+
 		BasicTimer* timer;
 		uint32_t timer_psc;
 		uint32_t timer_arr;
-
-		float gain(float input);
 
 	private:
 		void reset_state_machine();

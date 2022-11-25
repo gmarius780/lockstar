@@ -6,9 +6,9 @@
  *      Author: Samuel
  */
 
-#ifdef LINEARIZATION_MODULE
-#include "LinearizationModule.h"
 
+#include "LinearizationModule.h"
+#ifdef LINEARIZATION_MODULE
 
 LinearizationModule *module;
 
@@ -20,22 +20,22 @@ LinearizationModule::LinearizationModule() {
 	timer_arr = 0;
 	timer_psc = 0;
 
-	ramp_pointer = 0;
-	toggle = true;
+	buffer_pointer = 0;
 
 	timer = new BasicTimer(2,timer_arr,timer_psc);
 
 	reset_state_machine();
 	ready_to_work = true;
-	received_inverted_pivots = false;
+	linearization_active = false;
+
+	ramp_start = 0;
+	ramp_end = 0;
+	ramp_stepsize = 0;
 	output_range = 0;
 	output_min = 0;
 	output_max = 0;
 	ramp_range = 0;
 	pivot_spacing = 0;
-	number_of_ramp_packages = 0;
-	number_of_received_ramp_values = 0;
-	ramp_package_counter = 0;
 	test = false;
 }
 
@@ -51,13 +51,14 @@ void LinearizationModule::LinearizationModule::run() {
 		if(!ready_to_work) { new_linearization(); }
 		dac_1->write(linearize_output(output));
 	}
+	timer->set_auto_reload(200);
 	timer->enable_interrupt();
 	timer->enable();
 	while(true);
 }
 
 float LinearizationModule::linearize_output(float target_output) {
-	if(!received_inverted_pivots)
+	if(!linearization_active)
 		return target_output;
 
 	target_output = target_output/ramp_range*output_range;
@@ -72,31 +73,43 @@ float LinearizationModule::linearize_output(float target_output) {
 	return inverted_pivots_buffer[pivot_index] + (inverted_pivots_buffer[pivot_index+1]-inverted_pivots_buffer[pivot_index])*interpolation;
 }
 
+void output_ramp() {
+	if(module->buffer_pointer < module->ramp_length)
+		module->dac_1->write(module->ramp_start + module->ramp_stepsize*module->buffer_pointer);
+
+	if(module->buffer_pointer > 0 && module->buffer_pointer < module->ramp_length+1)
+		module->adc->start_conversion();
+
+	if(module->buffer_pointer > 1 && module->buffer_pointer < module->ramp_length+2)
+		module->inverted_pivots_buffer[module->buffer_pointer-2] = module->adc->channel2->get_result();
+
+	module->buffer_pointer++;
+}
+
 void LinearizationModule::new_linearization() {
 	RPIDataPackage* ack = rpi->get_write_package();
 	ack->push_ack();
 	rpi->send_package(ack);
 
-	while(!timer_initialized);
-	while(!received_new_ramp);
-	while(!measurement_trigger);
-	gain_measurement();
+	perform_gain_measurement();
 	while(!finished_gain_measurement);
-	while(!response_measurement_sent_to_rpi);
+	ack = rpi->get_write_package();
+	ack->push_ack();
+	rpi->send_package(ack);
+
+	while(!sent_gain_measurement);
+	while(!received_inverted_pivots);
 
 	reset_state_machine();
+
 	ready_to_work = true;
 }
 
 void LinearizationModule::reset_state_machine() {
-	received_new_ramp = false;
-	timer_initialized = false;
-	measurement_trigger = false;
+	received_ramp_paramters = false;
 	finished_gain_measurement = false;
-	response_measurement_sent_to_rpi = false;
-	number_of_ramp_packages = 0;
-	number_of_received_ramp_values = 0;
-	ramp_package_counter = 0;
+	sent_gain_measurement = false;
+	received_inverted_pivots = false;
 }
 
 void LinearizationModule::handle_rpi_input() {
@@ -106,27 +119,9 @@ void LinearizationModule::handle_rpi_input() {
 	RPIDataPackage* read_package = this->rpi->get_read_package();
 	//switch between method_identifier
 	switch (read_package->pop_from_buffer<uint32_t>()) {
-		case NEW_LINEARIZATION:
+		case SET_RAMP_PARAMETERS:
+			set_ramp_parameters(read_package);
 			ready_to_work = false;
-			break;
-
-		// Initialize timer
-		case INITIALIZE_TIMER:
-			initialize_timer(read_package);
-			break;
-		// Initialize ramp buffer
-		case INITIALIZE_NEW_RAMP:
-			initialize_new_ramp(read_package);
-			break;
-
-		// Write ramp buffer
-		case SET_RAMP:
-			set_ramp(read_package);
-			break;
-
-		// Start measurement
-		case TRIGGER_GAIN_MEASUREMENT:
-			trigger_gain_measurement();
 			break;
 
 		case SEND_GAIN_MEASUREMENT:
@@ -150,61 +145,24 @@ void LinearizationModule::handle_rpi_input() {
 
 /*** START: METHODS ACCESSIBLE FROM THE RPI ***/
 
-void LinearizationModule::initialize_timer(RPIDataPackage* read_package) {
-	//turn_LED5_off();
+void LinearizationModule::set_ramp_parameters(RPIDataPackage* read_package) {
+	ramp_start = read_package->pop_from_buffer<float>();
+	ramp_end = read_package->pop_from_buffer<float>();
+	ramp_length = read_package->pop_from_buffer<uint32_t>();
+	ramp_range = ramp_end - ramp_start;
+	ramp_stepsize = ramp_range/ramp_length;
+
+	inverted_pivots_buffer = new float[ramp_length]();
+
 	timer_arr = read_package->pop_from_buffer<uint32_t>();
 	timer_psc = read_package->pop_from_buffer<uint32_t>();
 
 	timer->set_auto_reload(timer_arr);
 	timer->set_prescaler(timer_psc);
 	timer->enable_interrupt();
-	timer_initialized = true;
-
-	RPIDataPackage* write_package = rpi->get_write_package();
-	write_package->push_ack();
-	rpi->send_package(write_package);
 }
 
-void LinearizationModule::initialize_new_ramp(RPIDataPackage* read_package) {
-	ramp_length = read_package->pop_from_buffer<uint32_t>();
-	ramp_buffer = new float[ramp_length]();
-	inverted_pivots_buffer = new float[ramp_length]();
-	RPIDataPackage* write_package = rpi->get_write_package();
-	write_package->push_ack();
-	rpi->send_package(write_package);
-}
-
-void LinearizationModule::set_ramp(RPIDataPackage* read_package) {
-
-	if(ramp_package_counter == 0) {
-		number_of_ramp_packages = read_package->pop_from_buffer<uint32_t>();
-		ramp_package_sizes = new uint32_t[number_of_ramp_packages]();
-	} else {
-		uint32_t current_package_size = read_package->pop_from_buffer<uint32_t>();
-		for(uint32_t i=0; i<current_package_size; i++) {
-			ramp_buffer[number_of_received_ramp_values + i] = read_package->pop_from_buffer<float>();
-		}
-		number_of_received_ramp_values += current_package_size;
-		ramp_package_sizes[ramp_package_counter-1] = current_package_size;
-	}
-
-	if(ramp_package_counter == number_of_ramp_packages) {
-		RPIDataPackage* ack = rpi->get_write_package();
-		ack->push_ack();
-		rpi->send_package(ack);
-		ramp_package_counter = 0;
-		number_of_received_ramp_values = 0;
-		received_new_ramp = true;
-		return;
-	}
-	ramp_package_counter++;
-}
-
-void LinearizationModule::trigger_gain_measurement() {
-	measurement_trigger = true;
-}
-
-void LinearizationModule::gain_measurement() {
+void LinearizationModule::perform_gain_measurement() {
 	RPIDataPackage* write_package = rpi->get_write_package();
 	write_package->push_ack();
 	rpi->send_package(write_package);
@@ -213,56 +171,67 @@ void LinearizationModule::gain_measurement() {
 
 	// Wait for measurement to finish
 	// (+3 to be safe, included if(ramp_pointer < ...) in TIM interrupt)
-	while(ramp_pointer < ramp_length+3);
+	while(buffer_pointer < ramp_length+3);
 
 	timer->disable();
 	timer->disable_interrupt();
 
-	ramp_range = ramp_buffer[ramp_length-1] - ramp_buffer[0];
 	output_min = inverted_pivots_buffer[0];
 	output_max = inverted_pivots_buffer[ramp_length-1];
 	output_range = output_max - output_min;
 	pivot_spacing = output_range/ramp_length;
 
-	ramp_pointer = 0;
+	buffer_pointer = 0;
 	// Measurement is stored in inverted_pivots_buffer to save some memory
 	finished_gain_measurement = true;
 }
 
 void LinearizationModule::send_gain_measurement(RPIDataPackage* read_package) {
-	RPIDataPackage* write_package = rpi->get_write_package();
-	if(!finished_gain_measurement) {
-		write_package->push_nack();
-		rpi->send_package(write_package);
+	uint32_t buffer_offset = read_package->pop_from_buffer<uint32_t>();
+	uint32_t package_size = read_package->pop_from_buffer<uint32_t>();
+	bool last_package = read_package->pop_from_buffer<bool>();
+
+	if(buffer_offset+package_size > ramp_length) {
+		RPIDataPackage* nack = rpi->get_write_package();
+		nack->push_nack();
+		rpi->send_package(nack);
 		return;
 	}
 
-	uint32_t number_of_sent_ramp_values = 0;
-	for(uint32_t package_number=0; package_number<number_of_ramp_packages; package_number++) {
-		RPIDataPackage* data_package = rpi->get_write_package();
-		for(uint32_t i=0; i<ramp_package_sizes[package_number]; i++) {
-			data_package->push_to_buffer<float>(inverted_pivots_buffer[number_of_sent_ramp_values + i]);
-		}
-		number_of_sent_ramp_values += ramp_package_sizes[package_number];
-		rpi->send_package(data_package);
-	}
+	RPIDataPackage* data_package = rpi->get_write_package();
+	for(uint32_t i=0; i<package_size; i++)
+		data_package->push_to_buffer<float>(inverted_pivots_buffer[buffer_offset + i]);
+	rpi->send_package(data_package);
 
-	response_measurement_sent_to_rpi = true;
+	if(last_package)
+		sent_gain_measurement = true;
 }
 
+
 void LinearizationModule::set_inverted_pivots(RPIDataPackage* read_package) {
-	for(uint32_t i=0; i<ramp_package_sizes[ramp_package_counter]; i++) {
-		inverted_pivots_buffer[number_of_received_ramp_values+i] = read_package->pop_from_buffer<float>();
+	uint32_t buffer_offset = read_package->pop_from_buffer<uint32_t>();
+	uint32_t package_size = read_package->pop_from_buffer<uint32_t>();
+	bool last_package = read_package->pop_from_buffer<bool>();
+
+	if(buffer_offset+package_size > ramp_length) {
+		RPIDataPackage* nack = rpi->get_write_package();
+		nack->push_nack();
+		rpi->send_package(nack);
 	}
 
-	if(ramp_package_counter == number_of_ramp_packages) {
+	for(uint32_t i=0; i<package_size; i++) {
+		inverted_pivots_buffer[buffer_offset+i] = read_package->pop_from_buffer<float>();
+	}
+
+	RPIDataPackage* ack = rpi->get_write_package();
+	ack->push_ack();
+	rpi->send_package(ack);
+
+	if(last_package) {
 		received_inverted_pivots = true;
-
-		RPIDataPackage* write_package = rpi->get_write_package();
-		write_package->push_ack();
-		rpi->send_package(write_package);
+		linearization_active = true;
 	}
-	ramp_package_counter++;
+
 }
 
 
@@ -356,22 +325,13 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	if (htim->Instance == TIM2) {
 		if(module->test) {
-			if(module->ramp_pointer > module->ramp_length-1)
-				module->ramp_pointer = 0;
-			float t = module->linearize_output(module->ramp_buffer[module->ramp_pointer]);
+			if(module->buffer_pointer > module->ramp_length-1)
+				module->buffer_pointer = 0;
+			float t = module->linearize_output(module->ramp_start + module->ramp_stepsize*module->buffer_pointer);
 			module->dac_1->write(t);
-			module->ramp_pointer++;
-		} else {
-			if(module->ramp_pointer < module->ramp_length)
-				module->dac_1->write(module->ramp_buffer[module->ramp_pointer]);
-
-			if(module->ramp_pointer > 0 && module->ramp_pointer < module->ramp_length+1)
-				module->adc->start_conversion();
-
-			if(module->ramp_pointer > 1 && module->ramp_pointer < module->ramp_length+2)
-				module->inverted_pivots_buffer[module->ramp_pointer-2] = module->adc->channel2->get_result();
-
-			module->ramp_pointer++;
+			module->buffer_pointer++;
+		} else { // add output_ramp state
+			output_ramp();
 		}
 
 	}
