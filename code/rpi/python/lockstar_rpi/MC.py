@@ -4,7 +4,7 @@ import logging
 from struct import pack, unpack, calcsize # https://docs.python.org/3/library/struct.html
 from lockstar_rpi.MCDataPackage import MCDataPackage
 from math import ceil
-from time import sleep
+from time import sleep, perf_counter
 
 if not BackendSettings.debug_mode:
     try:
@@ -53,18 +53,23 @@ class MC:
 
     #=== READ METHODS
 
-    async def read_ack(self):
+    async def read_ack(self, timeout_s=None):
         """Reads two bools. if both are 1, this is interpreted as an ACK (signalling success of whatever happened before)
             
             :Return True if ack False otherwise
         """
-         #unpack data
-        try:
-            payload_length, raw_data = await self.read_mc_data()
-            return MCDataPackage.pop_ack_nack_from_buffer(bytes(raw_data))
-        except Exception as ex:
-            logging.error(f'MC.read_mc_data_package: cannot unpack data: {payload_length}: {ex}: {raw_data}')
-            return False
+        #unpack data
+        start_time = perf_counter()
+        while (timeout_s is None or perf_counter() - start_time < timeout_s):
+            if timeout_s is None:
+                timeout_s = 0
+            try:
+                payload_length, raw_data = await self.read_mc_data()
+                return MCDataPackage.pop_ack_nack_from_buffer(bytes(raw_data))
+            except Exception as ex:
+                pass
+        logging.error(f'MC.read_mc_data_package: cannot unpack data: {payload_length}: {ex}: {raw_data}')
+        return False
 
     async def read_mc_data_package(self, list_str_cpp_dtype):
         #unpack data

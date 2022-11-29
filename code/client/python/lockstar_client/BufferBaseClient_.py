@@ -4,8 +4,7 @@ from lockstar_general.backend.BackendCall import BackendCall
 
 class BufferBaseClient_(LockstarClient):
     def __init__(self, lockstar_ip, lockstar_port, client_id, module_name) -> None:
-        super().__init__(lockstar_ip, lockstar_port, client_id)
-        self.module_name = module_name
+        super().__init__(lockstar_ip, lockstar_port, client_id, module_name)
 
 
     def initialize(self):

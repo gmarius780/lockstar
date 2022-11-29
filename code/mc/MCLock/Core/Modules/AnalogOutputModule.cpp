@@ -15,7 +15,6 @@
 #include "../HAL/rpi.h"
 #include "../HAL/leds.hpp"
 #include "../HAL/adc_new.hpp"
-#include "../HAL/BasicTimer.hpp"
 #include "../HAL/dac_new.hpp"
 #include "../Lib/RPIDataPackage.h"
 #include "../Lib/pid.hpp"
@@ -277,6 +276,14 @@ void DMA2_Stream6_IRQHandler(void)
 __attribute__((section("sram_func")))
 void SPI4_IRQHandler(void) {
 	module->rpi->spi_interrupt();
+}
+
+__attribute__((section("sram_func")))
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+	if (htim->Instance == TIM4) {
+		module->rpi->comm_reset_timer_interrupt();
+	}
 }
 
 /******************************

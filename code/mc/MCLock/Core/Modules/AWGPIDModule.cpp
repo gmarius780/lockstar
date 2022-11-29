@@ -35,14 +35,14 @@ public:
 		//default sampling rate is INTERNAL_CLOCK_FREQUENCY/prescaler * counter_max = 90e6/90*1000 = 1khz
 		prescaler=90;
 		counter_max=1000;
-		this->sampling_timer = new BasicTimer(2, counter_max, prescaler, false);
+		this->sampling_timer = new BasicTimer(2, counter_max, prescaler);
 
 		// allocate buffer and chunk space
 		this->buffer = new float[BUFFER_LIMIT_kBYTES*250]; //contains buffer_one and buffer_two sequentially
 		this->chunks = new uint32_t[MAX_NBR_OF_CHUNKS]; //contains chuncks_one and chunks_two sequentially
 
-		this->pid_one = new PID(0., 0., 0.);
-		this->pid_two = new PID(0., 0., 0.);
+		this->pid_one = new PID(0., 0., 0., 0., 0.);
+		this->pid_two = new PID(0., 0., 0., 0., 0.);
 
 		this->setpoint_one = this->setpoint_two = 0.;
 		this->locked = false;
@@ -57,7 +57,7 @@ public:
 		//timer to measure elapsed time
 		const uint16_t psc = 68;
 		const float TIM3freq = 90e6;
-		BasicTimer* timer = new BasicTimer(3, 0xFFFF, psc, false);
+		BasicTimer* timer = new BasicTimer(3, 0xFFFF, psc);
 		timer->enable();
 
 		float dt = 0;
@@ -113,8 +113,10 @@ public:
 		float p = read_package->pop_from_buffer<float>();
 		float i = read_package->pop_from_buffer<float>();
 		float d = read_package->pop_from_buffer<float>();
+		float input_offset = read_package->pop_from_buffer<float>();
+		float output_offset = read_package->pop_from_buffer<float>();
 
-		this->pid_one->set_pid(p, i, d);
+		this->pid_one->set_pid(p, i, d, input_offset, output_offset);
 
 		/*** send ACK ***/
 		RPIDataPackage* write_package = rpi->get_write_package();
@@ -128,8 +130,10 @@ public:
 		float p = read_package->pop_from_buffer<float>();
 		float i = read_package->pop_from_buffer<float>();
 		float d = read_package->pop_from_buffer<float>();
+		float input_offset = read_package->pop_from_buffer<float>();
+		float output_offset = read_package->pop_from_buffer<float>();
 
-		this->pid_two->set_pid(p, i, d);
+		this->pid_two->set_pid(p, i, d, input_offset, output_offset);
 
 		/*** send ACK ***/
 		RPIDataPackage* write_package = rpi->get_write_package();
@@ -182,7 +186,7 @@ public:
 	void digital_in_falling_edge() {
 	}
 
-	__attribute__((section("sram_func")))
+	//__attribute__((section("sram_func")))
 	void sampling_timer_interrupt() {
 		if (current_output_one < current_end_chunk_one) {
 			this->setpoint_one = *(current_output_one++);
@@ -287,7 +291,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	if (htim->Instance == TIM2) {
 		module->sampling_timer_interrupt();
 	}
+	if (htim->Instance == TIM4) {
+		module->rpi->comm_reset_timer_interrupt();
+	}
 }
+
 
 /******************************
  *       MAIN FUNCTION        *

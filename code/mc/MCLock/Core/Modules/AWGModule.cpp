@@ -33,7 +33,7 @@ public:
 		//default sampling rate is INTERNAL_CLOCK_FREQUENCY/prescaler * counter_max = 90e6/90*1000 = 1khz
 		prescaler=90;
 		counter_max=1000;
-		this->sampling_timer = new BasicTimer(2, counter_max, prescaler, false);
+		this->sampling_timer = new BasicTimer(2, counter_max, prescaler);
 
 		// allocate buffer and chunk space
 		this->buffer = new float[BUFFER_LIMIT_kBYTES*250]; //contains buffer_one and buffer_two sequentially
@@ -94,7 +94,8 @@ public:
 
 	void digital_in_falling_edge() {
 	}
-	__attribute__((section("sram_func")))
+
+	//__attribute__((section("sram_func")))
 	void sampling_timer_interrupt() {
 		if (current_output_one < current_end_chunk_one) {
 			this->dac_1->write(*(current_output_one++));
@@ -193,6 +194,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	if (htim->Instance == TIM2) {
 		module->sampling_timer_interrupt();
+	}
+	if (htim->Instance == TIM4) {
+		module->rpi->comm_reset_timer_interrupt();
 	}
 }
 

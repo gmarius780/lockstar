@@ -6,6 +6,8 @@ import logging
 from lockstar_rpi.MC import MC
 from lockstar_rpi.MCDataPackage import MCDataPackage
 import numpy as np
+from scipy import interpolate
+from math import floor,ceil
 
 
 class LinearizationModule(IOModule_):
@@ -15,14 +17,24 @@ class LinearizationModule(IOModule_):
     def __init__(self) -> None:
         super().__init__()
     
-        self.ramp = None
-        self.inverse_gain = None
+        self.ramp_start = 0
+        self.ramp_end = 0
         self.ramp_length = 0
         self.ramp_speed = 0
+        self.ramp = None
+        self.monotone_envelope = None
+        
+        self.pivots = None
+        self.inverted_pivots = None
+        
         self.mc_prescaler = 0
         self.mc_auto_reload = 0
         self.measured_gain = None
-        self.linearizer_parameters = []
+        
+        self.ramp_package_sizes = None
+        self.max_package_size = floor((MCDataPackage.MAX_NBR_BYTES-100)/4)
+        self.number_of_ramp_packages = 0
+        self.number_of_full_ramp_packages = 0
     
 
     # ==== START: client methods
@@ -36,219 +48,197 @@ class LinearizationModule(IOModule_):
     to the uc
     """
 
-    async def new_linearization(self,ramp,ramp_speed,writer,respond=True):
+    async def new_linearization(self,ramp_start,ramp_end,ramp_length,ramp_speed,writer,respond=True):
 
         logging.info('Backend: new_linearization')
 
-        self.ramp = ramp
-        self.ramp_length = len(ramp)
+        self.ramp_start = ramp_start
+        self.ramp_end = ramp_end
+        self.ramp_length = ramp_length
         self.ramp_speed = ramp_speed
-        self.mc_prescaler = 100
-        self.mc_auto_reload = 9000
+        self.ramp = np.linspace(ramp_start,ramp_end,ramp_length)
+        self.mc_prescaler = 200
+        self.mc_auto_reload = 900
         # calculate_mc_timer_parameter()
 
-        mc_data_package = MCDataPackage()
-        mc_data_package.push_to_buffer('uint32_t',11)
-        await MC.I().write_mc_data_package(mc_data_package)
+        if not await self.set_ramp_parameters(): # Method identifier: 11
+            logging.error('Backend: Could not start new linearization!')
+            writer.write(BackendResponse.NACK().to_bytes())
+            await writer.drain()
+            return False
+            
+        logging.debug('new_linearization: Waiting for gain measurement...')
+        
+        sleep(3)
+        
         if not await MC.I().read_ack():
-            logging.error('new_linearization: Could not start new linearization!')
+            logging.error('new_linearization: gain measurement timeout!')
+            writer.write(BackendResponse.NACK().to_bytes())
+            await writer.drain()
+            return False
+        
+        logging.debug('new_linearization: Gain measurement received!')
+
+        if not await self.send_gain_measurement(): # 12
+            writer.write(BackendResponse.NACK().to_bytes())
+            await writer.drain()
+            return False
+            
+        self.monotone_envelope = self.calculate_monotone_envelope(self.measured_gain)
+        self.calculate_inverted_pivots()
+        
+        
+        if not await self.set_inverted_pivots(): # 13
             writer.write(BackendResponse.NACK().to_bytes())
             await writer.drain()
             return False
 
-        if not await self.initialize_timer(): # Method_identifier: 12
-            writer.write(BackendResponse.NACK().to_bytes())
-            await writer.drain()
-            return False
-
-        if not await self.initialize_new_ramp(): # 13
-            writer.write(BackendResponse.NACK().to_bytes())
-            await writer.drain()
-            return False
-
-        if not await self.set_ramp(): # 14
-            writer.write(BackendResponse.NACK().to_bytes())
-            await writer.drain()
-            return False
-
-        if not await self.trigger_gain_measurement(): # 15
-            writer.write(BackendResponse.NACK().to_bytes())
-            await writer.drain()
-            return False
-
-        logging.debug('new_linearization: Waiting for gain measurement result...')
-        sleep(6)
-
-        if not await self.send_gain_measurement(): # 16
-            writer.write(BackendResponse.NACK().to_bytes())
-            await writer.drain()
-            return False
-
-        if not self.calculate_inverse_gain():
-            writer.write(BackendResponse.NACK().to_bytes())
-            await writer.drain()
-            return False
-
-        if not await self.set_inverse_gain(): # 17
-            writer.write(BackendResponse.NACK().to_bytes())
-            await writer.drain()
-            return False
-
-        br = BackendResponse([self.measured_gain.tolist(),self.inverse_gain.tolist()])
+        br = BackendResponse([self.measured_gain.tolist(),self.inverted_pivots.tolist()])
         writer.write(br.to_bytes())
         await writer.drain()
-
+        
         logging.debug('Backend: New linearization successful!')
+        
         return True
 
     # ==== END: client methods
 
 
     # ==== START: helper methods
-
-    async def initialize_timer(self):
-        logging.debug('Backend: initialize_timer')
+    
+    async def set_ramp_parameters(self):
+        logging.debug('Backend: set_ramp_parameters')
+        
         mc_data_package = MCDataPackage()
-        mc_data_package.push_to_buffer('uint32_t',12)
+        mc_data_package.push_to_buffer('uint32_t',11)
+        mc_data_package.push_to_buffer('float',self.ramp_start)
+        mc_data_package.push_to_buffer('float',self.ramp_end)
+        mc_data_package.push_to_buffer('uint32_t',self.ramp_length)
         mc_data_package.push_to_buffer('uint32_t',self.mc_auto_reload)
         mc_data_package.push_to_buffer('uint32_t',self.mc_prescaler)
-
-        logging.debug('initialize_timer: Sending ARR,PSC...')
+        
         await MC.I().write_mc_data_package(mc_data_package)
+        
         if not await MC.I().read_ack():
-            logging.error('send_ramp_to_mc: Could not set initialize timer')
+            logging.error('set_ramp_parameters: Could not set ramp parameters')
             return False
-        logging.debug('send_ramp_to_mc: Ramp parameters sent successfully')
+            
+        logging.debug('new_linearization: Set ramp parameters')
         return True
-
-
-    async def initialize_new_ramp(self): 
-        logging.debug('Backend: initialize_new_ramp')    
-        if(self.ramp_length < 2):
-            logging.error('initialize_new_ramp: ramp_length too small (ramp_length={self.ramp_length})')
-            return False
-
-        # send the ramp_length and wait for ACK
-        mc_data_package = MCDataPackage()
-        mc_data_package.push_to_buffer('uint32_t',13)
-        mc_data_package.push_to_buffer('uint32_t',self.ramp_length)
-        logging.debug('initialize_new_ramp: Sending ramp_length...')
-        await MC.I().write_mc_data_package(mc_data_package)
-        sleep(1)
-        if not await MC.I().read_ack():
-            logging.error('initialize_new_ramp: Could not set ramp length')
-            return False
-        logging.debug('initialize_new_ramp: Ramp length set successfully')
-        return True
-
-    async def set_ramp(self):        
-        logging.debug('Backend: set_ramp')
-        mc_data_package = MCDataPackage()
-        mc_data_package.push_to_buffer('uint32_t',14)
-        for value in self.ramp:
-            mc_data_package.push_to_buffer('float',value)
-        logging.debug('initialize_new_ramp: Sending ramp array...')
-        await MC.I().write_mc_data_package(mc_data_package)
-        if not await MC.I().read_ack():
-            logging.error('initialize_new_ramp: Could not set ramp')
-            return False
-        
-        logging.debug('initialize_new_ramp: Set ramp successfully')
-        return True       
-        
-
-    async def trigger_gain_measurement(self):
-        logging.debug('Backend: trigger_gain_measurement')
-        
-        if not self.is_initialized():
-            logging.error('trigger_gain_measuremen:: Ramp or timer not initialized properly... Aborting')
-            return False
-
-        # Trigger gain measurement
-        mc_data_package = MCDataPackage()
-        mc_data_package.push_to_buffer('uint32_t', 15)
-        logging.debug('trigger_gain_measurement: Sending trigger signal...')
-        await MC.I().write_mc_data_package(mc_data_package)
-        sleep(1)
-        if(not await MC.I().read_ack()):
-            logging.error('trigger_gain_measurement: Failed to trigger gain measurement!')
-            return False
-        logging.debug('trigger_gain_measurement: Sent trigger successfully!')
-        return True        
-
 
     async def send_gain_measurement(self):
+        METHOD_IDENTIFIER = 12
         logging.debug('Backend: send_gain_measurement')
+        
+        self.number_of_ramp_packages = ceil(self.ramp_length/self.max_package_size)
+        self.number_of_full_ramp_packages = self.ramp_length//self.max_package_size
+        
+        print('max size ',self.max_package_size)
+        print(self.number_of_ramp_packages)
+        print(self.number_of_full_ramp_packages)
+        
+        gain_measurement_list = [0]*self.ramp_length
+        buffer_offset = 0
+        last_package = False
+        for package_number in range(self.number_of_full_ramp_packages):
+            mc_data_package = MCDataPackage()
+            mc_data_package.push_to_buffer('uint32_t',METHOD_IDENTIFIER)
+            mc_data_package.push_to_buffer('uint32_t',buffer_offset)
+            mc_data_package.push_to_buffer('uint32_t',self.max_package_size)
+            mc_data_package.push_to_buffer('bool',last_package)
+            
+            await MC.I().write_mc_data_package(mc_data_package)
+            
+            sleep(0.2)
+            
+            response_list = ['float']*self.max_package_size
+            response_length,response_list = await MC.I().read_mc_data_package(response_list)
+            start = package_number*self.max_package_size
+            end = start + self.max_package_size
+            gain_measurement_list[start:end] = response_list
+            
+            buffer_offset += self.max_package_size
+            logging.debug('send_gain_measurement: received package number {package_number+1}')
+            
+        last_package = True
         mc_data_package = MCDataPackage()
-        mc_data_package.push_to_buffer('uint32_t',16)
-        logging.debug('send_gain_measurement: requesting measurement...')
+        mc_data_package.push_to_buffer('uint32_t',METHOD_IDENTIFIER)
+        mc_data_package.push_to_buffer('uint32_t',buffer_offset)
+        mc_data_package.push_to_buffer('uint32_t',self.ramp_length%self.max_package_size)
+        mc_data_package.push_to_buffer('bool',last_package)
         await MC.I().write_mc_data_package(mc_data_package)
-        #if not await MC.I().read_ack():
-        #    logging.error('send_gain_measurement: Could not request gain measurement!')
-        #    return False
-        logging.debug('send_gain_measurement: sent request successfully!')
-
-        response_list = ['float']*self.ramp_length
+        
+        response_list = ['float']*(self.ramp_length%self.max_package_size)
         response_length,response_list = await MC.I().read_mc_data_package(response_list)
-        if(len(response_list) != self.ramp_length):
-            logging.error('send_gain_measurement: Measured response_length not matching ramp_length!')
-            return False
-        self.measured_gain = np.array(response_list)
+        gain_measurement_list[-(self.ramp_length%self.max_package_size):] = response_list
+        
+                
+        self.measured_gain = np.array(gain_measurement_list)
         logging.debug('send_gain_measurement: Measurement received!')
+        print(self.measured_gain)
         return True
+        
+        
+    def calculate_monotone_envelope(self,data,increment=1e-6):
+        envelope = [0]*len(data)
+        old_value = data[0]
+        for i,value in enumerate(data):
+            envelope[i] = value
+            if value<old_value:
+                envelope[i] = old_value+increment
+            old_value = envelope[i]
+        return np.array(envelope)
 
     
-    def calculate_inverse_gain(self):
-        self.inverse_gain = np.zeros_like(self.ramp)
-        number_of_points = len(self.ramp)
-        response_range = max(self.measured_gain) - min(self.measured_gain)
-        ramp_range = max(self.ramp) - min(self.ramp)
-        
-        m = response_range/ramp_range
-        b= min(self.measured_gain)-m*min(self.ramp)
-        
-        ideal_linear_gain = lambda x: m*x+b
-        
-        # k_n_list and d_n_list contain the slopes and y-intersections of the piecewise linear approximation of inverse of measured_gain
-        k_n_list = np.zeros(len(self.ramp)-1)
-        for i in range(len(k_n_list)):
-            k_n_list[i] = (self.measured_gain[i+1]-self.measured_gain[i])/(self.ramp[i+1]-self.ramp[i])
-        d_n_list = self.measured_gain[:-1] - k_n_list*self.ramp[:-1]
-        
-        for i in range(len(self.inverse_gain)):
-            index = self.find_bin_index(ideal_linear_gain(self.ramp[i]))
-            if(index is None):
-                logging.error('calculate_inverse_gain: An error occured during linearization!')
-                return False
-            if(index==number_of_points-1): index = number_of_points -2
-            
-            self.inverse_gain[i] = (ideal_linear_gain(self.ramp[i])-d_n_list[index])/k_n_list[index]
-        logging.debug('calculate_inverse_gain: Success!')
+    def calculate_inverted_pivots(self):
+        logging.debug('Backend: calculate_inverted_pivots')
+        self.pivots = np.linspace(min(self.monotone_envelope),max(self.monotone_envelope),len(self.ramp))
+        inverted_gain = interpolate.interp1d(self.monotone_envelope,self.ramp)
+        self.inverted_pivots = inverted_gain(self.pivots)
         return True
+        
+        
 
-
-    async def set_inverse_gain(self):
+    async def set_inverted_pivots(self):
+        METHOD_IDENTIFIER = 13
+        logging.debug('Backend: set_inverted_pivots')
+        
+        buffer_offset = 0
+        last_package = False
+        
+        print(self.inverted_pivots)
+        
+        for package_number in range(self.number_of_full_ramp_packages):                        
+            mc_data_package = MCDataPackage()
+            mc_data_package.push_to_buffer('uint32_t',13)
+            mc_data_package.push_to_buffer('uint32_t',buffer_offset)
+            mc_data_package.push_to_buffer('uint32_t',self.max_package_size)
+            mc_data_package.push_to_buffer('bool',last_package)
+            for i in range(self.max_package_size):
+                mc_data_package.push_to_buffer('float',self.inverted_pivots[buffer_offset + i])
+            await MC.I().write_mc_data_package(mc_data_package)
+            buffer_offset += self.max_package_size
+            
+            if not await MC.I().read_ack():
+                logging.error('set_inverted_pivot_points: Could not set inverted pivot points')
+                return False
+            
+        last_package = True        
         mc_data_package = MCDataPackage()
-        mc_data_package.push_to_buffer('uint32_t',17)
-        for i in self.inverse_gain:
-            mc_data_package.push_to_buffer('float',i)
+        mc_data_package.push_to_buffer('uint32_t',METHOD_IDENTIFIER)
+        mc_data_package.push_to_buffer('uint32_t',buffer_offset)
+        mc_data_package.push_to_buffer('uint32_t',self.ramp_length%self.max_package_size)
+        mc_data_package.push_to_buffer('bool',last_package)
+        for i in range(self.ramp_length%self.max_package_size):
+            mc_data_package.push_to_buffer('float',self.inverted_pivots[buffer_offset + i])
         await MC.I().write_mc_data_package(mc_data_package)
         
-        if(not await MC.I().read_ack()):
-            logging.error('set_inverse_gain: Could not set inverse gain!')
+        if not await MC.I().read_ack():
+            logging.error('set_inverted_pivot_points: Could not set inverted pivot points')
             return False
-        logging.debug('set_inverse_gain: Success!')
-        return True
-
-            
-    def find_bin_index(self,input):
-        for i in range(len(self.measured_gain)-1):
-            if(self.measured_gain[i] <= input and input < self.measured_gain[i+1]):
-                return i
-            if(self.measured_gain[-1] == input):
-                return len(self.measured_gain)-1
-        return None
         
+        logging.debug('set_inverted_pivots: Success!')
+        return True        
     
     def is_initialized(self):
         if self.ramp_length < 2:

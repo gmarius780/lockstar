@@ -127,7 +127,7 @@ void start(void);
 #define Continuous_Lock 			0x0109
 
 //DEFINE WHICH MODULE TO RUN!!
-#define LIN_MODULE
+#define LINEARIZATION_MODULE
 
 
 /* USER CODE END Private defines */

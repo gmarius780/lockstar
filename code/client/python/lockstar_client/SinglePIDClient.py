@@ -8,10 +8,10 @@ class SinglePIDClient(LockstarClient):
     """Basic Module which implements a simple PID controller by using input_1 as setpoint, 
     input_2 as error_signal and output 1 for the control signal"""
     def __init__(self, lockstar_ip, lockstar_port, client_id) -> None:
-        super().__init__(lockstar_ip, lockstar_port, client_id)
+        super().__init__(lockstar_ip, lockstar_port, client_id, 'SinglePIDModule')
 
 
-    def initialize(self, p: float, i: float, d: float, out_range_min: float, out_range_max: float, locked: bool,
+    async def initialize(self, p: float, i: float, d: float, out_range_min: float, out_range_max: float, locked: bool,
                     input_offset: float, output_offset: float):
         """Set all system module parameters
 
