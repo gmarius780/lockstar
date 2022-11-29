@@ -67,7 +67,7 @@ void LinearizationModule::new_linearization() {
 	ack->push_ack();
 	rpi->send_package(ack);
 
-	while(!received_new_ramp);
+	while(!received_new_ramp); // wrong order!
 	while(!timer_initialized);
 	while(!measurement_trigger);
 	gain_measurement();
