@@ -4,6 +4,7 @@ from lockstar_rpi.MCDataPackage import MCDataPackage
 
 from lockstar_rpi.Modules.Module import Module
 from lockstar_general.backend.BackendResponse import BackendResponse
+from math import floor, ceil
 
 
 class IOModule_(Module):
@@ -14,53 +15,142 @@ class IOModule_(Module):
 
     def __init__(self) -> None:
         super().__init__()
-        self.calibration = {}
 
+    async def set_ch_one_output_limits(self, min: float, max: float, writer, respond=True):
+        """Sets min and max output voltage in volt for channel one
 
-    async def calibrate(self, out_channel: int, out_range_min: float, out_range_max: float, writer):
-        """Starts the calibration process of the DAC"""
-        self.calibration[out_channel.value] = {
-            'out_range_min': out_range_min,
-            'out_range_max': out_range_max,
-            'calibration': []
-        }
+        
+        :param    min (float): userdefined: minimum output in volt
+        :param    max (float): userdefined: maximum output in volt
+        :param    writer (_type_): writer instance to respond to the client
+        :param    respond (bool, optional): Defaults to True only False if this method is called
+                    by launch_from_config.
+        """
+        self.out_range_ch_one_min = min
+        self.out_range_ch_one_max = max
 
-        self._mc_set_calibration()
-
-        writer.write(BackendResponse.ACK())
-        await writer.drain()
-
-    #==== Linearization Methods START====
-    async def set_linearization_one(self, writer, respond=True):
-        """Sets the parameters used by the DAC_ONE to linearize the systems response"""
-        logging.debug('Backend: set_linearization_one')
+        logging.debug('Backend: set output limits')
         mc_data_package = MCDataPackage()
         mc_data_package.push_to_buffer('uint32_t', 80) # method_identifier
+        mc_data_package.push_to_buffer('float', min)
+        mc_data_package.push_to_buffer('float', max)
         await MC.I().write_mc_data_package(mc_data_package)
         return await self.check_for_ack(writer=(writer if respond else None))
 
-    async def linearize_one(self, writer, respond=True):
-        """starts the linearization procedure of the microcontroller.
+    async def set_ch_two_output_limits(self, min: float, max: float, writer, respond=True):
+        """Sets min and max output voltage in volt for channel two
 
-            1. call start_linearization_one on MC
-                a) MC performs ramp and records respond
-                b) MC sends ACK back
-            2. once backend received ACK: call 'get_lin_trace_one'; MC returns the recorded trace
-            3. backend calculates the linearization parameters
-            4. set_linearization_one
-            5. returns recorded trace & linearization to the client
+        
+        :param    min (float): userdefined: minimum output in volt
+        :param    max (float): userdefined: maximum output in volt
+        :param    writer (_type_): writer instance to respond to the client
+        :param    respond (bool, optional): Defaults to True only False if this method is called
+                    by launch_from_config.
         """
-        pass
+        self.out_range_ch_two_min = min
+        self.out_range_ch_two_max = max
+
+        logging.debug('Backend: set output limits')
+        mc_data_package = MCDataPackage()
+        mc_data_package.push_to_buffer('uint32_t', 81) # method_identifier
+        mc_data_package.push_to_buffer('float', min)
+        mc_data_package.push_to_buffer('float', max)
+        await MC.I().write_mc_data_package(mc_data_package)
+        return await self.check_for_ack(writer=(writer if respond else None))
+
+    #==== Linearization Methods START====
+    async def set_linearization_one(self, linearization, min_output_voltage, max_output_voltage, writer, respond=True):
+        """Sets the parameters used by the DAC_ONE to linearize the systems response"""
+        return await self.set_linearization(linearization, min_output_voltage, max_output_voltage, True, writer, respond=respond)
+    
+    async def set_linearization_two(self, linearization, min_output_voltage, max_output_voltage, writer, respond=True):
+        """Sets the parameters used by the DAC_ONE to linearize the systems response"""
+        return await self.set_linearization(linearization, min_output_voltage, max_output_voltage, False, writer, respond=respond)
+    
+    async def set_linearization(self, linearization, min_output_voltage, max_output_voltage, ch_one, writer, respond=True):
+        """Sends inverted pivot points to uC. End of linearization procedure"""
+        if ch_one:
+            METHOD_IDENTIFIER = 82
+        else:
+            METHOD_IDENTIFIER = 83
+        logging.debug('Backend: set_linearization')
+
+        ramp_length = len(linearization)
+
+        max_package_size = floor((MCDataPackage.MAX_NBR_BYTES-100)/4)
+        number_of_ramp_packages = ceil(ramp_length/max_package_size)
+        number_of_full_ramp_packages = ramp_length//max_package_size
+
+        buffer_offset = 0     
+        for package_number in range(number_of_full_ramp_packages):                        
+            mc_data_package = MCDataPackage()
+            mc_data_package.push_to_buffer('uint32_t',METHOD_IDENTIFIER)
+            mc_data_package.push_to_buffer('float',min_output_voltage)
+            mc_data_package.push_to_buffer('float',max_output_voltage)
+            if package_number > 0: 
+                append = True
+            else:
+                append = False
+
+            mc_data_package.push_to_buffer('bool',append)
+            mc_data_package.push_to_buffer('uint32_t',max_package_size)
+
+            for i in range(self.max_package_size):
+                mc_data_package.push_to_buffer('float',linearization[buffer_offset + i])
+            await MC.I().write_mc_data_package(mc_data_package)
+            buffer_offset += self.max_package_size
+            
+            if not await self.check_for_ack(writer=(writer if respond else None)):
+                logging.error('set_linearization: Could not set inverted pivot points')
+                return False
+
+        if number_of_ramp_packages > number_of_full_ramp_packages:     
+            mc_data_package = MCDataPackage()
+            mc_data_package.push_to_buffer('uint32_t',METHOD_IDENTIFIER)
+            mc_data_package.push_to_buffer('float',min_output_voltage)
+            mc_data_package.push_to_buffer('float',max_output_voltage)
+            if number_of_full_ramp_packages > 0: 
+                append = True
+            else:
+                append = False
+
+            mc_data_package.push_to_buffer('bool',append)
+            mc_data_package.push_to_buffer('uint32_t',self.ramp_length%self.max_package_size)
+            
+            
+            for i in range(self.ramp_length%self.max_package_size):
+                mc_data_package.push_to_buffer('float',linearization[buffer_offset + i])
+            await MC.I().write_mc_data_package(mc_data_package)
+        
+            if not await self.check_for_ack(writer=(writer if respond else None)):
+                logging.error('set_linearization: Could not set inverted pivot points')
+                return False
+        
+        logging.debug('set_linearization: Success!')
+        return True        
+
+    async def set_linearization_length_one(self, linearization_length: int, writer, respond=True):
+        logging.debug('Backend: set_linearization_length_one')
+        mc_data_package = MCDataPackage()
+        mc_data_package.push_to_buffer('uint32_t', 84) # method_identifier
+        mc_data_package.push_to_buffer('uint32_t', linearization_length)
+        await MC.I().write_mc_data_package(mc_data_package)
+        return await self.check_for_ack(writer=(writer if respond else None))
+
+    async def set_linearization_length_two(self, linearization_length: int, writer, respond=True):
+        logging.debug('Backend: set_linearization_length_one')
+        mc_data_package = MCDataPackage()
+        mc_data_package.push_to_buffer('uint32_t', 85) # method_identifier
+        mc_data_package.push_to_buffer('uint32_t', linearization_length)
+        await MC.I().write_mc_data_package(mc_data_package)
+        return await self.check_for_ack(writer=(writer if respond else None))
 
     #==== Linearization Methods END====
 
     def generate_config_dict(self):
         """Stores all the relevant information in a dictionary such that the module can be relaunched with this information"""
         config = super().generate_config_dict()
-        config['calibration'] = self.calibration
         return config
 
     async def launch_from_config(self, config_dict):
-        if 'calibration' in config_dict:
-            self.calibration = config_dict['calibration']
-            self._mc_set_calibration()
+        pass

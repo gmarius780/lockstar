@@ -21,28 +21,71 @@ class LinearizationClient(LockstarClient):
         self.measured_gain = 0
         self.inverse_gain = 0
 
-    def new_linearization(self):
-        ramp_list = self.ramp.tolist()
-        bc = BackendCall(self.client_id,self.module_name,'new_linearization',args={'ramp_start':self.ramp_start,'ramp_end':self.ramp_end,'ramp_length':self.ramp_length,'ramp_speed':self.ramp_speed})
+    def linearize_ch_one(self, ramp_start:float, ramp_end:float, ramp_length:int, settling_time_ms:int):
+        """starts the linearization procedure of the microcontroller.
 
-        br = asyncio.run(self._call_lockstar(bc)) ## Maybe only return the reponse itself?
-        self.measured_gain = br.response[0]
-        self.inverse_gain = br.response[1]
-        
-        fig,ax = plt.subplots(1,1)
-        ax.plot(self.ramp,self.measured_gain,label='measured gain')
-        if(len(self.inverse_gain) == len(self.ramp)):
-            ax.plot(self.ramp,self.inverse_gain,label='inverse gain')
-        ax.legend()
-        ax.grid('lightgray')
-        plt.savefig('meas.png')
-        plt.show()
-        
-        f = open('meas.txt','a')
-        for value in self.measured_gain:
-            f.write(str(value)+'\n')
-        f.close()
+            1. MC starts ramp & records the trace
+            2. only sends ack when done
+            3. backend calls 'get_measurement_result'
+            4. backend calculates linearization
+            5. backend calls 'set_linearization_one'
+            6. backend returns the measured_gain, and the calculated linearization
+        Args:
+            ramp_start (_type_): _description_
+            ramp_end (_type_): _description_
+            nbr_of_ramp_points (_type_): _description_
 
+        Returns:
+            _type_: _description_
+        """
+        bc = BackendCall(self.client_id, self.module_name, 'linearize_ch_one', 
+                        args={
+                            'ramp_start': ramp_start, 
+                            'ramp_end': ramp_end,
+                            'ramp_length': ramp_length,
+                            'settling_time_ms': settling_time_ms
+                            })
+        br = asyncio.run(self._call_lockstar(bc))
+
+        measured_gain, linearization = br.response
+        return measured_gain, linearization
+
+    def linearize_ch_two(self, ramp_start:float, ramp_end:float, ramp_length:int, settling_time_ms:int):
+        """starts the linearization procedure of the microcontroller.
+
+            1. MC starts ramp & records the trace
+            2. only sends ack when done
+            3. backend calls 'get_measurement_result'
+            4. backend calculates linearization
+            5. backend calls 'set_linearization_one'
+            6. backend returns the measured_gain, and the calculated linearization
+        Args:
+            ramp_start (_type_): _description_
+            ramp_end (_type_): _description_
+            nbr_of_ramp_points (_type_): _description_
+
+        Returns:
+            _type_: _description_
+        """
+        bc = BackendCall(self.client_id, self.module_name, 'linearize_ch_two', 
+                        args={
+                            'ramp_start': ramp_start, 
+                            'ramp_end': ramp_end,
+                            'ramp_length': ramp_length,
+                            'settling_time_ms': settling_time_ms
+                            })
+        br = asyncio.run(self._call_lockstar(bc))
+
+        measured_gain, linearization = br.response
+        return measured_gain, linearization
+
+    def output_test_ramp_ch_one(self):
+        bc = BackendCall(self.client_id, self.module_name, 'output_test_ramp_ch_one', args={})
+        return asyncio.run(self._call_lockstar(bc))
+
+    def output_test_ramp_ch_two(self):
+        bc = BackendCall(self.client_id, self.module_name, 'output_test_ramp_ch_two', args={})
+        return asyncio.run(self._call_lockstar(bc))
 
 if __name__ == '__main__':
     client = LinearizationClient('192.168.88.201', 10780, 1235) 
@@ -51,10 +94,19 @@ if __name__ == '__main__':
         logging.info(f'Succesfully initialized Linearization Module')
     else:
         logging.error(f'Linearization module: Could not initialize module')
+    
+    ramp_start = 0.
+    ramp_end = 10.
+    ramp_length = 2000
+    settling_time_ms = 1
 
-    client.ramp_start = 0
-    client.ramp_end = 10
-    client.ramp_length = 1000
-    client.ramp = np.linspace(client.ramp_start,client.ramp_end,client.ramp_length)
-    client.ramp_speed = 1
-    client.new_linearization()
+    ramp = np.linspace(ramp_start, ramp_end, num=ramp_length)
+
+    measured_gain, linearization = client.linearize_ch_one(ramp_start, ramp_end, ramp_length, settling_time_ms)
+
+    fig,ax = plt.subplots(1,1)
+    ax.plot(ramp,measured_gain,label='measured gain')
+    ax.plot(ramp,linearization,label='linearizaion')
+    ax.legend()
+    ax.grid('lightgray')
+    plt.show()

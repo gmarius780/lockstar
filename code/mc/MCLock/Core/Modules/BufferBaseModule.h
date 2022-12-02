@@ -47,11 +47,6 @@ public:
 	static const uint32_t METHOD_OUTPUT_TTL = 13;
 	void output_ttl(RPIDataPackage* read_package);
 
-	static const uint32_t METHOD_SET_CH_ONE_OUTPUT_LIMITS = 14;
-	void set_ch_one_output_limits(RPIDataPackage* read_package);
-	static const uint32_t METHOD_SET_CH_TWO_OUTPUT_LIMITS = 15;
-	void set_ch_two_output_limits(RPIDataPackage* read_package);
-
 	static const uint32_t METHOD_SET_CH_ONE_BUFFER = 16;
 	void set_ch_one_buffer(RPIDataPackage* read_package);
 	static const uint32_t METHOD_SET_CH_TWO_BUFFER = 17;

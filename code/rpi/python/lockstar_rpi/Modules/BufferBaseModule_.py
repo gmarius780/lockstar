@@ -64,48 +64,6 @@ class BufferBaseModule_(IOModule_):
         await MC.I().write_mc_data_package(mc_data_package)
         return await self.check_for_ack(writer=(writer if respond else None))
 
-    async def set_ch_one_output_limits(self, min: float, max: float, writer, respond=True):
-        """Sets min and max output voltage in volt for channel one
-
-        
-        :param    min (float): userdefined: minimum output in volt
-        :param    max (float): userdefined: maximum output in volt
-        :param    writer (_type_): writer instance to respond to the client
-        :param    respond (bool, optional): Defaults to True only False if this method is called
-                    by launch_from_config.
-        """
-        self.out_range_ch_one_min = min
-        self.out_range_ch_one_max = max
-
-        logging.debug('Backend: set output limits')
-        mc_data_package = MCDataPackage()
-        mc_data_package.push_to_buffer('uint32_t', 14) # method_identifier
-        mc_data_package.push_to_buffer('float', min)
-        mc_data_package.push_to_buffer('float', max)
-        await MC.I().write_mc_data_package(mc_data_package)
-        return await self.check_for_ack(writer=(writer if respond else None))
-
-    async def set_ch_two_output_limits(self, min: float, max: float, writer, respond=True):
-        """Sets min and max output voltage in volt for channel two
-
-        
-        :param    min (float): userdefined: minimum output in volt
-        :param    max (float): userdefined: maximum output in volt
-        :param    writer (_type_): writer instance to respond to the client
-        :param    respond (bool, optional): Defaults to True only False if this method is called
-                    by launch_from_config.
-        """
-        self.out_range_ch_two_min = min
-        self.out_range_ch_two_max = max
-
-        logging.debug('Backend: set output limits')
-        mc_data_package = MCDataPackage()
-        mc_data_package.push_to_buffer('uint32_t', 15) # method_identifier
-        mc_data_package.push_to_buffer('float', min)
-        mc_data_package.push_to_buffer('float', max)
-        await MC.I().write_mc_data_package(mc_data_package)
-        return await self.check_for_ack(writer=(writer if respond else None))
-
     async def set_ch_one_buffer(self, buffer, writer, respond=True):
         """upload buffer for channel one waveforms (buffer-length has to be defined beforhand using initialize_buffers)"""
         return await self.set_ch_buffer(buffer, writer, respond, buffer_one=True)

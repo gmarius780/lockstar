@@ -22,14 +22,6 @@ class BufferBaseClient_(LockstarClient):
         bc = BackendCall(self.client_id, self.module_name, 'output_ttl', args={})
         return asyncio.run(self._call_lockstar(bc))
 
-    def set_ch_one_output_limits(self, min: float, max: float):
-        bc = BackendCall(self.client_id, self.module_name, 'set_ch_one_output_limits', args={'min': min, 'max': max})
-        return asyncio.run(self._call_lockstar(bc))
-
-    def set_ch_two_output_limits(self, min: float, max: float):
-        bc = BackendCall(self.client_id, self.module_name, 'set_ch_two_output_limits', args={'min': min, 'max': max})
-        return asyncio.run(self._call_lockstar(bc))
-
     def set_ch_one_buffer(self, buffer):
         bc = BackendCall(self.client_id, self.module_name, 'set_ch_one_buffer', args={'buffer': buffer})
         return asyncio.run(self._call_lockstar(bc))
