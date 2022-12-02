@@ -81,7 +81,7 @@ class LinearizationModule(IOModule_):
             mc_data_package.push_to_buffer('uint32_t',13) # METHOD_IDENTIFIER OF linearize_ch_two
         await MC.I().write_mc_data_package(mc_data_package)
         
-        gain_measurement_timeout = max(5, ceil(ramp_length * settling_time_ms / 1000))
+        gain_measurement_timeout = max(10, ceil(ramp_length * settling_time_ms / 1000))
         logging.debug('new_linearization: Waiting for gain measurement...')
 
         if not await MC.I().read_ack(timeout_s=gain_measurement_timeout):
@@ -157,7 +157,7 @@ class LinearizationModule(IOModule_):
         mc_data_package.push_to_buffer('uint32_t',settling_time_ms)
         await MC.I().write_mc_data_package(mc_data_package)
         
-        if not await MC.I().read_ack(timeout_s=5):
+        if not await MC.I().read_ack(timeout_s=None):
             logging.error('set_ramp_parameters: Could not set ramp parameters')
             return False
         return True

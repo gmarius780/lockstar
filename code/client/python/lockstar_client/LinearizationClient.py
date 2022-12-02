@@ -47,7 +47,8 @@ class LinearizationClient(LockstarClient):
                             })
         br = asyncio.run(self._call_lockstar(bc))
 
-        if br.response and len(br.response == 2):
+        print(br.response)
+        if br.response != 'NACK' and len(br.response == 2):
             measured_gain, linearization = br.response
             return measured_gain, linearization
         else:
