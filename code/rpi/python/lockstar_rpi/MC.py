@@ -69,7 +69,7 @@ class MC:
                 return MCDataPackage.pop_ack_nack_from_buffer(bytes(raw_data))
             except Exception as ex:
                 exception = ex
-                sleep(0.1)
+                sleep(1)
         logging.error(f'MC.read_mc_data_package: cannot unpack data: {payload_length}: {exception}: {raw_data}')
         return False
 
