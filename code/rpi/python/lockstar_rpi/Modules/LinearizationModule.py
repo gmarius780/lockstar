@@ -94,7 +94,7 @@ class LinearizationModule(IOModule_):
 
         #=== retrieve gain measurement result
         gain_measurement_result = await self.get_gain_measurement_result(ramp_length)
-        if gain_measurement_result is not None:
+        if gain_measurement_result is None:
             logging.error('gain measurement could not get result')
             writer.write(BackendResponse.NACK().to_bytes())
             await writer.drain()
