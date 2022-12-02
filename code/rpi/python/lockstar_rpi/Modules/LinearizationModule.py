@@ -102,7 +102,8 @@ class LinearizationModule(IOModule_):
 
         #=== calculate linearization from gain measurement
         monotone_envelope = LinearizationModule.calculate_monotone_envelope(gain_measurement_result)
-        linearization_pivots = LinearizationModule.calculate_inverted_pivots(monotone_envelope)
+        ramp = np.linspace(ramp_start, ramp_end, num=ramp_length)
+        linearization_pivots = LinearizationModule.calculate_inverted_pivots(monotone_envelope, ramp)
         
         br = BackendResponse([gain_measurement_result.tolist(), linearization_pivots.tolist()])
         writer.write(br.to_bytes())
