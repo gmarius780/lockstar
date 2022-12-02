@@ -47,8 +47,11 @@ class LinearizationClient(LockstarClient):
                             })
         br = asyncio.run(self._call_lockstar(bc))
 
-        measured_gain, linearization = br.response
-        return measured_gain, linearization
+        if len(br.response == 2):
+            measured_gain, linearization = br.response
+            return measured_gain, linearization
+        else:
+            return False
 
     def linearize_ch_two(self, ramp_start:float, ramp_end:float, ramp_length:int, settling_time_ms:int):
         """starts the linearization procedure of the microcontroller.
@@ -88,7 +91,7 @@ class LinearizationClient(LockstarClient):
         return asyncio.run(self._call_lockstar(bc))
 
 if __name__ == '__main__':
-    client = LinearizationClient('192.168.88.201', 10780, 1235) 
+    client = LinearizationClient('192.168.88.13', 10780, 1234) 
 
     if client.register_client_id():
         logging.info(f'Succesfully initialized Linearization Module')

@@ -60,6 +60,7 @@ class MC:
         """
         #unpack data
         start_time = perf_counter()
+        exception = ''
         while (timeout_s is None or perf_counter() - start_time < timeout_s):
             if timeout_s is None:
                 timeout_s = 0
@@ -67,8 +68,9 @@ class MC:
                 payload_length, raw_data = await self.read_mc_data()
                 return MCDataPackage.pop_ack_nack_from_buffer(bytes(raw_data))
             except Exception as ex:
-                pass
-        logging.error(f'MC.read_mc_data_package: cannot unpack data: {payload_length}: {ex}: {raw_data}')
+                exception = ex
+                sleep(0.1)
+        logging.error(f'MC.read_mc_data_package: cannot unpack data: {payload_length}: {exception}: {raw_data}')
         return False
 
     async def read_mc_data_package(self, list_str_cpp_dtype):

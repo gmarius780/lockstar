@@ -81,37 +81,38 @@ public:
 	}
 
 	void handle_rpi_input() {
-		/*** Package format: method_identifier (uint32_t) | method specific arguments (defined in the methods directly) ***/
-		RPIDataPackage* read_package = rpi->get_read_package();
+		if (Module::handle_rpi_base_methods() == false) { //if base class doesn't know the called method
+			/*** Package format: method_identifier (uint32_t) | method specific arguments (defined in the methods directly) ***/
+			RPIDataPackage* read_package = rpi->get_read_package();
 
-		// switch between method_identifier
-		switch (read_package->pop_from_buffer<uint32_t>()) {
-		case METHOD_SET_RAMP_PARAMETERS:
-			set_ramp_parameters(read_package);
-			break;
-		case METHOD_LINEARIZE_CH_ONE:
-			linearize_ch_one(read_package);
-			break;
-		case METHOD_LINEARIZE_CH_TWO:
-			linearize_ch_two(read_package);
-			break;
-		case METHOD_GET_GAIN_MEASUREMENT_RESULT:
-			get_gain_measurement_result(read_package);
-			break;
-		case METHOD_OUTPUT_TEST_RAMP_CH_ONE:
-			output_test_ramp_ch_one(read_package);
-			break;
-		case METHOD_OUTPUT_TEST_RAMP_CH_TWO:
-			output_test_ramp_ch_two(read_package);
-			break;
-		default:
-			/*** send NACK because the method_identifier is not valid ***/
-			RPIDataPackage* write_package = rpi->get_write_package();
-			write_package->push_nack();
-			rpi->send_package(write_package);
-			break;
+			// switch between method_identifier
+			switch (read_package->pop_from_buffer<uint32_t>()) {
+			case METHOD_SET_RAMP_PARAMETERS:
+				set_ramp_parameters(read_package);
+				break;
+			case METHOD_LINEARIZE_CH_ONE:
+				linearize_ch_one(read_package);
+				break;
+			case METHOD_LINEARIZE_CH_TWO:
+				linearize_ch_two(read_package);
+				break;
+			case METHOD_GET_GAIN_MEASUREMENT_RESULT:
+				get_gain_measurement_result(read_package);
+				break;
+			case METHOD_OUTPUT_TEST_RAMP_CH_ONE:
+				output_test_ramp_ch_one(read_package);
+				break;
+			case METHOD_OUTPUT_TEST_RAMP_CH_TWO:
+				output_test_ramp_ch_two(read_package);
+				break;
+			default:
+				/*** send NACK because the method_identifier is not valid ***/
+				RPIDataPackage* write_package = rpi->get_write_package();
+				write_package->push_nack();
+				rpi->send_package(write_package);
+				break;
+			}
 		}
-
 	}
 
 	/**
