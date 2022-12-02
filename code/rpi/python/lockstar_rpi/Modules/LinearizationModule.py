@@ -200,12 +200,12 @@ class LinearizationModule(IOModule_):
             mc_data_package = MCDataPackage()
             mc_data_package.push_to_buffer('uint32_t',METHOD_IDENTIFIER)
             mc_data_package.push_to_buffer('uint32_t',buffer_offset)
-            mc_data_package.push_to_buffer('uint32_t',self.ramp_length%max_package_size)
+            mc_data_package.push_to_buffer('uint32_t',ramp_length%max_package_size)
             await MC.I().write_mc_data_package(mc_data_package)
         
-            response_list = ['float']*(self.ramp_length%max_package_size)
+            response_list = ['float']*(ramp_length%max_package_size)
             response_length,response_list = await MC.I().read_mc_data_package(response_list)
-            gain_measurement_list[-(self.ramp_length%max_package_size):] = response_list       
+            gain_measurement_list[-(ramp_length%max_package_size):] = response_list       
         
         measured_gain = np.array(gain_measurement_list)
         logging.debug('get_gain_measurement_result: Measurement received!')
