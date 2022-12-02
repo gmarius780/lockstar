@@ -156,7 +156,7 @@ class LinearizationModule(IOModule_):
         mc_data_package.push_to_buffer('uint32_t',ramp_length)
         mc_data_package.push_to_buffer('uint32_t',settling_time_ms)
         await MC.I().write_mc_data_package(mc_data_package)
-        
+        sleep(1)
         if not await MC.I().read_ack(timeout_s=None):
             logging.error('set_ramp_parameters: Could not set ramp parameters')
             return False
