@@ -67,11 +67,11 @@ class LinearizationModule(IOModule_):
         logging.info('Backend: new_linearization')
 
         #=== set ramp parameters
-        if not await self.set_ramp_parameters(ramp_start, ramp_end, ramp_length, settling_time_ms):
-            logging.error('set_ramp_parameters: Could not set ramp parameters!')
-            writer.write(BackendResponse.NACK().to_bytes())
-            await writer.drain()
-            return False
+        # if not await self.set_ramp_parameters(ramp_start, ramp_end, ramp_length, settling_time_ms):
+        #     logging.error('set_ramp_parameters: Could not set ramp parameters!')
+        #     writer.write(BackendResponse.NACK().to_bytes())
+        #     await writer.drain()
+        #     return False
 
         #=== start gain measurement
         mc_data_package = MCDataPackage()
@@ -140,7 +140,7 @@ class LinearizationModule(IOModule_):
 
     # ==== START: MC Methods
     
-    async def set_ramp_parameters(self, ramp_start:float, ramp_end:float, ramp_length:int, settling_time_ms:int):
+    async def set_ramp_parameters(self, ramp_start:float, ramp_end:float, ramp_length:int, settling_time_ms:int, writer):
         """Sends ramp parameters (ramp_start, ramp_end, ramp_length, ramp_speed) to uC"""
         METHOD_IDENTIFIER = 11
         logging.debug('Backend: set_ramp_parameters')
@@ -156,11 +156,15 @@ class LinearizationModule(IOModule_):
         mc_data_package.push_to_buffer('uint32_t',ramp_length)
         mc_data_package.push_to_buffer('uint32_t',settling_time_ms)
         await MC.I().write_mc_data_package(mc_data_package)
-        sleep(5)
         if not await MC.I().read_ack(timeout_s=None):
-            logging.error('set_ramp_parameters: Could not set ramp parameters')
+            logging.error('linearize_ch: set_ramp_parameters failed')
+            writer.write(BackendResponse.NACK().to_bytes())
+            await writer.drain()
             return False
-        return True
+        else:
+            writer.write(BackendResponse.ACK().to_bytes())
+            await writer.drain()
+            return True
 
 
     async def get_gain_measurement_result(self, ramp_length:int):

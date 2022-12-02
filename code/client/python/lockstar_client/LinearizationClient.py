@@ -21,6 +21,17 @@ class LinearizationClient(LockstarClient):
         self.measured_gain = 0
         self.inverse_gain = 0
 
+    def set_ramp_parameters(self, ramp_start:float, ramp_end:float, ramp_length:int, settling_time_ms:int):
+        bc = BackendCall(self.client_id, self.module_name, 'set_ramp_parameters', 
+                        args={
+                            'ramp_start': ramp_start, 
+                            'ramp_end': ramp_end,
+                            'ramp_length': ramp_length,
+                            'settling_time_ms': settling_time_ms
+                            })
+        br = asyncio.run(self._call_lockstar(bc))
+        return br.is_ACK()
+
     def linearize_ch_one(self, ramp_start:float, ramp_end:float, ramp_length:int, settling_time_ms:int):
         """starts the linearization procedure of the microcontroller.
 
@@ -106,11 +117,12 @@ if __name__ == '__main__':
 
     ramp = np.linspace(ramp_start, ramp_end, num=ramp_length)
 
-    measured_gain, linearization = client.linearize_ch_one(ramp_start, ramp_end, ramp_length, settling_time_ms)
+    client.set_ramp_parameters(ramp_start, ramp_end, ramp_length, settling_time_ms)
+    # measured_gain, linearization = client.linearize_ch_one(ramp_start, ramp_end, ramp_length, settling_time_ms)
 
-    fig,ax = plt.subplots(1,1)
-    ax.plot(ramp,measured_gain,label='measured gain')
-    ax.plot(ramp,linearization,label='linearizaion')
-    ax.legend()
-    ax.grid('lightgray')
-    plt.show()
+    # fig,ax = plt.subplots(1,1)
+    # ax.plot(ramp,measured_gain,label='measured gain')
+    # ax.plot(ramp,linearization,label='linearizaion')
+    # ax.legend()
+    # ax.grid('lightgray')
+    # plt.show()
