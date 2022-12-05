@@ -117,7 +117,7 @@ if __name__ == '__main__':
 
     ramp = np.linspace(ramp_start, ramp_end, num=ramp_length)
 
-    client.set_ramp_parameters(ramp_start, ramp_end, ramp_length, settling_time_ms)
+    print(client.set_ramp_parameters(ramp_start, ramp_end, ramp_length, settling_time_ms))
     # print(client.linearize_ch_one(ramp_start, ramp_end, ramp_length, settling_time_ms))
 
     # fig,ax = plt.subplots(1,1)

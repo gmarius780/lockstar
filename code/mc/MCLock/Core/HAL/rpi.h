@@ -38,7 +38,9 @@ private:
 	DMA_config_t dma_in_config, dma_out_config;
 
 	BasicTimer *comm_reset_timer; // resets is_communicating after an one periode of this timer
-	//COMMUNICATION RESET FREQUENCY= INTERNAL_CLOCK_FREQUENCY/prescaler * counter_max = 90e6/90'00*10000 = 1Hz
+	//COMMUNICATION RESET FREQUENCY= INTERNAL_CLOCK_FREQUENCY/prescaler * counter_max = 90e6/36000/30000 = 1/12 Hz
+	//EVERY COMMUNICATION MUST HAPPEND IN UNDER 12 seconds!
+	//This means that the time between sending of a command by the RPI and the polling ACK/NACK by the RPI must be small than 12 seconds
 	//static const uint32_t COMM_RESET_COUNTER_MAX = 10000;
 	static const uint32_t COMM_RESET_COUNTER_MAX = 30000;
 	//static const uint32_t COMM_RESET_PRESCALER = 9000;

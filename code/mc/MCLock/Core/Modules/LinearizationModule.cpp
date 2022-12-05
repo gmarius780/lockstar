@@ -182,6 +182,7 @@ public:
 
 			state.current_state = RECEIVED_RAMP_PARAMETERS;
 
+			HAL_Delay(5000);
 			/*** send ACK ***/
 			RPIDataPackage* write_package = rpi->get_write_package();
 			write_package->push_ack();
