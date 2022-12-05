@@ -171,7 +171,7 @@ void Module::set_linearization(RPIDataPackage* read_package, LinearizableDAC *da
 	//push the received values onto the linearization buffer of the given dac
 	bool success = true;
 	for(uint32_t i=0; i<package_size; i++) {
-		if (dac->push_to_linearization_buffer(read_package->pop_from_buffer<float>(), true ? (append and i==0):false) == false) {
+		if (dac->push_to_linearization_buffer(read_package->pop_from_buffer<float>(), (append == false and i==0) ? false:true) == false) {
 			success = false;
 			break;
 		}

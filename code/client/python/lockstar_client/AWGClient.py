@@ -23,11 +23,11 @@ if __name__ == "__main__":
     
     if client.register_client_id():
         logging.info(f'Successfully initialized AWG module')
-
+        
         linearization_file = join(dirname(__file__), 'test_linearization.json')
         linearization_length = 2000
 
-        sampling_rate = 200
+        sampling_rate = 1000
         
         ch_one_chunks = [1999]
         ch_one_buffer = np.linspace(0, 10, num=2000).tolist()

@@ -23,7 +23,7 @@
  * User can upload buffers containing the module will then output the voltages defined in the buffers with a sampling-rate, set by the user
  */
 class AWGModule: public BufferBaseModule {
-	static const uint32_t BUFFER_LIMIT_kBYTES = 180; //if this is chosen to large (200) there is no warning, the MC simply crashes (hangs in syscalls.c _exit())
+	static const uint32_t BUFFER_LIMIT_kBYTES = 160; //if this is chosen to large (200) there is no warning, the MC simply crashes (hangs in syscalls.c _exit())
 	static const uint32_t MAX_NBR_OF_CHUNKS = 100;
 public:
 	AWGModule() {

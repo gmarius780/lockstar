@@ -59,7 +59,7 @@ if __name__ == "__main__":
             logging.StreamHandler()
         ]
     )
-    client = SinglePIDClient('192.168.88.13', 10780, 1234)
+    client = SinglePIDClient('192.168.88.201', 10780, 1234)
 
     response = client.initialize(1,0,0,0,10,False, 0, 0)
     
@@ -79,5 +79,6 @@ if __name__ == "__main__":
     
     if initialized:
         logging.info(f'Successfully initialized Single PID module')
+        print(client.set_pid(1,0,0,0,0))
         print(client.set_linearization_length_one(500))
 
