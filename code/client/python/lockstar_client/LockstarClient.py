@@ -2,6 +2,7 @@ import asyncio
 import logging
 from lockstar_general.backend.BackendResponse import BackendResponse
 from lockstar_general.backend.BackendCall import BackendCall
+from lockstar_client.ClientSettings import ClientSettings
 
 class LockstarClient():
     def __init__(self, lockstar_ip, lockstar_port, client_id, module_name) -> None:
@@ -74,7 +75,7 @@ class LockstarClient():
         Returns:
             BackendResponse: response
         """
-        reader, writer = await asyncio.open_connection(self.lockstar_ip, self.lockstar_port)
+        reader, writer = await asyncio.open_connection(self.lockstar_ip, self.lockstar_port, limit=ClientSettings.read_buffer_limit_bytes)
         writer.write(backend_call.to_bytes())
         await writer.drain()
         byte_response = (await reader.readuntil(BackendResponse.DELIMITTER))[:-1]

@@ -84,7 +84,7 @@ class LinearizationModule(IOModule_):
             mc_data_package.push_to_buffer('uint32_t',13) # METHOD_IDENTIFIER OF linearize_ch_two
         await MC.I().write_mc_data_package(mc_data_package)
         
-        gain_measurement_timeout = 10*ceil(self.ramp_length * self.settling_time_ms / 1000)
+        gain_measurement_timeout = 3*ceil(self.ramp_length * self.settling_time_ms / 1000)
         logging.debug('new_linearization: Waiting for gain measurement...')
         sleep(gain_measurement_timeout)
         if not await MC.I().read_ack(timeout_s=None):
