@@ -128,7 +128,7 @@ void start(void);
 
 //DEFINE WHICH MODULE TO RUN!!
 #define LINEARIZATION_MODULE
-
+//#define SINGLE_PID_MODULE
 
 /* USER CODE END Private defines */
 

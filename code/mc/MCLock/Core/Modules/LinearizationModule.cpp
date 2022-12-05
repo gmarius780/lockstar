@@ -99,12 +99,6 @@ public:
 			case METHOD_GET_GAIN_MEASUREMENT_RESULT:
 				get_gain_measurement_result(read_package);
 				break;
-			case METHOD_OUTPUT_TEST_RAMP_CH_ONE:
-				output_test_ramp_ch_one(read_package);
-				break;
-			case METHOD_OUTPUT_TEST_RAMP_CH_TWO:
-				output_test_ramp_ch_two(read_package);
-				break;
 			default:
 				/*** send NACK because the method_identifier is not valid ***/
 				RPIDataPackage* write_package = rpi->get_write_package();
@@ -253,53 +247,6 @@ public:
 			rpi->send_package(write_package);
 		}
 	}
-
-
-	/**
-	 * Outputs the ramp as it is set with set_ramp_params. Can be used to check if the
-	 * linearization works
-	 */
-	static const uint32_t METHOD_OUTPUT_TEST_RAMP_CH_ONE = 15;
-	void output_test_ramp_ch_one(RPIDataPackage* read_package) {
-		output_test_ramp(read_package, true);
-	}
-
-	/**
-	 * Outputs the ramp as it is set with set_ramp_params. Can be used to check if the
-	 * linearization works
-	 */
-	static const uint32_t METHOD_OUTPUT_TEST_RAMP_CH_TWO = 16;
-	void output_test_ramp_ch_two(RPIDataPackage* read_package) {
-		output_test_ramp(read_package, false);
-	}
-
-	void output_test_ramp(RPIDataPackage* read_package, bool ch_one) {
-		if (state.current_state == RECEIVED_RAMP_PARAMETERS) {
-			state.active_channel = ch_one ? CH_ONE : CH_TWO;
-			state.current_state = TESTING;
-
-			uint32_t testing_index = 0;
-			LinearizableDAC* dac = state.active_channel == ch_one ? dac_1 : dac_2;
-
-			//sequentially perform gain measurement
-			while(testing_index < ramp_length) {
-				dac->write(ramp_start + ramp_stepsize*testing_index);
-				HAL_Delay(settling_time_ms); // wait for settling time to mimic gain measurement
-				HAL_Delay(1); // wait the same amount as during gain measurement
-				testing_index++;
-			}
-
-			state.current_state = RECEIVED_RAMP_PARAMETERS;
-
-		} else {
-			/*** send NACK because there is no gain measurement result available***/
-			RPIDataPackage* write_package = rpi->get_write_package();
-			write_package->push_nack();
-			rpi->send_package(write_package);
-		}
-	}
-
-
 
 	/*** END: METHODS ACCESSIBLE FROM THE RPI ***/
 

@@ -82,14 +82,6 @@ class LinearizationClient(LockstarClient):
         measured_gain, linearization = br.response
         return measured_gain, linearization
 
-    def output_test_ramp_ch_one(self):
-        bc = BackendCall(self.client_id, self.module_name, 'output_test_ramp_ch_one', args={})
-        return asyncio.run(self._call_lockstar(bc))
-
-    def output_test_ramp_ch_two(self):
-        bc = BackendCall(self.client_id, self.module_name, 'output_test_ramp_ch_two', args={})
-        return asyncio.run(self._call_lockstar(bc))
-
 if __name__ == '__main__':
     client = LinearizationClient('192.168.88.13', 10780, 1234) 
 

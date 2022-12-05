@@ -114,25 +114,6 @@ class LinearizationModule(IOModule_):
         logging.debug('Backend: New linearization successful!')
         return True
 
-    async def output_test_ramp_ch_one(self, writer):
-        METHOD_IDENTIFIER = 15
-        logging.debug('Backend: output_test_ramp_ch_one')
-
-        mc_data_package = MCDataPackage()
-        mc_data_package.push_to_buffer('uint32_t',METHOD_IDENTIFIER)
-        await MC.I().write_mc_data_package(mc_data_package)
-        
-        return self.check_for_ack(writer=writer)
-
-    async def output_test_ramp_ch_two(self, writer):
-        METHOD_IDENTIFIER = 16
-        logging.debug('Backend: output_test_ramp_ch_two')
-
-        mc_data_package = MCDataPackage()
-        mc_data_package.push_to_buffer('uint32_t',METHOD_IDENTIFIER)
-        await MC.I().write_mc_data_package(mc_data_package)
-        
-        return self.check_for_ack(writer=writer)
     # ==== END: client methods
 
 
@@ -159,7 +140,6 @@ class LinearizationModule(IOModule_):
         mc_data_package.push_to_buffer('uint32_t',ramp_length)
         mc_data_package.push_to_buffer('uint32_t',settling_time_ms)
         await MC.I().write_mc_data_package(mc_data_package)
-        sleep(1)
         if not await MC.I().read_ack():
             logging.error('linearize_ch: set_ramp_parameters failed')
             writer.write(BackendResponse.NACK().to_bytes())
