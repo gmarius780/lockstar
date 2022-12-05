@@ -111,6 +111,8 @@ class IOModule_(Module):
             
             if not await self.check_for_ack(writer=(writer if respond else None)):
                 logging.error('set_linearization: Could not set inverted pivot points')
+                if writer is not None:
+                    writer.write(BackendResponse.NACK().to_bytes())
                 return False
 
         if number_of_ramp_packages > number_of_full_ramp_packages:     
@@ -133,9 +135,13 @@ class IOModule_(Module):
         
             if not await self.check_for_ack(writer=(writer if respond else None)):
                 logging.error('set_linearization: Could not set inverted pivot points')
+                if writer is not None:
+                    writer.write(BackendResponse.NACK().to_bytes())
                 return False
         
         logging.debug('set_linearization: Success!')
+        if writer is not None:
+            writer.write(BackendResponse.ACK().to_bytes())
         return True        
 
     async def set_linearization_length_one(self, linearization_length: int, writer, respond=True):
