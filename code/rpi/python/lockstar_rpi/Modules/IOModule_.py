@@ -84,6 +84,7 @@ class IOModule_(Module):
             logging.error('set_linearization: linearization_length must match the set linearization length')
             if writer is not None:
                 writer.write(BackendResponse.NACK().to_bytes())
+                await writer.drain()
             return False
 
         max_package_size = floor((MCDataPackage.MAX_NBR_BYTES-100)/4)
@@ -113,6 +114,7 @@ class IOModule_(Module):
                 logging.error('set_linearization: Could not set inverted pivot points')
                 if writer is not None:
                     writer.write(BackendResponse.NACK().to_bytes())
+                    await writer.drain()
                 return False
 
         if number_of_ramp_packages > number_of_full_ramp_packages:     
@@ -137,11 +139,13 @@ class IOModule_(Module):
                 logging.error('set_linearization: Could not set inverted pivot points')
                 if writer is not None:
                     writer.write(BackendResponse.NACK().to_bytes())
+                    await writer.drain()
                 return False
         
         logging.debug('set_linearization: Success!')
         if writer is not None:
             writer.write(BackendResponse.ACK().to_bytes())
+            await writer.drain()
         return True        
 
     async def set_linearization_length_one(self, linearization_length: int, writer, respond=True):
