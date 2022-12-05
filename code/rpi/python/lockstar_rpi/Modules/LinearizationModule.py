@@ -122,10 +122,7 @@ class LinearizationModule(IOModule_):
         mc_data_package.push_to_buffer('uint32_t',METHOD_IDENTIFIER)
         await MC.I().write_mc_data_package(mc_data_package)
         
-        if not await MC.I().read_ack(timeout_s=1):
-            logging.error('output_test_ramp_ch_one: failed')
-            return False
-        return True
+        return self.check_for_ack(writer=writer)
 
     async def output_test_ramp_ch_two(self, writer):
         METHOD_IDENTIFIER = 16
@@ -135,10 +132,7 @@ class LinearizationModule(IOModule_):
         mc_data_package.push_to_buffer('uint32_t',METHOD_IDENTIFIER)
         await MC.I().write_mc_data_package(mc_data_package)
         
-        if not await MC.I().read_ack(timeout_s=1):
-            logging.error('output_test_ramp_ch_two: failed')
-            return False
-        return True
+        return self.check_for_ack(writer=writer)
     # ==== END: client methods
 
 
