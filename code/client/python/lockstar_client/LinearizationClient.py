@@ -95,19 +95,21 @@ if __name__ == '__main__':
     ramp_length = 500
     settling_time_ms = 1
 
-    ramp = np.linspace(ramp_start, ramp_end, num=ramp_length)
+    print(client.set_linearization_length_one(500))
 
-    print(client.set_ramp_parameters(ramp_start, ramp_end, ramp_length, settling_time_ms))
-    linearization_response = client.linearize_ch_one()
+    # ramp = np.linspace(ramp_start, ramp_end, num=ramp_length)
 
-    if linearization_response != False:
-        measured_gain, linearization = linearization_response
-        fig,ax = plt.subplots(1,1)
-        ax.plot(ramp,measured_gain,label='measured gain')
-        ax.plot(ramp,linearization,label='linearizaion')
-        ax.legend()
-        ax.grid('lightgray')
-        plt.show()
+    # print(client.set_ramp_parameters(ramp_start, ramp_end, ramp_length, settling_time_ms))
+    # linearization_response = client.linearize_ch_one()
 
-        print(client.set_linearization_length_one(ramp_length))
-        print(client.set_linearization_one(linearization, min_output_voltage=ramp_start, max_output_voltage=ramp_end))
+    # if linearization_response != False:
+    #     measured_gain, linearization = linearization_response
+    #     fig,ax = plt.subplots(1,1)
+    #     ax.plot(ramp,measured_gain,label='measured gain')
+    #     ax.plot(ramp,linearization,label='linearizaion')
+    #     ax.legend()
+    #     ax.grid('lightgray')
+    #     plt.show()
+
+    #     print(client.set_linearization_length_one(ramp_length))
+    #     print(client.set_linearization_one(linearization, min_output_voltage=ramp_start, max_output_voltage=ramp_end))
