@@ -114,7 +114,7 @@ class LinearizationModule(IOModule_):
         logging.debug('Backend: New linearization successful!')
         return True
 
-    async def output_test_ramp_ch_one(writer):
+    async def output_test_ramp_ch_one(self, writer):
         METHOD_IDENTIFIER = 15
         logging.debug('Backend: output_test_ramp_ch_one')
 
@@ -127,7 +127,7 @@ class LinearizationModule(IOModule_):
             return False
         return True
 
-    async def output_test_ramp_ch_two(writer):
+    async def output_test_ramp_ch_two(self, writer):
         METHOD_IDENTIFIER = 16
         logging.debug('Backend: output_test_ramp_ch_two')
 
