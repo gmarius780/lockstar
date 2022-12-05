@@ -104,10 +104,10 @@ class IOModule_(Module):
             mc_data_package.push_to_buffer('bool',append)
             mc_data_package.push_to_buffer('uint32_t',max_package_size)
 
-            for i in range(self.max_package_size):
+            for i in range(max_package_size):
                 mc_data_package.push_to_buffer('float',linearization[buffer_offset + i])
             await MC.I().write_mc_data_package(mc_data_package)
-            buffer_offset += self.max_package_size
+            buffer_offset += max_package_size
             
             if not await self.check_for_ack(writer=(writer if respond else None)):
                 logging.error('set_linearization: Could not set inverted pivot points')
