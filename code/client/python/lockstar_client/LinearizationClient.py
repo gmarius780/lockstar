@@ -100,7 +100,7 @@ if __name__ == '__main__':
     
     ramp_start = 0.
     ramp_end = 10.
-    ramp_length = 500
+    ramp_length = 2000
     settling_time_ms = 1
 
     ramp = np.linspace(ramp_start, ramp_end, num=ramp_length)
