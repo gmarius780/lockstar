@@ -181,8 +181,6 @@ public:
 			settling_time_ms = read_package->pop_from_buffer<uint32_t>();
 
 			state.current_state = RECEIVED_RAMP_PARAMETERS;
-
-			HAL_Delay(4000);
 			/*** send ACK ***/
 			RPIDataPackage* write_package = rpi->get_write_package();
 			write_package->push_ack();
