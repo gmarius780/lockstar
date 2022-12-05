@@ -68,7 +68,7 @@ public:
 				t = timer->get_counter();
 
 				this->adc->start_conversion();
-				this->dac_1->write(this->pid->calculate_output(adc->channel1->get_result(), adc->channel2->get_result(), dt));
+				this->dac_1->write(this->pid->calculate_output(adc->channel2->get_result(), adc->channel1->get_result(), dt));
 			}
 		}
 	}

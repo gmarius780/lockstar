@@ -5,6 +5,7 @@ from lockstar_rpi.MCDataPackage import MCDataPackage
 from lockstar_rpi.Modules.Module import Module
 from lockstar_general.backend.BackendResponse import BackendResponse
 from math import floor, ceil
+from time import sleep
 
 
 class IOModule_(Module):
@@ -197,6 +198,7 @@ class IOModule_(Module):
 
     async def check_for_ack(self, writer=None):
         """Waits for ACK/NACK from the MC and responds accordingly to the client"""
+        sleep(0.3)
         ack =  await MC.I().read_ack()
         if writer is not None:
             if ack:

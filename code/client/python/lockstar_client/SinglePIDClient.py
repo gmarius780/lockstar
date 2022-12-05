@@ -5,8 +5,8 @@ from lockstar_general.backend.BackendResponse import BackendResponse
 from lockstar_general.backend.BackendCall import BackendCall
 
 class SinglePIDClient(LockstarClient):
-    """Basic Module which implements a simple PID controller by using input_1 as setpoint, 
-    input_2 as error_signal and output 1 for the control signal"""
+    """Basic Module which implements a simple PID controller by using input_1 as error signal, 
+    input_2 as setpoint and output 1 for the control signal"""
     def __init__(self, lockstar_ip, lockstar_port, client_id) -> None:
         super().__init__(lockstar_ip, lockstar_port, client_id, 'SinglePIDModule')
 

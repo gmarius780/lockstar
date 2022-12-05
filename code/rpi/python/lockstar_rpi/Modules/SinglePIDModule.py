@@ -5,7 +5,7 @@ from lockstar_rpi.MC import MC
 from lockstar_rpi.MCDataPackage import MCDataPackage
 
 class SinglePIDModule(IOModule_):
-    """Basic Module which implements a simple PID controller by using input_1 as setpoint, input_2 as error_signal and output 1 for the control signal"""
+    """Basic Module which implements a simple PID controller by using input_1 as error_signal, input_2 as setpoint and output 1 for the control signal"""
     def __init__(self) -> None:
         super().__init__()
         self.p = None

@@ -127,8 +127,8 @@ void start(void);
 #define Continuous_Lock 			0x0109
 
 //DEFINE WHICH MODULE TO RUN!!
-#define LINEARIZATION_MODULE
-//#define SINGLE_PID_MODULE
+//#define LINEARIZATION_MODULE
+#define AWG_MODULE
 
 /* USER CODE END Private defines */
 

@@ -87,19 +87,19 @@ class LockstarClient():
                         args={'linearization_length': linearization_length})
         return asyncio.run(self._call_lockstar(bc))
 
-    def enable_linearization_one(self, linearization_length: int):
+    def enable_linearization_one(self):
         bc = BackendCall(self.client_id, self.module_name, 'enable_linearization_one', args={})
         return asyncio.run(self._call_lockstar(bc))
 
-    def enable_linearization_two(self, linearization_length: int):
+    def enable_linearization_two(self):
         bc = BackendCall(self.client_id, self.module_name, 'enable_linearization_two', args={})
         return asyncio.run(self._call_lockstar(bc))
 
-    def disable_linearization_one(self, linearization_length: int):
+    def disable_linearization_one(self):
         bc = BackendCall(self.client_id, self.module_name, 'disable_linearization_one', args={})
         return asyncio.run(self._call_lockstar(bc))
 
-    def disable_linearization_two(self, linearization_length: int):
+    def disable_linearization_two(selft):
         bc = BackendCall(self.client_id, self.module_name, 'disable_linearization_two', args={})
         return asyncio.run(self._call_lockstar(bc))
    

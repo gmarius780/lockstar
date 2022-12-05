@@ -48,12 +48,13 @@ public:
 
 		/*** work loop ***/
 		while(true) {
+			HAL_Delay(100);
 			//this->dac_1->write(this->pid->calculate_output(adc->channel1->get_result(), adc->channel2->get_result(), dt));
 		}
 	}
 
 	void handle_rpi_input() {
-		if(this->handle_rpi_base_methods() == false) { //if base class doesn't know the called method
+		if (handle_rpi_base_methods() == false) { //if base class doesn't know the called method
 			/*** Package format: method_identifier (uint32_t) | method specific arguments (defined in the methods directly) ***/
 			RPIDataPackage* read_package = this->rpi->get_read_package();
 			//switch between method_identifier
