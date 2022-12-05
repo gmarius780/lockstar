@@ -168,7 +168,7 @@ public:
 	 */
 	static const uint32_t METHOD_SET_RAMP_PARAMETERS = 11;
 	void set_ramp_parameters(RPIDataPackage* read_package) {
-		if (state.current_state == IDLE or state.current_state == RECEIVED_RAMP_PARAMETERS) {
+		if (state.current_state == IDLE or state.current_state == RECEIVED_RAMP_PARAMETERS or state.current_state == FINISHED_GAIN_MEASUREMENT) {
 			/***Read arguments***/
 			ramp_start = read_package->pop_from_buffer<float>();
 			ramp_end = read_package->pop_from_buffer<float>();

@@ -100,7 +100,7 @@ if __name__ == '__main__':
     
     ramp_start = 0.
     ramp_end = 10.
-    ramp_length = 2000
+    ramp_length = 500
     settling_time_ms = 1
 
     ramp = np.linspace(ramp_start, ramp_end, num=ramp_length)
@@ -116,3 +116,6 @@ if __name__ == '__main__':
         ax.legend()
         ax.grid('lightgray')
         plt.show()
+
+        print(client.set_linearization_length_one(ramp_length))
+        print(client.set_linearization_one(linearization, min_output_voltage=ramp_start, max_output_voltage=ramp_end))

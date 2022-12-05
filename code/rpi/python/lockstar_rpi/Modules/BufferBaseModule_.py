@@ -261,17 +261,7 @@ class BufferBaseModule_(IOModule_):
             await MC.I().write_mc_data_package(mc_data_package)
             return await self.check_for_ack(writer=(writer if respond else None))
 
-    async def check_for_ack(self, writer=None):
-        """Waits for ACK/NACK from the MC and responds accordingly to the client"""
-        ack =  await MC.I().read_ack()
-        if writer is not None:
-            if ack:
-                writer.write(BackendResponse.ACK().to_bytes())
-            else:
-                writer.write(BackendResponse.NACK().to_bytes())
-            await writer.drain()
-        
-        return ack
+    
 
     # ==== END: client methods
 
