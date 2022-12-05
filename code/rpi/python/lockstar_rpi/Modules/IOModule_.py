@@ -16,6 +16,9 @@ class IOModule_(Module):
     def __init__(self) -> None:
         super().__init__()
 
+        self.ramp_length_one = 0
+        self.ramp_length_two = 0
+
     async def set_ch_one_output_limits(self, min: float, max: float, writer, respond=True):
         """Sets min and max output voltage in volt for channel one
 
@@ -71,11 +74,17 @@ class IOModule_(Module):
         """Sends inverted pivot points to uC. End of linearization procedure"""
         if ch_one:
             METHOD_IDENTIFIER = 82
+            ramp_length = self.ramp_length_one
         else:
             METHOD_IDENTIFIER = 83
+            ramp_length = self.ramp_length_two
         logging.debug('Backend: set_linearization')
 
-        ramp_length = len(linearization)
+        if ramp_length != len(linearization):
+            logging.error('set_linearization: linearization_length must match the set linearization length')
+            if writer is not None:
+                writer.write(BackendResponse.NACK().to_bytes())
+            return False
 
         max_package_size = floor((MCDataPackage.MAX_NBR_BYTES-100)/4)
         number_of_ramp_packages = ceil(ramp_length/max_package_size)
@@ -115,10 +124,10 @@ class IOModule_(Module):
                 append = False
 
             mc_data_package.push_to_buffer('bool',append)
-            mc_data_package.push_to_buffer('uint32_t',self.ramp_length%self.max_package_size)
+            mc_data_package.push_to_buffer('uint32_t',ramp_length%max_package_size)
             
             
-            for i in range(self.ramp_length%self.max_package_size):
+            for i in range(ramp_length%max_package_size):
                 mc_data_package.push_to_buffer('float',linearization[buffer_offset + i])
             await MC.I().write_mc_data_package(mc_data_package)
         
@@ -131,17 +140,20 @@ class IOModule_(Module):
 
     async def set_linearization_length_one(self, linearization_length: int, writer, respond=True):
         logging.debug('Backend: set_linearization_length_one')
+        self.ramp_length_one = int(linearization_length)
+
         mc_data_package = MCDataPackage()
         mc_data_package.push_to_buffer('uint32_t', 84) # method_identifier
-        mc_data_package.push_to_buffer('uint32_t', linearization_length)
+        mc_data_package.push_to_buffer('uint32_t', self.ramp_length_one)
         await MC.I().write_mc_data_package(mc_data_package)
         return await self.check_for_ack(writer=(writer if respond else None))
 
     async def set_linearization_length_two(self, linearization_length: int, writer, respond=True):
         logging.debug('Backend: set_linearization_length_one')
+        self.ramp_length_two = int(linearization_length)
         mc_data_package = MCDataPackage()
         mc_data_package.push_to_buffer('uint32_t', 85) # method_identifier
-        mc_data_package.push_to_buffer('uint32_t', linearization_length)
+        mc_data_package.push_to_buffer('uint32_t', self.ramp_length_two)
         await MC.I().write_mc_data_package(mc_data_package)
         return await self.check_for_ack(writer=(writer if respond else None))
 
