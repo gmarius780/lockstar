@@ -110,7 +110,7 @@ class IOModule_(Module):
             await MC.I().write_mc_data_package(mc_data_package)
             buffer_offset += max_package_size
             
-            if not await self.check_for_ack(writer=(writer if respond else None)):
+            if not await MC.I().read_ack():
                 logging.error('set_linearization: Could not set inverted pivot points')
                 if writer is not None:
                     writer.write(BackendResponse.NACK().to_bytes())
@@ -135,7 +135,7 @@ class IOModule_(Module):
                 mc_data_package.push_to_buffer('float',linearization[buffer_offset + i])
             await MC.I().write_mc_data_package(mc_data_package)
         
-            if not await self.check_for_ack(writer=(writer if respond else None)):
+            if not await MC.I().read_ack():
                 logging.error('set_linearization: Could not set inverted pivot points')
                 if writer is not None:
                     writer.write(BackendResponse.NACK().to_bytes())
