@@ -39,8 +39,10 @@ private:
 
 	BasicTimer *comm_reset_timer; // resets is_communicating after an one periode of this timer
 	//COMMUNICATION RESET FREQUENCY= INTERNAL_CLOCK_FREQUENCY/prescaler * counter_max = 90e6/90'00*10000 = 1Hz
-	static const uint32_t COMM_RESET_COUNTER_MAX = 10000;
-	static const uint32_t COMM_RESET_PRESCALER = 9000;
+	//static const uint32_t COMM_RESET_COUNTER_MAX = 10000;
+	static const uint32_t COMM_RESET_COUNTER_MAX = 30000;
+	//static const uint32_t COMM_RESET_PRESCALER = 9000;
+	static const uint32_t COMM_RESET_PRESCALER = 36000;
 
 	bool is_communicating; //true after spi interrupt was fired until dma communication is finished
 	uint32_t current_nbr_of_bytes;
