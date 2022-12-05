@@ -36,7 +36,7 @@ class LinearizationClient(LockstarClient):
         """starts the linearization procedure of the microcontroller.
 
             1. MC starts ramp & records the trace
-            2. only sends ack when done
+            2. only sends ack when doned
             3. backend calls 'get_measurement_result'
             4. backend calculates linearization
             5. backend calls 'set_linearization_one'
