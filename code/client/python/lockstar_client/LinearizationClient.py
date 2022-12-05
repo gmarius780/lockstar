@@ -32,7 +32,7 @@ class LinearizationClient(LockstarClient):
         br = asyncio.run(self._call_lockstar(bc))
         return br.is_ACK()
 
-    def linearize_ch_one(self, ramp_start:float, ramp_end:float, ramp_length:int, settling_time_ms:int):
+    def linearize_ch_one(self):
         """starts the linearization procedure of the microcontroller.
 
             1. MC starts ramp & records the trace
@@ -49,23 +49,17 @@ class LinearizationClient(LockstarClient):
         Returns:
             _type_: _description_
         """
-        bc = BackendCall(self.client_id, self.module_name, 'linearize_ch_one', 
-                        args={
-                            'ramp_start': ramp_start, 
-                            'ramp_end': ramp_end,
-                            'ramp_length': ramp_length,
-                            'settling_time_ms': settling_time_ms
-                            })
+        bc = BackendCall(self.client_id, self.module_name, 'linearize_ch_one', args={})
         br = asyncio.run(self._call_lockstar(bc))
 
         print(br.response)
-        if br.response != 'NACK' and len(br.response == 2):
+        if br.response != 'NACK' and len(br.response) == 2:
             measured_gain, linearization = br.response
             return measured_gain, linearization
         else:
             return False
 
-    def linearize_ch_two(self, ramp_start:float, ramp_end:float, ramp_length:int, settling_time_ms:int):
+    def linearize_ch_two(self):
         """starts the linearization procedure of the microcontroller.
 
             1. MC starts ramp & records the trace
@@ -82,13 +76,7 @@ class LinearizationClient(LockstarClient):
         Returns:
             _type_: _description_
         """
-        bc = BackendCall(self.client_id, self.module_name, 'linearize_ch_two', 
-                        args={
-                            'ramp_start': ramp_start, 
-                            'ramp_end': ramp_end,
-                            'ramp_length': ramp_length,
-                            'settling_time_ms': settling_time_ms
-                            })
+        bc = BackendCall(self.client_id, self.module_name, 'linearize_ch_two', args={})
         br = asyncio.run(self._call_lockstar(bc))
 
         measured_gain, linearization = br.response
@@ -112,17 +100,19 @@ if __name__ == '__main__':
     
     ramp_start = 0.
     ramp_end = 10.
-    ramp_length = 2000
+    ramp_length = 500
     settling_time_ms = 1
 
     ramp = np.linspace(ramp_start, ramp_end, num=ramp_length)
 
     print(client.set_ramp_parameters(ramp_start, ramp_end, ramp_length, settling_time_ms))
-    # print(client.linearize_ch_one(ramp_start, ramp_end, ramp_length, settling_time_ms))
+    linearization_response = client.linearize_ch_one()
 
-    # fig,ax = plt.subplots(1,1)
-    # ax.plot(ramp,measured_gain,label='measured gain')
-    # ax.plot(ramp,linearization,label='linearizaion')
-    # ax.legend()
-    # ax.grid('lightgray')
-    # plt.show()
+    if linearization_response != False:
+        measured_gain, linearization = linearization_response
+        fig,ax = plt.subplots(1,1)
+        ax.plot(ramp,measured_gain,label='measured gain')
+        ax.plot(ramp,linearization,label='linearizaion')
+        ax.legend()
+        ax.grid('lightgray')
+        plt.show()
