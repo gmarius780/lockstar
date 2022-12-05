@@ -121,10 +121,7 @@ RPI::~RPI() {
 void RPI::spi_interrupt() {
 	if(is_communicating == false) {
 		//get new command from rpi
-
-		comm_reset_timer->reset_interrupt();
 		comm_reset_timer->enable_interrupt();
-		comm_reset_timer->reset_interrupt();
 		comm_reset_timer->enable();
 		current_nbr_of_bytes = 10 * ((uint32_t)*(volatile uint8_t *)spi->getDRAddress());
 		if (current_nbr_of_bytes != 0) {

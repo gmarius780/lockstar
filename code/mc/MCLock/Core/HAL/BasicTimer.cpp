@@ -40,7 +40,11 @@ void BasicTimer::enable() { tim_regs->CR1 |= (1<<0); }
 
 void BasicTimer::disable() { tim_regs->CR1 &= ~(1<<0); }
 
-void BasicTimer::enable_interrupt() { tim_regs->DIER |= (1<<0); }
+void BasicTimer::enable_interrupt() {
+	tim_regs->EGR |= TIM_EGR_UG; //manually trigger update event, otherwise interrupt will be triggered immediately after enable
+	reset_interrupt();
+	tim_regs->DIER |= (1<<0);
+}
 
 void BasicTimer::disable_interrupt() { tim_regs->DIER &= ~(1<<0); }
 
