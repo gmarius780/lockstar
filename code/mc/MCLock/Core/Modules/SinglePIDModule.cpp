@@ -58,7 +58,6 @@ public:
 		float dt = 0;
 		uint16_t t = 0;
 
-
 		/*** work loop ***/
 		while(true){
 			HAL_Delay(100);

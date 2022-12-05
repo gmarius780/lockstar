@@ -18,11 +18,15 @@ BasicTimer::BasicTimer(uint8_t timer_x, uint32_t auto_reload, uint32_t prescaler
 
 	RCC->APB1ENR |= (1<<APBxENR_bit);
 
+
 	//ARPE: Auto-reload preload enable - enable chaning of sampling rate on the fly
-	tim_regs->CR1 |= (1<<7);
+	//tim_regs->CR1 |= (1<<7);
+	tim_regs->CR1 |= TIM_CR1_ARPE;
 
 	set_auto_reload(auto_reload);
 	set_prescaler(prescaler);
+	disable_interrupt();
+	tim_regs->EGR |= TIM_EGR_UG; //manually trigger update event, otherwise interrupt will be triggered immediately after enable
 }
 
 void BasicTimer::set_auto_reload(uint32_t value) { tim_regs->ARR = value; }
@@ -41,4 +45,10 @@ void BasicTimer::enable_interrupt() { tim_regs->DIER |= (1<<0); }
 void BasicTimer::disable_interrupt() { tim_regs->DIER &= ~(1<<0); }
 
 void BasicTimer::reset_counter() {tim_regs->CNT = 0;}
+
+void BasicTimer::reset_interrupt() {
+//	tim_regs->SR &= ~TIM_SR_UIF;
+//	tim_regs->SR &= ~TIM_SR_TIF;
+	tim_regs->SR &= 0;
+}
 

@@ -31,6 +31,7 @@ public:
 	void disable_interrupt();
 
 	void reset_counter();
+	void reset_interrupt();
 
 private:
 	TIM_TypeDef* tim_regs;

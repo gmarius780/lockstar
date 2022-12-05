@@ -11,7 +11,7 @@ class SinglePIDClient(LockstarClient):
         super().__init__(lockstar_ip, lockstar_port, client_id, 'SinglePIDModule')
 
 
-    async def initialize(self, p: float, i: float, d: float, out_range_min: float, out_range_max: float, locked: bool,
+    def initialize(self, p: float, i: float, d: float, out_range_min: float, out_range_max: float, locked: bool,
                     input_offset: float, output_offset: float):
         """Set all system module parameters
 
@@ -79,4 +79,5 @@ if __name__ == "__main__":
     
     if initialized:
         logging.info(f'Successfully initialized Single PID module')
+        print(client.set_linearization_length_one(500))
 
