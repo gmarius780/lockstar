@@ -31,7 +31,10 @@ public:
 
 	void send_package(RPIDataPackage* write_package);
 	volatile uint8_t* get_read_buffer();
+
 private:
+
+
 	SPI *spi;
 	DMA *dma_in;
 	DMA *dma_out;
