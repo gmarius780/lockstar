@@ -64,9 +64,12 @@ public:
 	 */
 	bool push_to_linearization_buffer(float linearization_pivot, bool append);
 
-	void enable_linearization() {
+	bool enable_linearization() {
 		if (linearization_available) {
 			linearization_enabled = true;
+			return true;
+		} else {
+			return false;
 		}
 	}
 	void disable_linearization() {

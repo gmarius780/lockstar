@@ -45,11 +45,19 @@ public:
 	void set_linearization_two(RPIDataPackage* read_package); //set calculated linearization parameters
 
 	static const uint32_t METHOD_SET_LINEARIZATION_LENGTH_ONE = 84;
-	void set_linearization_length_one(RPIDataPackage* read_package); //set calculated linearization parameters
+	void set_linearization_length_one(RPIDataPackage* read_package); //set number of points for linearization (must be set befor set linearization)
 
 	static const uint32_t METHOD_SET_LINEARIZATION_LENGTH_TWO = 85;
-	void set_linearization_length_two(RPIDataPackage* read_package); //set calculated linearization parameters
+	void set_linearization_length_two(RPIDataPackage* read_package); //set number of points for linearization (must be set befor set linearization)
 
+	static const uint32_t METHOD_ENABLE_LINEARIZATION_ONE = 86;
+	void enable_linearization_one(RPIDataPackage* read_package);
+	static const uint32_t METHOD_ENABLE_LINEARIZATION_TWO = 87;
+	void enable_linearization_two(RPIDataPackage* read_package);
+	static const uint32_t METHOD_DISABLE_LINEARIZATION_ONE = 88;
+	void disable_linearization_one(RPIDataPackage* read_package);
+	static const uint32_t METHOD_DISABLE_LINEARIZATION_TWO = 89;
+	void disable_linearization_two(RPIDataPackage* read_package);
 	/*LINEARIZATION-METHODS END*/
 
 	/**RPI methods END**/

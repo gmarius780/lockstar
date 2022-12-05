@@ -167,6 +167,34 @@ class IOModule_(Module):
         await MC.I().write_mc_data_package(mc_data_package)
         return await self.check_for_ack(writer=(writer if respond else None))
 
+    async def enable_linearization_one(self, writer, respond=True):
+        logging.debug('Backend: enable_linearization_one')
+        mc_data_package = MCDataPackage()
+        mc_data_package.push_to_buffer('uint32_t', 86) # method_identifier
+        await MC.I().write_mc_data_package(mc_data_package)
+        return await self.check_for_ack(writer=(writer if respond else None))
+    
+    async def enable_linearization_two(self, writer, respond=True):
+        logging.debug('Backend: enable_linearization_two')
+        mc_data_package = MCDataPackage()
+        mc_data_package.push_to_buffer('uint32_t', 87) # method_identifier
+        await MC.I().write_mc_data_package(mc_data_package)
+        return await self.check_for_ack(writer=(writer if respond else None))
+
+    async def disable_linearization_one(self, writer, respond=True):
+        logging.debug('Backend: disable_linearization_one')
+        mc_data_package = MCDataPackage()
+        mc_data_package.push_to_buffer('uint32_t', 88) # method_identifier
+        await MC.I().write_mc_data_package(mc_data_package)
+        return await self.check_for_ack(writer=(writer if respond else None))
+
+    async def disable_linearization_two(self, writer, respond=True):
+        logging.debug('Backend: disable_linearization_two')
+        mc_data_package = MCDataPackage()
+        mc_data_package.push_to_buffer('uint32_t', 89) # method_identifier
+        await MC.I().write_mc_data_package(mc_data_package)
+        return await self.check_for_ack(writer=(writer if respond else None))
+
     async def check_for_ack(self, writer=None):
         """Waits for ACK/NACK from the MC and responds accordingly to the client"""
         ack =  await MC.I().read_ack()

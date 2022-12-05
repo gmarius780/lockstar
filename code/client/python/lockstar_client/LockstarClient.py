@@ -3,6 +3,7 @@ import logging
 from lockstar_general.backend.BackendResponse import BackendResponse
 from lockstar_general.backend.BackendCall import BackendCall
 from lockstar_client.ClientSettings import ClientSettings
+import json
 
 class LockstarClient():
     def __init__(self, lockstar_ip, lockstar_port, client_id, module_name) -> None:
@@ -54,6 +55,28 @@ class LockstarClient():
                         })
         return asyncio.run(self._call_lockstar(bc))
 
+    def set_linearization_two_from_file(self, local_file):
+        """ calls set_linearization_two with the linearization gotten from local_file (stored by LinearizationClient.store_linearization_locally)
+        """
+
+        with open(local_file, 'r') as f:
+            lin_dict = json.load(f)
+
+        return self.set_linearization_two(linearization=lin_dict['linearization'], 
+                                    min_output_voltage=lin_dict['min_output_voltage'],
+                                    max_output_voltage=lin_dict['max_output_voltage'])
+
+    def set_linearization_one_from_file(self, local_file):
+        """ calls set_linearization_one with the linearization gotten from local_file (stored by LinearizationClient.store_linearization_locally)
+        """
+
+        with open(local_file, 'r') as f:
+            lin_dict = json.load(f)
+
+        return self.set_linearization_one(linearization=lin_dict['linearization'], 
+                                    min_output_voltage=lin_dict['min_output_voltage'],
+                                    max_output_voltage=lin_dict['max_output_voltage'])
+
     def set_linearization_length_one(self, linearization_length: int):
         bc = BackendCall(self.client_id, self.module_name, 'set_linearization_length_one', 
                         args={'linearization_length': linearization_length})
@@ -62,6 +85,22 @@ class LockstarClient():
     def set_linearization_length_two(self, linearization_length: int):
         bc = BackendCall(self.client_id, self.module_name, 'set_linearization_length_two', 
                         args={'linearization_length': linearization_length})
+        return asyncio.run(self._call_lockstar(bc))
+
+    def enable_linearization_one(self, linearization_length: int):
+        bc = BackendCall(self.client_id, self.module_name, 'enable_linearization_one', args={})
+        return asyncio.run(self._call_lockstar(bc))
+
+    def enable_linearization_two(self, linearization_length: int):
+        bc = BackendCall(self.client_id, self.module_name, 'enable_linearization_two', args={})
+        return asyncio.run(self._call_lockstar(bc))
+
+    def disable_linearization_one(self, linearization_length: int):
+        bc = BackendCall(self.client_id, self.module_name, 'disable_linearization_one', args={})
+        return asyncio.run(self._call_lockstar(bc))
+
+    def disable_linearization_two(self, linearization_length: int):
+        bc = BackendCall(self.client_id, self.module_name, 'disable_linearization_two', args={})
         return asyncio.run(self._call_lockstar(bc))
    
     #==== Linearization Methods END====

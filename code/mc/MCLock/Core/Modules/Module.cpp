@@ -43,6 +43,18 @@ bool Module::handle_rpi_base_methods() {
 	case METHOD_SET_LINEARIZATION_LENGTH_TWO:
 		set_linearization_length_two(read_package);
 		break;
+	case METHOD_ENABLE_LINEARIZATION_ONE:
+		enable_linearization_one(read_package);
+		break;
+	case METHOD_ENABLE_LINEARIZATION_TWO:
+		enable_linearization_two(read_package);
+		break;
+	case METHOD_DISABLE_LINEARIZATION_ONE:
+		disable_linearization_one(read_package);
+		break;
+	case METHOD_DISABLE_LINEARIZATION_TWO:
+		disable_linearization_two(read_package);
+		break;
 	default:
 		return false;
 	}
@@ -208,6 +220,48 @@ void Module::set_linearization_length_two(RPIDataPackage* read_package) {
 	uint32_t linearization_buffer_length = read_package->pop_from_buffer<uint32_t>();
 	dac_2->set_linearization_length(linearization_buffer_length);
 
+	/*** send ACK ***/
+	RPIDataPackage* write_package = rpi->get_write_package();
+	write_package->push_ack();
+	rpi->send_package(write_package);
+}
+
+void Module::enable_linearization_one(RPIDataPackage* read_package) {
+
+	/*** send ACK ***/
+	RPIDataPackage* write_package = rpi->get_write_package();
+
+	if (dac_1->enable_linearization()) {
+		write_package->push_ack();
+	} else {
+		write_package->push_nack();
+	}
+	rpi->send_package(write_package);
+}
+
+void Module::enable_linearization_two(RPIDataPackage* read_package) {
+
+	/*** send ACK ***/
+	RPIDataPackage* write_package = rpi->get_write_package();
+
+	if (dac_2->enable_linearization()) {
+		write_package->push_ack();
+	} else {
+		write_package->push_nack();
+	}
+	rpi->send_package(write_package);
+}
+
+void Module::disable_linearization_one(RPIDataPackage* read_package) {
+	dac_1->disable_linearization();
+	/*** send ACK ***/
+	RPIDataPackage* write_package = rpi->get_write_package();
+	write_package->push_ack();
+	rpi->send_package(write_package);
+}
+
+void Module::disable_linearization_two(RPIDataPackage* read_package) {
+	dac_2->disable_linearization();
 	/*** send ACK ***/
 	RPIDataPackage* write_package = rpi->get_write_package();
 	write_package->push_ack();
