@@ -29,7 +29,7 @@ public:
 	void push_nack(); //nack = 999999(uint32_t)
 
 	template <typename T>
-	T pop_from_buffer() {
+	T __attribute__((optimize(0))) pop_from_buffer() { //optimization had to be deactivated for this function as Ofast resultet in a hard-fault
 		current_buffer += sizeof(T);
 		return ((T*)(current_buffer - sizeof(T)))[0];
 	}

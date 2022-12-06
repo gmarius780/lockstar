@@ -23,6 +23,10 @@ modules = [
     {
         'module_name': 'AWGModule',
         'compiler_flag': 'AWG_MODULE'
+    },
+     {
+        'module_name': 'Linearization',
+        'compiler_flag': 'LINEARIZATION_MODULE'
     }
 ]
 

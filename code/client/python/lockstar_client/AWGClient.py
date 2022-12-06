@@ -29,17 +29,21 @@ if __name__ == "__main__":
 
         sampling_rate = 1000
         
-        ch_one_chunks = [1999]
-        ch_one_buffer = np.linspace(0, 10, num=2000).tolist()
-        print(client.initialize_buffers(len(ch_one_buffer), 0, len(ch_one_chunks), 0, sampling_rate))
+        ch_one_chunks = [499]
+        ch_one_buffer = np.linspace(0, 10, num=500).tolist()
+        ch_two_chunks = [0]
+        ch_two_buffer = [0.]
+        print(client.initialize_buffers(len(ch_one_buffer), 1, len(ch_one_chunks), 1, sampling_rate))
         print(client.set_ch_one_output_limits(0, 10))
         print(client.set_ch_two_output_limits(0, 10))
         print(client.set_ch_one_chunks(ch_one_chunks))
+        print(client.set_ch_two_chunks(ch_two_chunks))
         print(client.set_ch_one_buffer(ch_one_buffer))
+        print(client.set_ch_one_buffer(ch_two_buffer))
 
         print(client.set_linearization_length_one(linearization_length))
-        print(client.set_linearization_one_from_file(linearization_file))
-        print(client.disable_linearization_one())
+        #print(client.set_linearization_one_from_file(linearization_file))
+        #print(client.disable_linearization_one())
 
         # ch_one_chunks = [999, 1999, 2999, 3999, 4999]
         # ch_two_chunks = [1999, 2999]

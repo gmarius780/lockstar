@@ -81,6 +81,7 @@ void BufferBaseModule::initialize_buffers(RPIDataPackage* read_package) {
 	buffer_two_size = read_package->pop_from_buffer<uint32_t>();
 	chunks_one_size = read_package->pop_from_buffer<uint32_t>();
 	chunks_two_size = read_package->pop_from_buffer<uint32_t>();
+
 	prescaler = read_package->pop_from_buffer<uint32_t>();
 	counter_max = read_package->pop_from_buffer<uint32_t>();
 

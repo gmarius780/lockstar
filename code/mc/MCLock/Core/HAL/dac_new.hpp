@@ -21,11 +21,11 @@ public:
 
     void write(float value);
     void dma_transmission_callback();
-    bool is_busy() { return busy; }
-    void set_min_output(float m) {this->min_output = std::max(this->min_hardware_output, m);} // can only set the minimum higher than set with jumpers
-    void set_max_output(float m) {this->max_output = std::min(this->max_hardware_output, m);} // can only set the maximum lower than set with jumpers
-    float get_min_output() {return this->min_output;}
-    float get_max_output() {return this->max_output;}
+    bool is_busy();
+    void set_min_output(float m); // can only set the minimum higher than set with jumpers
+    void set_max_output(float m); // can only set the maximum lower than set with jumpers
+    float get_min_output();
+    float get_max_output();
 
 private:
     float inv_step_size;

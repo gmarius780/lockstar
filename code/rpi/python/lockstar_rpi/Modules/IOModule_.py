@@ -19,6 +19,14 @@ class IOModule_(Module):
 
         self.ramp_length_one = 0
         self.ramp_length_two = 0
+        self.out_range_ch_one_min = 0
+        self.out_range_ch_two_min = 0
+        self.out_range_ch_one_max = 0
+        self.out_range_ch_two_max = 0
+        self.ch_one_linearization = []
+        self.ch_two_linearization = []
+        self.linearization_one_enabled = False
+        self.linearization_two_enabled = False
 
     async def set_ch_one_output_limits(self, min: float, max: float, writer, respond=True):
         """Sets min and max output voltage in volt for channel one
@@ -30,16 +38,17 @@ class IOModule_(Module):
         :param    respond (bool, optional): Defaults to True only False if this method is called
                     by launch_from_config.
         """
-        self.out_range_ch_one_min = min
-        self.out_range_ch_one_max = max
-
         logging.debug('Backend: set output limits')
         mc_data_package = MCDataPackage()
         mc_data_package.push_to_buffer('uint32_t', 80) # method_identifier
         mc_data_package.push_to_buffer('float', min)
         mc_data_package.push_to_buffer('float', max)
         await MC.I().write_mc_data_package(mc_data_package)
-        return await self.check_for_ack(writer=(writer if respond else None))
+        result = await self.check_for_ack(writer=(writer if respond else None))
+        if result:
+            self.out_range_ch_one_min = min
+            self.out_range_ch_one_max = max
+        return result
 
     async def set_ch_two_output_limits(self, min: float, max: float, writer, respond=True):
         """Sets min and max output voltage in volt for channel two
@@ -51,16 +60,17 @@ class IOModule_(Module):
         :param    respond (bool, optional): Defaults to True only False if this method is called
                     by launch_from_config.
         """
-        self.out_range_ch_two_min = min
-        self.out_range_ch_two_max = max
-
         logging.debug('Backend: set output limits')
         mc_data_package = MCDataPackage()
         mc_data_package.push_to_buffer('uint32_t', 81) # method_identifier
         mc_data_package.push_to_buffer('float', min)
         mc_data_package.push_to_buffer('float', max)
         await MC.I().write_mc_data_package(mc_data_package)
-        return await self.check_for_ack(writer=(writer if respond else None))
+        result = await self.check_for_ack(writer=(writer if respond else None))
+        if result:
+            self.out_range_ch_two_min = min
+            self.out_range_ch_two_max = max
+        return result
 
     #==== Linearization Methods START====
     async def set_linearization_one(self, linearization, min_output_voltage, max_output_voltage, writer, respond=True):
@@ -144,6 +154,12 @@ class IOModule_(Module):
                 return False
         
         logging.debug('set_linearization: Success!')
+
+        if ch_one:
+            self.ch_one_linearization = linearization
+        else:
+            self.ch_two_linearization = linearization
+
         if writer is not None:
             writer.write(BackendResponse.ACK().to_bytes())
             await writer.drain()
@@ -151,50 +167,65 @@ class IOModule_(Module):
 
     async def set_linearization_length_one(self, linearization_length: int, writer, respond=True):
         logging.debug('Backend: set_linearization_length_one')
-        self.ramp_length_one = int(linearization_length)
-
         mc_data_package = MCDataPackage()
         mc_data_package.push_to_buffer('uint32_t', 84) # method_identifier
         mc_data_package.push_to_buffer('uint32_t', self.ramp_length_one)
         await MC.I().write_mc_data_package(mc_data_package)
-        return await self.check_for_ack(writer=(writer if respond else None))
+        result = await self.check_for_ack(writer=(writer if respond else None))
+        if result:
+            self.ramp_length_one = int(linearization_length)
+        return result
 
     async def set_linearization_length_two(self, linearization_length: int, writer, respond=True):
         logging.debug('Backend: set_linearization_length_one')
-        self.ramp_length_two = int(linearization_length)
         mc_data_package = MCDataPackage()
         mc_data_package.push_to_buffer('uint32_t', 85) # method_identifier
         mc_data_package.push_to_buffer('uint32_t', self.ramp_length_two)
         await MC.I().write_mc_data_package(mc_data_package)
-        return await self.check_for_ack(writer=(writer if respond else None))
+        result = await self.check_for_ack(writer=(writer if respond else None))
+        if result:
+            self.ramp_length_two = int(linearization_length)
+        return result
 
     async def enable_linearization_one(self, writer, respond=True):
         logging.debug('Backend: enable_linearization_one')
         mc_data_package = MCDataPackage()
         mc_data_package.push_to_buffer('uint32_t', 86) # method_identifier
         await MC.I().write_mc_data_package(mc_data_package)
-        return await self.check_for_ack(writer=(writer if respond else None))
+        result = await self.check_for_ack(writer=(writer if respond else None))
+        if result:
+            self.linearization_one_enabled = True
+        return result
     
     async def enable_linearization_two(self, writer, respond=True):
         logging.debug('Backend: enable_linearization_two')
         mc_data_package = MCDataPackage()
         mc_data_package.push_to_buffer('uint32_t', 87) # method_identifier
         await MC.I().write_mc_data_package(mc_data_package)
-        return await self.check_for_ack(writer=(writer if respond else None))
+        result = await self.check_for_ack(writer=(writer if respond else None))
+        if result:
+            self.linearization_two_enabled = True
+        return result
 
     async def disable_linearization_one(self, writer, respond=True):
         logging.debug('Backend: disable_linearization_one')
         mc_data_package = MCDataPackage()
         mc_data_package.push_to_buffer('uint32_t', 88) # method_identifier
         await MC.I().write_mc_data_package(mc_data_package)
-        return await self.check_for_ack(writer=(writer if respond else None))
+        result = await self.check_for_ack(writer=(writer if respond else None))
+        if result:
+            self.linearization_one_enabled = False
+        return result
 
     async def disable_linearization_two(self, writer, respond=True):
         logging.debug('Backend: disable_linearization_two')
         mc_data_package = MCDataPackage()
         mc_data_package.push_to_buffer('uint32_t', 89) # method_identifier
         await MC.I().write_mc_data_package(mc_data_package)
-        return await self.check_for_ack(writer=(writer if respond else None))
+        result = await self.check_for_ack(writer=(writer if respond else None))
+        if result:
+            self.linearization_two_enabled = False
+        return result
 
     async def check_for_ack(self, writer=None):
         """Waits for ACK/NACK from the MC and responds accordingly to the client"""

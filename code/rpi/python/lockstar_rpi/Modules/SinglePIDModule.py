@@ -130,11 +130,12 @@ class SinglePIDModule(IOModule_):
 
     async def launch_from_config(self, config_dict):
         try:
+            await super().launch_from_config(config_dict)
             await self.initialize(config_dict['p'], config_dict['i'], config_dict['d'], config_dict['out_range_min'],
                                 config_dict['out_range_max'], config_dict['locked'], config_dict['input_offset'],
                                 config_dict['output_offset'], None)
 
-            await super().launch_from_config(config_dict)
+            
         except Exception as ex:
             logging.error(f'SinglePIDModule: canot launch_from_config: {ex}')
             raise ex
