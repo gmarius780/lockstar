@@ -60,7 +60,7 @@ if __name__ == "__main__":
             logging.StreamHandler()
         ]
     )
-    client = SinglePIDClient('192.168.88.201', 10780, 1234)
+    client = SinglePIDClient('192.168.88.13', 10780, 1234)
 
     response = client.initialize(1,0,0,0,10,False, 0, 0)
     
@@ -82,8 +82,8 @@ if __name__ == "__main__":
         logging.info(f'Successfully initialized Single PID module')
         linearization_file = join(dirname(__file__), 'test_linearization.json')
         linearization_length = 2000
-        print(client.set_ch_one_output_limits(0, 10))
+        #print(client.set_ch_one_output_limits(0, 10))
         print(client.set_linearization_length_one(linearization_length))
         print(client.set_linearization_one_from_file(linearization_file))
-        print(client.disable_linearization_one())
+        #print(client.disable_linearization_one())
 

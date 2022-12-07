@@ -222,7 +222,15 @@ class LinearizationModule(IOModule_):
         inverted_gain = interpolate.interp1d(monotone_envelope, ramp)
         return inverted_gain(pivots)
         
+    def generate_config_dict(self):
+        """Stores all the relevant information in a dictionary such that the module can be relaunched with this information"""
+        config = {}
+        config['module_name'] = self.__class__.__name__
 
+        return config
+
+    async def launch_from_config(self, config_dict):
+        pass #we don't want the linearization Module to have memory
     # ==== END: MC methods
 
 if __name__ == "__main__":

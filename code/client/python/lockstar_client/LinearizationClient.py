@@ -93,7 +93,8 @@ class LinearizationClient(LockstarClient):
 
 if __name__ == '__main__':
     from os.path import join, dirname
-    client = LinearizationClient('192.168.88.201', 10780, 1234) 
+    import sys
+    client = LinearizationClient('192.168.88.13', 10780, 1234) 
 
     if client.register_client_id():
         logging.info(f'Succesfully initialized Linearization Module')
@@ -106,7 +107,8 @@ if __name__ == '__main__':
     settling_time_ms = 1
 
     linearization_file = join(dirname(__file__), 'test_linearization.json')
-
+    # print(client.set_linearization_one_from_file(linearization_file))
+    # sys.exit()
     ramp = np.linspace(ramp_start, ramp_end, num=ramp_length)
 
     print(client.set_ramp_parameters(ramp_start, ramp_end, ramp_length, settling_time_ms))

@@ -157,8 +157,14 @@ class IOModule_(Module):
 
         if ch_one:
             self.ch_one_linearization = linearization
+            self.linearization_one_enabled = True
+            self.out_range_ch_one_min = min_output_voltage
+            self.out_range_ch_one_max = max_output_voltage
         else:
             self.ch_two_linearization = linearization
+            self.linearization_two_enabled = True
+            self.out_range_ch_two_min = min_output_voltage
+            self.out_range_ch_two_max = max_output_voltage
 
         if writer is not None:
             writer.write(BackendResponse.ACK().to_bytes())
@@ -287,7 +293,8 @@ class IOModule_(Module):
                 await self.set_ch_one_output_limits(float(config_dict['out_range_ch_one_min']), float(config_dict['out_range_ch_one_max']), None, respond=False)
                 #set linearization one
                 if 'ramp_length_one' in config_dict.keys() and 'ch_one_linearization' in config_dict.keys() \
-                        and config_dict['ch_one_linearization'] is not None and len(config_dict['ch_one_linearization']) == int(config_dict['ramp_length_one']):
+                        and config_dict['ch_one_linearization'] is not None and len(config_dict['ch_one_linearization']) == int(config_dict['ramp_length_one']) and \
+                            int(config_dict['ramp_length_one'])>0:
                         if not await self._set_linearization_one_from_config(config_dict):
                             await self._set_linearization_one_from_config(config_dict) #retry once
 
@@ -295,7 +302,8 @@ class IOModule_(Module):
                 await self.set_ch_two_output_limits(float(config_dict['out_range_ch_two_min']), float(config_dict['out_range_ch_two_max']), None, respond=False)
                 #set linearization two      
                 if 'ramp_length_two' in config_dict.keys() and 'ch_two_linearization' in config_dict.keys() \
-                        and config_dict['ch_two_linearization'] is not None and len(config_dict['ch_two_linearization']) == int(config_dict['ramp_length_two']):
+                        and config_dict['ch_two_linearization'] is not None and len(config_dict['ch_two_linearization']) == int(config_dict['ramp_length_two']) and \
+                        int(config_dict['ramp_length_two']) > 0:
                     if not await self._set_linearization_two_from_config(config_dict):
                         await self._set_linearization_two_from_config(config_dict) #retry once      
 
