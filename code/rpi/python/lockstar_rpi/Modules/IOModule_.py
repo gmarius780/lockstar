@@ -263,7 +263,7 @@ class IOModule_(Module):
                                                     float(config_dict['out_range_ch_one_max']), None, respond=False)
             
             if 'linearization_one_enabled' in config_dict.keys():
-                success = self.enable_linearization_one(None, respond=False)
+                success = await self.enable_linearization_one(None, respond=False)
         except Exception as ex_one:
             logging.error(f'IOModule: could not set linearization_one from config: {ex_one}')
             return False
@@ -279,7 +279,7 @@ class IOModule_(Module):
                                                     float(config_dict['out_range_ch_two_max']), None, respond=False)
             
             if 'linearization_two_enabled' in config_dict.keys():
-                success = self.enable_linearization_two(None, respond=False)
+                success = await self.enable_linearization_two(None, respond=False)
         except Exception as ex:
             logging.error(f'IOModule: could not set linearization_two from config: {ex}')
             return False
