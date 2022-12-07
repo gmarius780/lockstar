@@ -58,6 +58,7 @@ class MC:
             
             :Return True if ack False otherwise
         """
+        sleep(0.3)
         #unpack data
         start_time = perf_counter()
         exception = ''
