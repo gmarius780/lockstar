@@ -18,14 +18,11 @@ class BufferBaseModule_(IOModule_):
 
     def __init__(self) -> None:
         super().__init__()
-        self.is_output_on = False
         self.is_output_ttl = False
-        self.out_range_ch_one_min = 0.
-        self.out_range_ch_one_max = 0.
-        self.out_range_ch_two_min = 0.
-        self.out_range_ch_two_max = 0.
-        self.buffer_one = None
-        self.buffer_two = None
+        self.buffer_one = []
+        self.buffer_two = []
+        self.chunks_one = []
+        self.chunks_two = []
         self.buffer_one_size = 0
         self.buffer_two_size = 0
         self.chunks_one_size = 0
@@ -44,7 +41,10 @@ class BufferBaseModule_(IOModule_):
         mc_data_package = MCDataPackage()
         mc_data_package.push_to_buffer('uint32_t', 11) # method_identifier
         await MC.I().write_mc_data_package(mc_data_package)
-        return await self.check_for_ack(writer=(writer if respond else None))
+        result = await self.check_for_ack(writer=(writer if respond else None))
+        if result:
+            self.is_output_ttl = False
+        return result
     
     async def output_off(self, writer, respond=True):
         """Stop output. All pointers are reset to point to the first chunk"""
@@ -52,7 +52,10 @@ class BufferBaseModule_(IOModule_):
         mc_data_package = MCDataPackage()
         mc_data_package.push_to_buffer('uint32_t', 12) # method_identifier
         await MC.I().write_mc_data_package(mc_data_package)
-        return await self.check_for_ack(writer=(writer if respond else None))
+        result = await self.check_for_ack(writer=(writer if respond else None))
+        if result:
+            self.is_output_ttl = False
+        return result
 
     async def output_ttl(self, writer, respond=True):
         """Start listening to the digital input for trigger signals. Once a trigger is received,
@@ -62,7 +65,10 @@ class BufferBaseModule_(IOModule_):
         mc_data_package = MCDataPackage()
         mc_data_package.push_to_buffer('uint32_t', 13) # method_identifier
         await MC.I().write_mc_data_package(mc_data_package)
-        return await self.check_for_ack(writer=(writer if respond else None))
+        result = await self.check_for_ack(writer=(writer if respond else None))
+        if result:
+            self.is_output_ttl = True
+        return result
 
     async def set_ch_one_buffer(self, buffer, writer, respond=True):
         """upload buffer for channel one waveforms (buffer-length has to be defined beforhand using initialize_buffers)"""
@@ -118,6 +124,11 @@ class BufferBaseModule_(IOModule_):
             if writer is not None:
                 writer.write(BackendResponse.ACK().to_bytes())
                 await writer.drain()
+            
+            if buffer_one:
+                self.buffer_one = buffer
+            else:
+                self.buffer_two = buffer
             return True
 
     async def initialize_buffers(self, buffer_one_size: int, buffer_two_size: int, chunks_one_size: int, 
@@ -154,12 +165,6 @@ class BufferBaseModule_(IOModule_):
 
             logging.info(f'initialize: sampling rate: {sampling_rate}, prescaler: {self.prescaler}, counter_max: {self.counter_max}')
 
-            self.buffer_one_size = buffer_one_size
-            self.buffer_two_size = buffer_two_size
-            self.chunks_one_size = chunks_one_size
-            self.chunks_two_size = chunks_two_size
-            self.sampling_rate = sampling_rate
-
             logging.debug('Backend: initialize_buffers')
             mc_data_package = MCDataPackage()
             mc_data_package.push_to_buffer('uint32_t', 18) # method_identifier
@@ -171,7 +176,14 @@ class BufferBaseModule_(IOModule_):
             mc_data_package.push_to_buffer('uint32_t', self.counter_max)
             await MC.I().write_mc_data_package(mc_data_package)
             sleep(0.1)
-            return await self.check_for_ack(writer=(writer if respond else None))
+            result = await self.check_for_ack(writer=(writer if respond else None))
+            if result:
+                self.buffer_one_size = buffer_one_size
+                self.buffer_two_size = buffer_two_size
+                self.chunks_one_size = chunks_one_size
+                self.chunks_two_size = chunks_two_size
+                self.sampling_rate = sampling_rate
+            return result
 
     @staticmethod
     def calculate_prescaler_counter(sampling_rate):
@@ -211,7 +223,10 @@ class BufferBaseModule_(IOModule_):
             mc_data_package.push_to_buffer('uint32_t', self.prescaler)
             mc_data_package.push_to_buffer('uint32_t', self.counter_max)
             await MC.I().write_mc_data_package(mc_data_package)
-            return await self.check_for_ack(writer=(writer if respond else None))
+            result = await self.check_for_ack(writer=(writer if respond else None))
+            if result:
+                self.sampling_rate = sampling_rate
+            return result
 
     async def set_ch_one_chunks(self, chunks, writer, respond=True):
         """Upload a list of buffer-indices which define the 'chunks': A chunk is a piece of the buffer which the lockstar outputs
@@ -226,7 +241,7 @@ class BufferBaseModule_(IOModule_):
             await writer.drain()
             return False
         else:
-            self.chunks_one = chunks
+            
 
             logging.debug('Backend: set ch one chunks')
             # send buffer in chunks of MCDataPackage.MAX_NBR_BYTES
@@ -235,7 +250,10 @@ class BufferBaseModule_(IOModule_):
             for f in chunks:
                 mc_data_package.push_to_buffer('uint32_t', f)
             await MC.I().write_mc_data_package(mc_data_package)
-            return await self.check_for_ack(writer=(writer if respond else None))
+            result = await self.check_for_ack(writer=(writer if respond else None))
+            if result:
+                self.chunks_one = chunks
+            return result
 
     async def set_ch_two_chunks(self, chunks, writer, respond=True):
         """Upload a list of buffer-indices which define the 'chunks': A chunk is a piece of the buffer which the lockstar outputs
@@ -250,8 +268,6 @@ class BufferBaseModule_(IOModule_):
             await writer.drain()
             return False
         else:
-            self.chunks_two = chunks
-
             logging.debug('Backend: set ch two chunks')
             # send buffer in chunks of MCDataPackage.MAX_NBR_BYTES
             mc_data_package = MCDataPackage()
@@ -259,7 +275,10 @@ class BufferBaseModule_(IOModule_):
             for f in chunks:
                 mc_data_package.push_to_buffer('uint32_t', f)
             await MC.I().write_mc_data_package(mc_data_package)
-            return await self.check_for_ack(writer=(writer if respond else None))
+            result = await self.check_for_ack(writer=(writer if respond else None))
+            if result:
+                self.chunks_two = chunks
+            return result
 
     
 
@@ -269,18 +288,22 @@ class BufferBaseModule_(IOModule_):
         """Stores all the relevant information in a dictionary such that the module can be relaunched with this information"""
         config = super().generate_config_dict()
     
-        for key in self.__dict__:
-            if key not in config:
-                config[key] = self.__dict__[key]
         return config
 
     async def launch_from_config(self, config_dict):
         try:
-            pass
-            # await self.initialize(config_dict['p'], config_dict['i'], config_dict['d'], config_dict['out_range_min'],
-            #                     config_dict['out_range_max'], config_dict['useTTL'], config_dict['locked'], None)
+            await super().launch_from_config(config_dict)
+            
+            # self.buffer_one = []
+            # self.buffer_two = []
+            # self.chunks_one = []
+            # self.chunks_two = []
+            # self.buffer_one_size = 0
+            # self.buffer_two_size = 0
+            # self.chunks_one_size = 0
+            # self.chunks_two_size = 0
+            # self.sampling_rate = 0
 
-            # await  super().launch_from_config(config_dict)
         except Exception as ex:
             logging.error(f'AWGModule: canot launch_from_config: {ex}')
             raise ex

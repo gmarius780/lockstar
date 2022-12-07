@@ -24,9 +24,12 @@ class Module:
 
     def generate_config_dict(self):
         """Stores all the relevant information in a dictionary such that the module can be relaunched with this information"""
-        return {
-            'module_name': self.__class__.__name__
-        }
+        config = {}
+        for key in self.__dict__:
+            if key not in config:
+                config[key] = self.__dict__[key]
+        config['module_name'] = self.__class__.__name__
+        return config
     
     def flash_mc(self):
         output = subprocess.run(['sudo','openocd', '-f', join(BackendSettings.elf_directory, 'restart.cfg')],

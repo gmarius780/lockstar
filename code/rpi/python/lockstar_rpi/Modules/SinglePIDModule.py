@@ -123,9 +123,7 @@ class SinglePIDModule(IOModule_):
         """Stores all the relevant information in a dictionary such that the module can be relaunched with this information"""
         config = super().generate_config_dict()
     
-        for key in self.__dict__:
-            if key not in config:
-                config[key] = self.__dict__[key]
+        
         return config
 
     async def launch_from_config(self, config_dict):
@@ -138,6 +136,6 @@ class SinglePIDModule(IOModule_):
             
         except Exception as ex:
             logging.error(f'SinglePIDModule: canot launch_from_config: {ex}')
-            raise ex
+            
 
 

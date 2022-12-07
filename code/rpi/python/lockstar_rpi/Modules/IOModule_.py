@@ -247,5 +247,57 @@ class IOModule_(Module):
         config = super().generate_config_dict()
         return config
 
+    async def _set_linearization_one_from_config(self, config_dict):
+        try:
+            success = True
+            success = await self.set_linearization_length_one(int(config_dict['ramp_length_one']), None, respond=False)
+            if success:
+                success = await self.set_linearization_one(config_dict['ch_one_linearization'], 
+                                                    float(config_dict['out_range_ch_one_min']), 
+                                                    float(config_dict['out_range_ch_one_max']), None, respond=False)
+            
+            if 'linearization_one_enabled' in config_dict.keys():
+                success = self.enable_linearization_one(None, respond=False)
+        except Exception as ex_one:
+            logging.error(f'IOModule: could not set linearization_one from config: {ex_one}')
+            return False
+        return success
+
+    async def _set_linearization_two_from_config(self, config_dict):
+        try:
+            success = True
+            success = await self.set_linearization_length_two(int(config_dict['ramp_length_two']), None, respond=False)
+            if success:
+                success = await self.set_linearization_two(config_dict['ch_two_linearization'], 
+                                                    float(config_dict['out_range_ch_two_min']), 
+                                                    float(config_dict['out_range_ch_two_max']), None, respond=False)
+            
+            if 'linearization_two_enabled' in config_dict.keys():
+                success = self.enable_linearization_two(None, respond=False)
+        except Exception as ex:
+            logging.error(f'IOModule: could not set linearization_two from config: {ex}')
+            return False
+        return success
+
     async def launch_from_config(self, config_dict):
-        pass
+        try:
+            await super().launch_from_config(config_dict)
+            
+            if 'out_range_ch_one_min' in config_dict.keys() and 'out_range_ch_one_max' in config_dict.keys():
+                await self.set_ch_one_output_limits(float(config_dict['out_range_ch_one_min']), float(config_dict['out_range_ch_one_max']), None, respond=False)
+                #set linearization one
+                if 'ramp_length_one' in config_dict.keys() and 'ch_one_linearization' in config_dict.keys() \
+                        and config_dict['ch_one_linearization'] is not None and len(config_dict['ch_one_linearization']) == int(config_dict['ramp_length_one']):
+                        if not await self._set_linearization_one_from_config(config_dict):
+                            await self._set_linearization_one_from_config(config_dict) #retry once
+
+            if 'out_range_ch_two_min' in config_dict.keys() and 'out_range_ch_two_max' in config_dict.keys():
+                await self.set_ch_two_output_limits(float(config_dict['out_range_ch_two_min']), float(config_dict['out_range_ch_two_max']), None, respond=False)
+                #set linearization two      
+                if 'ramp_length_two' in config_dict.keys() and 'ch_two_linearization' in config_dict.keys() \
+                        and config_dict['ch_two_linearization'] is not None and len(config_dict['ch_two_linearization']) == int(config_dict['ramp_length_two']):
+                    if not await self._set_linearization_two_from_config(config_dict):
+                        await self._set_linearization_two_from_config(config_dict) #retry once      
+
+        except Exception as ex:
+            logging.error(f'IOModule: canot launch_from_config: {ex}')
