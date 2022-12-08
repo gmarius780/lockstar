@@ -39,10 +39,10 @@ if __name__ == "__main__":
         print(client.set_ch_one_chunks(ch_one_chunks))
         print(client.set_ch_two_chunks(ch_two_chunks))
         print(client.set_ch_one_buffer(ch_one_buffer))
-        print(client.set_ch_one_buffer(ch_two_buffer))
+        print(client.set_ch_two_buffer(ch_two_buffer))
 
-        print(client.set_linearization_length_one(linearization_length))
-        #print(client.set_linearization_one_from_file(linearization_file))
+        # print(client.set_linearization_length_one(linearization_length))
+        # print(client.set_linearization_one_from_file(linearization_file))
         #print(client.disable_linearization_one())
 
         # ch_one_chunks = [999, 1999, 2999, 3999, 4999]

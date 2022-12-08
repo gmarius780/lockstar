@@ -86,10 +86,6 @@ class BufferBaseModule_(IOModule_):
             await writer.drain()
             return False
         else:
-            if buffer_one:
-                self.buffer_one = buffer
-            else:
-                self.buffer_two = buffer
 
             logging.debug(f'Backend: set ch {"one" if buffer_one else "two"} buffer')
             # send buffer in packets of floor(MCDataPackage.MAX_NBR_BYTES - 100)/4 floats
@@ -120,15 +116,15 @@ class BufferBaseModule_(IOModule_):
                         writer.write(BackendResponse.NACK().to_bytes())
                         await writer.drain()
                         return False
-                
+            
+            if buffer_one:
+                self.buffer_one = buffer.copy()
+            else:
+                self.buffer_two = buffer.copy()
+
             if writer is not None:
                 writer.write(BackendResponse.ACK().to_bytes())
                 await writer.drain()
-            
-            if buffer_one:
-                self.buffer_one = buffer
-            else:
-                self.buffer_two = buffer
             return True
 
     async def initialize_buffers(self, buffer_one_size: int, buffer_two_size: int, chunks_one_size: int, 

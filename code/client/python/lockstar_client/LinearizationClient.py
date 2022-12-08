@@ -107,6 +107,7 @@ if __name__ == '__main__':
     settling_time_ms = 1
 
     linearization_file = join(dirname(__file__), 'test_linearization.json')
+    # print(client.set_linearization_length_one(ramp_length))
     # print(client.set_linearization_one_from_file(linearization_file))
     # sys.exit()
     ramp = np.linspace(ramp_start, ramp_end, num=ramp_length)
