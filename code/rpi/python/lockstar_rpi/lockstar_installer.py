@@ -1,7 +1,7 @@
 ##Lockstar installer
 # Installs lockstar as a linux daemon called lockstar.service
 # @author: Marius Gächter
-from os import join
+from os.path import join
 import subprocess
 
 service_file_name = '/etc/systemd/system/lockstar.service'
