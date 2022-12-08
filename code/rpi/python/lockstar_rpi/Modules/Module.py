@@ -43,6 +43,8 @@ class Module:
 
         if 'Verified OK' in str(output.stderr):
             logging.info(f'FLASHING SUCCESSFUL!')
+        else:
+            logging.error('FLASHING FAILED!!!!!!!!!!!')
 
     async def launch_from_config(self, config_dict):
         pass
