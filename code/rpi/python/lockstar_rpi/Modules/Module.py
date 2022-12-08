@@ -41,7 +41,7 @@ class Module:
         
         logging.info(f'Tried flashing mc for module: {self.__class__.__name__} - output: {output}')
 
-        if 'Verified OK' in output.stderr:
+        if 'Verified OK' in str(output.stderr):
             logging.info(f'FLASHING SUCCESSFUL!')
 
     async def launch_from_config(self, config_dict):
