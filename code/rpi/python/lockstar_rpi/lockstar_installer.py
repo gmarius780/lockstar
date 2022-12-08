@@ -38,7 +38,8 @@ if __name__ == "__main__":
     print(f'Writing daemon starter script: {join(working_directory, daemon_starter_script)}')
     write_damon_starter_script()
 
-    print(f'Installing the lockstar service:')  
+    print(f'Installing the lockstar service:')
+    print(subprocess.run(['sudo', 'chmod', '+x', join(working_directory, daemon_starter_script)]))
     print(subprocess.run(['sudo','systemctl', 'daemon-reload'], capture_output=True))
     print(subprocess.run(['sudo','systemctl', 'enable', 'lockstar.service'], capture_output=True))
     print(subprocess.run(['sudo','systemctl', 'start', 'lockstar.service'], capture_output=True))
