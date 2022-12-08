@@ -29,8 +29,8 @@ if __name__ == "__main__":
 
         sampling_rate = 1000
         
-        ch_one_chunks = [499]
-        ch_one_buffer = np.linspace(0, 10, num=500).tolist()
+        ch_one_chunks = [1999]
+        ch_one_buffer = np.linspace(0, 10, num=2000).tolist()
         ch_two_chunks = [0]
         ch_two_buffer = [0.]
         print(client.initialize_buffers(len(ch_one_buffer), 1, len(ch_one_chunks), 1, sampling_rate))
