@@ -144,18 +144,21 @@ class BufferBaseModule_(IOModule_):
         
         if buffer_one_size + buffer_two_size > BufferBaseModule_.BUFFER_LIMIT_kBYTES*250:
             logging.warning(f'initialize_buffers wrong arguments: buffer_sizes: ({buffer_one_size},{buffer_two_size})')
-            writer.write(BackendResponse.NACK().to_bytes())
-            await writer.drain()
+            if writer is not None:
+                writer.write(BackendResponse.NACK().to_bytes())
+                await writer.drain()
             return False
         elif chunks_one_size + chunks_two_size > BufferBaseModule_.MAX_NBR_OF_CHUNKS:
             logging.warning(f'initialize_buffers wrong arguments: chunksize: ({chunks_one_size},{chunks_two_size})')
-            writer.write(BackendResponse.NACK().to_bytes())
-            await writer.drain()
+            if writer is not None:
+                writer.write(BackendResponse.NACK().to_bytes())
+                await writer.drain()
             return False
         elif chunks_one_size <= 0 or buffer_one_size <= 0 or chunks_two_size <= 0 or buffer_two_size <= 0:
             logging.warning(f'Both chunk and buffer sizes must be at least 1')
-            writer.write(BackendResponse.NACK().to_bytes())
-            await writer.drain()
+            if writer is not None:
+                writer.write(BackendResponse.NACK().to_bytes())
+                await writer.drain()
             return False
         else:
             # fraction = Fraction.from_float(sampling_rate / BackendSettings.mc_internal_clock_rate)
