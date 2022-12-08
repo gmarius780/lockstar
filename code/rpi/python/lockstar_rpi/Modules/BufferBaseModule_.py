@@ -156,6 +156,11 @@ class BufferBaseModule_(IOModule_):
             writer.write(BackendResponse.NACK().to_bytes())
             await writer.drain()
             return False
+        elif chunks_one_size <= 0 or buffer_one_size <= 0 or chunks_two_size <= 0 or buffer_two_size <= 0:
+            logging.warning(f'Both chunk and buffer sizes must be at least 1')
+            writer.write(BackendResponse.NACK().to_bytes())
+            await writer.drain()
+            return False
         else:
             # fraction = Fraction.from_float(sampling_rate / BackendSettings.mc_internal_clock_rate)
             # fraction = fraction.limit_denominator(BackendSettings.mc_max_counter)
@@ -294,15 +299,54 @@ class BufferBaseModule_(IOModule_):
         try:
             await super().launch_from_config(config_dict)
             
-            # self.buffer_one = []
-            # self.buffer_two = []
-            # self.chunks_one = []
-            # self.chunks_two = []
-            # self.buffer_one_size = 0
-            # self.buffer_two_size = 0
-            # self.chunks_one_size = 0
-            # self.chunks_two_size = 0
-            # self.sampling_rate = 0
+            # set buffers etc
+            if 'buffer_one_size' in config_dict.keys() and 'chunks_one_size' in config_dict.keys() and 'sampling_rate' in config_dict.keys() and \
+                'buffer_two_size' in config_dict.keys() and 'chunks_two_size' in config_dict.keys():
+                retry_counter = 10
+                success = False
+                while retry_counter > 0 and not success:
+                    success = await self.initialize_buffers(config_dict['buffer_one_size'], config_dict['buffer_two_size'],
+                                                                config_dict['chunks_one_size'], config_dict['chunks_two_size'], config_dict['sampling_rate'],
+                                                                None, respond=False)
+                    retry_counter -= 1
+                if not success:
+                    raise Exception('BufferBaseModule - canot launch from exception: cannot initialize buffer')
+                else:
+                    if 'buffer_one' in config_dict.keys() and 'chunks_one' in config_dict.keys():
+                        retry_counter = 10
+                        success = False
+                        while retry_counter > 0 and not success:
+                            success = await self.set_ch_one_buffer(config_dict['buffer_one'], None, respond=False)
+                            retry_counter -= 1
+                        
+                        if not success:
+                            raise Exception('BufferBaseModule - canot launch from exception: cannot set buffer_one')
+                        else:
+                            retry_counter = 10
+                            success = False
+                            while retry_counter > 0 and not success:
+                                success = await self.set_ch_one_chunks(config_dict['chunks_one'], None, respond=True)
+                                retry_counter -= 1
+                        if not success:
+                            raise Exception('BufferBaseModule - canot launch from exception: cannot set chunks_one')
+                    
+                    if 'buffer_two' in config_dict.keys() and 'chunks_two' in config_dict.keys():
+                        retry_counter = 10
+                        success = False
+                        while retry_counter > 0 and not success:
+                            success = await self.set_ch_two_buffer(config_dict['buffer_two'], None, respond=False)
+                            retry_counter -= 1
+                        
+                        if not success:
+                            raise Exception('BufferBaseModule - canot launch from exception: cannot set buffer_two')
+                        else:
+                            retry_counter = 10
+                            success = False
+                            while retry_counter > 0 and not success:
+                                success = await self.set_ch_two_chunks(config_dict['chunks_two'], None, respond=True)
+                                retry_counter -= 1
+                        if not success:
+                            raise Exception('BufferBaseModule - canot launch from exception: cannot set chunks_two')
 
         except Exception as ex:
             logging.error(f'AWGModule: canot launch_from_config: {ex}')

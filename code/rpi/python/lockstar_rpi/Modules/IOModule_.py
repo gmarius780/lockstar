@@ -295,8 +295,9 @@ class IOModule_(Module):
                 if 'ramp_length_one' in config_dict.keys() and 'ch_one_linearization' in config_dict.keys() \
                         and config_dict['ch_one_linearization'] is not None and len(config_dict['ch_one_linearization']) == int(config_dict['ramp_length_one']) and \
                             int(config_dict['ramp_length_one'])>0:
-                        if not await self._set_linearization_one_from_config(config_dict):
-                            await self._set_linearization_one_from_config(config_dict) #retry once
+                        retry_counter = 10
+                        while retry_counter > 0 and not await self._set_linearization_one_from_config(config_dict): #retry if failed
+                            retry_counter -= 1
 
             if 'out_range_ch_two_min' in config_dict.keys() and 'out_range_ch_two_max' in config_dict.keys():
                 await self.set_ch_two_output_limits(float(config_dict['out_range_ch_two_min']), float(config_dict['out_range_ch_two_max']), None, respond=False)
@@ -304,8 +305,9 @@ class IOModule_(Module):
                 if 'ramp_length_two' in config_dict.keys() and 'ch_two_linearization' in config_dict.keys() \
                         and config_dict['ch_two_linearization'] is not None and len(config_dict['ch_two_linearization']) == int(config_dict['ramp_length_two']) and \
                         int(config_dict['ramp_length_two']) > 0:
-                    if not await self._set_linearization_two_from_config(config_dict):
-                        await self._set_linearization_two_from_config(config_dict) #retry once      
+                    retry_counter = 10
+                    while retry_counter > 0 and not await self._set_linearization_two_from_config(config_dict): #retry if failed
+                        retry_counter -= 1     
 
         except Exception as ex:
             logging.error(f'IOModule: canot launch_from_config: {ex}')
