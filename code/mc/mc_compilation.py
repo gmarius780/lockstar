@@ -25,7 +25,7 @@ modules = [
         'compiler_flag': 'AWG_MODULE'
     },
      {
-        'module_name': 'Linearization',
+        'module_name': 'LinearizationModule',
         'compiler_flag': 'LINEARIZATION_MODULE'
     }
 ]
