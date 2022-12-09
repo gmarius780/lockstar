@@ -22,7 +22,7 @@ class LinearizationClient(LockstarClient):
         self.measured_gain = 0
         self.inverse_gain = 0
 
-    def store_linearization_locally(self, linearization, min_output_voltage, max_output_voltage, local_file):
+    async def store_linearization_locally(self, linearization, min_output_voltage, max_output_voltage, local_file):
         """ Stores the linearization in a local json file such that it can be set later using the function LockstarClient.set_linearization_from_file
         """
         with open(local_file, 'w+') as f:
@@ -30,7 +30,7 @@ class LinearizationClient(LockstarClient):
                 'linearization': linearization, 'min_output_voltage': min_output_voltage, 'max_output_voltage': max_output_voltage
             }, f)
 
-    def set_ramp_parameters(self, ramp_start:float, ramp_end:float, ramp_length:int, settling_time_ms:int):
+    async def set_ramp_parameters(self, ramp_start:float, ramp_end:float, ramp_length:int, settling_time_ms:int):
         bc = BackendCall(self.client_id, self.module_name, 'set_ramp_parameters', 
                         args={
                             'ramp_start': ramp_start, 
@@ -38,10 +38,10 @@ class LinearizationClient(LockstarClient):
                             'ramp_length': ramp_length,
                             'settling_time_ms': settling_time_ms
                             })
-        br = asyncio.run(self._call_lockstar(bc))
+        br = await self._call_lockstar(bc)
         return br.is_ACK()
 
-    def linearize_ch_one(self):
+    async def linearize_ch_one(self):
         """starts the linearization procedure of the microcontroller.
 
             1. MC starts ramp & records the trace
@@ -59,7 +59,7 @@ class LinearizationClient(LockstarClient):
             _type_: _description_
         """
         bc = BackendCall(self.client_id, self.module_name, 'linearize_ch_one', args={})
-        br = asyncio.run(self._call_lockstar(bc))
+        br = await self._call_lockstar(bc)
 
         print(br.response)
         if br.response != 'NACK' and len(br.response) == 2:
@@ -68,7 +68,7 @@ class LinearizationClient(LockstarClient):
         else:
             return False
 
-    def linearize_ch_two(self):
+    async def linearize_ch_two(self):
         """starts the linearization procedure of the microcontroller.
 
             1. MC starts ramp & records the trace
@@ -86,17 +86,17 @@ class LinearizationClient(LockstarClient):
             _type_: _description_
         """
         bc = BackendCall(self.client_id, self.module_name, 'linearize_ch_two', args={})
-        br = asyncio.run(self._call_lockstar(bc))
+        br = await self._call_lockstar(bc)
 
         measured_gain, linearization = br.response
         return measured_gain, linearization
 
-if __name__ == '__main__':
+async def main():
     from os.path import join, dirname
     import sys
-    client = LinearizationClient('192.168.88.13', 10780, 1234) 
+    client = LinearizationClient('192.168.88.220', 10780, 1234) 
 
-    if client.register_client_id():
+    if await client.register_client_id():
         logging.info(f'Succesfully initialized Linearization Module')
     else:
         logging.error(f'Linearization module: Could not initialize module')
@@ -107,13 +107,13 @@ if __name__ == '__main__':
     settling_time_ms = 1
 
     linearization_file = join(dirname(__file__), 'test_linearization.json')
-    # print(client.set_linearization_length_one(ramp_length))
-    # print(client.set_linearization_one_from_file(linearization_file))
+    # print(await client.set_linearization_length_one(ramp_length))
+    # print(await client.set_linearization_one_from_file(linearization_file))
     # sys.exit()
     ramp = np.linspace(ramp_start, ramp_end, num=ramp_length)
 
-    print(client.set_ramp_parameters(ramp_start, ramp_end, ramp_length, settling_time_ms))
-    linearization_response = client.linearize_ch_one()
+    print(await client.set_ramp_parameters(ramp_start, ramp_end, ramp_length, settling_time_ms))
+    linearization_response = await client.linearize_ch_one()
 
     if linearization_response != False:
         measured_gain, linearization = linearization_response
@@ -124,8 +124,12 @@ if __name__ == '__main__':
         ax.grid('lightgray')
         plt.show()
 
-        client.store_linearization_locally(linearization, ramp_start, ramp_end, linearization_file)
+        await client.store_linearization_locally(linearization, ramp_start, ramp_end, linearization_file)
 
-        print(client.set_linearization_length_one(ramp_length))
-        #print(client.set_linearization_one(linearization, min_output_voltage=ramp_start, max_output_voltage=ramp_end))
-        print(client.set_linearization_one_from_file(linearization_file))
+        print(await client.set_linearization_length_one(ramp_length))
+        #print(await client.set_linearization_one(linearization, min_output_voltage=ramp_start, max_output_voltage=ramp_end))
+        print(await client.set_linearization_one_from_file(linearization_file))
+
+
+if __name__ == '__main__':
+    asyncio.run(main())
