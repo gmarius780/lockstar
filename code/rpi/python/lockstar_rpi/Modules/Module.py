@@ -31,7 +31,7 @@ class Module:
         config['module_name'] = self.__class__.__name__
         return config
     
-    def flash_mc(self, writer=None):
+    async def flash_mc(self, writer=None):
         success = False
         retry_counter = 5
 
