@@ -46,10 +46,21 @@ void LinearizationModule::LinearizationModule::run() {
 	this->dac_2->write(0);
 	float output = 0;
 
+	bool toggle = false;
+
 	/*** work loop ***/
 	while(!test) {
 		if(!ready_to_work) { new_linearization(); }
-		dac_1->write(linearize_output(output));
+
+		if(toggle) {
+			dac_1->write(0);
+		} else {
+			dac_1->write(3);
+		}
+
+		toggle = !toggle;
+		toggle = !toggle;
+		toggle = !toggle;
 	}
 	timer->set_auto_reload(200);
 	timer->enable_interrupt();
