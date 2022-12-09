@@ -1,6 +1,7 @@
 import logging
 import subprocess
 from lockstar_rpi.BackendSettings import BackendSettings
+from lockstar_general.backend.BackendResponse import BackendResponse
 from os.path import join
 
 class Module:
@@ -52,6 +53,15 @@ class Module:
                 logging.error('FLASHING FAILED!!!!!!!!!!!')
                 success = False
             retry_counter -= 1
+
+        if writer is not None:
+            if success:
+                writer.write(BackendResponse.ACK().to_bytes())
+            else:
+                writer.write(BackendResponse.NACK().to_bytes())
+            await writer.drain()
+        
+        return success
 
     async def launch_from_config(self, config_dict):
         pass
