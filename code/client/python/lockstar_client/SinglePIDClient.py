@@ -11,7 +11,19 @@ class SinglePIDClient(LockstarClient):
         super().__init__(lockstar_ip, lockstar_port, client_id, 'SinglePIDModule')
 
 
-    def initialize(self, p: float, i: float, d: float, out_range_min: float, out_range_max: float, locked: bool,
+    # @staticmethod
+    # async def call(coroutine):
+    #     try:
+    #         loop = asyncio.get_running_loop()
+    #     except RuntimeError:  # 'RuntimeError: There is no current event loop...'
+    #         loop = None
+
+    #     if loop is None:
+    #         return asyncio.run(coroutine)
+    #     else:
+    #         return await coroutine
+
+    async def initialize(self, p: float, i: float, d: float, out_range_min: float, out_range_max: float, locked: bool,
                     input_offset: float, output_offset: float):
         """Set all system module parameters
 
@@ -30,27 +42,28 @@ class SinglePIDClient(LockstarClient):
                             'locked': locked, 'input_offset': input_offset, 'output_offset': output_offset}
                         )
         
-        return asyncio.run(self._call_lockstar(bc))
+        # return asyncio.run(self._call_lockstar(bc))
+        return await self._call_lockstar(bc)
 
-    def set_pid(self,  p: float, i: float, d: float, input_offset: float, output_offset: float):
+    async def set_pid(self,  p: float, i: float, d: float, input_offset: float, output_offset: float):
         bc = BackendCall(self.client_id, 'SinglePIDModule', 'set_pid', args={'p': p, 'i': i, 'd': d, 
                     'input_offset': input_offset, 'output_offset': output_offset})
-        return asyncio.run(self._call_lockstar(bc))
+        return await self._call_lockstar(bc)
 
-    def set_output_limits(self,  min: float, max: float):
+    async def set_output_limits(self,  min: float, max: float):
         bc = BackendCall(self.client_id, 'SinglePIDModule', 'set_output_limits', args={'min': min, 'max': max})
-        return asyncio.run(self._call_lockstar(bc))
+        return await self._call_lockstar(bc)
 
-    def lock(self):
+    async def lock(self):
         bc = BackendCall(self.client_id, 'SinglePIDModule', 'lock', args={})
-        return asyncio.run(self._call_lockstar(bc))
+        return await self._call_lockstar(bc)
 
-    def unlock(self):
+    async def unlock(self):
         bc = BackendCall(self.client_id, 'SinglePIDModule', 'unlock', args={})
-        return asyncio.run(self._call_lockstar(bc))
+        return await self._call_lockstar(bc)
 
 
-if __name__ == "__main__":
+async def main():
     from os.path import join, dirname
     logging.basicConfig(
         level=logging.DEBUG,
@@ -61,13 +74,12 @@ if __name__ == "__main__":
         ]
     )
     client = SinglePIDClient('192.168.88.13', 10780, 1234)
-
-    response = client.initialize(1,0,0,0,10,False, 0, 0)
+    response = await client.initialize(1,0,0,0,10,False, 0, 0)
     
     initialized = False
 
     if response.is_wrong_client_id():
-        if client.register_client_id():
+        if await client.register_client_id():
             logging.info(f'Registered my client id: {client.client_id}')
             response = client.initialize(1,0,0,0,10,False, 0, 0)
 
@@ -83,7 +95,9 @@ if __name__ == "__main__":
         linearization_file = join(dirname(__file__), 'test_linearization.json')
         linearization_length = 2000
         #print(client.set_ch_one_output_limits(0, 10))
-        print(client.set_linearization_length_one(linearization_length))
-        print(client.set_linearization_one_from_file(linearization_file))
-        #print(client.disable_linearization_one())
+        print(await client.set_linearization_length_one(linearization_length))
+        print(await client.set_linearization_one_from_file(linearization_file))
+        #print(await client.disable_linearization_one())
 
+if __name__ == "__main__":
+    asyncio.run(main())

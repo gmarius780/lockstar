@@ -12,16 +12,16 @@ class LockstarClient():
         self.client_id = client_id
         self.module_name = module_name
 
-    def set_ch_one_output_limits(self, min: float, max: float):
+    async def set_ch_one_output_limits(self, min: float, max: float):
         bc = BackendCall(self.client_id, self.module_name, 'set_ch_one_output_limits', args={'min': min, 'max': max})
-        return asyncio.run(self._call_lockstar(bc))
+        return await self._call_lockstar(bc)
 
-    def set_ch_two_output_limits(self, min: float, max: float):
+    async def set_ch_two_output_limits(self, min: float, max: float):
         bc = BackendCall(self.client_id, self.module_name, 'set_ch_two_output_limits', args={'min': min, 'max': max})
-        return asyncio.run(self._call_lockstar(bc))
+        return await self._call_lockstar(bc)
 
     #==== Linearization Methods START====
-    def set_linearization_one(self, linearization, min_output_voltage, max_output_voltage):
+    async def set_linearization_one(self, linearization, min_output_voltage, max_output_voltage):
         """Sets the parameters used by the DAC_ONE to linearize the systems response
 
         Args:
@@ -36,9 +36,9 @@ class LockstarClient():
                             'min_output_voltage': min_output_voltage,
                             'max_output_voltage': max_output_voltage
                         })
-        return asyncio.run(self._call_lockstar(bc))
+        return await self._call_lockstar(bc)
 
-    def set_linearization_two(self, linearization, min_output_voltage, max_output_voltage):
+    async def set_linearization_two(self, linearization, min_output_voltage, max_output_voltage):
         """Sets the parameters used by the DAC_ONE to linearize the systems response
 
         Args:
@@ -53,9 +53,9 @@ class LockstarClient():
                             'min_output_voltage': min_output_voltage,
                             'max_output_voltage': max_output_voltage
                         })
-        return asyncio.run(self._call_lockstar(bc))
+        return await self._call_lockstar(bc)
 
-    def set_linearization_two_from_file(self, local_file):
+    async def set_linearization_two_from_file(self, local_file):
         """ calls set_linearization_two with the linearization gotten from local_file (stored by LinearizationClient.store_linearization_locally)
         """
 
@@ -66,42 +66,42 @@ class LockstarClient():
                                     min_output_voltage=lin_dict['min_output_voltage'],
                                     max_output_voltage=lin_dict['max_output_voltage'])
 
-    def set_linearization_one_from_file(self, local_file):
+    async def set_linearization_one_from_file(self, local_file):
         """ calls set_linearization_one with the linearization gotten from local_file (stored by LinearizationClient.store_linearization_locally)
         """
 
         with open(local_file, 'r') as f:
             lin_dict = json.load(f)
 
-        return self.set_linearization_one(linearization=lin_dict['linearization'], 
+        return await self.set_linearization_one(linearization=lin_dict['linearization'], 
                                     min_output_voltage=lin_dict['min_output_voltage'],
                                     max_output_voltage=lin_dict['max_output_voltage'])
 
-    def set_linearization_length_one(self, linearization_length: int):
+    async def set_linearization_length_one(self, linearization_length: int):
         bc = BackendCall(self.client_id, self.module_name, 'set_linearization_length_one', 
                         args={'linearization_length': linearization_length})
-        return asyncio.run(self._call_lockstar(bc))
+        return await self._call_lockstar(bc)
 
-    def set_linearization_length_two(self, linearization_length: int):
+    async def set_linearization_length_two(self, linearization_length: int):
         bc = BackendCall(self.client_id, self.module_name, 'set_linearization_length_two', 
                         args={'linearization_length': linearization_length})
-        return asyncio.run(self._call_lockstar(bc))
+        return await self._call_lockstar(bc)
 
-    def enable_linearization_one(self):
+    async def enable_linearization_one(self):
         bc = BackendCall(self.client_id, self.module_name, 'enable_linearization_one', args={})
-        return asyncio.run(self._call_lockstar(bc))
+        return await self._call_lockstar(bc)
 
-    def enable_linearization_two(self):
+    async def enable_linearization_two(self):
         bc = BackendCall(self.client_id, self.module_name, 'enable_linearization_two', args={})
-        return asyncio.run(self._call_lockstar(bc))
+        return await self._call_lockstar(bc)
 
-    def disable_linearization_one(self):
+    async def disable_linearization_one(self):
         bc = BackendCall(self.client_id, self.module_name, 'disable_linearization_one', args={})
-        return asyncio.run(self._call_lockstar(bc))
+        return await self._call_lockstar(bc)
 
-    def disable_linearization_two(selft):
+    async def disable_linearization_two(selft):
         bc = BackendCall(self.client_id, self.module_name, 'disable_linearization_two', args={})
-        return asyncio.run(self._call_lockstar(bc))
+        return await self._call_lockstar(bc)
    
     #==== Linearization Methods END====
 
@@ -123,11 +123,12 @@ class LockstarClient():
         await writer.wait_closed()
         return response
 
-    def register_client_id(self):
+    async def register_client_id(self):
         bc = BackendCall(self.client_id, 'GeneralModule', 'register_client',
                         args={'client_id': self.client_id})
         
-        response = asyncio.run(self._call_lockstar(bc))
+        #response = asyncio.run(self._call_lockstar(bc))
+        response = await self._call_lockstar(bc)
 
         if not response.is_ACK():
             logging.warn(f'LockstarClient: could not register my client id: {self.client_id}')

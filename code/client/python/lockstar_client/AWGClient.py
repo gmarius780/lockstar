@@ -7,7 +7,7 @@ class AWGClient(BufferBaseClient_):
         super().__init__(lockstar_ip, lockstar_port, client_id, 'AWGModule')
 
 
-if __name__ == "__main__":
+async def main():
     import numpy as np
     from os.path import join, dirname
     logging.basicConfig(
@@ -21,7 +21,7 @@ if __name__ == "__main__":
     client = AWGClient('192.168.88.201', 10780, 1234)
 
     
-    if client.register_client_id():
+    if await client.register_client_id():
         logging.info(f'Successfully initialized AWG module')
         
         linearization_file = join(dirname(__file__), 'test_linearization.json')
@@ -33,17 +33,17 @@ if __name__ == "__main__":
         ch_one_buffer = np.linspace(0, 10, num=2000).tolist()
         ch_two_chunks = [0]
         ch_two_buffer = [0.]
-        print(client.initialize_buffers(len(ch_one_buffer), 1, len(ch_one_chunks), 1, sampling_rate))
-        print(client.set_ch_one_output_limits(0, 10))
-        print(client.set_ch_two_output_limits(0, 10))
-        print(client.set_ch_one_chunks(ch_one_chunks))
-        print(client.set_ch_two_chunks(ch_two_chunks))
-        print(client.set_ch_one_buffer(ch_one_buffer))
-        print(client.set_ch_two_buffer(ch_two_buffer))
+        print(await client.initialize_buffers(len(ch_one_buffer), 1, len(ch_one_chunks), 1, sampling_rate))
+        print(await client.set_ch_one_output_limits(0, 10))
+        print(await client.set_ch_two_output_limits(0, 10))
+        print(await client.set_ch_one_chunks(ch_one_chunks))
+        print(await client.set_ch_two_chunks(ch_two_chunks))
+        print(await client.set_ch_one_buffer(ch_one_buffer))
+        print(await client.set_ch_two_buffer(ch_two_buffer))
 
-        print(client.set_linearization_length_one(linearization_length))
-        print(client.set_linearization_one_from_file(linearization_file))
-        #print(client.disable_linearization_one())
+        print(await client.set_linearization_length_one(linearization_length))
+        print(await client.set_linearization_one_from_file(linearization_file))
+        #print(await client.disable_linearization_one())
 
         # ch_one_chunks = [999, 1999, 2999, 3999, 4999]
         # ch_two_chunks = [1999, 2999]
@@ -69,14 +69,16 @@ if __name__ == "__main__":
         # # ch_two_buffer = np.sin(np.linspace(0, 50*2*np.pi, num=2000)).tolist()
 
 
-        # # print(client.set_ch_one_output_limits(0, 1))
-        # print(client.initialize_buffers(len(ch_one_buffer), len(ch_two_buffer), len(ch_one_chunks), 
+        # # print(await lient.set_ch_one_output_limits(0, 1))
+        # print(await client.initialize_buffers(len(ch_one_buffer), len(ch_two_buffer), len(ch_one_chunks), 
         #                                 len(ch_two_chunks), sampling_rate))
-        # print(client.set_ch_one_output_limits(-5, 5))
-        # print(client.set_ch_two_output_limits(-5, 5))
-        # print(client.set_ch_one_chunks(ch_one_chunks))
-        # print(client.set_ch_two_chunks(ch_two_chunks))
-        # print(client.set_ch_one_buffer(ch_one_buffer))
-        # print(client.set_ch_two_buffer(ch_two_buffer))
-        # client.output_ttl()
+        # print(await client.set_ch_one_output_limits(-5, 5))
+        # print(await client.set_ch_two_output_limits(-5, 5))
+        # print(await client.set_ch_one_chunks(ch_one_chunks))
+        # print(await client.set_ch_two_chunks(ch_two_chunks))
+        # print(await client.set_ch_one_buffer(ch_one_buffer))
+        # print(await client.set_ch_two_buffer(ch_two_buffer))
+        # await client.output_ttl()
 
+if __name__ == "__main__":
+    asyncio.run(main())

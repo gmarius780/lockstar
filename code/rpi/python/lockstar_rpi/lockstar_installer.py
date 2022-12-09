@@ -1,5 +1,8 @@
 ##Lockstar installer
-# Installs lockstar as a linux daemon called lockstar.service
+# installs lockstar as a linux daemon called lockstar.service
+#
+# TO RUN IT: sudo python3 ./lockstar_installer.py
+#
 # @author: Marius Gächter
 from os.path import join
 import subprocess
