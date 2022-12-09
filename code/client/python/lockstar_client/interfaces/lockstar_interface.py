@@ -59,25 +59,4 @@ if __name__ == "__main__":
 
     initialize_pid()
     
-    initialized = False
-
-    if response.is_wrong_client_id():
-        if client.register_client_id():
-            logging.info(f'Registered my client id: {client.client_id}')
-            response = client.initialize(1,0,0,0,10,False, 0, 0)
-
-            initialized = response.is_ACK()
-        else:
-            logging.info(f'Failed to register my client id: {client.client_id}')
-
-    else:
-        initialized = True
     
-    if initialized:
-        logging.info(f'Successfully initialized Single PID module')
-        linearization_file = join(dirname(__file__), 'test_linearization.json')
-        linearization_length = 2000
-        print(client.set_ch_one_output_limits(0, 10))
-        print(client.set_linearization_length_one(linearization_length))
-        print(client.set_linearization_one_from_file(linearization_file))
-        print(client.disable_linearization_one())
