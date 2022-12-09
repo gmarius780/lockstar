@@ -11,6 +11,18 @@ class SinglePIDClient(LockstarClient):
         super().__init__(lockstar_ip, lockstar_port, client_id, 'SinglePIDModule')
 
 
+    @staticmethod
+    def call(coroutine):
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:  # 'RuntimeError: There is no current event loop...'
+            loop = None
+
+        if loop is None:
+            return asyncio.run(coroutine)
+        else:
+            return await coroutine
+
     def initialize(self, p: float, i: float, d: float, out_range_min: float, out_range_max: float, locked: bool,
                     input_offset: float, output_offset: float):
         """Set all system module parameters
@@ -30,7 +42,8 @@ class SinglePIDClient(LockstarClient):
                             'locked': locked, 'input_offset': input_offset, 'output_offset': output_offset}
                         )
         
-        return asyncio.run(self._call_lockstar(bc))
+        # return asyncio.run(self._call_lockstar(bc))
+        return SinglePIDClient.call(self._call_lockstar(bc))
 
     def set_pid(self,  p: float, i: float, d: float, input_offset: float, output_offset: float):
         bc = BackendCall(self.client_id, 'SinglePIDModule', 'set_pid', args={'p': p, 'i': i, 'd': d, 
