@@ -32,17 +32,26 @@ class Module:
         return config
     
     def flash_mc(self):
-        subprocess.run(['sudo','openocd', '-f', join(BackendSettings.elf_directory, 'restart.cfg')],
-                                capture_output=True)
-        output = subprocess.run(['sudo','openocd', '-f', join(BackendSettings.elf_directory, f'{self.__class__.__name__}.cfg')],
-                                capture_output=True)
-        subprocess.run(['sudo','openocd', '-f', join(BackendSettings.elf_directory, 'restart.cfg')],
-                                capture_output=True)
-        
-        logging.info(f'Tried flashing mc for module: {self.__class__.__name__} - output: {output}')
+        success = False
+        retry_counter = 5
 
-        if 'Verified OK' in str(output.stderr):
-            logging.info(f'FLASHING SUCCESSFUL!')
+        while retry_counter > 0 and not success:
+            subprocess.run(['sudo','openocd', '-f', join(BackendSettings.elf_directory, 'restart.cfg')],
+                                    capture_output=True)
+            output = subprocess.run(['sudo','openocd', '-f', join(BackendSettings.elf_directory, f'{self.__class__.__name__}.cfg')],
+                                    capture_output=True)
+            subprocess.run(['sudo','openocd', '-f', join(BackendSettings.elf_directory, 'restart.cfg')],
+                                    capture_output=True)
+            
+            logging.info(f'Tried flashing mc for module: {self.__class__.__name__} - output: {output}')
+
+            if 'Verified OK' in str(output.stderr):
+                logging.info(f'FLASHING SUCCESSFUL!')
+                success = True
+            else:
+                logging.error('FLASHING FAILED!!!!!!!!!!!')
+                success = False
+            retry_counter -= 1
 
     async def launch_from_config(self, config_dict):
         pass
