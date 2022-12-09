@@ -107,6 +107,7 @@ RPI::RPI() {
 	dma_out = new DMA(dma_out_config);
 
 	is_communicating = false;
+	while(spi->isBusy());
 	spi->enableRxIRQ();
 	spi->disableTxIRQ();
 	spi->enableSPI();
@@ -119,6 +120,7 @@ RPI::~RPI() {
 
 void RPI::spi_interrupt() {
 	if(is_communicating == false) {
+		//get new command from rpi
 		comm_reset_timer->enable_interrupt();
 		comm_reset_timer->enable();
 		current_nbr_of_bytes = 10 * ((uint32_t)*(volatile uint8_t *)spi->getDRAddress());
@@ -153,18 +155,20 @@ bool RPI::dma_in_interrupt() {
 }
 
 void RPI::comm_reset_timer_interrupt() {
-	// reset rpi-communication
-	this->is_communicating = false;
-	this->current_nbr_of_bytes = 0;
-	while(spi->isBusy());
-	spi->disableSPI_DMA();
-	dma_in->disableDMA();
-	dma_in->resetTransferCompleteInterruptFlag();
-	is_communicating = false;
-	spi->enableRxIRQ();
-	this->comm_reset_timer->disable();
-	this->comm_reset_timer->disable_interrupt();
-	this->comm_reset_timer->reset_counter();
+	if (this->is_communicating == true) {
+		// reset rpi-communication
+		this->is_communicating = false;
+		this->current_nbr_of_bytes = 0;
+		while(spi->isBusy());
+		spi->disableSPI_DMA();
+		dma_in->disableDMA();
+		dma_in->resetTransferCompleteInterruptFlag();
+		is_communicating = false;
+		spi->enableRxIRQ();
+		this->comm_reset_timer->disable();
+		this->comm_reset_timer->disable_interrupt();
+		this->comm_reset_timer->reset_counter();
+	}
 }
 
 void RPI::dma_in_error_interrupt() {

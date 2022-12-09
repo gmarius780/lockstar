@@ -24,19 +24,34 @@ class Module:
 
     def generate_config_dict(self):
         """Stores all the relevant information in a dictionary such that the module can be relaunched with this information"""
-        return {
-            'module_name': self.__class__.__name__
-        }
+        config = {}
+        for key in self.__dict__:
+            if key not in config:
+                config[key] = self.__dict__[key]
+        config['module_name'] = self.__class__.__name__
+        return config
     
     def flash_mc(self):
-        output = subprocess.run(['sudo','openocd', '-f', join(BackendSettings.elf_directory, 'restart.cfg')],
-                                capture_output=True)
-        output = subprocess.run(['sudo','openocd', '-f', join(BackendSettings.elf_directory, f'{self.__class__.__name__}.cfg')],
-                                capture_output=True)
-        output = subprocess.run(['sudo','openocd', '-f', join(BackendSettings.elf_directory, 'restart.cfg')],
-                                capture_output=True)
-        
-        logging.info(f'Tried flashing mc for module: {self.__class__.__name__} - output: {output}')
+        success = False
+        retry_counter = 5
+
+        while retry_counter > 0 and not success:
+            subprocess.run(['sudo','openocd', '-f', join(BackendSettings.elf_directory, 'restart.cfg')],
+                                    capture_output=True)
+            output = subprocess.run(['sudo','openocd', '-f', join(BackendSettings.elf_directory, f'{self.__class__.__name__}.cfg')],
+                                    capture_output=True)
+            subprocess.run(['sudo','openocd', '-f', join(BackendSettings.elf_directory, 'restart.cfg')],
+                                    capture_output=True)
+            
+            logging.info(f'Tried flashing mc for module: {self.__class__.__name__} - output: {output}')
+
+            if 'Verified OK' in str(output.stderr):
+                logging.info(f'FLASHING SUCCESSFUL!')
+                success = True
+            else:
+                logging.error('FLASHING FAILED!!!!!!!!!!!')
+                success = False
+            retry_counter -= 1
 
     async def launch_from_config(self, config_dict):
         pass

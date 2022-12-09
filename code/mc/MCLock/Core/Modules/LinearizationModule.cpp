@@ -1,287 +1,293 @@
 /*
- * AWGModule.cpp
+ * LinearizationModule.cpp
  *
+ * Allows the user to linearize the two outputs. The recorded linearization can then be used in
+ * all the other modules
  *
- *  Created on: Oct 31, 2022
- *      Author: Samuel
+ *  Created on: Aug 18, 2022
+ *      Author: marius, based on Samuels implementation
  */
+#include "main.h"
+#include "stm32f427xx.h"
+#include "stm32f4xx_hal.h"
+#include "stm32f4xx_it.h"
+#include "stm32f4xx_hal_gpio.h"
 
 
-#include "LinearizationModule.h"
+#include "../HAL/spi.hpp"
+#include "../HAL/rpi.h"
+#include "../HAL/leds.hpp"
+#include "../HAL/adc_new.hpp"
+#include "../HAL/BasicTimer.hpp"
+#include "../HAL/dac_new.hpp"
+#include "../Lib/RPIDataPackage.h"
+#include "../Lib/pid.hpp"
+
+#include "Module.hpp"
+
 #ifdef LINEARIZATION_MODULE
 
-LinearizationModule *module;
+/**
+ * State-Machine:
+ *
+ *  |Idle| --(set_ramp_parameters)--> received_ramp_parameters --(linearize_ch)--> measuring_gain -->finished_gain_measurement
+ *  			| (output_test_ramp)  \																|(get_gain_measurement_result)
+ *  		|testing|                  ------------------------------------------------------------------
+ */
+enum Channel { CH_ONE, CH_TWO, CH_NOT_SET};
+enum State {
+			IDLE,
+			RECEIVED_RAMP_PARAMETERS,
+			RECEIVED_LINEARIZE_COMMAND,
+			MEASURING_GAIN,
+			FINISHED_GAIN_MEASUREMENT,
+			TESTING};
 
-LinearizationModule::LinearizationModule() {
-	initialize_rpi();
-	turn_LED6_off();
-	turn_LED5_on();
+struct ModuleState {
+	Channel active_channel;
+	State current_state;
+};
 
-	timer_arr = 0;
-	timer_psc = 0;
+class LinearizationModule: public Module {
+public:
+	LinearizationModule() : Module() {
+		initialize_rpi();
+		turn_LED6_off();
+		turn_LED5_on();
 
-	buffer_pointer = 0;
+		ramp_start = 0;
+		ramp_end = 0;
+		ramp_stepsize = 0;
+		ramp_length = 0;
 
-	timer = new BasicTimer(2,timer_arr,timer_psc);
-
-	reset_state_machine();
-	ready_to_work = true;
-	linearization_active = false;
-
-	ramp_start = 0;
-	ramp_end = 0;
-	ramp_stepsize = 0;
-	output_range = 0;
-	output_min = 0;
-	output_max = 0;
-	ramp_range = 0;
-	pivot_spacing = 0;
-	test = false;
-}
-
-void LinearizationModule::LinearizationModule::run() {
-	initialize_adc(ADC_UNIPOLAR_10V, ADC_UNIPOLAR_10V);
-	initialize_dac();
-	this->dac_1->write(0);
-	this->dac_2->write(0);
-	float output = 0;
-
-	bool toggle = false;
-
-	/*** work loop ***/
-	while(!test) {
-		if(!ready_to_work) { new_linearization(); }
-
-		if(toggle) {
-			dac_1->write(0);
-		} else {
-			dac_1->write(3);
-		}
-
-		toggle = !toggle;
-		toggle = !toggle;
-		toggle = !toggle;
+		//Initialize state machine
+		state.active_channel = CH_NOT_SET;
+		state.current_state = IDLE;
 	}
-	timer->set_auto_reload(200);
-	timer->enable_interrupt();
-	timer->enable();
-	while(true);
-}
 
-float LinearizationModule::linearize_output(float target_output) {
-	if(!linearization_active)
-		return target_output;
+	void run() {
 
-	target_output = target_output/ramp_range*output_range;
+		initialize_adc(ADC_UNIPOLAR_10V, ADC_UNIPOLAR_10V);
+		initialize_dac();
+		this->dac_1->write(0);
+		this->dac_2->write(0);
 
-	uint32_t pivot_index = (uint32_t)((target_output-output_min)/output_range*ramp_length);
-	float pivot = output_min + pivot_spacing*pivot_index;
-	float interpolation = (target_output-pivot)/pivot_spacing;
-	if(interpolation < 0)
-		interpolation = 0;
-	if(pivot_index > ramp_length-2)
-		return inverted_pivots_buffer[pivot_index];
-	return inverted_pivots_buffer[pivot_index] + (inverted_pivots_buffer[pivot_index+1]-inverted_pivots_buffer[pivot_index])*interpolation;
-}
+		/*** work loop ***/
+		while(true) {
+			HAL_Delay(100);
+			if(state.current_state == RECEIVED_LINEARIZE_COMMAND and state.active_channel != CH_NOT_SET) {
+				perform_gain_measurement();
+			}
+		}
+	}
 
-void output_ramp() {
-	if(module->buffer_pointer < module->ramp_length)
-		module->dac_1->write(module->ramp_start + module->ramp_stepsize*module->buffer_pointer);
+	void handle_rpi_input() {
+		if (Module::handle_rpi_base_methods() == false) { //if base class doesn't know the called method
+			/*** Package format: method_identifier (uint32_t) | method specific arguments (defined in the methods directly) ***/
+			RPIDataPackage* read_package = rpi->get_read_package();
 
-	if(module->buffer_pointer > 0 && module->buffer_pointer < module->ramp_length+1)
-		module->adc->start_conversion();
+			// switch between method_identifier
+			switch (read_package->pop_from_buffer<uint32_t>()) {
+			case METHOD_SET_RAMP_PARAMETERS:
+				set_ramp_parameters(read_package);
+				break;
+			case METHOD_LINEARIZE_CH_ONE:
+				linearize_ch_one(read_package);
+				break;
+			case METHOD_LINEARIZE_CH_TWO:
+				linearize_ch_two(read_package);
+				break;
+			case METHOD_GET_GAIN_MEASUREMENT_RESULT:
+				get_gain_measurement_result(read_package);
+				break;
+			default:
+				/*** send NACK because the method_identifier is not valid ***/
+				RPIDataPackage* write_package = rpi->get_write_package();
+				write_package->push_nack();
+				rpi->send_package(write_package);
+				break;
+			}
+		}
+	}
 
-	if(module->buffer_pointer > 1 && module->buffer_pointer < module->ramp_length+2)
-		module->inverted_pivots_buffer[module->buffer_pointer-2] = module->adc->channel2->get_result();
+	/**
+	 * Start outputting the ramp on the right channel and recording the trace
+	 */
+	void perform_gain_measurement() {
+		if(state.current_state == RECEIVED_LINEARIZE_COMMAND and state.active_channel != CH_NOT_SET) {
+			//*** Perform gain measurement
+			state.current_state = MEASURING_GAIN;
 
-	module->buffer_pointer++;
-}
+			uint32_t gain_measurement_index = 0;
 
-void LinearizationModule::new_linearization() {
-	RPIDataPackage* ack = rpi->get_write_package();
-	ack->push_ack();
-	rpi->send_package(ack);
+			LinearizableDAC* dac = state.active_channel == CH_ONE ? dac_1 : dac_2;
+			ADC_Device_Channel* adc_channel = state.active_channel == CH_ONE ? adc->channel1 : adc->channel2;
 
-	perform_gain_measurement();
-	while(!finished_gain_measurement);
-	ack = rpi->get_write_package();
-	ack->push_ack();
-	rpi->send_package(ack);
+			// it doesn't make sense to use the dac outside of the linearized range
+			dac->set_min_output(ramp_start);
+			dac->set_max_output(ramp_end);
 
-	while(!sent_gain_measurement);
-	while(!received_inverted_pivots);
+			//sequentially perform gain measurement
+			while(gain_measurement_index < ramp_length) {
+				dac->write(ramp_start + ramp_stepsize*gain_measurement_index);
+				HAL_Delay(settling_time_ms); // wait for settling time to start conversion
+				adc->start_conversion();
+				HAL_Delay(1); // wait for conversion to finish (10us would be enough)
+				gain_measurement_buffer[gain_measurement_index] = adc_channel->get_result();
 
-	reset_state_machine();
+				gain_measurement_index++;
+			}
 
-	ready_to_work = true;
-}
+			state.current_state = FINISHED_GAIN_MEASUREMENT;
 
-void LinearizationModule::reset_state_machine() {
-	received_ramp_paramters = false;
-	finished_gain_measurement = false;
-	sent_gain_measurement = false;
-	received_inverted_pivots = false;
-}
+			//send ack to signal the RPI that gain mmt is done
+			RPIDataPackage* ack = rpi->get_write_package();
+			ack->push_ack();
+			rpi->send_package(ack);
+		}
+	}
 
-void LinearizationModule::handle_rpi_input() {
+	/*** START: METHODS ACCESSIBLE FROM THE RPI ***/
 
-	/*** Package format: method_identifier (uint32_t) | method specific arguments (defined in the methods directly) ***/
+	/**
+	 * Reads ramp parameter AND INSTANTIATES THE BUFFER WITH THE GIVEN RAMP LENGTH
+	 * this method should therefore not be called too many times as otherwise the RAM
+	 * will run out. If one wants to perform multiple linearization attempts, one can
+	 * call the linearize_ch_one/linearize_ch_two method without calling set_ramp_parameters again
+	 *
+	 * expects:
+	 *  - (float) ramp_start : start voltage of ramp
+	 *  - (float) ramp_end : end voltage of ramp
+	 *  - (uint32_t) ramp_length: number of points in the ramp
+	 *  - (uint32_t) settling_time_ms: wait interval between outputting voltage and measuring it
+	 */
+	static const uint32_t METHOD_SET_RAMP_PARAMETERS = 11;
+	void set_ramp_parameters(RPIDataPackage* read_package) {
+		if (state.current_state == IDLE or state.current_state == RECEIVED_RAMP_PARAMETERS or state.current_state == FINISHED_GAIN_MEASUREMENT) {
+			/***Read arguments***/
+			ramp_start = read_package->pop_from_buffer<float>();
+			ramp_end = read_package->pop_from_buffer<float>();
+			ramp_length = read_package->pop_from_buffer<uint32_t>();
+			ramp_range = ramp_end - ramp_start;
+			ramp_stepsize = ramp_range/ramp_length;
 
-	RPIDataPackage* read_package = this->rpi->get_read_package();
-	//switch between method_identifier
-	switch (read_package->pop_from_buffer<uint32_t>()) {
-		case SET_RAMP_PARAMETERS:
-			set_ramp_parameters(read_package);
-			ready_to_work = false;
-			break;
+			gain_measurement_buffer = new float[ramp_length]();
 
-		case SEND_GAIN_MEASUREMENT:
-			send_gain_measurement(read_package);
-			break;
+			settling_time_ms = read_package->pop_from_buffer<uint32_t>();
 
-		case SET_INVERTED_PIVOTS:
-			set_inverted_pivots(read_package);
-			break;
-
-		default: {
-			/*** send NACK because the method_identifier is not valid ***/
+			state.current_state = RECEIVED_RAMP_PARAMETERS;
+			/*** send ACK ***/
+			RPIDataPackage* write_package = rpi->get_write_package();
+			write_package->push_ack();
+			rpi->send_package(write_package);
+		} else {
+			/*** send NACK because the MC is not ready to read new ramp params***/
 			RPIDataPackage* write_package = rpi->get_write_package();
 			write_package->push_nack();
 			rpi->send_package(write_package);
-			break;
 		}
 	}
 
-}
-
-/*** START: METHODS ACCESSIBLE FROM THE RPI ***/
-
-void LinearizationModule::set_ramp_parameters(RPIDataPackage* read_package) {
-	ramp_start = read_package->pop_from_buffer<float>();
-	ramp_end = read_package->pop_from_buffer<float>();
-	ramp_length = read_package->pop_from_buffer<uint32_t>();
-	ramp_range = ramp_end - ramp_start;
-	ramp_stepsize = ramp_range/ramp_length;
-
-	inverted_pivots_buffer = new float[ramp_length]();
-
-	timer_arr = read_package->pop_from_buffer<uint32_t>();
-	timer_psc = read_package->pop_from_buffer<uint32_t>();
-
-	timer->set_auto_reload(timer_arr);
-	timer->set_prescaler(timer_psc);
-	timer->enable_interrupt();
-}
-
-void LinearizationModule::perform_gain_measurement() {
-	RPIDataPackage* write_package = rpi->get_write_package();
-	write_package->push_ack();
-	rpi->send_package(write_package);
-
-	timer->enable();
-
-	// Wait for measurement to finish
-	// (+3 to be safe, included if(ramp_pointer < ...) in TIM interrupt)
-	while(buffer_pointer < ramp_length+3);
-
-	timer->disable();
-	timer->disable_interrupt();
-
-	output_min = inverted_pivots_buffer[0];
-	output_max = inverted_pivots_buffer[ramp_length-1];
-	output_range = output_max - output_min;
-	pivot_spacing = output_range/ramp_length;
-
-	buffer_pointer = 0;
-	// Measurement is stored in inverted_pivots_buffer to save some memory
-	finished_gain_measurement = true;
-}
-
-void LinearizationModule::send_gain_measurement(RPIDataPackage* read_package) {
-	uint32_t buffer_offset = read_package->pop_from_buffer<uint32_t>();
-	uint32_t package_size = read_package->pop_from_buffer<uint32_t>();
-	bool last_package = read_package->pop_from_buffer<bool>();
-
-	if(buffer_offset+package_size > ramp_length) {
-		RPIDataPackage* nack = rpi->get_write_package();
-		nack->push_nack();
-		rpi->send_package(nack);
-		return;
+	/**
+	 * Starts linearization procedure for channel one
+	 */
+	static const uint32_t METHOD_LINEARIZE_CH_ONE = 12;
+	void linearize_ch_one(RPIDataPackage* read_package) {
+		linearize_ch(read_package, true);
 	}
 
-	RPIDataPackage* data_package = rpi->get_write_package();
-	for(uint32_t i=0; i<package_size; i++)
-		data_package->push_to_buffer<float>(inverted_pivots_buffer[buffer_offset + i]);
-	rpi->send_package(data_package);
-
-	if(last_package)
-		sent_gain_measurement = true;
-}
-
-
-void LinearizationModule::set_inverted_pivots(RPIDataPackage* read_package) {
-	uint32_t buffer_offset = read_package->pop_from_buffer<uint32_t>();
-	uint32_t package_size = read_package->pop_from_buffer<uint32_t>();
-	bool last_package = read_package->pop_from_buffer<bool>();
-
-	if(buffer_offset+package_size > ramp_length) {
-		RPIDataPackage* nack = rpi->get_write_package();
-		nack->push_nack();
-		rpi->send_package(nack);
+	/**
+	 * Starts linearization procedure for channel two
+	 */
+	static const uint32_t METHOD_LINEARIZE_CH_TWO = 13;
+	void linearize_ch_two(RPIDataPackage* read_package) {
+		linearize_ch(read_package, false);
 	}
 
-	for(uint32_t i=0; i<package_size; i++) {
-		inverted_pivots_buffer[buffer_offset+i] = read_package->pop_from_buffer<float>();
+	void linearize_ch(RPIDataPackage* read_package, bool ch_one) {
+		if (state.current_state == RECEIVED_RAMP_PARAMETERS) {
+			state.active_channel = ch_one ? CH_ONE : CH_TWO;
+			state.current_state = RECEIVED_LINEARIZE_COMMAND;
+		} else {
+			/*** send NACK because the MC is not ready to perform a new linearization***/
+			RPIDataPackage* write_package = rpi->get_write_package();
+			write_package->push_nack();
+			rpi->send_package(write_package);
+		}
 	}
 
-	RPIDataPackage* ack = rpi->get_write_package();
-	ack->push_ack();
-	rpi->send_package(ack);
+	/**
+	 * Returns the measured gain of the system.
+	 *
+	 * expects starting index and number of datapoints to be read as arguments
+	 */
+	static const uint32_t METHOD_GET_GAIN_MEASUREMENT_RESULT = 14;
+	void get_gain_measurement_result(RPIDataPackage* read_package) {
+		if (state.current_state == FINISHED_GAIN_MEASUREMENT or state.current_state == RECEIVED_RAMP_PARAMETERS) {
+			//return gain measurement result
+			uint32_t buffer_offset = read_package->pop_from_buffer<uint32_t>();
+			uint32_t package_size = read_package->pop_from_buffer<uint32_t>();
 
-	if(last_package) {
-		received_inverted_pivots = true;
-		linearization_active = true;
+			if(buffer_offset+package_size > ramp_length) {
+				RPIDataPackage* nack = rpi->get_write_package();
+				nack->push_nack();
+				rpi->send_package(nack);
+				return;
+			}
+
+			RPIDataPackage* data_package = rpi->get_write_package();
+			for(uint32_t i=0; i<package_size; i++)
+				data_package->push_to_buffer<float>(gain_measurement_buffer[buffer_offset + i]);
+			rpi->send_package(data_package);
+
+			state.current_state = RECEIVED_RAMP_PARAMETERS;
+		} else {
+			/*** send NACK because there is no gain measurement result available***/
+			RPIDataPackage* write_package = rpi->get_write_package();
+			write_package->push_nack();
+			rpi->send_package(write_package);
+		}
 	}
 
-}
+	/*** END: METHODS ACCESSIBLE FROM THE RPI ***/
 
 
-/*** END: METHODS ACCESSIBLE FROM THE RPI ***/
+	void rpi_dma_in_interrupt() {
 
+		if(rpi->dma_in_interrupt())
+		{ /*got new package from rpi*/
+			handle_rpi_input();
+		} else
+		{ /* error */
 
-void LinearizationModule::rpi_dma_in_interrupt() {
-
-	if(rpi->dma_in_interrupt())
-	{ /*got new package from rpi*/
-		handle_rpi_input();
-	} else
-	{ /* error */
-
+		}
 	}
-}
+
+public:
+	BasicTimer* timer;
+
+	//ramp parameters
+	float ramp_start;
+	float ramp_end;
+	float ramp_stepsize;
+	float ramp_range;
+	uint32_t ramp_length;
+	uint32_t settling_time_ms;
+
+	float *gain_measurement_buffer;
+
+	ModuleState state;
+};
 
 
+LinearizationModule *module;
 
 /******************************
  *         INTERRUPTS          *
  ******************************
  * Callbacks are functions that are executed in response to events such as SPI communication finished, change on trigger line etc */
 
-__attribute__((section("sram_func")))
-void HAL_GPIO_EXTI_Callback (uint16_t gpio_pin)
-{
-	/*if(gpio_pin == DigitalIn_Pin) {
-		// Rising Edge
-		if(HAL_GPIO_ReadPin(DigitalIn_GPIO_Port, DigitalIn_Pin) == GPIO_PIN_RESET)
-			//module->digital_in_rising_edge();
 
-		// Falling Edge
-		if(HAL_GPIO_ReadPin(DigitalIn_GPIO_Port, DigitalIn_Pin) == GPIO_PIN_SET)
-			//module->digital_in_falling_edge();
-	}*/
-
-	// Note: Tested with square wave input. Rising and falling edge seem to be inverted?
-}
 
 // DMA Interrupts. You probably don't want to change these, they are neccessary for the low-level communications between MCU, converters and RPi
 __attribute__((section("sram_func")))
@@ -329,24 +335,14 @@ void SPI4_IRQHandler(void) {
 	module->rpi->spi_interrupt();
 }
 
-// This function is called whenever a timer reaches its period
-// !!!!!! GOT HARD FAULT WITH THIS ATTRIBUTE SET, BUT ONLY ON LOCKSTAR IN D15.......??
-//__attribute__((section("sram_func")))
+__attribute__((section("sram_func")))
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-	if (htim->Instance == TIM2) {
-		if(module->test) {
-			if(module->buffer_pointer > module->ramp_length-1)
-				module->buffer_pointer = 0;
-			float t = module->linearize_output(module->ramp_start + module->ramp_stepsize*module->buffer_pointer);
-			module->dac_1->write(t);
-			module->buffer_pointer++;
-		} else { // add output_ramp state
-			output_ramp();
-		}
-
+	if (htim->Instance == TIM4) {
+		module->rpi->comm_reset_timer_interrupt();
 	}
 }
+
 
 /******************************
  *       MAIN FUNCTION        *
@@ -376,4 +372,3 @@ void start(void)
 }
 
 #endif
-

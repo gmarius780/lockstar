@@ -5,13 +5,25 @@ from lockstar_general.backend.BackendResponse import BackendResponse
 from lockstar_general.backend.BackendCall import BackendCall
 
 class SinglePIDClient(LockstarClient):
-    """Basic Module which implements a simple PID controller by using input_1 as setpoint, 
-    input_2 as error_signal and output 1 for the control signal"""
+    """Basic Module which implements a simple PID controller by using input_1 as error signal, 
+    input_2 as setpoint and output 1 for the control signal"""
     def __init__(self, lockstar_ip, lockstar_port, client_id) -> None:
         super().__init__(lockstar_ip, lockstar_port, client_id, 'SinglePIDModule')
 
 
-    async def initialize(self, p: float, i: float, d: float, out_range_min: float, out_range_max: float, locked: bool,
+    @staticmethod
+    def call(coroutine):
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:  # 'RuntimeError: There is no current event loop...'
+            loop = None
+
+        if loop is None:
+            return asyncio.run(coroutine)
+        else:
+            return await coroutine
+
+    def initialize(self, p: float, i: float, d: float, out_range_min: float, out_range_max: float, locked: bool,
                     input_offset: float, output_offset: float):
         """Set all system module parameters
 
@@ -30,7 +42,8 @@ class SinglePIDClient(LockstarClient):
                             'locked': locked, 'input_offset': input_offset, 'output_offset': output_offset}
                         )
         
-        return asyncio.run(self._call_lockstar(bc))
+        # return asyncio.run(self._call_lockstar(bc))
+        return SinglePIDClient.call(self._call_lockstar(bc))
 
     def set_pid(self,  p: float, i: float, d: float, input_offset: float, output_offset: float):
         bc = BackendCall(self.client_id, 'SinglePIDModule', 'set_pid', args={'p': p, 'i': i, 'd': d, 
@@ -51,6 +64,7 @@ class SinglePIDClient(LockstarClient):
 
 
 if __name__ == "__main__":
+    from os.path import join, dirname
     logging.basicConfig(
         level=logging.DEBUG,
         format="%(asctime)s [%(levelname)s] %(message)s",
@@ -79,4 +93,10 @@ if __name__ == "__main__":
     
     if initialized:
         logging.info(f'Successfully initialized Single PID module')
+        linearization_file = join(dirname(__file__), 'test_linearization.json')
+        linearization_length = 2000
+        #print(client.set_ch_one_output_limits(0, 10))
+        print(client.set_linearization_length_one(linearization_length))
+        print(client.set_linearization_one_from_file(linearization_file))
+        #print(client.disable_linearization_one())
 

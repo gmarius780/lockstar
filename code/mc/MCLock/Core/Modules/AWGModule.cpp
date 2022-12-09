@@ -23,7 +23,7 @@
  * User can upload buffers containing the module will then output the voltages defined in the buffers with a sampling-rate, set by the user
  */
 class AWGModule: public BufferBaseModule {
-	static const uint32_t BUFFER_LIMIT_kBYTES = 180; //if this is chosen to large (200) there is no warning, the MC simply crashes (hangs in syscalls.c _exit())
+	static const uint32_t BUFFER_LIMIT_kBYTES = 160; //if this is chosen to large (200) there is no warning, the MC simply crashes (hangs in syscalls.c _exit())
 	static const uint32_t MAX_NBR_OF_CHUNKS = 100;
 public:
 	AWGModule() {
@@ -48,12 +48,13 @@ public:
 
 		/*** work loop ***/
 		while(true) {
+			HAL_Delay(100);
 			//this->dac_1->write(this->pid->calculate_output(adc->channel1->get_result(), adc->channel2->get_result(), dt));
 		}
 	}
 
 	void handle_rpi_input() {
-		if(this->handle_rpi_base_methods() == false) { //if base class doesn't know the called method
+		if (handle_rpi_base_methods() == false) { //if base class doesn't know the called method
 			/*** Package format: method_identifier (uint32_t) | method specific arguments (defined in the methods directly) ***/
 			RPIDataPackage* read_package = this->rpi->get_read_package();
 			//switch between method_identifier

@@ -40,12 +40,6 @@ bool BufferBaseModule::handle_rpi_base_methods() {
 		case METHOD_OUTPUT_TTL:
 			output_ttl(read_package);
 			break;
-		case METHOD_SET_CH_ONE_OUTPUT_LIMITS:
-			set_ch_one_output_limits(read_package);
-			break;
-		case METHOD_SET_CH_TWO_OUTPUT_LIMITS:
-			set_ch_two_output_limits(read_package);
-			break;
 		case METHOD_SET_CH_ONE_BUFFER:
 			set_ch_one_buffer(read_package);
 			break;
@@ -87,6 +81,7 @@ void BufferBaseModule::initialize_buffers(RPIDataPackage* read_package) {
 	buffer_two_size = read_package->pop_from_buffer<uint32_t>();
 	chunks_one_size = read_package->pop_from_buffer<uint32_t>();
 	chunks_two_size = read_package->pop_from_buffer<uint32_t>();
+
 	prescaler = read_package->pop_from_buffer<uint32_t>();
 	counter_max = read_package->pop_from_buffer<uint32_t>();
 
@@ -208,20 +203,6 @@ void BufferBaseModule::output_ttl(RPIDataPackage* read_package) {
 	RPIDataPackage* write_package = rpi->get_write_package();
 	write_package->push_ack();
 	rpi->send_package(write_package);
-}
-
-/**
- * expects two floats: the first corresponds to the minimum the second to the maximum of output one
- */
-void BufferBaseModule::set_ch_one_output_limits(RPIDataPackage* read_package) {
-	set_ch_output_limit(read_package, this->dac_1);
-}
-
-/**
- * expects two floats: the first corresponds to the minimum the second to the maximum of output two
- */
-void BufferBaseModule::set_ch_two_output_limits(RPIDataPackage* read_package) {
-	set_ch_output_limit(read_package, this->dac_2);
 }
 
 /**

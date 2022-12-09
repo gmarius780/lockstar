@@ -25,7 +25,7 @@
  * sampling rate, set by the user
  */
 class AWGPIDModule: public BufferBaseModule {
-	static const uint32_t BUFFER_LIMIT_kBYTES = 180; //if this is chosen to large (200) there is no warning, the MC simply crashes (hangs in syscalls.c _exit())
+	static const uint32_t BUFFER_LIMIT_kBYTES = 160; //if this is chosen to large (200) there is no warning, the MC simply crashes (hangs in syscalls.c _exit())
 	static const uint32_t MAX_NBR_OF_CHUNKS = 100;
 public:
 	AWGPIDModule() {
@@ -78,7 +78,7 @@ public:
 	}
 
 	void handle_rpi_input() {
-		if(this->handle_rpi_base_methods() == false) { //if base class doesn't know the called method
+		if(BufferBaseModule::handle_rpi_base_methods() == false) { //if base class doesn't know the called method
 			/*** Package format: method_identifier (uint32_t) | method specific arguments (defined in the methods directly) ***/
 			RPIDataPackage* read_package = this->rpi->get_read_package();
 			//switch between method_identifier

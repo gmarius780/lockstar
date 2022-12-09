@@ -58,11 +58,9 @@ public:
 		float dt = 0;
 		uint16_t t = 0;
 
-
 		/*** work loop ***/
 		while(true){
 			HAL_Delay(100);
-			if(this->is_linearizing) { start_linearization(); }
 			while(this->locked == true) {
 				// Measuring elapsed time per work loop
 				t = timer->get_counter() - t;
@@ -70,37 +68,38 @@ public:
 				t = timer->get_counter();
 
 				this->adc->start_conversion();
-				this->dac_1->write(this->pid->calculate_output(adc->channel1->get_result(), adc->channel2->get_result(), dt));
+				this->dac_1->write(this->pid->calculate_output(adc->channel2->get_result(), adc->channel1->get_result(), dt));
 			}
 		}
 	}
 
 	void handle_rpi_input() {
-		/*** Package format: method_identifier (uint32_t) | method specific arguments (defined in the methods directly) ***/
-		RPIDataPackage* read_package = rpi->get_read_package();
+		if (Module::handle_rpi_base_methods() == false) { //if base class doesn't know the called method
+			/*** Package format: method_identifier (uint32_t) | method specific arguments (defined in the methods directly) ***/
+			RPIDataPackage* read_package = rpi->get_read_package();
 
-		// switch between method_identifier
-		switch (read_package->pop_from_buffer<uint32_t>()) {
-		case METHOD_SET_PID:
-			set_pid(read_package);
-			break;
-		case METHOD_LOCK:
-			lock(read_package);
-			break;
-		case METHOD_UNLOCK:
-			unlock(read_package);
-			break;
-		case METHOD_SET_OUTPUT_LIMITS:
-			set_output_limits(read_package);
-			break;
-		default:
-			/*** send NACK because the method_identifier is not valid ***/
-			RPIDataPackage* write_package = rpi->get_write_package();
-			write_package->push_nack();
-			rpi->send_package(write_package);
-			break;
+			// switch between method_identifier
+			switch (read_package->pop_from_buffer<uint32_t>()) {
+			case METHOD_SET_PID:
+				set_pid(read_package);
+				break;
+			case METHOD_LOCK:
+				lock(read_package);
+				break;
+			case METHOD_UNLOCK:
+				unlock(read_package);
+				break;
+			case METHOD_SET_OUTPUT_LIMITS:
+				set_output_limits(read_package);
+				break;
+			default:
+				/*** send NACK because the method_identifier is not valid ***/
+				RPIDataPackage* write_package = rpi->get_write_package();
+				write_package->push_nack();
+				rpi->send_package(write_package);
+				break;
+			}
 		}
-
 	}
 
 	/*** START: METHODS ACCESSIBLE FROM THE RPI ***/

@@ -2,6 +2,8 @@ import asyncio
 import logging
 from lockstar_general.backend.BackendResponse import BackendResponse
 from lockstar_general.backend.BackendCall import BackendCall
+from lockstar_client.ClientSettings import ClientSettings
+import json
 
 class LockstarClient():
     def __init__(self, lockstar_ip, lockstar_port, client_id, module_name) -> None:
@@ -10,9 +12,16 @@ class LockstarClient():
         self.client_id = client_id
         self.module_name = module_name
 
+    def set_ch_one_output_limits(self, min: float, max: float):
+        bc = BackendCall(self.client_id, self.module_name, 'set_ch_one_output_limits', args={'min': min, 'max': max})
+        return asyncio.run(self._call_lockstar(bc))
+
+    def set_ch_two_output_limits(self, min: float, max: float):
+        bc = BackendCall(self.client_id, self.module_name, 'set_ch_two_output_limits', args={'min': min, 'max': max})
+        return asyncio.run(self._call_lockstar(bc))
 
     #==== Linearization Methods START====
-    def set_linearization_one(self, linearization):
+    def set_linearization_one(self, linearization, min_output_voltage, max_output_voltage):
         """Sets the parameters used by the DAC_ONE to linearize the systems response
 
         Args:
@@ -21,31 +30,79 @@ class LockstarClient():
         Returns:
             _type_: _description_
         """
-        bc = BackendCall(self.client_id, self.module_name, 'set_linearization_one', args={})
+        bc = BackendCall(self.client_id, self.module_name, 'set_linearization_one', 
+                        args={
+                            'linearization': linearization,
+                            'min_output_voltage': min_output_voltage,
+                            'max_output_voltage': max_output_voltage
+                        })
         return asyncio.run(self._call_lockstar(bc))
 
-    def linearize_one(self, ramp_start, ramp_end, nbr_of_ramp_points):
-        """starts the linearization procedure of the microcontroller.
+    def set_linearization_two(self, linearization, min_output_voltage, max_output_voltage):
+        """Sets the parameters used by the DAC_ONE to linearize the systems response
 
-        CAN BE BLOCKING for the backend????:
-            1. MC starts ramp & records the trace
-            2. only sends ack when done
-            3. backend calls 'get_trace_one'
-            4. backend calculates linearization
-            5. backend calls 'set_linearization_one'
-            6. backend returns the trace, and the calculated linearization
         Args:
-            ramp_start (_type_): _description_
-            ramp_end (_type_): _description_
-            nbr_of_ramp_points (_type_): _description_
+            linearization (_type_): _description_
 
         Returns:
             _type_: _description_
         """
-
-        bc = BackendCall(self.client_id, self.module_name, 'start_linearization_one', args={})
+        bc = BackendCall(self.client_id, self.module_name, 'set_linearization_two', 
+                        args={
+                            'linearization': linearization,
+                            'min_output_voltage': min_output_voltage,
+                            'max_output_voltage': max_output_voltage
+                        })
         return asyncio.run(self._call_lockstar(bc))
 
+    def set_linearization_two_from_file(self, local_file):
+        """ calls set_linearization_two with the linearization gotten from local_file (stored by LinearizationClient.store_linearization_locally)
+        """
+
+        with open(local_file, 'r') as f:
+            lin_dict = json.load(f)
+
+        return self.set_linearization_two(linearization=lin_dict['linearization'], 
+                                    min_output_voltage=lin_dict['min_output_voltage'],
+                                    max_output_voltage=lin_dict['max_output_voltage'])
+
+    def set_linearization_one_from_file(self, local_file):
+        """ calls set_linearization_one with the linearization gotten from local_file (stored by LinearizationClient.store_linearization_locally)
+        """
+
+        with open(local_file, 'r') as f:
+            lin_dict = json.load(f)
+
+        return self.set_linearization_one(linearization=lin_dict['linearization'], 
+                                    min_output_voltage=lin_dict['min_output_voltage'],
+                                    max_output_voltage=lin_dict['max_output_voltage'])
+
+    def set_linearization_length_one(self, linearization_length: int):
+        bc = BackendCall(self.client_id, self.module_name, 'set_linearization_length_one', 
+                        args={'linearization_length': linearization_length})
+        return asyncio.run(self._call_lockstar(bc))
+
+    def set_linearization_length_two(self, linearization_length: int):
+        bc = BackendCall(self.client_id, self.module_name, 'set_linearization_length_two', 
+                        args={'linearization_length': linearization_length})
+        return asyncio.run(self._call_lockstar(bc))
+
+    def enable_linearization_one(self):
+        bc = BackendCall(self.client_id, self.module_name, 'enable_linearization_one', args={})
+        return asyncio.run(self._call_lockstar(bc))
+
+    def enable_linearization_two(self):
+        bc = BackendCall(self.client_id, self.module_name, 'enable_linearization_two', args={})
+        return asyncio.run(self._call_lockstar(bc))
+
+    def disable_linearization_one(self):
+        bc = BackendCall(self.client_id, self.module_name, 'disable_linearization_one', args={})
+        return asyncio.run(self._call_lockstar(bc))
+
+    def disable_linearization_two(selft):
+        bc = BackendCall(self.client_id, self.module_name, 'disable_linearization_two', args={})
+        return asyncio.run(self._call_lockstar(bc))
+   
     #==== Linearization Methods END====
 
     async def _call_lockstar(self, backend_call):
@@ -57,7 +114,7 @@ class LockstarClient():
         Returns:
             BackendResponse: response
         """
-        reader, writer = await asyncio.open_connection(self.lockstar_ip, self.lockstar_port)
+        reader, writer = await asyncio.open_connection(self.lockstar_ip, self.lockstar_port, limit=ClientSettings.read_buffer_limit_bytes)
         writer.write(backend_call.to_bytes())
         await writer.drain()
         byte_response = (await reader.readuntil(BackendResponse.DELIMITTER))[:-1]
@@ -66,7 +123,7 @@ class LockstarClient():
         await writer.wait_closed()
         return response
 
-    async def register_client_id(self):
+    def register_client_id(self):
         bc = BackendCall(self.client_id, 'GeneralModule', 'register_client',
                         args={'client_id': self.client_id})
         
@@ -77,6 +134,4 @@ class LockstarClient():
 
         return response.is_ACK()
 
-    def start_calibration(self):
-        pass
 

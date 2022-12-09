@@ -209,3 +209,24 @@ void DAC_Device::arm_dma() {
 
     spi_handler->enable_spi_tx_dma();
 }
+
+
+bool DAC_Device::is_busy() {
+	return busy;
+}
+
+void DAC_Device::set_min_output(float m) {
+	this->min_output = std::max(this->min_hardware_output, m);
+} // can only set the minimum higher than set with jumpers
+
+void DAC_Device:: set_max_output(float m) {
+	this->max_output = std::min(this->max_hardware_output, m);
+} // can only set the maximum lower than set with jumpers
+
+float DAC_Device::get_min_output() {
+	return this->min_output;
+}
+
+float DAC_Device::get_max_output() {
+	return this->max_output;
+}

@@ -31,16 +31,23 @@ public:
 
 	void send_package(RPIDataPackage* write_package);
 	volatile uint8_t* get_read_buffer();
+
 private:
+
+
 	SPI *spi;
 	DMA *dma_in;
 	DMA *dma_out;
 	DMA_config_t dma_in_config, dma_out_config;
 
 	BasicTimer *comm_reset_timer; // resets is_communicating after an one periode of this timer
-	//COMMUNICATION RESET FREQUENCY= INTERNAL_CLOCK_FREQUENCY/prescaler * counter_max = 90e6/90'00*10000 = 1Hz
-	static const uint32_t COMM_RESET_COUNTER_MAX = 10000;
-	static const uint32_t COMM_RESET_PRESCALER = 9000;
+	//COMMUNICATION RESET FREQUENCY= INTERNAL_CLOCK_FREQUENCY/prescaler * counter_max = 90e6/36000/30000 = 1/12 Hz
+	//EVERY COMMUNICATION MUST HAPPEND IN UNDER 12 seconds!
+	//This means that the time between sending of a command by the RPI and the polling ACK/NACK by the RPI must be small than 12 seconds
+//	static const uint32_t COMM_RESET_COUNTER_MAX = 10000;
+	static const uint32_t COMM_RESET_COUNTER_MAX = 30000;
+//	static const uint32_t COMM_RESET_PRESCALER = 9000;
+	static const uint32_t COMM_RESET_PRESCALER = 36000;
 
 	bool is_communicating; //true after spi interrupt was fired until dma communication is finished
 	uint32_t current_nbr_of_bytes;

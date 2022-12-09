@@ -5,7 +5,7 @@ from lockstar_rpi.MC import MC
 from lockstar_rpi.MCDataPackage import MCDataPackage
 
 class SinglePIDModule(IOModule_):
-    """Basic Module which implements a simple PID controller by using input_1 as setpoint, input_2 as error_signal and output 1 for the control signal"""
+    """Basic Module which implements a simple PID controller by using input_1 as error_signal, input_2 as setpoint and output 1 for the control signal"""
     def __init__(self) -> None:
         super().__init__()
         self.p = None
@@ -34,15 +34,6 @@ class SinglePIDModule(IOModule_):
         :param    output_offset (float): voltage to be added to the control signal --> e.g. to compensate for 'break-through' voltages in diodes
         :param    writer (_type_): asyncio writer to reply to the client
         """
-        self.p = p
-        self.i = i
-        self.d = d
-        self.out_range_min = out_range_min
-        self.out_range_max = out_range_max
-        self.locked = locked
-        self.input_offset = input_offset
-        self.output_offset = output_offset
-
         logging.debug('Starting initialization: SinglePIDModule')
 
         #=== sequentially send configuration to MC
@@ -60,7 +51,15 @@ class SinglePIDModule(IOModule_):
             else:
                 writer.write(BackendResponse.NACK().to_bytes())
             await writer.drain()
-        
+        if ack:
+            self.p = p
+            self.i = i
+            self.d = d
+            self.out_range_min = out_range_min
+            self.out_range_max = out_range_max
+            self.locked = locked
+            self.input_offset = input_offset
+            self.output_offset = output_offset
         return ack
 
     async def check_for_ack(self, writer=None):
@@ -75,12 +74,6 @@ class SinglePIDModule(IOModule_):
         return ack
 
     async def set_pid(self, p: float, i: float, d: float, input_offset: float, output_offset: float, writer, respond=True):
-        self.p = p
-        self.i = i
-        self.d = d
-        self.input_offset = input_offset
-        self.output_offset = output_offset
-
         logging.debug('Backend: set_pid')
         mc_data_package = MCDataPackage()
         mc_data_package.push_to_buffer('uint32_t', 11) # method_identifier
@@ -91,31 +84,45 @@ class SinglePIDModule(IOModule_):
         mc_data_package.push_to_buffer('float', output_offset)
         await MC.I().write_mc_data_package(mc_data_package)
         
-        return await self.check_for_ack(writer=(writer if respond else None))
+        result = await self.check_for_ack(writer=(writer if respond else None))
+        if result:
+            self.p = p
+            self.i = i
+            self.d = d
+            self.input_offset = input_offset
+            self.output_offset = output_offset
+        return result
 
     async def set_output_limits(self, min: float, max: float, writer, respond=True):
-        self.out_range_min = min
-        self.out_range_max = max
-
         logging.debug('Backend: set output limits')
         mc_data_package = MCDataPackage()
         mc_data_package.push_to_buffer('uint32_t', 14) # method_identifier
         mc_data_package.push_to_buffer('float', min)
         mc_data_package.push_to_buffer('float', max)
         await MC.I().write_mc_data_package(mc_data_package)
-        return await self.check_for_ack(writer=(writer if respond else None))
+        result = await self.check_for_ack(writer=(writer if respond else None))
+        if result:
+            self.out_range_min = min
+            self.out_range_max = max
+        return result
 
     async def lock(self, writer, respond=True):
         mc_data_package = MCDataPackage()
         mc_data_package.push_to_buffer('uint32_t', 12) # method_identifier
         await MC.I().write_mc_data_package(mc_data_package)
-        return await self.check_for_ack(writer=(writer if respond else None))
+        result = await self.check_for_ack(writer=(writer if respond else None))
+        if result:
+            self.locked = True
+        return result
 
     async def unlock(self, writer, respond=True):
         mc_data_package = MCDataPackage()
         mc_data_package.push_to_buffer('uint32_t', 13) # method_identifier
         await MC.I().write_mc_data_package(mc_data_package)
-        return await self.check_for_ack(writer=(writer if respond else None))
+        result = await self.check_for_ack(writer=(writer if respond else None))
+        if result:
+            self.locked = False
+        return result
     
     # ==== END: client methods
 
@@ -123,20 +130,22 @@ class SinglePIDModule(IOModule_):
         """Stores all the relevant information in a dictionary such that the module can be relaunched with this information"""
         config = super().generate_config_dict()
     
-        for key in self.__dict__:
-            if key not in config:
-                config[key] = self.__dict__[key]
+        
         return config
 
     async def launch_from_config(self, config_dict):
         try:
-            await self.initialize(config_dict['p'], config_dict['i'], config_dict['d'], config_dict['out_range_min'],
+            await super().launch_from_config(config_dict)
+            retry_counter = 10
+            success = False
+            while retry_counter > 0 and not success:
+                success = await self.initialize(config_dict['p'], config_dict['i'], config_dict['d'], config_dict['out_range_min'],
                                 config_dict['out_range_max'], config_dict['locked'], config_dict['input_offset'],
                                 config_dict['output_offset'], None)
-
-            await super().launch_from_config(config_dict)
+                retry_counter -= 1
+            
         except Exception as ex:
             logging.error(f'SinglePIDModule: canot launch_from_config: {ex}')
-            raise ex
+            
 
 

@@ -1,5 +1,7 @@
+
 from time import sleep
 from lockstar_rpi.BackendSettings import BackendSettings
+# BackendSettings.debug_mode = True
 from lockstar_rpi.Modules.IOModule_ import IOModule_
 from lockstar_general.backend.BackendResponse import BackendResponse
 import logging
@@ -18,19 +20,16 @@ class LinearizationModule(IOModule_):
         self.ramp_start = 0
         self.ramp_end = 0
         self.ramp_length = 0
-        self.ramp_speed = 0
-        self.ramp = None
+        self.settling_time_ms = 0
+        
         self.monotone_envelope = None
         
         self.pivots = None
         self.inverted_pivots = None
         
-        self.mc_prescaler = 0
-        self.mc_auto_reload = 0
         self.measured_gain = None
         
         self.ramp_package_sizes = None
-        self.max_package_size = floor((MCDataPackage.MAX_NBR_BYTES-100)/4)
         self.number_of_ramp_packages = 0
         self.number_of_full_ramp_packages = 0
     
@@ -40,64 +39,76 @@ class LinearizationModule(IOModule_):
     async def initialize(self, writer):
         pass
 
+    async def linearize_ch_one(self,writer):
+        return await self.linearize_ch(True,writer)
 
-    async def new_linearization(self,ramp_start:float, ramp_end:float, ramp_length:int, ramp_speed:int,writer,respond=True):
-    """
-    Allows the user to create a new set of inverted pivot points based on a static gain measurement.
-    The ramp is transmitted to the uC as (start value, end value and number of points). 
-    Calling new_linearization triggers the following procedure:
-        - Ramp parameters are transferred to the uC
-        - uC outputs the ramp on DAC1 and measures the response on ADC channel 1
-        - uC sends measured gain to rpi
-        - Inverted pivot points are calculated and sent back to uC (number of pivot points = ramp_length).
-          Pivot points are equidistantly spaced over [ramp_start,ramp_end]
-    Args:
-    :param      ramp_start (float): start value of ramp
-    :param      ramp_end (float):   end value of ramp
-    :param      ramp_length (int):  number of points in ramp array
-    :param      ramp_speed (int):   sample rate for ramp output
-    """
+    async def linearize_ch_two(self,writer):
+        return await self.linearize_ch(False,writer)
+
+    async def linearize_ch(self, ch_one:bool,writer):
+        """
+        Allows the user to create a new set of inverted pivot points based on a static gain measurement.
+        The ramp is transmitted to the uC as (start value, end value and number of points). 
+        Calling new_linearization triggers the following procedure:
+            - Ramp parameters are transferred to the uC
+            - uC outputs the ramp on DAC1 and measures the response on ADC channel 1
+            - uC sends measured gain to rpi
+            - Inverted pivot points are calculated and sent back to uC (number of pivot points = ramp_length).
+            Pivot points are equidistantly spaced over [ramp_start,ramp_end]
+        Args:
+        :param      ramp_start (float): start value of ramp
+        :param      ramp_end (float):   end value of ramp
+        :param      ramp_length (int):  number of points in ramp array
+        :param      settling_time_ms (int):   time in ms to wait between applying voltage to system and measuring
+        """
+        if self.ramp_start == self.ramp_end or self.ramp_length == 0 or self.settling_time_ms == 0:
+            logging.error('linearize_ch: Set ramp parameters first')
+            writer.write(BackendResponse.NACK().to_bytes())
+            await writer.drain()
+            return False
 
         logging.info('Backend: new_linearization')
 
-        self.ramp_start     = ramp_start
-        self.ramp_end       = ramp_end
-        self.ramp_length    = ramp_length
-        self.ramp_speed     = ramp_speed
-        self.ramp = np.linspace(ramp_start,ramp_end,ramp_length)
-        self.mc_prescaler   = 200
-        self.mc_auto_reload = 900
-        # calculate_mc_timer_parameter()
+        #=== set ramp parameters
+        # if not await self.set_ramp_parameters(ramp_start, ramp_end, ramp_length, settling_time_ms):
+        #     logging.error('set_ramp_parameters: Could not set ramp parameters!')
+        #     writer.write(BackendResponse.NACK().to_bytes())
+        #     await writer.drain()
+        #     return False
 
-        if not await self.set_ramp_parameters(): # Method identifier: 11
-            logging.error('Backend: Could not start new linearization!')
-            writer.write(BackendResponse.NACK().to_bytes())
-            await writer.drain()
-            return False
+        #=== start gain measurement
+        mc_data_package = MCDataPackage()
+        if ch_one:
+            mc_data_package.push_to_buffer('uint32_t',12) # METHOD_IDENTIFIER OF linearize_ch_one
+        else:
+            mc_data_package.push_to_buffer('uint32_t',13) # METHOD_IDENTIFIER OF linearize_ch_two
+        await MC.I().write_mc_data_package(mc_data_package)
+        
+        gain_measurement_timeout = 5*ceil(self.ramp_length * self.settling_time_ms / 1000)
         logging.debug('new_linearization: Waiting for gain measurement...')
-        sleep(3)
-
-        if not await MC.I().read_ack():
-            logging.error('new_linearization: gain measurement timeout!')
+        sleep(gain_measurement_timeout)
+        if not await MC.I().read_ack(timeout_s=None):
+            logging.error('linearize_ch: gain measurement took longer than timeout --> fail')
             writer.write(BackendResponse.NACK().to_bytes())
             await writer.drain()
             return False
-        logging.debug('new_linearization: Gain measurement received!')
 
-        if not await self.send_gain_measurement(): # 12
+        logging.debug('new_linearization: gain measurement done, retrieving result..')
+
+        #=== retrieve gain measurement result
+        gain_measurement_result = await self.get_gain_measurement_result()
+        if gain_measurement_result is None:
+            logging.error('gain measurement could not get result')
             writer.write(BackendResponse.NACK().to_bytes())
             await writer.drain()
             return False
+
+        #=== calculate linearization from gain measurement
+        monotone_envelope = LinearizationModule.calculate_monotone_envelope(gain_measurement_result)
+        ramp = np.linspace(self.ramp_start, self.ramp_end, num=self.ramp_length)
+        linearization_pivots = LinearizationModule.calculate_inverted_pivots(monotone_envelope, ramp)
         
-        self.monotone_envelope = self.calculate_monotone_envelope(self.measured_gain)
-        self.calculate_inverted_pivots()
-        
-        if not await self.set_inverted_pivots(): # 13
-            writer.write(BackendResponse.NACK().to_bytes())
-            await writer.drain()
-            return False
-
-        br = BackendResponse([self.measured_gain.tolist(),self.inverted_pivots.tolist()])
+        br = BackendResponse([gain_measurement_result.tolist(), linearization_pivots.tolist()])
         writer.write(br.to_bytes())
         await writer.drain()
         logging.debug('Backend: New linearization successful!')
@@ -108,79 +119,84 @@ class LinearizationModule(IOModule_):
 
     # ==== START: MC Methods
     
-    async def set_ramp_parameters(self):
+    async def set_ramp_parameters(self, ramp_start:float, ramp_end:float, ramp_length:int, settling_time_ms:int, writer):
         """Sends ramp parameters (ramp_start, ramp_end, ramp_length, ramp_speed) to uC"""
         METHOD_IDENTIFIER = 11
         logging.debug('Backend: set_ramp_parameters')
 
-        if not self.check_ramp_parameters():
+        if ramp_length <2 or settling_time_ms <=0:
             logging.error('set_ramp_parameters: Ramp parameters invalid!')
             return False
         
+        self.ramp_start = ramp_start
+        self.ramp_end = ramp_end
+        self.ramp_length = ramp_length
+        self.settling_time_ms = settling_time_ms
+
         mc_data_package = MCDataPackage()
         mc_data_package.push_to_buffer('uint32_t',METHOD_IDENTIFIER)
-        mc_data_package.push_to_buffer('float',self.ramp_start)
-        mc_data_package.push_to_buffer('float',self.ramp_end)
-        mc_data_package.push_to_buffer('uint32_t',self.ramp_length)
-        mc_data_package.push_to_buffer('uint32_t',self.mc_auto_reload)
-        mc_data_package.push_to_buffer('uint32_t',self.mc_prescaler)
+        mc_data_package.push_to_buffer('float',ramp_start)
+        mc_data_package.push_to_buffer('float',ramp_end)
+        mc_data_package.push_to_buffer('uint32_t',ramp_length)
+        mc_data_package.push_to_buffer('uint32_t',settling_time_ms)
         await MC.I().write_mc_data_package(mc_data_package)
-        
         if not await MC.I().read_ack():
-            logging.error('set_ramp_parameters: Could not set ramp parameters')
+            logging.error('linearize_ch: set_ramp_parameters failed')
+            writer.write(BackendResponse.NACK().to_bytes())
+            await writer.drain()
             return False
-        logging.debug('new_linearization: Set ramp parameters')
-        return True
+        else:
+            writer.write(BackendResponse.ACK().to_bytes())
+            await writer.drain()
+            return True
 
 
-    async def send_gain_measurement(self):
+    async def get_gain_measurement_result(self):
         """Requests the gain measurement from uC"""
-
-        METHOD_IDENTIFIER = 12
-        logging.debug('Backend: send_gain_measurement')
+        METHOD_IDENTIFIER = 14
+        logging.debug('Backend: get_gain_measurement_result')
         
-        self.number_of_ramp_packages = ceil(self.ramp_length/self.max_package_size)
-        self.number_of_full_ramp_packages = self.ramp_length//self.max_package_size
+        max_package_size = floor((MCDataPackage.MAX_NBR_BYTES-100)/4)
+        number_of_ramp_packages = ceil(self.ramp_length/max_package_size)
+        number_of_full_ramp_packages = self.ramp_length//max_package_size
                 
         gain_measurement_list = [0]*self.ramp_length
         buffer_offset = 0
-        last_package = False
-        logging.debug(f"send_gain_measurement: Expecting {self.number_of_ramp_packages} packages.")
-        for package_number in range(self.number_of_full_ramp_packages):
+        logging.debug(f"get_gain_measurement_result: Expecting {number_of_ramp_packages} packages.")
+        for package_number in range(number_of_full_ramp_packages):
             mc_data_package = MCDataPackage()
             mc_data_package.push_to_buffer('uint32_t',METHOD_IDENTIFIER)
             mc_data_package.push_to_buffer('uint32_t',buffer_offset)
-            mc_data_package.push_to_buffer('uint32_t',self.max_package_size)
-            mc_data_package.push_to_buffer('bool',last_package)
+            mc_data_package.push_to_buffer('uint32_t',max_package_size)
             await MC.I().write_mc_data_package(mc_data_package)
             sleep(0.2)
             
-            response_list = ['float']*self.max_package_size
-            response_length,response_list = await MC.I().read_mc_data_package(response_list)
-            start = package_number*self.max_package_size
-            end = start + self.max_package_size
+            response_list = ['float']*max_package_size
+            response_length, response_list = await MC.I().read_mc_data_package(response_list)
+            start = package_number*max_package_size
+            end = start + max_package_size
             gain_measurement_list[start:end] = response_list
             
-            buffer_offset += self.max_package_size
-            logging.debug(f"send_gain_measurement: received package number {package_number+1}.")
+            buffer_offset += max_package_size
+            logging.debug(f"get_gain_measurement_result: received package number {package_number+1}.")
             
-        last_package = True
-        mc_data_package = MCDataPackage()
-        mc_data_package.push_to_buffer('uint32_t',METHOD_IDENTIFIER)
-        mc_data_package.push_to_buffer('uint32_t',buffer_offset)
-        mc_data_package.push_to_buffer('uint32_t',self.ramp_length%self.max_package_size)
-        mc_data_package.push_to_buffer('bool',last_package)
-        await MC.I().write_mc_data_package(mc_data_package)
+        if number_of_full_ramp_packages < number_of_ramp_packages:
+            mc_data_package = MCDataPackage()
+            mc_data_package.push_to_buffer('uint32_t',METHOD_IDENTIFIER)
+            mc_data_package.push_to_buffer('uint32_t',buffer_offset)
+            mc_data_package.push_to_buffer('uint32_t',self.ramp_length%max_package_size)
+            await MC.I().write_mc_data_package(mc_data_package)
         
-        response_list = ['float']*(self.ramp_length%self.max_package_size)
-        response_length,response_list = await MC.I().read_mc_data_package(response_list)
-        gain_measurement_list[-(self.ramp_length%self.max_package_size):] = response_list       
-        self.measured_gain = np.array(gain_measurement_list)
-        logging.debug('send_gain_measurement: Measurement received!')
-        return True
+            response_list = ['float']*(self.ramp_length%max_package_size)
+            response_length,response_list = await MC.I().read_mc_data_package(response_list)
+            gain_measurement_list[-(self.ramp_length%max_package_size):] = response_list       
         
+        measured_gain = np.array(gain_measurement_list)
+        logging.debug('get_gain_measurement_result: Measurement received!')
+        return measured_gain
         
-    def calculate_monotone_envelope(self,data,increment=1e-6):
+    @staticmethod  
+    def calculate_monotone_envelope(data,increment=1e-6):
         """ 
         Calculates a monotone envelope of the measured gain to insure it is invertible. 
         increment specifies by how much each successive data point should increase if they 
@@ -199,69 +215,26 @@ class LinearizationModule(IOModule_):
         return np.array(envelope)
 
     
-    def calculate_inverted_pivots(self):
+    @staticmethod
+    def calculate_inverted_pivots(monotone_envelope, ramp):
         """Creates equally spaced pivots array and calculates gain^(-1)(pivots)"""
-        logging.debug('Backend: calculate_inverted_pivots')
-        self.pivots = np.linspace(min(self.monotone_envelope),max(self.monotone_envelope),len(self.ramp))
-        inverted_gain = interpolate.interp1d(self.monotone_envelope,self.ramp)
-        self.inverted_pivots = inverted_gain(self.pivots)
-        return True
+        pivots = np.linspace(min(monotone_envelope),max(monotone_envelope),len(ramp))
+        inverted_gain = interpolate.interp1d(monotone_envelope, ramp)
+        return inverted_gain(pivots)
         
+    def generate_config_dict(self):
+        """Stores all the relevant information in a dictionary such that the module can be relaunched with this information"""
+        config = {}
+        config['module_name'] = self.__class__.__name__
 
-    async def set_inverted_pivots(self):
-        """Sends inverted pivot points to uC. End of linearization procedure"""
-        METHOD_IDENTIFIER = 13
-        logging.debug('Backend: set_inverted_pivots')
+        return config
 
-        buffer_offset = 0
-        last_package = False        
-        for package_number in range(self.number_of_full_ramp_packages):                        
-            mc_data_package = MCDataPackage()
-            mc_data_package.push_to_buffer('uint32_t',13)
-            mc_data_package.push_to_buffer('uint32_t',buffer_offset)
-            mc_data_package.push_to_buffer('uint32_t',self.max_package_size)
-            mc_data_package.push_to_buffer('bool',last_package)
-            for i in range(self.max_package_size):
-                mc_data_package.push_to_buffer('float',self.inverted_pivots[buffer_offset + i])
-            await MC.I().write_mc_data_package(mc_data_package)
-            buffer_offset += self.max_package_size
-            
-            if not await MC.I().read_ack():
-                logging.error('set_inverted_pivot_points: Could not set inverted pivot points')
-                return False
-            
-        last_package = True        
-        mc_data_package = MCDataPackage()
-        mc_data_package.push_to_buffer('uint32_t',METHOD_IDENTIFIER)
-        mc_data_package.push_to_buffer('uint32_t',buffer_offset)
-        mc_data_package.push_to_buffer('uint32_t',self.ramp_length%self.max_package_size)
-        mc_data_package.push_to_buffer('bool',last_package)
-        for i in range(self.ramp_length%self.max_package_size):
-            mc_data_package.push_to_buffer('float',self.inverted_pivots[buffer_offset + i])
-        await MC.I().write_mc_data_package(mc_data_package)
-        
-        if not await MC.I().read_ack():
-            logging.error('set_inverted_pivot_points: Could not set inverted pivot points')
-            return False
-        
-        logging.debug('set_inverted_pivots: Success!')
-        return True        
-    
-
-    def check_ramp_parameters(self):
-        if self.ramp_length < 2:
-            return False
-        if self.ramp_speed <= 0:
-            return False
-        if self.ramp is None:
-            return False
-        if self.mc_prescaler < 0 or self.mc_prescaler > 0xFFFFFFFF:
-            return False
-        if self.mc_auto_reload < 0 or self.mc_auto_reload > 0xFFFFFFFF:
-            return False
-        return True
-
+    async def launch_from_config(self, config_dict):
+        pass #we don't want the linearization Module to have memory
     # ==== END: MC methods
+
+if __name__ == "__main__":
+    test = LinearizationModule()
     
             
 
