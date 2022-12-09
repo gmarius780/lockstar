@@ -61,7 +61,6 @@ class LinearizationClient(LockstarClient):
         bc = BackendCall(self.client_id, self.module_name, 'linearize_ch_one', args={})
         br = await self._call_lockstar(bc)
 
-        print(br.response)
         if br.response != 'NACK' and len(br.response) == 2:
             measured_gain, linearization = br.response
             return measured_gain, linearization

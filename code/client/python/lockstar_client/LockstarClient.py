@@ -99,8 +99,12 @@ class LockstarClient():
         bc = BackendCall(self.client_id, self.module_name, 'disable_linearization_one', args={})
         return await self._call_lockstar(bc)
 
-    async def disable_linearization_two(selft):
+    async def disable_linearization_two(self):
         bc = BackendCall(self.client_id, self.module_name, 'disable_linearization_two', args={})
+        return await self._call_lockstar(bc)
+
+    async def flash_mc(self):
+        bc = BackendCall(self.client_id, self.module_name, 'flash_mc', args={})
         return await self._call_lockstar(bc)
    
     #==== Linearization Methods END====
