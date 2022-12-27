@@ -86,8 +86,8 @@ class LinearizationModule(IOModule_):
         
         gain_measurement_timeout = 5*ceil(self.ramp_length * self.settling_time_ms / 1000)
         logging.debug('new_linearization: Waiting for gain measurement...')
-        sleep(gain_measurement_timeout)
-        if not await MC.I().read_ack():
+        # sleep(gain_measurement_timeout)
+        if not await MC.I().read_ack(timeout_s=gain_measurement_timeout):
             logging.error('linearize_ch: gain measurement took longer than timeout --> fail')
             writer.write(BackendResponse.NACK().to_bytes())
             await writer.drain()
@@ -169,7 +169,7 @@ class LinearizationModule(IOModule_):
             mc_data_package.push_to_buffer('uint32_t',buffer_offset)
             mc_data_package.push_to_buffer('uint32_t',max_package_size)
             await MC.I().write_mc_data_package(mc_data_package)
-            sleep(0.2)
+            # sleep(0.2)
             
             response_list = ['float']*max_package_size
             response_length, response_list = await MC.I().read_mc_data_package(response_list)
