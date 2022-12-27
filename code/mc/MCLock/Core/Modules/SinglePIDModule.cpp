@@ -131,7 +131,7 @@ public:
 		this->locked = true;
 		turn_LED6_on();
 
-		HAL_Delay(500);
+		HAL_Delay(100);
 
 		/*** send ACK ***/
 		RPIDataPackage* write_package = rpi->get_write_package();
