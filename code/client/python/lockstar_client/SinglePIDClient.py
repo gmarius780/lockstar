@@ -102,10 +102,11 @@ async def main():
     if initialized:
         logging.info(f'Successfully initialized Single PID module')
         # linearization_file = join(dirname(__file__), 'test_linearization.json')
-        # linearization_length = 2000
-        #print(client.set_ch_one_output_limits(0, 10))
-        # print(await client.set_linearization_length_one(linearization_length))
-        # print(await client.set_linearization_one_from_file(linearization_file))
+        linearization_file = 'test_linearization.json'
+        linearization_length = 2000
+        print(client.set_ch_one_output_limits(0, 10))
+        print(await client.set_linearization_length_one(linearization_length))
+        print(await client.set_linearization_one_from_file(linearization_file))
         #print(await client.disable_linearization_one())
 
 if __name__ == "__main__":

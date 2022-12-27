@@ -175,7 +175,7 @@ class IOModule_(Module):
         logging.debug('Backend: set_linearization_length_one')
         mc_data_package = MCDataPackage()
         mc_data_package.push_to_buffer('uint32_t', 84) # method_identifier
-        mc_data_package.push_to_buffer('uint32_t', self.ramp_length_one)
+        mc_data_package.push_to_buffer('uint32_t', linearization_length)
         await MC.I().write_mc_data_package(mc_data_package)
         result = await self.check_for_ack(writer=(writer if respond else None))
         if result:
@@ -183,10 +183,10 @@ class IOModule_(Module):
         return result
 
     async def set_linearization_length_two(self, linearization_length: int, writer, respond=True):
-        logging.debug('Backend: set_linearization_length_one')
+        logging.debug('Backend: set_linearization_length_two')
         mc_data_package = MCDataPackage()
         mc_data_package.push_to_buffer('uint32_t', 85) # method_identifier
-        mc_data_package.push_to_buffer('uint32_t', self.ramp_length_two)
+        mc_data_package.push_to_buffer('uint32_t', linearization_length)
         await MC.I().write_mc_data_package(mc_data_package)
         result = await self.check_for_ack(writer=(writer if respond else None))
         if result:

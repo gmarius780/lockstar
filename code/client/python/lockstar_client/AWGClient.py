@@ -18,7 +18,7 @@ async def main():
             logging.StreamHandler()
         ]
     )
-    client = AWGClient('192.168.88.201', 10780, 1234)
+    client = AWGClient('192.168.88.25', 10780, 1234)
 
     
     if await client.register_client_id():
