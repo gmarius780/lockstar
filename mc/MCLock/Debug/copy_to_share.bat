@@ -1,1 +1,0 @@
-copy MCLock.elf ..\..\..\..\Share\MicrocontrollerPrograms\MCLock.elf

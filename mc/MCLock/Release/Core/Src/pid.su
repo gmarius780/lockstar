@@ -1,3 +1,0 @@
-pid.cpp:10:7:float PID::Step(float, float)	0	static
-pid.cpp:51:6:void PID::SetVars(float*)	0	static
-pid.cpp:59:7:float PID::Diff(float, float)	0	static
