@@ -61,6 +61,8 @@ class MC:
         #unpack data
         start_time = perf_counter()
         exception = ''
+        payload_length = -1
+        raw_data = ''
         while (timeout_s is None or perf_counter() - start_time < timeout_s):
             if timeout_s is None:
                 timeout_s = 0
@@ -71,7 +73,7 @@ class MC:
                     return MCDataPackage.pop_ack_nack_from_buffer(bytes(raw_data))
                 else:
                     logging.debug('gpio low')
-                    # sleep(0.1)
+                    sleep(0.1)
             except Exception as ex:
                 exception = ex
         logging.error(f'MC.read_mc_data_package: cannot unpack data: {payload_length}: {exception}: {raw_data}')
@@ -81,6 +83,8 @@ class MC:
         #unpack data
         start_time = perf_counter()
         exception = ''
+        payload_length = -1
+        raw_data = ''
         while (timeout_s is None or perf_counter() - start_time < timeout_s):
             if timeout_s is None:
                 timeout_s = 0
@@ -92,7 +96,7 @@ class MC:
                     return payload_length, unpacked_data
                 else:
                     logging.debug('gpio low')
-                    #sleep(0.1)
+                    sleep(0.1)
             except Exception as ex:
                 exception = ex
         
