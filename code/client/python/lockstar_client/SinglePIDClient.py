@@ -71,7 +71,7 @@ class SinglePIDClient(LockstarClient):
         bc = BackendCall(self.client_id, 'SinglePIDModule', 'disable_intensity_lock_mode', args={})
         return await self._call_lockstar(bc)
 
-
+client = None
 async def main():
     from os.path import join, dirname
     logging.basicConfig(
