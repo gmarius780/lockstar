@@ -15,13 +15,13 @@
 #include "stm32f4xx_it.h"
 #include "stm32f4xx_hal_gpio.h"
 
+#include "../HAL/ADCDevice.hpp"
 
 #include "../HAL/spi.hpp"
 #include "../HAL/rpi.h"
 #include "../HAL/leds.hpp"
-#include "../HAL/adc_new.hpp"
 #include "../HAL/BasicTimer.hpp"
-#include "../HAL/dac_new.hpp"
+#include "../HAL/DACDevice.hpp"
 #include "../Lib/RPIDataPackage.h"
 #include "../Lib/pid.hpp"
 

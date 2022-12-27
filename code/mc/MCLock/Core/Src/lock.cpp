@@ -1,5 +1,5 @@
 #include "lock.hpp"
-#include "stm32f4xx_hal_tim.h"
+
 #include <vector>
 #include <math.h>
 #include <main.h>
@@ -7,6 +7,7 @@
 #define max(x,y) ((x<y)?y:x)
 
 #ifdef OLD
+#include "stm32f4xx_hal_tim.h"
 void lockparameters::AddWaypoint(float wp)
 {
 	this->waypoints.push_back(wp);

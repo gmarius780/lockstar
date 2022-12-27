@@ -6,6 +6,8 @@
 //  Copyright © 2020 Philip Leindecker. All rights reserved.
 //
 
+#ifdef OLD
+
 #include "FFTCorrection.hpp"
 #include <math.h>
 #include <cmath>
@@ -84,3 +86,5 @@ void FFTCorrection::Setup() {
     GenerateFFTBasis();
     GenerateFourierCoeffs();
 }
+
+#endif

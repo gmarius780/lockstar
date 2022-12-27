@@ -9,7 +9,8 @@
 #define HAL_SPI_HPP_
 
 #include "stm32f427xx.h"
-#include "dma_new.hpp"
+
+#include "dma.hpp"
 
 class SPI {
 

@@ -5,7 +5,7 @@
  *      Author: sjele
  */
 
-#include "dac_new.hpp"
+#include "DACDevice.hpp"
 
 DAC_Device::DAC_Device(uint8_t spi_lane, uint8_t dma_stream_out, uint8_t dma_channel_out, GPIO_TypeDef* sync_port, uint16_t sync_pin, GPIO_TypeDef* clear_port, uint16_t clear_pin) {
     

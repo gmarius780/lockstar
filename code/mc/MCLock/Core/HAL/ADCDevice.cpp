@@ -5,7 +5,7 @@
  *      Author: Samuel
  */
 
-#include "adc_new.hpp"
+#include "ADCDevice.hpp"
 
 ADC_Device::ADC_Device(uint8_t SPILane, uint8_t DMAStreamIn, uint8_t DMAChannelIn, uint8_t DMAStreamOut, uint8_t DMAChannelOut, GPIO_TypeDef* CNVPort, uint16_t CNVPin, uint8_t channel1Config, uint8_t channel2Config) {
     

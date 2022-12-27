@@ -12,7 +12,7 @@
 #ifndef LIB_LINEARIZABLEDAC_H_
 #define LIB_LINEARIZABLEDAC_H_
 
-#include "../HAL/dac_new.hpp"
+#include "../HAL/DACDevice.hpp"
 
 class LinearizableDAC {
 public:

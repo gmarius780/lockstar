@@ -8,10 +8,10 @@
 #ifndef HAL_RPI_H_
 #define HAL_RPI_H_
 #include "stm32f427xx.h"
-#include "../HAL/dma_new.hpp"
 #include "../HAL/spi.hpp"
 #include "../Lib/RPIDataPackage.h"
 #include "../HAL/BasicTimer.hpp"
+#include "dma.hpp"
 
 
 class RPI {

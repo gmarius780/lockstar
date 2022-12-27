@@ -11,8 +11,8 @@
 
 #include <queue>
 
-#include "../HAL/dac.hpp"
-#include "../HAL/raspberrypi.hpp"
+
+
 #include "../Lib/pid.hpp"
 
 struct Waypoint { float type; float value; Waypoint(float minmax, float value){this->type=minmax; this->value=value;};};
@@ -26,6 +26,8 @@ struct Waypoint { float type; float value; Waypoint(float minmax, float value){t
 
 #ifdef OLD
 #include "../HAL/adc.hpp"
+#include "../HAL/dac.hpp"
+#include "../HAL/raspberrypi.hpp"
 float* RecordTrace(ADC_Dev* ADC_DEV, uint8_t ADC_Channel, DAC_Dev* DAC_DEV, uint16_t Steps);
 float* RecordTrace(ADC_Dev* ADC_DEV, bool ReadChannel1, bool ReadChannel2, DAC_Dev* DAC_DEV, float From, float To, uint32_t Steps);
 void Move2Voltage(DAC_Dev* DAC_DEV, float Voltage, float MaxStep=0.01);

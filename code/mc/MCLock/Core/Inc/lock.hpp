@@ -12,10 +12,11 @@
 
 #include <vector>
 
-#include "../HAL/dac.hpp"
+
 #include "../Lib/pid.hpp"
 
 #ifdef OLD
+#include "../HAL/dac.hpp"
 #include "../HAL/adc.hpp"
 class lockparameters
 {

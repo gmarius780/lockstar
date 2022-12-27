@@ -12,14 +12,7 @@
 
 class PID
 {
-private:
-		float integral;
-		float error;
-		float old_error;
-		float diff_error;
-		float p, i, d;
-		float p_control, i_control, d_control;
-		float input_offset, output_offset;
+
 
 public:
 	PID(float p, float i, float d, float input_offset, float output_offset);
@@ -35,6 +28,14 @@ public:
 
 	float calculate_output(float setpoint,float mesured,float dt);
 
+private:
+		float integral;
+		float error;
+		float old_error;
+		float diff_error;
+		float p, i, d;
+		float p_control, i_control, d_control;
+		float input_offset, output_offset;
 };
 
 #endif /* PID_H_ */

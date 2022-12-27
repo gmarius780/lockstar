@@ -6,9 +6,9 @@
  */
 
 #include "spi.hpp"
-#include "dma_new.hpp"
 #include "stm32f427xx.h"
 #include <stddef.h>
+#include "dma.hpp"
 
 SPI::SPI(uint8_t spi_number) {
     switch(spi_number) {

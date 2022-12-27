@@ -5,14 +5,15 @@
  *      Author: Samuel
  */
 
-#ifndef HAL_DAC_NEW_HPP_
-#define HAL_DAC_NEW_HPP_
+#ifndef HAL_DACDEVICE_HPP_
+#define HAL_DACDEVICE_HPP_
 
 #include "stm32f4xx_hal.h"
-#include "dma_new.hpp"
-#include "dma.hpp"
 #include "spi.hpp"
 #include <algorithm>
+
+#include "dma.hpp"
+#include "SPIDMAHandler.hpp"
 
 class DAC_Device {
 public:
@@ -51,4 +52,4 @@ private:
     DMA_config_t dma_config;
 };
 
-#endif /* HAL_DAC_NEW_HPP_ */
+#endif /* HAL_DACDEVICE_HPP_ */

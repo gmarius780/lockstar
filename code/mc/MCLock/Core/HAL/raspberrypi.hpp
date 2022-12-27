@@ -9,7 +9,8 @@
 #define HAL_RASPBERRYPI_HPP_
 
 #include "stm32f4xx_hal.h"
-#include "../HAL/dma.hpp"
+
+#include "SPIDMAHandler.hpp"
 
 #define DefaultBufferSize	4096
 

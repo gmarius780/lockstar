@@ -5,11 +5,12 @@
  *      Author: Samuel
  */
 
-#ifndef HAL_ADC_NEW_HPP_
-#define HAL_ADC_NEW_HPP_
+#ifndef HAL_ADCDEVICE_HPP_
+#define HAL_ADCDEVICE_HPP_
 
 #include "stm32f4xx_hal.h"
-#include "dma_new.hpp"
+
+#include "dma.hpp"
 #include "spi.hpp"
 
 #define ADC_BIPOLAR_10V     (uint8_t)0b111
@@ -77,4 +78,4 @@ private:
 
 
 
-#endif /* HAL_ADC_NEW_HPP_ */
+#endif /* HAL_ADCDEVICE_HPP_ */

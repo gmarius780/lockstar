@@ -17,11 +17,11 @@
 #include <main.h>
 #include "../HAL/spi.hpp"
 #include "../HAL/leds.hpp"
-#include "../HAL/adc_new.hpp"
 #include "../Lib/LinearizableDAC.h"
 #include "../HAL/rpi.h"
 
 #include <cstring>
+#include "../HAL/ADCDevice.hpp"
 
 class Module {
 public:
