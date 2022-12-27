@@ -66,11 +66,11 @@ class MC:
                 timeout_s = 0
             try:
                 if self.get_GPIO_pin() == True: # wait for rising flank of GPIO pin
-                    print('gpio high')
+                    logging.debug('gpio high')
                     payload_length, raw_data = await self.read_mc_data()
                     return MCDataPackage.pop_ack_nack_from_buffer(bytes(raw_data))
                 else:
-                    print('gpio low')
+                    logging.debug('gpio low')
                     # sleep(0.1)
             except Exception as ex:
                 exception = ex
@@ -86,12 +86,12 @@ class MC:
                 timeout_s = 0
             try:
                 if self.get_GPIO_pin() == True: # wait for rising flank of GPIO pin
-                    print('gpio high')
+                    logging.debug('gpio high')
                     payload_length, raw_data = await self.read_mc_data()
                     unpacked_data = MCDataPackage.pop_from_buffer(list_str_cpp_dtype, bytes(raw_data))
                     return payload_length, unpacked_data
                 else:
-                    print('gpio low')
+                    logging.debug('gpio low')
                     #sleep(0.1)
             except Exception as ex:
                 exception = ex
