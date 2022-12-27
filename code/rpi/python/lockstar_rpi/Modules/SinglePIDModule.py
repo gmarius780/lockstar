@@ -13,6 +13,8 @@ class SinglePIDModule(IOModule_):
         self.d = None
         self.input_offset = None
         self.output_offset = None
+        self.i_threshold = None
+        self.intensity_lock_mode = None
         self.out_range_min = None
         self.out_range_max = None
         self.locked = None
@@ -20,7 +22,7 @@ class SinglePIDModule(IOModule_):
 
     # ==== START: client methods 
     async def initialize(self, p: float, i: float, d: float, out_range_min: float, out_range_max: float, locked: bool,
-                        input_offset: float, output_offset: float, writer):
+                        input_offset: float, output_offset: float, i_threshold: float, intensity_lock_mode: bool, writer):
         """Set all system module parameters
 
         Args:
@@ -37,13 +39,18 @@ class SinglePIDModule(IOModule_):
         logging.debug('Starting initialization: SinglePIDModule')
 
         #=== sequentially send configuration to MC
-        ack = await self.set_pid(p, i, d, input_offset, output_offset, writer, respond=False)
+        ack = await self.set_pid(p, i, d, input_offset, output_offset, i_threshold, writer, respond=False)
         ack = ack and await self.set_output_limits(out_range_min, out_range_max, writer, respond=False)
 
         if locked:
             ack = ack and await self.lock(writer, respond=False)
         else:
             ack = ack and await self.unlock(writer, respond=False)
+        
+        if intensity_lock_mode:
+            ack = ack and await self.enable_intensity_lock_mode(writer, respond=False)
+        else:
+            ack = ack and await self.disable_intensity_lock_mode(writer, respond=False)
 
         if writer is not None:
             if ack:
@@ -60,6 +67,8 @@ class SinglePIDModule(IOModule_):
             self.locked = locked
             self.input_offset = input_offset
             self.output_offset = output_offset
+            self.i_threshold = i_threshold
+            self.intensity_lock_mode = intensity_lock_mode
         return ack
 
     async def check_for_ack(self, writer=None):
@@ -73,7 +82,7 @@ class SinglePIDModule(IOModule_):
         
         return ack
 
-    async def set_pid(self, p: float, i: float, d: float, input_offset: float, output_offset: float, writer, respond=True):
+    async def set_pid(self, p: float, i: float, d: float, input_offset: float, output_offset: float, i_threshold: float, writer, respond=True):
         logging.debug('Backend: set_pid')
         mc_data_package = MCDataPackage()
         mc_data_package.push_to_buffer('uint32_t', 11) # method_identifier
@@ -82,6 +91,7 @@ class SinglePIDModule(IOModule_):
         mc_data_package.push_to_buffer('float', d) # d
         mc_data_package.push_to_buffer('float', input_offset)
         mc_data_package.push_to_buffer('float', output_offset)
+        mc_data_package.push_to_buffer('float', i_threshold)
         await MC.I().write_mc_data_package(mc_data_package)
         
         result = await self.check_for_ack(writer=(writer if respond else None))
@@ -91,6 +101,7 @@ class SinglePIDModule(IOModule_):
             self.d = d
             self.input_offset = input_offset
             self.output_offset = output_offset
+            self.i_threshold = i_threshold
         return result
 
     async def set_output_limits(self, min: float, max: float, writer, respond=True):
@@ -123,6 +134,24 @@ class SinglePIDModule(IOModule_):
         if result:
             self.locked = False
         return result
+
+    async def enable_intensity_lock_mode(self, writer, respond=True):
+        mc_data_package = MCDataPackage()
+        mc_data_package.push_to_buffer('uint32_t', 15) # method_identifier
+        await MC.I().write_mc_data_package(mc_data_package)
+        result = await self.check_for_ack(writer=(writer if respond else None))
+        if result:
+            self.intensity_lock_mode = True
+        return result
+
+    async def disable_intensity_lock_mode(self, writer, respond=True):
+        mc_data_package = MCDataPackage()
+        mc_data_package.push_to_buffer('uint32_t', 16) # method_identifier
+        await MC.I().write_mc_data_package(mc_data_package)
+        result = await self.check_for_ack(writer=(writer if respond else None))
+        if result:
+            self.intensity_lock_mode = False
+        return result
     
     # ==== END: client methods
 
@@ -141,7 +170,7 @@ class SinglePIDModule(IOModule_):
             while retry_counter > 0 and not success:
                 success = await self.initialize(config_dict['p'], config_dict['i'], config_dict['d'], config_dict['out_range_min'],
                                 config_dict['out_range_max'], config_dict['locked'], config_dict['input_offset'],
-                                config_dict['output_offset'], None)
+                                config_dict['output_offset'], config_dict['i_threshold'], config_dict['intensity_lock_mode'] None)
                 retry_counter -= 1
             
         except Exception as ex:

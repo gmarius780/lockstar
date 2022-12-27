@@ -24,7 +24,7 @@ class SinglePIDClient(LockstarClient):
     #         return await coroutine
 
     async def initialize(self, p: float, i: float, d: float, out_range_min: float, out_range_max: float, locked: bool,
-                    input_offset: float, output_offset: float):
+                    input_offset: float, output_offset: float, i_threshold: float, intensity_lock_mode: bool):
         """Set all system module parameters
 
         Args:
@@ -39,15 +39,16 @@ class SinglePIDClient(LockstarClient):
         """
         bc = BackendCall(self.client_id, 'SinglePIDModule', 'initialize',
                         args={'p': p, 'i': i, 'd': d, 'out_range_min': out_range_min, 'out_range_max': out_range_max, 
-                            'locked': locked, 'input_offset': input_offset, 'output_offset': output_offset}
+                            'locked': locked, 'input_offset': input_offset, 'output_offset': output_offset,
+                            'i_threshold': i_threshold, 'intensity_lock_mode': intensity_lock_mode}
                         )
         
         # return asyncio.run(self._call_lockstar(bc))
         return await self._call_lockstar(bc)
 
-    async def set_pid(self,  p: float, i: float, d: float, input_offset: float, output_offset: float):
+    async def set_pid(self,  p: float, i: float, d: float, input_offset: float, output_offset: float, i_threshold: float):
         bc = BackendCall(self.client_id, 'SinglePIDModule', 'set_pid', args={'p': p, 'i': i, 'd': d, 
-                    'input_offset': input_offset, 'output_offset': output_offset})
+                    'input_offset': input_offset, 'output_offset': output_offset, 'i_threshold': i_threshold})
         return await self._call_lockstar(bc)
 
     async def set_output_limits(self,  min: float, max: float):
@@ -60,6 +61,14 @@ class SinglePIDClient(LockstarClient):
 
     async def unlock(self):
         bc = BackendCall(self.client_id, 'SinglePIDModule', 'unlock', args={})
+        return await self._call_lockstar(bc)
+
+    async def enable_intensity_lock_mode(self):
+        bc = BackendCall(self.client_id, 'SinglePIDModule', 'enable_intensity_lock_mode', args={})
+        return await self._call_lockstar(bc)
+
+    async def disable_intensity_lock_mode(self):
+        bc = BackendCall(self.client_id, 'SinglePIDModule', 'disable_intensity_lock_mode', args={})
         return await self._call_lockstar(bc)
 
 

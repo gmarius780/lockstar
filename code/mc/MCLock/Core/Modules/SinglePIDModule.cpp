@@ -39,7 +39,6 @@ public:
 		turn_LED6_off();
 		turn_LED5_on();
 		pid = new PID(0, 0, 0, 0, 0);
-		p = i = d = input_offset = output_offset = 0;
 	}
 
 	void run() {
@@ -92,6 +91,12 @@ public:
 			case METHOD_SET_OUTPUT_LIMITS:
 				set_output_limits(read_package);
 				break;
+			case METHOD_ENABLE_INTENSITY_LOCK_MODE:
+				enable_intensity_lock_mode(read_package);
+				break;
+			case METHOD_DISABLE_INTENSITY_LOCK_MODE:
+				disable_intensity_lock_mode(read_package);
+				break;
 			default:
 				/*** send NACK because the method_identifier is not valid ***/
 				RPIDataPackage* write_package = rpi->get_write_package();
@@ -106,13 +111,14 @@ public:
 	static const uint32_t METHOD_SET_PID = 11;
 	void set_pid(RPIDataPackage* read_package) {
 		/***Read arguments***/
-		p = read_package->pop_from_buffer<float>();
-		i = read_package->pop_from_buffer<float>();
-		d = read_package->pop_from_buffer<float>();
-		input_offset = read_package->pop_from_buffer<float>();
-		output_offset = read_package->pop_from_buffer<float>();
+		float p = read_package->pop_from_buffer<float>();
+		float i = read_package->pop_from_buffer<float>();
+		float d = read_package->pop_from_buffer<float>();
+		float input_offset = read_package->pop_from_buffer<float>();
+		float output_offset = read_package->pop_from_buffer<float>();
+		float i_threshold = read_package->pop_from_buffer<float>();
 
-		this->pid->set_pid(p, i, d, input_offset, output_offset);
+		this->pid->set_pid(p, i, d, input_offset, output_offset, i_threshold);
 
 		/*** send ACK ***/
 		RPIDataPackage* write_package = rpi->get_write_package();
@@ -148,6 +154,26 @@ public:
 		set_ch_output_limit(read_package, this->dac_1);
 	}
 
+	static const uint32_t METHOD_ENABLE_INTENSITY_LOCK_MODE = 15;
+	void enable_intensity_lock_mode(RPIDataPackage* read_package) {
+		this->pid->enable_intensity_mode();
+
+		/*** send ACK ***/
+		RPIDataPackage* write_package = rpi->get_write_package();
+		write_package->push_ack();
+		rpi->send_package(write_package);
+	}
+
+	static const uint32_t METHOD_DISABLE_INTENSITY_LOCK_MODE = 16;
+	void disable_intensity_lock_mode(RPIDataPackage* read_package) {
+		this->pid->disable_intensity_mode();
+
+		/*** send ACK ***/
+		RPIDataPackage* write_package = rpi->get_write_package();
+		write_package->push_ack();
+		rpi->send_package(write_package);
+	}
+
 	/*** END: METHODS ACCESSIBLE FROM THE RPI ***/
 
 	void rpi_dma_in_interrupt() {
@@ -162,7 +188,6 @@ public:
 	}
 
 public:
-	float p, i, d, input_offset, output_offset;
 	PID* pid;
 	bool locked;
 };
