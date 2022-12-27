@@ -6,6 +6,7 @@
  */
 
 #include "rpi.h"
+#include "../Inc/main.h"
 
 RPI::RPI() {
 	read_buffer = new uint8_t[2550];
@@ -180,6 +181,7 @@ void RPI::dma_out_interrupt() {
 		spi->disableSPI_DMA();
 		dma_out->disableDMA();
 		dma_out->resetTransferCompleteInterruptFlag();
+		this->dma_out_ready_pin_low();
 	} else {
 		dma_out_error_interrupt();
 	}
@@ -204,6 +206,7 @@ void RPI::start_dma_out_communication(uint32_t nbr_of_bytes) {
 	this->dma_out->setNumberOfData(nbr_of_bytes);
 	this->dma_out->enableDMA();
 	spi->enableSPI_DMA();
+	this->dma_out_ready_pin_high();
 }
 
 volatile uint8_t* RPI::get_read_buffer() {
@@ -225,3 +228,10 @@ void RPI::send_package(RPIDataPackage* write_package) {
 	start_dma_out_communication(write_package->nbr_of_bytes_to_send()+4);
 }
 
+void RPI::dma_out_ready_pin_high() {
+	Pi_Int_GPIO_Port->BSRR = Pi_Int_Pin;
+}
+
+void RPI::dma_out_ready_pin_low() {
+	Pi_Int_GPIO_Port->BSRR = ((uint32_t)Pi_Int_Pin)<<16;
+}

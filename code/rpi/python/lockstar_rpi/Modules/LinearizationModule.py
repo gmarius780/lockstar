@@ -87,7 +87,7 @@ class LinearizationModule(IOModule_):
         gain_measurement_timeout = 5*ceil(self.ramp_length * self.settling_time_ms / 1000)
         logging.debug('new_linearization: Waiting for gain measurement...')
         sleep(gain_measurement_timeout)
-        if not await MC.I().read_ack(timeout_s=None):
+        if not await MC.I().read_ack():
             logging.error('linearize_ch: gain measurement took longer than timeout --> fail')
             writer.write(BackendResponse.NACK().to_bytes())
             await writer.drain()

@@ -57,7 +57,8 @@ private:
 	void start_dma_in_communication(uint32_t nbr_of_bytes);
 	void start_dma_out_communication(uint32_t nbr_of_bytes);
 
-
+	void dma_out_ready_pin_high();
+	void dma_out_ready_pin_low();
 };
 
 #endif /* HAL_RPI_H_ */

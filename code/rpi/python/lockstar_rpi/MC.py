@@ -53,12 +53,11 @@ class MC:
 
     #=== READ METHODS
 
-    async def read_ack(self, timeout_s=None):
+    async def read_ack(self, timeout_s=1):
         """Reads two bools. if both are 1, this is interpreted as an ACK (signalling success of whatever happened before)
             
             :Return True if ack False otherwise
         """
-        sleep(0.3)
         #unpack data
         start_time = perf_counter()
         exception = ''
@@ -66,23 +65,39 @@ class MC:
             if timeout_s is None:
                 timeout_s = 0
             try:
-                payload_length, raw_data = await self.read_mc_data()
-                return MCDataPackage.pop_ack_nack_from_buffer(bytes(raw_data))
+                if self.get_GPIO_pin() == True: # wait for rising flank of GPIO pin
+                    print('gpio high')
+                    payload_length, raw_data = await self.read_mc_data()
+                    return MCDataPackage.pop_ack_nack_from_buffer(bytes(raw_data))
+                else:
+                    print('gpio low')
+                    # sleep(0.1)
             except Exception as ex:
                 exception = ex
-                sleep(1)
         logging.error(f'MC.read_mc_data_package: cannot unpack data: {payload_length}: {exception}: {raw_data}')
         return False
 
-    async def read_mc_data_package(self, list_str_cpp_dtype):
+    async def read_mc_data_package(self, list_str_cpp_dtype, timeout_s=1):
         #unpack data
-        try:
-            payload_length, raw_data = await self.read_mc_data()
-            unpacked_data = MCDataPackage.pop_from_buffer(list_str_cpp_dtype, bytes(raw_data))
-            return payload_length, unpacked_data
-        except Exception as ex:
-            logging.error(f'MC.read_mc_data_package: cannot unpack data: {payload_length}: {ex}: {raw_data}')
-            raise ex
+        start_time = perf_counter()
+        exception = ''
+        while (timeout_s is None or perf_counter() - start_time < timeout_s):
+            if timeout_s is None:
+                timeout_s = 0
+            try:
+                if self.get_GPIO_pin() == True: # wait for rising flank of GPIO pin
+                    print('gpio high')
+                    payload_length, raw_data = await self.read_mc_data()
+                    unpacked_data = MCDataPackage.pop_from_buffer(list_str_cpp_dtype, bytes(raw_data))
+                    return payload_length, unpacked_data
+                else:
+                    print('gpio low')
+                    #sleep(0.1)
+            except Exception as ex:
+                exception = ex
+        
+        logging.error(f'MC.read_mc_data_package: cannot unpack data: {payload_length}: {exception}: {raw_data}')
+        return False
 
     async def read_mc_data(self):
         """Reads first an unsigned int, which is interpreted as the length of the payload, which the MC reponds to the RPI
