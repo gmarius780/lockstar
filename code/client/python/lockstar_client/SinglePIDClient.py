@@ -82,15 +82,15 @@ async def main():
             logging.StreamHandler()
         ]
     )
-    client = SinglePIDClient('192.168.88.13', 10780, 1234)
-    response = await client.initialize(1,0,0,0,10,False, 0, 0)
+    client = SinglePIDClient('192.168.88.25', 10780, 1234)
+    response = await client.initialize(1,0,0,0,10,False, 0, 0, 0, False)
     
     initialized = False
 
     if response.is_wrong_client_id():
         if await client.register_client_id():
             logging.info(f'Registered my client id: {client.client_id}')
-            response = client.initialize(1,0,0,0,10,False, 0, 0)
+            response = client.initialize(1,0,0,0,10,False, 0, 0, 0, False)
 
             initialized = response.is_ACK()
         else:
@@ -101,11 +101,11 @@ async def main():
     
     if initialized:
         logging.info(f'Successfully initialized Single PID module')
-        linearization_file = join(dirname(__file__), 'test_linearization.json')
-        linearization_length = 2000
+        # linearization_file = join(dirname(__file__), 'test_linearization.json')
+        # linearization_length = 2000
         #print(client.set_ch_one_output_limits(0, 10))
-        print(await client.set_linearization_length_one(linearization_length))
-        print(await client.set_linearization_one_from_file(linearization_file))
+        # print(await client.set_linearization_length_one(linearization_length))
+        # print(await client.set_linearization_one_from_file(linearization_file))
         #print(await client.disable_linearization_one())
 
 if __name__ == "__main__":

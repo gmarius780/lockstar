@@ -170,7 +170,7 @@ class SinglePIDModule(IOModule_):
             while retry_counter > 0 and not success:
                 success = await self.initialize(config_dict['p'], config_dict['i'], config_dict['d'], config_dict['out_range_min'],
                                 config_dict['out_range_max'], config_dict['locked'], config_dict['input_offset'],
-                                config_dict['output_offset'], config_dict['i_threshold'], config_dict['intensity_lock_mode'] None)
+                                config_dict['output_offset'], config_dict['i_threshold'], config_dict['intensity_lock_mode'], None)
                 retry_counter -= 1
             
         except Exception as ex:
