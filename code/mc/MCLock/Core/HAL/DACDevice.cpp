@@ -76,6 +76,7 @@ void DAC_Device::write(float output) {
     busy = true;
 
     output = std::min(max_output, std::max(output, min_output));
+    last_output = output;
 
     int32_t int_output = (int32_t)((output-zero_voltage) * inv_step_size - 0.5f);
     
@@ -85,7 +86,7 @@ void DAC_Device::write(float output) {
     if(invert)
         int_output = -int_output;
 
-    last_output = int_output;
+
 
     // Doesn't check that value is 20bit, may get unexpected results
     dma_buffer[0] = 0b00010000 + ((int_output>>16) & 0x0f);

@@ -11,10 +11,13 @@ Scope::Scope(ADC_Device *adc, LinearizableDAC *dac_1, LinearizableDAC *dac_2) {
 	/*
 	 * Used to sample the desired values (Input 1/2, output 1/2)
 	 * */
-	timer = new BasicTimer(5, 1000, 1);
+	timer = new BasicTimer(7, 1000, 1);
 	timer->disable();
 	timer->disable_interrupt();
 	timer->reset_counter();
+
+	setup = adc_active_mode = sample_in_one = sample_in_two = sample_out_one = sample_out_two = false;
+	buffer_length = buffer_index = 0;
 
 	this->adc = adc;
 	this->dac_1 = dac_1;
@@ -29,6 +32,9 @@ bool Scope::setup_scope(uint32_t sampling_prescaler, uint32_t sampling_counter_m
 		bool sample_out_one, bool sample_out_two, uint32_t buffer_length, bool adc_active_mode) {
 	if (buffer_length <= MAX_BUFFER_LENGTH_NBR_OF_FLOATS and buffer_length > 0 and \
 			(sample_in_one or sample_in_two or sample_out_one or sample_out_two)) {
+		if (setup)
+			this->disable();
+
 		this->buffer_length = buffer_length;
 		this->sample_in_one = sample_in_one;
 		this->sample_in_two = sample_in_two;
@@ -91,7 +97,7 @@ void Scope::timer_interrupt() {
 }
 
 bool Scope::push_buffers_to_rpi_data_package(RPIDataPackage* data_package, uint32_t buffer_offset, uint32_t package_size) {
-	if(setup and buffer_index > 0 and buffer_offset + package_size < buffer_length) {
+	if(setup and buffer_index > 0 and buffer_offset + package_size <= buffer_length) {
 		if (sample_in_one) {
 			for(uint32_t i=0; i<package_size; i++)
 				if (buffer_offset + i < this->buffer_index)
@@ -138,6 +144,7 @@ bool Scope::set_sampling_rate(uint32_t sampling_prescaler, uint32_t sampling_cou
 
 bool Scope::enable() {
 	if(setup) {
+		buffer_index = 0; //reset buffer to initial position
 		timer->enable_interrupt();
 		timer->enable();
 		return true;

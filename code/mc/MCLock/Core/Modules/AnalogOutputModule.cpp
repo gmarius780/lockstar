@@ -41,6 +41,7 @@ public:
 
 		/*** work loop ***/
 		while(true) {
+			//HAL_Delay(50);
 			//this->dac_1->write(this->pid->calculate_output(adc->channel1->get_result(), adc->channel2->get_result(), dt));
 		}
 	}
@@ -254,7 +255,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	if (htim->Instance == TIM4) {
 		module->rpi->comm_reset_timer_interrupt();
-	} else if(htim->Instance == TIM5) {
+	} else if(htim->Instance == TIM7) {
 		module->scope_timer_interrupt();
 	}
 }
