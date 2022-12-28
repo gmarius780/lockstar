@@ -51,7 +51,7 @@ public:
 	 */
 	bool push_buffers_to_rpi_data_package(RPIDataPackage* data_package, uint32_t buffer_offset, uint32_t package_size);
 private:
-	bool setup; //whether setup_scope has ben called successfully
+	bool setup; //whether setup_scope has been called successfully
 	bool adc_active_mode; //whether or not scope should call adc->star_conversion()
 	bool sample_in_one, sample_in_two, sample_out_one, sample_out_two;
 	uint32_t buffer_length;

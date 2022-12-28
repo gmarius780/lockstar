@@ -49,8 +49,7 @@ public:
 	}
 
 	void run() {
-		initialize_adc(ADC_UNIPOLAR_10V, ADC_UNIPOLAR_10V);
-		initialize_dac();
+		initialize_adc_dac(ADC_UNIPOLAR_10V, ADC_UNIPOLAR_10V);
 		this->dac_1->write(0);
 		this->dac_2->write(0);
 

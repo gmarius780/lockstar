@@ -5,7 +5,7 @@
  *      Author: qo
  */
 
-#include "Module.hpp"
+#include "Module.h"
 
 extern ADC_HandleTypeDef hadc3;
 
@@ -62,7 +62,7 @@ bool Module::handle_rpi_base_methods() {
 	return true;
 }
 
-void Module::initialize_adc(uint8_t ch1_config, uint8_t ch2_config) {
+void Module::initialize_adc_dac(uint8_t ch1_config, uint8_t ch2_config) {
 	adc = new ADC_Device(	/* SPI number */ 				1,
 							/* DMA Stream In */ 			2,
 							/* DMA Channel In */ 			3,
@@ -72,16 +72,14 @@ void Module::initialize_adc(uint8_t ch1_config, uint8_t ch2_config) {
 							/* conversion pin number */		ADC_CNV_Pin,
 							/* Channel 1 config */			ch1_config,
 							/* Channel 2 config */			ch2_config);
-}
 
-void Module::initialize_dac() {
 	dac_1 = new LinearizableDAC( /*SPI number*/              6,
-							/*DMA Stream Out*/          5,
-							/*DMA Channel Out*/         1,
-							/* sync pin port*/          DAC_1_Sync_GPIO_Port,
-							/* sync pin number*/        DAC_1_Sync_Pin,
-							/* clear pin port*/         CLR6_GPIO_Port,
-							/* clear pin number*/       CLR6_Pin);
+								/*DMA Stream Out*/          5,
+								/*DMA Channel Out*/         1,
+								/* sync pin port*/          DAC_1_Sync_GPIO_Port,
+								/* sync pin number*/        DAC_1_Sync_Pin,
+								/* clear pin port*/         CLR6_GPIO_Port,
+								/* clear pin number*/       CLR6_Pin);
 
 	dac_2 = new LinearizableDAC( /* SPI number*/				5,
 							/* DMA Stream Out*/			4,

@@ -19,13 +19,13 @@
 #include "../Lib/RPIDataPackage.h"
 #include "../Lib/pid.hpp"
 
-#include "Module.hpp"
+#include "ScopeModule.h"
 
 #ifdef ANALOG_OUTPUT_MODULE
 
 
 
-class AnalogOutputModule: public Module {
+class AnalogOutputModule: public ScopeModule {
 public:
 	AnalogOutputModule() {
 		initialize_rpi();
@@ -35,8 +35,7 @@ public:
 	}
 
 	void run() {
-		initialize_adc(ADC_UNIPOLAR_10V, ADC_UNIPOLAR_10V);
-		initialize_dac();
+		initialize_adc_dac(ADC_UNIPOLAR_10V, ADC_UNIPOLAR_10V);
 		this->dac_1->write(0);
 		this->dac_2->write(0);
 
@@ -60,12 +59,6 @@ public:
 			break;
 		case METHOD_OUTPUT_TTL:
 			output_ttl(read_package);
-			break;
-		case METHOD_SET_CH_ONE_OUTPUT_LIMITS:
-			set_ch_one_output_limits(read_package);
-			break;
-		case METHOD_SET_CH_TWO_OUTPUT_LIMITS:
-			set_ch_two_output_limits(read_package);
 			break;
 		case METHOD_SET_CH_ONE_OUTPUT:
 			set_ch_one_output(read_package);
@@ -117,30 +110,6 @@ public:
 		this->is_output_on = false;
 		this->is_output_ttl = true;
 		turn_LED6_off();
-
-		/*** send ACK ***/
-		RPIDataPackage* write_package = rpi->get_write_package();
-		write_package->push_ack();
-		rpi->send_package(write_package);
-	}
-
-	static const uint32_t METHOD_SET_CH_ONE_OUTPUT_LIMITS = 14;
-	void set_ch_one_output_limits(RPIDataPackage* read_package) {
-		/***Read arguments***/
-		this->dac_1->set_min_output(read_package->pop_from_buffer<float>());
-		this->dac_1->set_max_output(read_package->pop_from_buffer<float>());
-
-		/*** send ACK ***/
-		RPIDataPackage* write_package = rpi->get_write_package();
-		write_package->push_ack();
-		rpi->send_package(write_package);
-	}
-
-	static const uint32_t METHOD_SET_CH_TWO_OUTPUT_LIMITS = 15;
-	void set_ch_two_output_limits(RPIDataPackage* read_package) {
-		/***Read arguments***/
-		this->dac_2->set_min_output(read_package->pop_from_buffer<float>());
-		this->dac_2->set_max_output(read_package->pop_from_buffer<float>());
 
 		/*** send ACK ***/
 		RPIDataPackage* write_package = rpi->get_write_package();
@@ -283,6 +252,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	if (htim->Instance == TIM4) {
 		module->rpi->comm_reset_timer_interrupt();
+	} else if(htim->Instance == TIM5) {
+		module->scope_timer_interrupt();
 	}
 }
 

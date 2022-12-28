@@ -5,8 +5,9 @@ from lockstar_general.backend.BackendResponse import BackendResponse
 import logging
 from lockstar_rpi.MC import MC
 from lockstar_rpi.MCDataPackage import MCDataPackage
-import numpy as np
-from math import ceil, floor
+from math import floor
+
+from lockstar_rpi.Helpers.SamplingRate import SamplingRate
 
 class BufferBaseModule_(IOModule_):
     """Base class for AWGModule and AWGPIDModule. Implements the functionality to have two buffers which the user can use to 
@@ -165,7 +166,7 @@ class BufferBaseModule_(IOModule_):
             # fraction = fraction.limit_denominator(BackendSettings.mc_max_counter)
             # counter_max = fraction.denominator
             # prescaler = fraction.numerator
-            self.prescaler, self.counter_max = BufferBaseModule_.calculate_prescaler_counter(sampling_rate)
+            self.prescaler, self.counter_max = SamplingRate.calculate_prescaler_counter(sampling_rate)
 
             logging.info(f'initialize: sampling rate: {sampling_rate}, prescaler: {self.prescaler}, counter_max: {self.counter_max}')
 
@@ -189,17 +190,7 @@ class BufferBaseModule_(IOModule_):
                 self.sampling_rate = sampling_rate
             return result
 
-    @staticmethod
-    def calculate_prescaler_counter(sampling_rate):
-        """Calculate prescaler and counter for a given sampling_rate. The MC realizes a sampling rate by scaling down 
-        the internal clock_frequency (BackendSettings.mc_internal_clock_rate) with the prescaler and then counting up to
-        <counter> --> sampling_rate = internal_clock_rate / prescaler / counter"""
-        rate = BackendSettings.mc_internal_clock_rate / sampling_rate
-        possible_prescalers = np.flip(np.arange(ceil(rate/BackendSettings.mc_max_counter), BackendSettings.mc_max_counter))
-        possible_counters = rate/possible_prescalers
-        best_counter = int(possible_counters[np.abs(possible_counters - possible_counters.astype(int)).argmin()])
-        best_prescaler = int(rate/best_counter)
-        return best_prescaler , best_counter
+    
 
     async def set_sampling_rate(self, sampling_rate:int, writer, respond=True):
         """ Set sampling rate in Hz
@@ -219,7 +210,7 @@ class BufferBaseModule_(IOModule_):
             # counter_max = fraction.denominator
             # prescaler = fraction.numerator
 
-            self.prescaler, self.counter_max = BufferBaseModule_.calculate_prescaler_counter(sampling_rate)
+            self.prescaler, self.counter_max = SamplingRate.calculate_prescaler_counter(sampling_rate)
 
             logging.debug('Backend: set_sampling_rate')
             mc_data_package = MCDataPackage()

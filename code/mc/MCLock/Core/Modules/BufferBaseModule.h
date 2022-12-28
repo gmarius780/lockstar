@@ -10,9 +10,9 @@
 #include "stm32f4xx_it.h"
 #include "stm32f4xx_hal_gpio.h"
 
-#include "Module.hpp"
 #include "../Lib/RPIDataPackage.h"
 #include "../HAL/BasicTimer.hpp"
+#include "Module.h"
 
 #ifndef MODULES_BUFFERBASEMODULE_H_
 #define MODULES_BUFFERBASEMODULE_H_

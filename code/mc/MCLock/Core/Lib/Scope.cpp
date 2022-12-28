@@ -83,35 +83,45 @@ bool Scope::sample() {
 }
 
 void Scope::timer_interrupt() {
-	this->sample();
-	if (adc_active_mode)
-		this->adc->start_conversion();
+	if (this->setup) {
+		this->sample();
+		if (adc_active_mode)
+			this->adc->start_conversion();
+	}
 }
 
 bool Scope::push_buffers_to_rpi_data_package(RPIDataPackage* data_package, uint32_t buffer_offset, uint32_t package_size) {
 	if(setup and buffer_index > 0 and buffer_offset + package_size < buffer_length) {
 		if (sample_in_one) {
-			data_package->push_to_buffer<float>(-20.); //to mark the start of the next buffer
 			for(uint32_t i=0; i<package_size; i++)
-				data_package->push_to_buffer<float>(buffer_in_one[buffer_offset + i]);
+				if (buffer_offset + i < this->buffer_index)
+					data_package->push_to_buffer<float>(buffer_in_one[buffer_offset + i]);
+				else
+					data_package->push_to_buffer<float>(0.);
 		}
 		if (sample_in_two) {
-			data_package->push_to_buffer<float>(-20.); //to mark the start of the next buffer
 			for(uint32_t i=0; i<package_size; i++)
-				data_package->push_to_buffer<float>(buffer_in_two[buffer_offset + i]);
+				if (buffer_offset + i < this->buffer_index)
+					data_package->push_to_buffer<float>(buffer_in_two[buffer_offset + i]);
+				else
+					data_package->push_to_buffer<float>(0.);
 		}
 		if (sample_out_one) {
-			data_package->push_to_buffer<float>(-20.); //to mark the start of the next buffer
 			for(uint32_t i=0; i<package_size; i++)
-				data_package->push_to_buffer<float>(buffer_out_one[buffer_offset + i]);
+				if (buffer_offset + i < this->buffer_index)
+					data_package->push_to_buffer<float>(buffer_out_one[buffer_offset + i]);
+				else
+					data_package->push_to_buffer<float>(0.);
 		}
 		if (sample_out_two) {
-			data_package->push_to_buffer<float>(-20.); //to mark the start of the next buffer
 			for(uint32_t i=0; i<package_size; i++)
-				data_package->push_to_buffer<float>(buffer_out_two[buffer_offset + i]);
+				if (buffer_offset + i < this->buffer_index)
+					data_package->push_to_buffer<float>(buffer_out_two[buffer_offset + i]);
+				else
+					data_package->push_to_buffer<float>(0.);
 		}
 
-		if (buffer_offset + package_size == buffer_length - 1) // the whole buffer has been read
+		if (buffer_offset + package_size == buffer_length) // the whole buffer has been read
 			buffer_index = 0;
 		return true;
 	} else {
