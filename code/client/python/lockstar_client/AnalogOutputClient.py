@@ -57,10 +57,10 @@ if __name__ == "__main__":
     print(asyncio.run(client.enable_scope()))
     print(asyncio.run(client.output_on()))
 
-    for i in range(25):
+    for i in range(10):
         print(asyncio.run(client.output_on()))
-        print(asyncio.run(client.set_ch_one_output(i*0.04)))
-        print(asyncio.run(client.set_ch_two_output(1-i*0.04)))
+        print(asyncio.run(client.set_ch_one_output(i*0.1)))
+        print(asyncio.run(client.set_ch_two_output(1-i*0.1)))
         sleep(0.6)
     
     print(asyncio.run(client.get_scope_data()))

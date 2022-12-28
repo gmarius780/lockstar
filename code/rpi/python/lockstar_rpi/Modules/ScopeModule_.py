@@ -194,22 +194,30 @@ class ScopeModule_(IOModule_):
                 await MC.I().write_mc_data_package(mc_data_package)
                 
                 datatype_list = ['float']*max_package_size*nbr_of_recorded_channels
-                response_length, response_list = await MC.I().read_mc_data_package(datatype_list)
-                
-                i_start_trace = package_number*max_package_size
-                i_end_trace = i_start_trace + max_package_size
-                i_start_package = 0
-                i_end_package = max_package_size
+                response = await MC.I().read_mc_data_package(datatype_list)
+                if response == False:
+                    logging.error(f'ScopeModule.get_scope_data - read package of length: {max_package_size} failed!')
+                    if writer is not None and respond:
+                        writer.write(BackendResponse.NACK().to_bytes())
+                        await writer.drain()
+                    return False
+                else:
+                    response_length, response_list = response
+                    
+                    i_start_trace = package_number*max_package_size
+                    i_end_trace = i_start_trace + max_package_size
+                    i_start_package = 0
+                    i_end_package = max_package_size
 
-                #store results in corresponding dict entry
-                for sample_bool, sample_dict_key in zip(sample_bools, sample_dict_keys):
-                    if sample_bool:
-                        scope_traces[sample_dict_key][i_start_trace:i_end_trace] = response_list[i_start_package:i_end_package]
-                        i_start_package += max_package_size
-                        i_end_package += max_package_size
-    
-                buffer_offset += max_package_size
-                logging.debug(f"get_scope_data: received package number {package_number+1}.")
+                    #store results in corresponding dict entry
+                    for sample_bool, sample_dict_key in zip(sample_bools, sample_dict_keys):
+                        if sample_bool:
+                            scope_traces[sample_dict_key][i_start_trace:i_end_trace] = response_list[i_start_package:i_end_package]
+                            i_start_package += max_package_size
+                            i_end_package += max_package_size
+        
+                    buffer_offset += max_package_size
+                    logging.debug(f"get_scope_data: received package number {package_number+1}.")
 
             if nbr_of_full_packages < nbr_of_packages:
                 remaining_package_size = self.scope_buffer_length%max_package_size
@@ -222,16 +230,24 @@ class ScopeModule_(IOModule_):
 
                 datatype_list = ['float']*remaining_package_size*nbr_of_recorded_channels
 
-                response_length, response_list = await MC.I().read_mc_data_package(datatype_list)
+                response = await MC.I().read_mc_data_package(datatype_list)
+                if response == False:
+                    logging.error(f'ScopeModule.get_scope_data - read package of length: {remaining_package_size} failed!')
+                    if writer is not None and respond:
+                        writer.write(BackendResponse.NACK().to_bytes())
+                        await writer.drain()
+                    return False
+                else: 
+                    response_length, response_list = response
 
-                i_start_package = 0
-                i_end_package = remaining_package_size
-                #store results in corresponding dict entry
-                for sample_bool, sample_dict_key in zip(sample_bools, sample_dict_keys):
-                    if sample_bool:
-                        scope_traces[sample_dict_key][-remaining_package_size:] = response_list[i_start_package:i_end_package]
-                        i_start_package += remaining_package_size
-                        i_end_package += remaining_package_size
+                    i_start_package = 0
+                    i_end_package = remaining_package_size
+                    #store results in corresponding dict entry
+                    for sample_bool, sample_dict_key in zip(sample_bools, sample_dict_keys):
+                        if sample_bool:
+                            scope_traces[sample_dict_key][-remaining_package_size:] = response_list[i_start_package:i_end_package]
+                            i_start_package += remaining_package_size
+                            i_end_package += remaining_package_size
             
             br = BackendResponse(scope_traces)
             writer.write(br.to_bytes())
