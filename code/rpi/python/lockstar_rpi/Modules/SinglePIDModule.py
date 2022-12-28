@@ -1,10 +1,10 @@
-from lockstar_rpi.Modules.IOModule_ import IOModule_
+from lockstar_rpi.Modules.ScopeModule_ import ScopeModule_
 from lockstar_general.backend.BackendResponse import BackendResponse
 import logging
 from lockstar_rpi.MC import MC
 from lockstar_rpi.MCDataPackage import MCDataPackage
 
-class SinglePIDModule(IOModule_):
+class SinglePIDModule(ScopeModule_):
     """Basic Module which implements a simple PID controller by using input_1 as error_signal, input_2 as setpoint and output 1 for the control signal"""
     def __init__(self) -> None:
         super().__init__()

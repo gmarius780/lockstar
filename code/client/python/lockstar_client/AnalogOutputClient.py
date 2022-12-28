@@ -57,7 +57,7 @@ if __name__ == "__main__":
         sample_out_one=True,
         sample_out_two=True,
         buffer_length=scope_buffer_length,
-        adc_active_mode=False
+        adc_active_mode=True
     )))
     print(asyncio.run(client.enable_scope()))
     print(asyncio.run(client.output_on()))
