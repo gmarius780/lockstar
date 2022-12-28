@@ -1,10 +1,10 @@
-from lockstar_rpi.Modules.IOModule_ import IOModule_
+from lockstar_rpi.Modules.ScopeModule_ import ScopeModule_
 from lockstar_general.backend.BackendResponse import BackendResponse
 import logging
 from lockstar_rpi.MC import MC
 from lockstar_rpi.MCDataPackage import MCDataPackage
 
-class AnalogOutputModule(IOModule_):
+class AnalogOutputModule(ScopeModule_):
     def __init__(self) -> None:
         super().__init__()
         self.is_output_on = False

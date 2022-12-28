@@ -1,12 +1,11 @@
 import asyncio
 import logging
-from lockstar_client.LockstarClient import LockstarClient
+from lockstar_client.ScopeClient import ScopeClient
 from lockstar_general.backend.BackendCall import BackendCall
 
-class AnalogOutputClient(LockstarClient):
+class AnalogOutputClient(ScopeClient):
     def __init__(self, lockstar_ip, lockstar_port, client_id) -> None:
         super().__init__(lockstar_ip, lockstar_port, client_id, 'AnalogOutputModule')
-
 
     def initialize(self):
         pass
@@ -33,6 +32,7 @@ class AnalogOutputClient(LockstarClient):
 
 
 if __name__ == "__main__":
+    from time import sleep
     logging.basicConfig(
         level=logging.DEBUG,
         format="%(asctime)s [%(levelname)s] %(message)s",
@@ -41,24 +41,30 @@ if __name__ == "__main__":
             logging.StreamHandler()
         ]
     )
-    client = AnalogOutputClient('192.168.88.201', 10780, 1234)
-    client.register_client_id()
-    # response = client.initialize(1,2,3,4,5,True, False)
+    client = AnalogOutputClient('192.168.88.25', 10780, 1234)
+    asyncio.run(client.register_client_id())
     
-    # initialized = False
+    # Scope Test
+    asyncio.run(client.setup_scope(
+        sampling_rate=5,
+        sample_in_one=True,
+        sample_in_two=True,
+        sample_out_one=True,
+        sample_out_two=True,
+        buffer_length=200,
+        adc_active_mode=True
+    ))
+    asyncio.run(client.enable_scope())
+    asyncio.run(client.output_on())
 
-    # if response.is_wrong_client_id():
-    #     if client.register_client_id():
-    #         logging.info(f'Registered my client id: {client.client_id}')
-    #         response = client.initialize(1,2,3,4,5,True, False)
-
-    #         initialized = response.is_ACK()
-    #     else:
-    #         logging.info(f'Failed to register my client id: {client.client_id}')
-
-    # else:
-    #     initialized = True
+    for i in range(50):
+        asyncio.run(client.output_on())
+        asyncio.run(client.set_ch_one_output(i*0.04))
+        asyncio.run(client.set_ch_two_output(1-i*0.04))
+        sleep(0.6)
     
-    # if initialized:
-    #     logging.info(f'Successfully initialized Single PID module')
+    print(asyncio.run(client.get_scope_data()))
+
+    print('done')
+
 
