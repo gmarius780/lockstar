@@ -1,8 +1,8 @@
 import asyncio
-from lockstar_client.LockstarClient import LockstarClient
+from lockstar_client.ScopeClient import ScopeClient
 from lockstar_general.backend.BackendCall import BackendCall
 
-class BufferBaseClient_(LockstarClient):
+class BufferBaseClient_(ScopeClient):
     def __init__(self, lockstar_ip, lockstar_port, client_id, module_name) -> None:
         super().__init__(lockstar_ip, lockstar_port, client_id, module_name)
 

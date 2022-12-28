@@ -1,6 +1,6 @@
 from time import sleep
 from lockstar_rpi.BackendSettings import BackendSettings
-from lockstar_rpi.Modules.IOModule_ import IOModule_
+from lockstar_rpi.Modules.ScopeModule_ import ScopeModule_
 from lockstar_general.backend.BackendResponse import BackendResponse
 import logging
 from lockstar_rpi.MC import MC
@@ -9,11 +9,11 @@ from math import floor
 
 from lockstar_rpi.Helpers.SamplingRate import SamplingRate
 
-class BufferBaseModule_(IOModule_):
+class BufferBaseModule_(ScopeModule_):
     """Base class for AWGModule and AWGPIDModule. Implements the functionality to have two buffers which the user can use to 
     store arbitrary waveforms. Additionally it allows to split the buffers into chunks, which are output individually.
     """
-    BUFFER_LIMIT_kBYTES = 180
+    BUFFER_LIMIT_kBYTES = 160
     MAX_NBR_OF_CHUNKS = 100
 
 

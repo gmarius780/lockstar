@@ -195,8 +195,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	if (htim->Instance == TIM2) {
 		module->sampling_timer_interrupt();
 	}
-	if (htim->Instance == TIM4) {
+	else if (htim->Instance == TIM4) {
 		module->rpi->comm_reset_timer_interrupt();
+	}
+	else if(htim->Instance == TIM7) {
+		module->scope_timer_interrupt();
 	}
 }
 
