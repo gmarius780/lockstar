@@ -74,7 +74,7 @@ class SinglePIDClient(ScopeClient):
 client = None
 
 def scope_test(client):
-    scope_sampling_rate = 50
+    scope_sampling_rate = 200
     scope_buffer_length = 1000
     print(asyncio.run(client.setup_scope(
         sampling_rate=scope_sampling_rate,
@@ -116,8 +116,9 @@ if __name__ == "__main__":
     #         logging.StreamHandler()
     #     ]
     # )
-    client = SinglePIDClient('192.168.88.25', 10780, 1234)
-    response = asyncio.run(client.initialize(0.01,100000,0,0,10,True, 0, 0, 0.005, True))
+    client = SinglePIDClient('192.168.88.220', 10780, 1234)
+    print(asyncio.run(client.initialize(0.01,100000,0,0,10,True, 0, 0, 0.005, True)))
+
     asyncio.run(client.register_client_id())
 
     logging.info(f'Successfully initialized Single PID module')
