@@ -222,7 +222,7 @@ class ScopeModule_(IOModule_):
 
                 datatype_list = ['float']*remaining_package_size*nbr_of_recorded_channels
 
-                response_length, response_list = await MC.I().read_mc_data_package(response_list)
+                response_length, response_list = await MC.I().read_mc_data_package(datatype_list)
 
                 i_start_package = 0
                 i_end_package = remaining_package_size

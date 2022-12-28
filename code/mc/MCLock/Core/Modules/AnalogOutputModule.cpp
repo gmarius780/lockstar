@@ -27,7 +27,7 @@
 
 class AnalogOutputModule: public ScopeModule {
 public:
-	AnalogOutputModule() {
+	AnalogOutputModule() : ScopeModule() {
 		initialize_rpi();
 		turn_LED6_off();
 		turn_LED5_on();
@@ -46,32 +46,34 @@ public:
 	}
 
 	void handle_rpi_input() {
-		/*** Package format: method_identifier (uint32_t) | method specific arguments (defined in the methods directly) ***/
-		RPIDataPackage* read_package = rpi->get_read_package();
+		if (ScopeModule::handle_rpi_base_methods() == false) { //if base class doesn't know the called method
+			/*** Package format: method_identifier (uint32_t) | method specific arguments (defined in the methods directly) ***/
+			RPIDataPackage* read_package = rpi->get_read_package();
 
-		// switch between method_identifier
-		switch (read_package->pop_from_buffer<uint32_t>()) {
-		case METHOD_OUTPUT_ON:
-			output_on(read_package);
-			break;
-		case METHOD_OUTPUT_OFF:
-			output_off(read_package);
-			break;
-		case METHOD_OUTPUT_TTL:
-			output_ttl(read_package);
-			break;
-		case METHOD_SET_CH_ONE_OUTPUT:
-			set_ch_one_output(read_package);
-			break;
-		case METHOD_SET_CH_TWO_OUTPUT:
-			set_ch_two_output(read_package);
-			break;
-		default:
-			/*** send NACK because the method_identifier is not valid ***/
-			RPIDataPackage* write_package = rpi->get_write_package();
-			write_package->push_nack();
-			rpi->send_package(write_package);
-			break;
+			// switch between method_identifier
+			switch (read_package->pop_from_buffer<uint32_t>()) {
+			case METHOD_OUTPUT_ON:
+				output_on(read_package);
+				break;
+			case METHOD_OUTPUT_OFF:
+				output_off(read_package);
+				break;
+			case METHOD_OUTPUT_TTL:
+				output_ttl(read_package);
+				break;
+			case METHOD_SET_CH_ONE_OUTPUT:
+				set_ch_one_output(read_package);
+				break;
+			case METHOD_SET_CH_TWO_OUTPUT:
+				set_ch_two_output(read_package);
+				break;
+			default:
+				/*** send NACK because the method_identifier is not valid ***/
+				RPIDataPackage* write_package = rpi->get_write_package();
+				write_package->push_nack();
+				rpi->send_package(write_package);
+				break;
+			}
 		}
 
 	}
