@@ -42,13 +42,13 @@ struct DitheringParams {
 class CavityLockModule: public ScopeModule {
 public:
 	//dither is happening with a period of  2 Hz --> scope samples with: 2kHz, since the dithering step increase happens in 500us steps
-	static const uint32_t SCOPE_SAMPLING_PRESCALER = 10000;
+	static const uint32_t SCOPE_SAMPLING_PRESCALER = 5000;
 	static const uint32_t SCOPE_SAMPLING_COUNTER_MAX = 45;
 	static const uint32_t SCOPE_BUFFER_SIZE = 200;
 
 	//number of increase/decrease steps in one dither period (triangular) (hardcoded for now)
 	static const uint32_t NBR_DITHER_STEPS = 400;
-	static const uint32_t DITHER_INCREASE_INTERVAL_100PS = 12500; //increase the dithering after 1.25ms (12500*100ps) --> this yields a dither-period of: NBR_DITHER_STEPS*DITHER_INCREASE_INTERVAL_100PS = 500ms
+	static const uint32_t DITHER_INCREASE_INTERVAL_100PS = 6000; //increase the dithering after 1.25ms (12500*100ps) --> this yields a dither-period of: NBR_DITHER_STEPS*DITHER_INCREASE_INTERVAL_100PS = 500ms
 
 	//loop timer oscillates with 1/100ps, the counter counts to 65535 --> the timer can capture 6ms --> enough to capture the dithering at 1.25ms steps
 	static const uint16_t LOOP_TIMER_PSC = 9;
