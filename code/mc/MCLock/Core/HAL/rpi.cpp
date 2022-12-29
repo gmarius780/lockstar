@@ -166,10 +166,10 @@ void RPI::comm_reset_timer_interrupt() {
 		dma_in->resetTransferCompleteInterruptFlag();
 		is_communicating = false;
 		spi->enableRxIRQ();
-		this->comm_reset_timer->disable();
-		this->comm_reset_timer->disable_interrupt();
-		this->comm_reset_timer->reset_counter();
 	}
+	this->comm_reset_timer->disable();
+	this->comm_reset_timer->disable_interrupt();
+	this->comm_reset_timer->reset_counter();
 }
 
 void RPI::dma_in_error_interrupt() {

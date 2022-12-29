@@ -58,6 +58,10 @@ float LinearizableDAC::get_max_output() {
 	return dac->get_max_output();
 }
 
+float LinearizableDAC::get_last_output() {
+	return dac->get_last_output();
+}
+
 void LinearizableDAC::set_linearization_length(uint32_t length) {
 	linearization_length = length;
 	linearization_buffer = new float[length]();

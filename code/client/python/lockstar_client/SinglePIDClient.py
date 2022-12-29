@@ -1,10 +1,10 @@
 import asyncio
 import logging
-from lockstar_client.LockstarClient import LockstarClient
+from lockstar_client.ScopeClient import ScopeClient
 from lockstar_general.backend.BackendResponse import BackendResponse
 from lockstar_general.backend.BackendCall import BackendCall
 
-class SinglePIDClient(LockstarClient):
+class SinglePIDClient(ScopeClient):
     """Basic Module which implements a simple PID controller by using input_1 as error signal, 
     input_2 as setpoint and output 1 for the control signal"""
     def __init__(self, lockstar_ip, lockstar_port, client_id) -> None:
@@ -72,42 +72,63 @@ class SinglePIDClient(LockstarClient):
         return await self._call_lockstar(bc)
 
 client = None
-async def main():
-    from os.path import join, dirname
-    logging.basicConfig(
-        level=logging.DEBUG,
-        format="%(asctime)s [%(levelname)s] %(message)s",
-        handlers=[
-            # logging.FileHandler("./debug.log"),
-            logging.StreamHandler()
-        ]
-    )
-    client = SinglePIDClient('192.168.88.25', 10780, 1234)
-    response = await client.initialize(1,0,0,0,10,False, 0, 0, 0, False)
+
+def scope_test(client):
+    scope_sampling_rate = 200
+    scope_buffer_length = 1000
+    print(asyncio.run(client.setup_scope(
+        sampling_rate=scope_sampling_rate,
+        sample_in_one=True,
+        sample_in_two=True,
+        sample_out_one=True,
+        sample_out_two=True,
+        buffer_length=scope_buffer_length,
+        adc_active_mode=False
+    )))
+    print(asyncio.run(client.enable_scope()))
+
+
+    sleep(scope_buffer_length/scope_sampling_rate)
     
-    initialized = False
-
-    if response.is_wrong_client_id():
-        if await client.register_client_id():
-            logging.info(f'Registered my client id: {client.client_id}')
-            response = client.initialize(1,0,0,0,10,False, 0, 0, 0, False)
-
-            initialized = response.is_ACK()
-        else:
-            logging.info(f'Failed to register my client id: {client.client_id}')
-
-    else:
-        initialized = True
     
-    if initialized:
-        logging.info(f'Successfully initialized Single PID module')
-        # linearization_file = join(dirname(__file__), 'test_linearization.json')
-        linearization_file = 'test_linearization.json'
-        linearization_length = 2000
-        print(client.set_ch_one_output_limits(0, 10))
-        print(await client.set_linearization_length_one(linearization_length))
-        print(await client.set_linearization_one_from_file(linearization_file))
-        #print(await client.disable_linearization_one())
+    scope_time_axis = np.arange(scope_buffer_length)*1/scope_sampling_rate
+    scope_data = asyncio.run(client.get_scope_data())
+    if scope_data != False:
+        plt.figure()
+        for trace_name in scope_data.keys():
+            trace = scope_data[trace_name]
+            if len(trace) > 0:
+                plt.plot(scope_time_axis, trace, label=trace_name)
+        
+        plt.legend()
+        plt.show()
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    from os.path import join, dirname
+    from time import sleep
+    import numpy as np
+    import matplotlib.pyplot as plt
+    # logging.basicConfig(
+    #     level=logging.DEBUG,
+    #     format="%(asctime)s [%(levelname)s] %(message)s",
+    #     handlers=[
+    #         # logging.FileHandler("./debug.log"),
+    #         logging.StreamHandler()
+    #     ]
+    # )
+    client = SinglePIDClient('192.168.88.220', 10780, 1234)
+    print(asyncio.run(client.initialize(0.01,100000,0,0,10,True, 0, 0, 0.005, True)))
+
+    asyncio.run(client.register_client_id())
+
+    logging.info(f'Successfully initialized Single PID module')
+    linearization_file = join(dirname(__file__), 'test_linearization.json')
+    linearization_file = 'test_linearization.json'
+    linearization_length = 2000
+    # print(asyncio.run(client.set_ch_one_output_limits(0, 10)))
+    # print(asyncio.run(client.set_linearization_length_one(linearization_length)))
+    # print(asyncio.run(client.set_linearization_one_from_file(linearization_file)))
+    
+
+    #=====Scope Test
+    

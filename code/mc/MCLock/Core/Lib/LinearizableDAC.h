@@ -31,6 +31,7 @@ public:
 	void set_max_output(float m);
 	float get_min_output();
 	float get_max_output();
+	float get_last_output();
 
 	/**
 	 * initializes the buffer which stores the linearization parameters (pivots).

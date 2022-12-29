@@ -14,6 +14,8 @@ DAC_Device::DAC_Device(uint8_t spi_lane, uint8_t dma_stream_out, uint8_t dma_cha
     zero_voltage 	= 0;
     full_range 		= 0;
 
+    last_output = 0;
+
     max_output 	= 0;
     min_output 	= 0;
     busy 		= false;
@@ -74,6 +76,7 @@ void DAC_Device::write(float output) {
     busy = true;
 
     output = std::min(max_output, std::max(output, min_output));
+    last_output = output;
 
     int32_t int_output = (int32_t)((output-zero_voltage) * inv_step_size - 0.5f);
     
@@ -82,6 +85,8 @@ void DAC_Device::write(float output) {
 
     if(invert)
         int_output = -int_output;
+
+
 
     // Doesn't check that value is 20bit, may get unexpected results
     dma_buffer[0] = 0b00010000 + ((int_output>>16) & 0x0f);
@@ -229,4 +234,8 @@ float DAC_Device::get_min_output() {
 
 float DAC_Device::get_max_output() {
 	return this->max_output;
+}
+
+float DAC_Device::get_last_output() {
+	return this->last_output;
 }

@@ -25,15 +25,15 @@
 #include "../Lib/RPIDataPackage.h"
 #include "../Lib/pid.hpp"
 
-#include "Module.hpp"
+#include "ScopeModule.h"
 
 #ifdef SINGLE_PID_MODULE
 
 
 
-class SinglePIDModule: public Module {
+class SinglePIDModule: public ScopeModule {
 public:
-	SinglePIDModule() : Module() {
+	SinglePIDModule() : ScopeModule() {
 		initialize_rpi();
 		locked = false;
 		turn_LED6_off();
@@ -42,8 +42,7 @@ public:
 	}
 
 	void run() {
-		initialize_adc(ADC_UNIPOLAR_10V, ADC_UNIPOLAR_10V);
-		initialize_dac();
+		initialize_adc_dac(ADC_UNIPOLAR_10V, ADC_UNIPOLAR_10V);
 		this->dac_1->write(0);
 		this->dac_2->write(0);
 
@@ -73,7 +72,7 @@ public:
 	}
 
 	void handle_rpi_input() {
-		if (Module::handle_rpi_base_methods() == false) { //if base class doesn't know the called method
+		if (ScopeModule::handle_rpi_base_methods() == false) { //if base class doesn't know the called method
 			/*** Package format: method_identifier (uint32_t) | method specific arguments (defined in the methods directly) ***/
 			RPIDataPackage* read_package = rpi->get_read_package();
 
@@ -253,6 +252,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	if (htim->Instance == TIM4) {
 		module->rpi->comm_reset_timer_interrupt();
+	}
+	else if(htim->Instance == TIM7) {
+		module->scope_timer_interrupt();
 	}
 }
 
