@@ -42,7 +42,7 @@ struct DitheringParams {
 class CavityLockModule: public ScopeModule {
 public:
 	//dither is happening with a period of  2 Hz --> scope samples with: 2kHz, since the dithering step increase happens in 500us steps
-	static const uint32_t SCOPE_SAMPLING_PRESCALER = 5000;
+	static const uint32_t SCOPE_SAMPLING_PRESCALER = 10000;
 	static const uint32_t SCOPE_SAMPLING_COUNTER_MAX = 45;
 	static const uint32_t SCOPE_BUFFER_SIZE = 200;
 
@@ -245,6 +245,7 @@ public:
 				i++;
 			}
 		}
+		this->scope->disable();
 	}
 
 

@@ -33,7 +33,7 @@ class ScopeViewer(QtWidgets.QMainWindow):
         self.time_axis = np.arange(scope_buffer_size)/scope_sampling_rate
 
         #setup gui
-        self.canvas = MplCanvas(self, width=5, height=4, dpi=100)
+        self.canvas = MplCanvas(self, width=10, height=8, dpi=300)
         self.setCentralWidget(self.canvas)
 
         self.update_plot()
@@ -65,8 +65,10 @@ class ScopeViewer(QtWidgets.QMainWindow):
 
 if __name__ == "__main__":
     client = CavityLockClient('192.168.88.25', 10780, 1234)
-    scope_sampling_rate = 2000
-    scope_buffer_length = 1000
+    # scope_sampling_rate = 2000
+    scope_sampling_rate = 200
+    scope_buffer_length = 200
+    # scope_buffer_length = 1000
     update_rate = 2
 
     # print(asyncio.run(client.setup_scope(

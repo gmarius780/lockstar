@@ -143,7 +143,8 @@ bool Scope::set_sampling_rate(uint32_t sampling_prescaler, uint32_t sampling_cou
 }
 
 bool Scope::enable() {
-	if(setup) {
+	//buffer has to be ready, otherwise it has to be read first
+	if(setup and buffer_index == 0) {
 		buffer_index = 0; //reset buffer to initial position
 		timer->enable_interrupt();
 		timer->enable();
