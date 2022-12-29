@@ -10,7 +10,7 @@ from matplotlib.figure import Figure
 import numpy as np
 import asyncio
 
-from lockstar_client.AWGClient import AWGClient
+from lockstar_client.CavityLockClient import CavityLockClient
 
 class MplCanvas(FigureCanvas):
 
@@ -63,21 +63,21 @@ class ScopeViewer(QtWidgets.QMainWindow):
         self.canvas.draw()
 
 if __name__ == "__main__":
-    client = AWGClient('192.168.88.25', 10780, 1234)
-    scope_sampling_rate = 1000
-    scope_buffer_length = 100
+    client = CavityLockClient('192.168.88.25', 10780, 1234)
+    scope_sampling_rate = 2000
+    scope_buffer_length = 1000
     update_rate = 5
 
-    print(asyncio.run(client.setup_scope(
-        sampling_rate=scope_sampling_rate,
-        sample_in_one=True,
-        sample_in_two=True,
-        sample_out_one=True,
-        sample_out_two=True,
-        buffer_length=scope_buffer_length,
-        adc_active_mode=True
-    )))
-    print(asyncio.run(client.enable_scope()))
+    # print(asyncio.run(client.setup_scope(
+    #     sampling_rate=scope_sampling_rate,
+    #     sample_in_one=True,
+    #     sample_in_two=True,
+    #     sample_out_one=True,
+    #     sample_out_two=True,
+    #     buffer_length=scope_buffer_length,
+    #     adc_active_mode=True
+    # )))
+    # print(asyncio.run(client.enable_scope()))
 
     app = QtWidgets.QApplication(sys.argv)
     w = ScopeViewer(client, update_rate, scope_buffer_length, scope_sampling_rate)

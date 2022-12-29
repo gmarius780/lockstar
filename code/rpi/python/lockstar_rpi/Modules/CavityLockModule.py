@@ -24,6 +24,9 @@ class CavityLockModule(ScopeModule_):
         self.dither_offset_two = 0
         self.locked_two = False
 
+        #the scope is automatically setup by the MC in the cavitylock module
+        self.scope_setup = True 
+
 
     # ==== START: client methods 
     async def check_for_ack(self, writer=None):

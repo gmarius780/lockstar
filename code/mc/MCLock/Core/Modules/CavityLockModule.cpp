@@ -74,8 +74,6 @@ public:
 
 		setpoint_one = setpoint_two = 0;
 
-		this->scope->setup_scope(SCOPE_SAMPLING_PRESCALER, SCOPE_SAMPLING_COUNTER_MAX, true, true, true, true, SCOPE_BUFFER_SIZE, true);
-
 		/*** TIMER FOR MAINLOOP TO EXTRACT DT ***/
 		loop_timer = new BasicTimer(3, LOOP_TIMER_COUNTER_MAX, LOOP_TIMER_PSC);
 		loop_timer->enable();
@@ -83,6 +81,7 @@ public:
 
 	void run() {
 		initialize_adc_dac(ADC_UNIPOLAR_10V, ADC_UNIPOLAR_10V);
+		this->scope->setup_scope(SCOPE_SAMPLING_PRESCALER, SCOPE_SAMPLING_COUNTER_MAX, true, true, true, true, SCOPE_BUFFER_SIZE, true);
 		this->dac_1->write(0);
 		this->dac_2->write(0);
 
