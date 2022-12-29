@@ -54,7 +54,6 @@ public:
 
 	void initialize_adc_dac(uint8_t ch1_config, uint8_t ch2_config) override;
 
-private:
 
 	Scope *scope;
 };

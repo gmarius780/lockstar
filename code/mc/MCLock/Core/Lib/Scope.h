@@ -50,6 +50,10 @@ public:
 	 *
 	 */
 	bool push_buffers_to_rpi_data_package(RPIDataPackage* data_package, uint32_t buffer_offset, uint32_t package_size);
+
+	void set_adc_active_mode(bool adc_active_mode) {
+		this->adc_active_mode = adc_active_mode;
+	}
 private:
 	bool setup; //whether setup_scope has been called successfully
 	bool adc_active_mode; //whether or not scope should call adc->star_conversion()

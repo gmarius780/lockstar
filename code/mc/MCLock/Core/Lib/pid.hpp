@@ -33,6 +33,10 @@ public:
 		this->i_threshold = i_threshold;
 	}
 
+	void set_output_offset(float output_offset) {
+		this->output_offset = output_offset;
+	}
+
 	void enable_intensity_mode();
 	void disable_intensity_mode();
 
