@@ -90,6 +90,10 @@ void ScopeModule::get_scope_data(RPIDataPackage* read_package) {
 	uint32_t buffer_offset = read_package->pop_from_buffer<uint32_t>();
 	uint32_t package_size = read_package->pop_from_buffer<uint32_t>();
 
+	if (buffer_offset > 0) {
+		int test = 0;
+	}
+
 	RPIDataPackage* write_package = rpi->get_write_package();
 
 	bool success = scope->push_buffers_to_rpi_data_package(write_package, buffer_offset, package_size);

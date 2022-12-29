@@ -68,20 +68,24 @@ bool Scope::setup_scope(uint32_t sampling_prescaler, uint32_t sampling_counter_m
 
 bool Scope::sample() {
 	//if buffer_index >= buffer_length: push_buffers_to_rpi_data_package has to be called first
-	if(setup and buffer_index < buffer_length) {
-		if (sample_in_one) {
-			buffer_in_one[buffer_index] = adc->channel1->get_result();
+	if(setup) {
+		if (buffer_index < buffer_length) {
+			if (sample_in_one) {
+				buffer_in_one[buffer_index] = adc->channel1->get_result();
+			}
+			if (sample_in_two) {
+				buffer_in_two[buffer_index] = adc->channel2->get_result();
+			}
+			if (sample_out_one) {
+				buffer_out_one[buffer_index] = dac_1->get_last_output();
+			}
+			if (sample_out_two) {
+				buffer_out_two[buffer_index] = dac_2->get_last_output();
+			}
+			buffer_index++;
+		} else {
+			this->disable();
 		}
-		if (sample_in_two) {
-			buffer_in_two[buffer_index] = adc->channel2->get_result();
-		}
-		if (sample_out_one) {
-			buffer_out_one[buffer_index] = dac_1->get_last_output();
-		}
-		if (sample_out_two) {
-			buffer_out_two[buffer_index] = dac_2->get_last_output();
-		}
-		buffer_index++;
 		return true;
 	} else {
 		return false;
@@ -97,34 +101,34 @@ void Scope::timer_interrupt() {
 }
 
 bool Scope::push_buffers_to_rpi_data_package(RPIDataPackage* data_package, uint32_t buffer_offset, uint32_t package_size) {
-	if(setup and buffer_index > 0 and buffer_offset + package_size <= buffer_length) {
+	if(setup and buffer_index == buffer_length and buffer_offset + package_size <= buffer_length) {
 		if (sample_in_one) {
 			for(uint32_t i=0; i<package_size; i++)
-				if (buffer_offset + i < this->buffer_index)
+				if (buffer_offset + i <= this->buffer_index)
 					data_package->push_to_buffer<float>(buffer_in_one[buffer_offset + i]);
 				else
-					data_package->push_to_buffer<float>(0.);
+					data_package->push_to_buffer<float>(1.);
 		}
 		if (sample_in_two) {
 			for(uint32_t i=0; i<package_size; i++)
-				if (buffer_offset + i < this->buffer_index)
+				if (buffer_offset + i <= this->buffer_index)
 					data_package->push_to_buffer<float>(buffer_in_two[buffer_offset + i]);
 				else
-					data_package->push_to_buffer<float>(0.);
+					data_package->push_to_buffer<float>(1.);
 		}
 		if (sample_out_one) {
 			for(uint32_t i=0; i<package_size; i++)
-				if (buffer_offset + i < this->buffer_index)
+				if (buffer_offset + i <= this->buffer_index)
 					data_package->push_to_buffer<float>(buffer_out_one[buffer_offset + i]);
 				else
-					data_package->push_to_buffer<float>(0.);
+					data_package->push_to_buffer<float>(1.);
 		}
 		if (sample_out_two) {
 			for(uint32_t i=0; i<package_size; i++)
-				if (buffer_offset + i < this->buffer_index)
+				if (buffer_offset + i <= this->buffer_index)
 					data_package->push_to_buffer<float>(buffer_out_two[buffer_offset + i]);
 				else
-					data_package->push_to_buffer<float>(0.);
+					data_package->push_to_buffer<float>(1.);
 		}
 
 		if (buffer_offset + package_size == buffer_length) // the whole buffer has been read

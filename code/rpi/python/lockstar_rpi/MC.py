@@ -92,8 +92,11 @@ class MC:
                 if self.get_GPIO_pin() == True: # wait for rising flank of GPIO pin
                     logging.debug('gpio high')
                     payload_length, raw_data = await self.read_mc_data()
-                    unpacked_data = MCDataPackage.pop_from_buffer(list_str_cpp_dtype, bytes(raw_data))
-                    return payload_length, unpacked_data
+                    if MCDataPackage.get_buffer_length(list_str_cpp_dtype) > payload_length:
+                        return False
+                    else:
+                        unpacked_data = MCDataPackage.pop_from_buffer(list_str_cpp_dtype, bytes(raw_data))
+                        return payload_length, unpacked_data
                 else:
                     logging.debug('gpio low')
                     sleep(0.1)

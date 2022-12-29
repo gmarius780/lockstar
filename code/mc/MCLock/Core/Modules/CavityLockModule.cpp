@@ -245,7 +245,6 @@ public:
 				i++;
 			}
 		}
-		this->scope->disable();
 	}
 
 
