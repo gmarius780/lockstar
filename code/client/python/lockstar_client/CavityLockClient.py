@@ -69,8 +69,11 @@ if __name__ == "__main__":
 
     asyncio.run(client.register_client_id())
 
+    print(asyncio.run(client.set_ch_one_output_limits(-10, 10)))
+    print(asyncio.run(client.set_ch_two_output_limits(-10, 10)))
     print(asyncio.run(client.set_dither_one(1, 1)))
     print(asyncio.run(client.set_dither_two(0.5, 2)))
+    
 
     # print(asyncio.run(client.set_ch_one_output_limits(0, 10)))
     # print(asyncio.run(client.set_linearization_length_one(linearization_length)))

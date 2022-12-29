@@ -52,7 +52,8 @@ class ScopeViewer(QtWidgets.QMainWindow):
         if type(scope_data) is dict:
             self.canvas.axes.cla()  # Clear the canvas.
             for trace_name in scope_data.keys():
-                trace = scope_data[trace_name]
+                trace = np.array(scope_data[trace_name])
+                print(np.sum(trace==0))
                 if len(trace) > 0:
                     self.canvas.axes.plot(self.time_axis, trace, label=trace_name)
             
@@ -66,7 +67,7 @@ if __name__ == "__main__":
     client = CavityLockClient('192.168.88.25', 10780, 1234)
     scope_sampling_rate = 2000
     scope_buffer_length = 1000
-    update_rate = 5
+    update_rate = 2
 
     # print(asyncio.run(client.setup_scope(
     #     sampling_rate=scope_sampling_rate,
