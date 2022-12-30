@@ -8,6 +8,7 @@ from lockstar_rpi.BackendSettings import BackendSettings
 from lockstar_rpi.Helpers.SamplingRate import SamplingRate
 
 from math import floor, ceil
+from time import perf_counter
 
 
 class ScopeModule_(IOModule_):
@@ -160,7 +161,8 @@ class ScopeModule_(IOModule_):
         METHOD_IDENTIFIER = 103
         logging.debug('ScopeModule_: get_scope_data')
         if self.scope_setup and writer is not None:
-            
+            t_start = perf_counter()
+
             nbr_of_recorded_channels = 0
             if self.scope_sample_in_one: nbr_of_recorded_channels += 1
             if self.scope_sample_in_two: nbr_of_recorded_channels += 1
@@ -249,9 +251,12 @@ class ScopeModule_(IOModule_):
                             i_start_package += remaining_package_size
                             i_end_package += remaining_package_size
             
+            logging.debug(f'MC-communication time: {perf_counter() - t_start:.1f}s')
+            t_start = perf_counter()
             br = BackendResponse(scope_traces)
             writer.write(br.to_bytes())
             await writer.drain()
+            logging.debug(f'client communication time: {perf_counter() - t_start:.1f}s')
             logging.debug('ScopeModule: got scope successful!')
             return True
 
