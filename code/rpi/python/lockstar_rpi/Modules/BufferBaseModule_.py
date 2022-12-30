@@ -80,7 +80,7 @@ class BufferBaseModule_(ScopeModule_):
         return await self.set_ch_buffer(buffer, writer, respond, buffer_one=False)
 
     async def set_ch_buffer(self, buffer, writer, respond, buffer_one=True):
-        """helper method to read in buffer from client. Buffer sent to the MC in packets of floor(MCDataPackage.MAX_NBR_BYTES - 100)/4 floats"""
+        """helper method to read in buffer from client. Buffer sent to the MC in packets of floor(MCDataPackage.MAX_NBR_BYTES_WRITE - 100)/4 floats"""
         if len(buffer) > (self.buffer_one_size if buffer_one else self.buffer_two_size):
             logging.error(f'set_ch_{"one" if buffer_one else "two"}_buffer - buffer too large: {len(buffer)}')
             writer.write(BackendResponse.NACK().to_bytes())
@@ -90,7 +90,7 @@ class BufferBaseModule_(ScopeModule_):
 
             logging.debug(f'Backend: set ch {"one" if buffer_one else "two"} buffer')
             # send buffer in packets of floor(MCDataPackage.MAX_NBR_BYTES - 100)/4 floats
-            number_of_floats_per_package = floor((MCDataPackage.MAX_NBR_BYTES - 100)/4)
+            number_of_floats_per_package = floor((MCDataPackage.MAX_NBR_BYTES_WRITE - 100)/4)
             for i in range(0, len(buffer), number_of_floats_per_package):
                 
                 mc_data_package = MCDataPackage()

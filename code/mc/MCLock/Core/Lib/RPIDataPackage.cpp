@@ -16,7 +16,7 @@ RPIDataPackage::RPIDataPackage(uint8_t *buffer) {
 }
 
 RPIDataPackage::~RPIDataPackage() {
-	// TODO Auto-generated destructor stub
+
 }
 
 

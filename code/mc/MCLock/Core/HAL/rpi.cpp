@@ -10,7 +10,7 @@
 
 RPI::RPI() {
 	read_buffer = new uint8_t[2550];
-	write_buffer = new uint8_t[4096];
+	write_buffer = new uint8_t[8200];
 
 	/*Configure communication_reset_timer
 	 * It is used to reset is_comminicating, in case the communication failed

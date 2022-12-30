@@ -6,7 +6,8 @@ from numpy import uint32
 
 
 class MCDataPackage:
-    MAX_NBR_BYTES = 2550
+    MAX_NBR_BYTES_WRITE = 2550 #this many bytes can be sent to the MC per package (could be increased by increasing the multiplier)
+    MAX_NBR_BYTES_READ = 8200 #this many bytes can be read from the MC per package
 
     def __init__(self) -> None:
         self.buffer = []

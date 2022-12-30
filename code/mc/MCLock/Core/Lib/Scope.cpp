@@ -121,7 +121,7 @@ bool Scope::sample() {
 			buffer_index = 0;
 			ready_to_write = false;
 			ready_to_read = true;
-			//this->disable();
+			this->disable();
 		}
 		return true;
 	} else {

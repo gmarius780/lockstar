@@ -5,7 +5,7 @@ from lockstar_rpi.MC import MC
 from lockstar_rpi.MCDataPackage import MCDataPackage
 
 class CavityLockModule(ScopeModule_):
-    SCOPE_BUFFER_SIZE = 140 #must match the MC code
+    SCOPE_BUFFER_SIZE = 400 #must match the MC code
     # SCOPE_BUFFER_SIZE = 1000 #must match the MC code
     SCOPE_SAMPLING_RATE = 800 #must match the MC code
     # SCOPE_SAMPLING_RATE = 2000 #must match the MC code

@@ -156,7 +156,7 @@ class LinearizationModule(IOModule_):
         METHOD_IDENTIFIER = 14
         logging.debug('Backend: get_gain_measurement_result')
         
-        max_package_size = floor((MCDataPackage.MAX_NBR_BYTES-100)/4)
+        max_package_size = floor((MCDataPackage.MAX_NBR_BYTES_READ-100)/4)
         number_of_ramp_packages = ceil(self.ramp_length/max_package_size)
         number_of_full_ramp_packages = self.ramp_length//max_package_size
                 

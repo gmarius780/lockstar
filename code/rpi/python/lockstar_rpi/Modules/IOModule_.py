@@ -98,7 +98,7 @@ class IOModule_(Module):
                 await writer.drain()
             return False
 
-        max_package_size = floor((MCDataPackage.MAX_NBR_BYTES-100)/4)
+        max_package_size = floor((MCDataPackage.MAX_NBR_BYTES_WRITE-100)/4)
         number_of_ramp_packages = ceil(ramp_length/max_package_size)
         number_of_full_ramp_packages = ramp_length//max_package_size
 

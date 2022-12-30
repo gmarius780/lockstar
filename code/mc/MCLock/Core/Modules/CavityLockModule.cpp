@@ -44,7 +44,7 @@ public:
 	//dither is happening with a period of  2 Hz --> scope samples with: 2kHz, since the dithering step increase happens in 500us steps
 	static const uint32_t SCOPE_SAMPLING_PRESCALER = 2500;
 	static const uint32_t SCOPE_SAMPLING_COUNTER_MAX = 45;
-	static const uint32_t SCOPE_BUFFER_SIZE = 140;
+	static const uint32_t SCOPE_BUFFER_SIZE = 400;
 
 	//number of increase/decrease steps in one dither period (triangular) (hardcoded for now)
 	static const uint32_t NBR_DITHER_STEPS = 400;
