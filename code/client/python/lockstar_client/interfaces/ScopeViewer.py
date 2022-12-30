@@ -75,7 +75,7 @@ if __name__ == "__main__":
     client = CavityLockClient('192.168.88.25', 10780, 1234)
     # scope_sampling_rate = 2000
     scope_sampling_rate = 800
-    scope_buffer_length = 200
+    scope_buffer_length = 140
     # scope_buffer_length = 1000
     update_rate = 3
 
