@@ -11,6 +11,10 @@
 RPI::RPI() {
 	read_buffer = new uint8_t[2550];
 	write_buffer = new uint8_t[8200];
+	this->read_package = new RPIDataPackage((uint8_t*)read_buffer);
+	this->write_package = new RPIDataPackage((uint8_t*)write_buffer+4); // +4 to make room for the number of bytes
+
+	current_nbr_of_bytes = 0;
 
 	/*Configure communication_reset_timer
 	 * It is used to reset is_comminicating, in case the communication failed
@@ -116,7 +120,7 @@ RPI::RPI() {
 }
 
 RPI::~RPI() {
-	// TODO Auto-generated destructor stub
+
 }
 
 void RPI::spi_interrupt() {
@@ -214,12 +218,16 @@ volatile uint8_t* RPI::get_read_buffer() {
 }
 
 RPIDataPackage* RPI::get_read_package() {
-	return new RPIDataPackage((uint8_t*)read_buffer);
+	this->read_package->reset();
+	return this->read_package;
+	//return new RPIDataPackage((uint8_t*)read_buffer);
 }
 
 RPIDataPackage* RPI::get_write_package() {
 	// +4 to make room for the number of bytes
-	return new RPIDataPackage((uint8_t*)write_buffer+4);
+	//return new RPIDataPackage((uint8_t*)write_buffer+4);
+	this->write_package->reset();
+	return this->write_package;
 }
 
 void RPI::send_package(RPIDataPackage* write_package) {

@@ -89,7 +89,7 @@ class BufferBaseModule_(ScopeModule_):
         else:
 
             logging.debug(f'Backend: set ch {"one" if buffer_one else "two"} buffer')
-            # send buffer in packets of floor(MCDataPackage.MAX_NBR_BYTES - 100)/4 floats
+            # send buffer in packets of floor(MCDataPackage.MAX_NBR_BYTES_WRITE - 100)/4 floats
             number_of_floats_per_package = floor((MCDataPackage.MAX_NBR_BYTES_WRITE - 100)/4)
             for i in range(0, len(buffer), number_of_floats_per_package):
                 
@@ -239,7 +239,7 @@ class BufferBaseModule_(ScopeModule_):
             
 
             logging.debug('Backend: set ch one chunks')
-            # send buffer in chunks of MCDataPackage.MAX_NBR_BYTES
+            # send buffer in chunks of MCDataPackage.MAX_NBR_BYTES_WRITE
             mc_data_package = MCDataPackage()
             mc_data_package.push_to_buffer('uint32_t', 20) # method_identifier
             for f in chunks:
@@ -264,7 +264,7 @@ class BufferBaseModule_(ScopeModule_):
             return False
         else:
             logging.debug('Backend: set ch two chunks')
-            # send buffer in chunks of MCDataPackage.MAX_NBR_BYTES
+            # send buffer in chunks of MCDataPackage.MAX_NBR_BYTES_WRITE
             mc_data_package = MCDataPackage()
             mc_data_package.push_to_buffer('uint32_t', 21) # method_identifier
             for f in chunks:

@@ -18,7 +18,9 @@ Scope::Scope(ADC_Device *adc, LinearizableDAC *dac_1, LinearizableDAC *dac_2) {
 
 	setup = adc_active_mode = sample_in_one = sample_in_two = sample_out_one = sample_out_two = false;
 	buffer_length = buffer_index = 0;
-	ready_to_read = ready_to_write = false;
+	ready_to_read = ready_to_write = double_buffer_mode = false;
+	buffer_in_one_read = buffer_in_one_write = buffer_in_two_read = buffer_in_two_write = 0;
+	buffer_out_one_read = buffer_out_one_write = buffer_out_two_read = buffer_out_two_write = 0;
 
 	this->adc = adc;
 	this->dac_1 = dac_1;

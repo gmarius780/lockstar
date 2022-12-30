@@ -47,7 +47,7 @@ public:
 	static const uint32_t SCOPE_BUFFER_SIZE = 400;
 
 	//number of increase/decrease steps in one dither period (triangular) (hardcoded for now)
-	static const uint32_t NBR_DITHER_STEPS = 400;
+	static const uint32_t NBR_DITHER_STEPS = 800;
 	static const uint32_t DITHER_INCREASE_INTERVAL_100PS = 3000; //increase the dithering after 1.25ms (12500*100ps) --> this yields a dither-period of: NBR_DITHER_STEPS*DITHER_INCREASE_INTERVAL_100PS = 500ms
 
 	//loop timer oscillates with 1/100ps, the counter counts to 65535 --> the timer can capture 6ms --> enough to capture the dithering at 1.25ms steps

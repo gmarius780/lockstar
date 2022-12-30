@@ -59,6 +59,8 @@ private:
 
 	void dma_out_ready_pin_high();
 	void dma_out_ready_pin_low();
+
+	RPIDataPackage *read_package, *write_package;
 };
 
 #endif /* HAL_RPI_H_ */

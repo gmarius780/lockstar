@@ -10,6 +10,9 @@
 LinearizableDAC::LinearizableDAC(uint8_t SPI, uint8_t dma_stream_out, uint8_t dma_channel_out, GPIO_TypeDef* sync_port, uint16_t sync_pin, GPIO_TypeDef* clear_port, uint16_t clear_pin) {
 	dac = new DAC_Device(SPI, dma_stream_out, dma_channel_out, sync_port, sync_pin, clear_port, clear_pin);
 
+	output_min = output_max = ramp_range = output_range = pivot_spacing = 0;
+	linearization_buffer = 0;
+
 	linearization_available = false;
 	linearization_enabled = false;
 	linearization_length = 0;
