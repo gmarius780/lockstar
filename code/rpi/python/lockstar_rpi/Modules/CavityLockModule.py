@@ -7,7 +7,7 @@ from lockstar_rpi.MCDataPackage import MCDataPackage
 class CavityLockModule(ScopeModule_):
     SCOPE_BUFFER_SIZE = 200 #must match the MC code
     # SCOPE_BUFFER_SIZE = 1000 #must match the MC code
-    SCOPE_SAMPLING_RATE = 400 #must match the MC code
+    SCOPE_SAMPLING_RATE = 800 #must match the MC code
     # SCOPE_SAMPLING_RATE = 2000 #must match the MC code
 
     """Basic Module which implements a simple PID controller by using input_1 as error_signal, input_2 as setpoint and output 1 for the control signal"""
