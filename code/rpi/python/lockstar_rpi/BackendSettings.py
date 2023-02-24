@@ -2,7 +2,8 @@ from os.path import join, dirname
 class BackendSettings:
     """Hardcoded settings for the backend"""
     backend_ip = '0.0.0.0'
-    backend_port = 10780
+    backend_port = 10785
+    # backend_port = 10780
     read_buffer_limit_bytes = 50 * 10 ** 6
     current_module_config_file = './current_module.config'
     mc_communication_speed_Hz = 1000000

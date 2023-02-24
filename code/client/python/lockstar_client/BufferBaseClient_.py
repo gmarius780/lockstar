@@ -61,4 +61,52 @@ class BufferBaseClient_(ScopeClient):
         bc = BackendCall(self.client_id, self.module_name, 'set_ch_two_chunks', args={'chunks': chunks})
         return await self._call_lockstar(bc)
 
+    async def get_ch_one_chunks(self):
+        bc = BackendCall(self.client_id, self.module_name, 'get_ch_one_chunks', args={})
+        br = await self._call_lockstar(bc)
+
+        if br.response != 'NACK':
+            chunks = br.response
+            return chunks
+        else:
+            return False
+    
+    async def get_ch_two_chunks(self):
+        bc = BackendCall(self.client_id, self.module_name, 'get_ch_two_chunks', args={})
+        br = await self._call_lockstar(bc)
+
+        if br.response != 'NACK':
+            chunks = br.response
+            return chunks
+        else:
+            return False
+        
+    async def get_ch_one_buffer(self):
+        bc = BackendCall(self.client_id, self.module_name, 'get_ch_one_buffer', args={})
+        br = await self._call_lockstar(bc)
+
+        if br.response != 'NACK':
+            buffer = br.response
+            return buffer
+        else:
+            return False
+        
+    async def get_ch_two_buffer(self):
+        bc = BackendCall(self.client_id, self.module_name, 'get_ch_two_buffer', args={})
+        br = await self._call_lockstar(bc)
+
+        if br.response != 'NACK':
+            buffer = br.response
+            return buffer
+        else:
+            return False
+        
+    async def get_sampling_rate(self):
+        bc = BackendCall(self.client_id, self.module_name, 'get_sampling_rate', args={})
+        br = await self._call_lockstar(bc)
+
+        if br.response != 'NACK':
+            return br.response
+        else:
+            return False
 
