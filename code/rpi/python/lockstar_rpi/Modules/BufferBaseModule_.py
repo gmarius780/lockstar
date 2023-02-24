@@ -276,25 +276,25 @@ class BufferBaseModule_(ScopeModule_):
             return result
 
     async def get_ch_one_chunks(self, writer):
-        br = BackendResponse(self.chunks_one.tolist())
+        br = BackendResponse(self.chunks_one)
         writer.write(br.to_bytes())
         await writer.drain()
         return True
     
     async def get_ch_two_chunks(self, writer):
-        br = BackendResponse(self.chunks_two.tolist())
+        br = BackendResponse(self.chunks_two)
         writer.write(br.to_bytes())
         await writer.drain()
         return True
     
     async def get_ch_one_buffer(self, writer):
-        br = BackendResponse(self.buffer_one.tolist())
+        br = BackendResponse(self.buffer_one)
         writer.write(br.to_bytes())
         await writer.drain()
         return True
 
     async def get_ch_two_buffer(self, writer):
-        br = BackendResponse(self.buffer_two.tolist())
+        br = BackendResponse(self.buffer_two)
         writer.write(br.to_bytes())
         await writer.drain()
         return True
