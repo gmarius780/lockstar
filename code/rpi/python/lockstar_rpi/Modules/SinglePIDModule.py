@@ -83,6 +83,22 @@ class SinglePIDModule(ScopeModule_):
         return ack
 
     async def set_pid(self, p: float, i: float, d: float, input_offset: float, output_offset: float, i_threshold: float, writer, respond=True):
+        """set pid parameters
+
+        Args:
+            p (float): 
+            i (float): 
+            d (float): 
+            input_offset (float): added to the error signal before calculating the output
+            output_offset (float): added to the output of the controller
+            i_threshold (float): if the photodiode signal is bellow this, the integrator remains zero
+            writer (_type_): _description_
+            respond (bool, optional): Only false if called by launch_from_config. Defaults to True.
+
+        Returns:
+            _type_: _description_
+        """
+        
         logging.debug('Backend: set_pid')
         mc_data_package = MCDataPackage()
         mc_data_package.push_to_buffer('uint32_t', 11) # method_identifier
@@ -136,6 +152,8 @@ class SinglePIDModule(ScopeModule_):
         return result
 
     async def enable_intensity_lock_mode(self, writer, respond=True):
+        """ Intensity lock mode: i_threshold is considered
+        """
         mc_data_package = MCDataPackage()
         mc_data_package.push_to_buffer('uint32_t', 15) # method_identifier
         await MC.I().write_mc_data_package(mc_data_package)
@@ -145,6 +163,8 @@ class SinglePIDModule(ScopeModule_):
         return result
 
     async def disable_intensity_lock_mode(self, writer, respond=True):
+        """ Intensity lock mode: i_threshold is considered
+        """
         mc_data_package = MCDataPackage()
         mc_data_package.push_to_buffer('uint32_t', 16) # method_identifier
         await MC.I().write_mc_data_package(mc_data_package)

@@ -8,7 +8,7 @@
 #include "pid.hpp"
 
 
-PID::PID(float p, float i, float d, float input_offset, float output_offset, bool intensity_mode) {
+PID::PID(float p, float i, float d, float input_offset, float output_offset, float i_threshold, bool intensity_mode) {
 	this->integral = 0;
 	this->p = p;
 	this->i = i;
@@ -22,6 +22,7 @@ PID::PID(float p, float i, float d, float input_offset, float output_offset, boo
 	this->input_offset = input_offset;
 	this->output_offset = output_offset;
 	this->intensity_mode = intensity_mode;
+	this->i_threshold =  i_threshold;
 
 	if (intensity_mode == true) {
 		this->calculate_output_func_pointer = &PID::calculate_output_for_intensity;
