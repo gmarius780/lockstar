@@ -8,23 +8,23 @@ class AWGPIDClient(BufferBaseClient_):
     def __init__(self, lockstar_ip, lockstar_port, client_id) -> None:
         super().__init__(lockstar_ip, lockstar_port, client_id, 'AWGPIDModule')
 
-    def set_pid_one(self,  p: float, i: float, d: float, input_offset: float, output_offset: float, i_threshold: float):
+    async def set_pid_one(self,  p: float, i: float, d: float, input_offset: float, output_offset: float, i_threshold: float):
         bc = BackendCall(self.client_id, 'AWGPIDModule', 'set_pid_one', args={'p': p, 'i': i, 'd': d, 
                     'input_offset': input_offset, 'output_offset': output_offset, 'i_threshold': i_threshold})
-        return asyncio.run(self._call_lockstar(bc))
+        return await self._call_lockstar(bc)
 
-    def set_pid_two(self,  p: float, i: float, d: float, input_offset: float, output_offset: float, i_threshold: float):
+    async def set_pid_two(self,  p: float, i: float, d: float, input_offset: float, output_offset: float, i_threshold: float):
         bc = BackendCall(self.client_id, 'AWGPIDModule', 'set_pid_two', args={'p': p, 'i': i, 'd': d, 
                     'input_offset': input_offset, 'output_offset': output_offset, 'i_threshold': i_threshold})
-        return asyncio.run(self._call_lockstar(bc))
+        return await self._call_lockstar(bc)
 
-    def lock(self):
+    async def lock(self):
         bc = BackendCall(self.client_id, 'AWGPIDModule', 'lock', args={})
-        return asyncio.run(self._call_lockstar(bc))
+        return await self._call_lockstar(bc)
 
-    def unlock(self):
+    async def unlock(self):
         bc = BackendCall(self.client_id, 'AWGPIDModule', 'unlock', args={})
-        return asyncio.run(self._call_lockstar(bc))
+        return await self._call_lockstar(bc)
     
     async def enable_intensity_lock_mode_one(self):
         bc = BackendCall(self.client_id, 'AWGPIDModule', 'enable_intensity_lock_mode_one', args={})
