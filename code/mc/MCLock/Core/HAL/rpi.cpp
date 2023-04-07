@@ -107,7 +107,11 @@ RPI::RPI() {
 
 	dma_out = new DMA(dma_out_config);
 
+	this->read_package = new RPIDataPackage();
+	this->write_package = new RPIDataPackage();
+
 	is_communicating = false;
+	this->current_nbr_of_bytes = 0;
 	while(spi->isBusy());
 	spi->enableRxIRQ();
 	spi->disableTxIRQ();
@@ -166,10 +170,10 @@ void RPI::comm_reset_timer_interrupt() {
 		dma_in->resetTransferCompleteInterruptFlag();
 		is_communicating = false;
 		spi->enableRxIRQ();
-		this->comm_reset_timer->disable();
-		this->comm_reset_timer->disable_interrupt();
-		this->comm_reset_timer->reset_counter();
 	}
+	this->comm_reset_timer->disable();
+	this->comm_reset_timer->disable_interrupt();
+	this->comm_reset_timer->reset_counter();
 }
 
 void RPI::dma_in_error_interrupt() {
@@ -214,12 +218,14 @@ volatile uint8_t* RPI::get_read_buffer() {
 }
 
 RPIDataPackage* RPI::get_read_package() {
-	return new RPIDataPackage((uint8_t*)read_buffer);
+	this->read_package->set_buffer((uint8_t*)read_buffer);
+	return this->read_package;
 }
 
 RPIDataPackage* RPI::get_write_package() {
 	// +4 to make room for the number of bytes
-	return new RPIDataPackage((uint8_t*)write_buffer+4);
+	this->write_package->set_buffer((uint8_t*)write_buffer+4);
+	return this->write_package;
 }
 
 void RPI::send_package(RPIDataPackage* write_package) {

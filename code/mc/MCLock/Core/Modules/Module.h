@@ -5,8 +5,8 @@
  *      Author: qo
  */
 
-#ifndef MODULES_MODULE_HPP_
-#define MODULES_MODULE_HPP_
+#ifndef MODULES_MODULE_H_
+#define MODULES_MODULE_H_
 
 #include "main.h"
 #include "stm32f427xx.h"
@@ -62,8 +62,7 @@ public:
 
 	/**RPI methods END**/
 
-	void initialize_adc(uint8_t ch1_config, uint8_t ch2_config);
-	void initialize_dac();
+	virtual void initialize_adc_dac(uint8_t ch1_config, uint8_t ch2_config);
 	void initialize_rpi();
 
 	void set_ch_output_limit(RPIDataPackage* read_package, LinearizableDAC *dac);
@@ -79,4 +78,4 @@ private:
 	void set_linearization(RPIDataPackage* read_package, LinearizableDAC *dac);
 };
 
-#endif /* MODULES_MODULE_HPP_ */
+#endif /* MODULES_MODULE_H_ */

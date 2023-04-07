@@ -12,7 +12,7 @@
 
 class RPIDataPackage {
 public:
-	RPIDataPackage(uint8_t *buffer);
+	RPIDataPackage();
 	virtual ~RPIDataPackage();
 
 	template <typename T>
@@ -23,6 +23,11 @@ public:
 			current_buffer[j] =  p[j];
 		}
 		current_buffer = current_buffer + sizeof(value);
+	}
+
+	void set_buffer(uint8_t *buffer) {
+		this->buffer = buffer;
+		this->current_buffer = buffer;
 	}
 
 	void push_ack(); //ack = 221194(uint32_t)

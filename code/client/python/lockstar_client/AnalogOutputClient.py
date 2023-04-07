@@ -1,73 +1,89 @@
 import asyncio
 import logging
-from lockstar_client.LockstarClient import LockstarClient
+from lockstar_client.ScopeClient import ScopeClient
 from lockstar_general.backend.BackendCall import BackendCall
 
-class AnalogOutputClient(LockstarClient):
+class AnalogOutputClient(ScopeClient):
     def __init__(self, lockstar_ip, lockstar_port, client_id) -> None:
         super().__init__(lockstar_ip, lockstar_port, client_id, 'AnalogOutputModule')
 
-
-    def initialize(self):
+    async def initialize(self):
         pass
     
-    def output_on(self):
+    async def output_on(self):
         bc = BackendCall(self.client_id, 'AnalogOutputModule', 'output_on', args={})
-        return asyncio.run(self._call_lockstar(bc))
+        return await self._call_lockstar(bc)
 
-    def output_off(self):
+    async def output_off(self):
         bc = BackendCall(self.client_id, 'AnalogOutputModule', 'output_off', args={})
-        return asyncio.run(self._call_lockstar(bc))
+        return await self._call_lockstar(bc)
 
-    def output_ttl(self):
+    async def output_ttl(self):
         bc = BackendCall(self.client_id, 'AnalogOutputModule', 'output_ttl', args={})
-        return asyncio.run(self._call_lockstar(bc))
+        return await self._call_lockstar(bc)
 
-    def set_ch_one_output_limits(self, min: float, max: float):
-        bc = BackendCall(self.client_id, 'AnalogOutputModule', 'set_ch_one_output_limits', args={'min': min, 'max': max})
-        return asyncio.run(self._call_lockstar(bc))
-
-    def set_ch_two_output_limits(self, min: float, max: float):
-        bc = BackendCall(self.client_id, 'AnalogOutputModule', 'set_ch_two_output_limits', args={'min': min, 'max': max})
-        return asyncio.run(self._call_lockstar(bc))
-
-    def set_ch_one_output(self, value: float):
+    async def set_ch_one_output(self, value: float):
         bc = BackendCall(self.client_id, 'AnalogOutputModule', 'set_ch_one_output', args={'value': value})
-        return asyncio.run(self._call_lockstar(bc))
+        return await self._call_lockstar(bc)
     
-    def set_ch_two_output(self, value: float):
+    async def set_ch_two_output(self, value: float):
         bc = BackendCall(self.client_id, 'AnalogOutputModule', 'set_ch_two_output', args={'value': value})
-        return asyncio.run(self._call_lockstar(bc))
+        return await self._call_lockstar(bc)
 
 
 if __name__ == "__main__":
-    logging.basicConfig(
-        level=logging.DEBUG,
-        format="%(asctime)s [%(levelname)s] %(message)s",
-        handlers=[
-            # logging.FileHandler("./debug.log"),
-            logging.StreamHandler()
-        ]
-    )
-    client = AnalogOutputClient('192.168.88.201', 10780, 1234)
-    client.register_client_id()
-    client.set_ch_one_output_limits(0,1)
-    # response = client.initialize(1,2,3,4,5,True, False)
+    from time import sleep
+    import numpy as np
+    import matplotlib.pyplot as plt
+    # logging.basicConfig(
+    #     level=logging.DEBUG,
+    #     format="%(asctime)s [%(levelname)s] %(message)s",
+    #     handlers=[
+    #         # logging.FileHandler("./debug.log"),
+    #         logging.StreamHandler()
+    #     ]
+    # )
+    client = AnalogOutputClient('192.168.88.25', 10780, 1234)
+    asyncio.run(client.register_client_id())
     
-    # initialized = False
+    # Scope Test
+    # print(asyncio.run(client.disable_scope()))
+    scope_sampling_rate = 50
+    scope_buffer_length = 1000
+    print(asyncio.run(client.setup_scope(
+        sampling_rate=scope_sampling_rate,
+        sample_in_one=True,
+        sample_in_two=True,
+        sample_out_one=True,
+        sample_out_two=True,
+        buffer_length=scope_buffer_length,
+        adc_active_mode=True
+    )))
+    print(asyncio.run(client.enable_scope()))
+    print(asyncio.run(client.output_on()))
 
-    # if response.is_wrong_client_id():
-    #     if client.register_client_id():
-    #         logging.info(f'Registered my client id: {client.client_id}')
-    #         response = client.initialize(1,2,3,4,5,True, False)
-
-    #         initialized = response.is_ACK()
-    #     else:
-    #         logging.info(f'Failed to register my client id: {client.client_id}')
-
-    # else:
-    #     initialized = True
+    for i in range(5):
+        print(asyncio.run(client.output_on()))
+        print(asyncio.run(client.set_ch_one_output(i*0.1)))
+        print(asyncio.run(client.set_ch_two_output(1-i*0.1)))
+        sleep(0.6)
     
-    # if initialized:
-    #     logging.info(f'Successfully initialized Single PID module')
+    
+    scope_time_axis = np.arange(scope_buffer_length)*1/scope_sampling_rate
+    scope_data = asyncio.run(client.get_scope_data())
+    if scope_data != False:
+        plt.figure()
+        for trace_name in scope_data.keys():
+            trace = scope_data[trace_name]
+            if len(trace) > 0:
+                plt.plot(scope_time_axis, trace, label=trace_name)
+        
+        plt.legend()
+        plt.show()
+    
+
+
+
+    print('done')
+
 

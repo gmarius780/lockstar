@@ -13,6 +13,7 @@ BasicTimer::BasicTimer(uint8_t timer_x, uint32_t auto_reload, uint32_t prescaler
 		case 3: tim_regs = TIM3; APBxENR_bit = RCC_APB1ENR_TIM3EN; break;
 		case 4: tim_regs = TIM4; APBxENR_bit = RCC_APB1ENR_TIM4EN; break;
 		case 5: tim_regs = TIM5; APBxENR_bit = RCC_APB1ENR_TIM5EN; break;
+		case 7: tim_regs = TIM7; APBxENR_bit = RCC_APB1ENR_TIM7EN; break;
 		default: tim_regs = 0;
 	}
 

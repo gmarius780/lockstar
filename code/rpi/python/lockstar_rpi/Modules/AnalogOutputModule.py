@@ -1,20 +1,16 @@
-from lockstar_rpi.Modules.IOModule_ import IOModule_
+from lockstar_rpi.Modules.ScopeModule_ import ScopeModule_
 from lockstar_general.backend.BackendResponse import BackendResponse
 import logging
 from lockstar_rpi.MC import MC
 from lockstar_rpi.MCDataPackage import MCDataPackage
 
-class AnalogOutputModule(IOModule_):
+class AnalogOutputModule(ScopeModule_):
     def __init__(self) -> None:
         super().__init__()
         self.is_output_on = False
         self.is_output_ttl = False
         self.output_value_one = 0.
         self.output_value_two = 0.
-        self.out_range_ch_one_min = 0.
-        self.out_range_ch_one_max = 0.
-        self.out_range_ch_two_min = 0.
-        self.out_range_ch_two_max = 0.
 
     # ==== START: client methods 
     async def initialize(self, writer):
@@ -52,29 +48,6 @@ class AnalogOutputModule(IOModule_):
         await MC.I().write_mc_data_package(mc_data_package)
         return await self.check_for_ack(writer=(writer if respond else None))
 
-    async def set_ch_one_output_limits(self, min: float, max: float, writer, respond=True):
-        self.out_range_ch_one_min = min
-        self.out_range_ch_one_max = max
-
-        logging.debug('Backend: set output limits')
-        mc_data_package = MCDataPackage()
-        mc_data_package.push_to_buffer('uint32_t', 14) # method_identifier
-        mc_data_package.push_to_buffer('float', min)
-        mc_data_package.push_to_buffer('float', max)
-        await MC.I().write_mc_data_package(mc_data_package)
-        return await self.check_for_ack(writer=(writer if respond else None))
-
-    async def set_ch_two_output_limits(self, min: float, max: float, writer, respond=True):
-        self.out_range_ch_two_min = min
-        self.out_range_ch_two_max = max
-
-        logging.debug('Backend: set output limits')
-        mc_data_package = MCDataPackage()
-        mc_data_package.push_to_buffer('uint32_t', 15) # method_identifier
-        mc_data_package.push_to_buffer('float', min)
-        mc_data_package.push_to_buffer('float', max)
-        await MC.I().write_mc_data_package(mc_data_package)
-        return await self.check_for_ack(writer=(writer if respond else None))
 
     async def set_ch_one_output(self, value: float, writer, respond=True):
         self.output_value_one = value
@@ -110,8 +83,8 @@ class AnalogOutputModule(IOModule_):
 
     async def launch_from_config(self, config_dict):
         try:
-            await self.initialize(config_dict['p'], config_dict['i'], config_dict['d'], config_dict['out_range_min'],
-                                config_dict['out_range_max'], config_dict['useTTL'], config_dict['locked'], None)
+            # await self.initialize(config_dict['p'], config_dict['i'], config_dict['d'], config_dict['out_range_min'],
+            #                     config_dict['out_range_max'], config_dict['useTTL'], config_dict['locked'], None)
 
             await super().launch_from_config(config_dict)
         except Exception as ex:

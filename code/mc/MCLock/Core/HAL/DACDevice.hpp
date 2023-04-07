@@ -28,6 +28,8 @@ public:
     float get_min_output();
     float get_max_output();
 
+    float get_last_output();
+
 private:
     float inv_step_size;
     float step_size;
@@ -37,6 +39,8 @@ private:
     float max_hardware_output, min_hardware_output; // as set with jumpers
     bool busy;
     bool invert;
+
+    float last_output;
 
     GPIO_TypeDef* sync_port;
 	uint16_t sync_pin;

@@ -3,6 +3,7 @@ class BackendSettings:
     """Hardcoded settings for the backend"""
     backend_ip = '0.0.0.0'
     backend_port = 10780
+    # backend_port = 10780
     read_buffer_limit_bytes = 50 * 10 ** 6
     current_module_config_file = './current_module.config'
     mc_communication_speed_Hz = 1000000
@@ -12,3 +13,7 @@ class BackendSettings:
     mc_internal_clock_rate = 90e6
     mc_max_counter = 65536
     elf_directory = join(dirname(__file__), 'Modules', 'mc_images')
+    #max nbr of floats per channel that can be recorded, must be equal to the value
+    #in Scope.h
+    scope_max_buffer_length_nbr_of_floats = 10000 
+    scope_max_sampling_rate = 10000

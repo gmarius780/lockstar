@@ -15,8 +15,8 @@ class PID
 
 
 public:
-	PID(float p, float i, float d, float input_offset, float output_offset, bool intensity_mode);
-	PID(float p, float i, float d, float input_offset, float output_offset) : PID(p, i, d, input_offset, output_offset, false) {}
+	PID(float p, float i, float d, float input_offset, float output_offset, float i_threshold, bool intensity_mode);
+	PID(float p, float i, float d, float input_offset, float output_offset) : PID(p, i, d, input_offset, output_offset, 0, false) {}
 
 
 	void set_pid(float p,float i ,float d, float input_offset, float output_offset) {

@@ -40,6 +40,9 @@ private:
 	DMA *dma_out;
 	DMA_config_t dma_in_config, dma_out_config;
 
+	RPIDataPackage *read_package;
+	RPIDataPackage *write_package;
+
 	BasicTimer *comm_reset_timer; // resets is_communicating after an one periode of this timer
 	//COMMUNICATION RESET FREQUENCY= INTERNAL_CLOCK_FREQUENCY/prescaler * counter_max = 90e6/36000/30000 = 1/12 Hz
 	//EVERY COMMUNICATION MUST HAPPEND IN UNDER 12 seconds!

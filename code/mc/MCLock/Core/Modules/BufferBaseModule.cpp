@@ -7,7 +7,7 @@
 
 #include "BufferBaseModule.h"
 
-BufferBaseModule::BufferBaseModule() : Module() {
+BufferBaseModule::BufferBaseModule() : ScopeModule() {
 	// TODO Auto-generated constructor stub
 
 }
@@ -25,7 +25,7 @@ BufferBaseModule::~BufferBaseModule() {
  */
 bool BufferBaseModule::handle_rpi_base_methods() {
 
-	if (Module::handle_rpi_base_methods() == false) { //if base class doesn't know the called method
+	if (ScopeModule::handle_rpi_base_methods() == false) { //if base class doesn't know the called method
 		/*** Package format: method_identifier (uint32_t) | method specific arguments (defined in the methods directly) ***/
 		RPIDataPackage* read_package = rpi->get_read_package();
 

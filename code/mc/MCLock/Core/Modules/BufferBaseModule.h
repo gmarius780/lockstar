@@ -10,14 +10,14 @@
 #include "stm32f4xx_it.h"
 #include "stm32f4xx_hal_gpio.h"
 
-#include "Module.hpp"
 #include "../Lib/RPIDataPackage.h"
 #include "../HAL/BasicTimer.hpp"
+#include "ScopeModule.h"
 
 #ifndef MODULES_BUFFERBASEMODULE_H_
 #define MODULES_BUFFERBASEMODULE_H_
 
-class BufferBaseModule: public Module {
+class BufferBaseModule: public ScopeModule {
 public:
 	BufferBaseModule();
 	virtual ~BufferBaseModule();

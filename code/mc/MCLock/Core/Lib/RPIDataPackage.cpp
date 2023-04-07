@@ -9,10 +9,9 @@
 
 #include <cmath>        // std::abs
 
-RPIDataPackage::RPIDataPackage(uint8_t *buffer) {
-	this->buffer = buffer;
-	this->current_buffer = buffer;
-
+RPIDataPackage::RPIDataPackage() {
+	this->buffer = 0;
+	this->current_buffer = 0;
 }
 
 RPIDataPackage::~RPIDataPackage() {

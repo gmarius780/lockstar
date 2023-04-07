@@ -49,8 +49,7 @@ public:
 	}
 
 	void run() {
-		initialize_adc(ADC_UNIPOLAR_10V, ADC_UNIPOLAR_10V);
-		initialize_dac();
+		initialize_adc_dac(ADC_UNIPOLAR_10V, ADC_UNIPOLAR_10V);
 		this->dac_1->write(0);
 		this->dac_2->write(0);
 
@@ -95,6 +94,18 @@ public:
 			case METHOD_UNLOCK:
 				unlock(read_package);
 				break;
+			case METHOD_ENABLE_INTENSITY_LOCK_MODE_ONE:
+				enable_intensity_lock_mode_one(read_package);
+				break;
+			case METHOD_DISABLE_INTENSITY_LOCK_MODE_ONE:
+				disable_intensity_lock_mode_one(read_package);
+				break;
+			case METHOD_ENABLE_INTENSITY_LOCK_MODE_TWO:
+				enable_intensity_lock_mode_two(read_package);
+				break;
+			case METHOD_DISABLE_INTENSITY_LOCK_MODE_TWO:
+				disable_intensity_lock_mode_two(read_package);
+				break;
 			default:
 					/*** send NACK because the method_identifier is not valid ***/
 					RPIDataPackage* write_package = rpi->get_write_package();
@@ -115,8 +126,9 @@ public:
 		float d = read_package->pop_from_buffer<float>();
 		float input_offset = read_package->pop_from_buffer<float>();
 		float output_offset = read_package->pop_from_buffer<float>();
+		float i_threshold = read_package->pop_from_buffer<float>();
 
-		this->pid_one->set_pid(p, i, d, input_offset, output_offset);
+		this->pid_one->set_pid(p, i, d, input_offset, output_offset, i_threshold);
 
 		/*** send ACK ***/
 		RPIDataPackage* write_package = rpi->get_write_package();
@@ -132,8 +144,9 @@ public:
 		float d = read_package->pop_from_buffer<float>();
 		float input_offset = read_package->pop_from_buffer<float>();
 		float output_offset = read_package->pop_from_buffer<float>();
+		float i_threshold = read_package->pop_from_buffer<float>();
 
-		this->pid_two->set_pid(p, i, d, input_offset, output_offset);
+		this->pid_two->set_pid(p, i, d, input_offset, output_offset, i_threshold);
 
 		/*** send ACK ***/
 		RPIDataPackage* write_package = rpi->get_write_package();
@@ -156,6 +169,46 @@ public:
 	void unlock(RPIDataPackage* read_package) {
 		this->locked = false;
 		turn_LED6_off();
+
+		/*** send ACK ***/
+		RPIDataPackage* write_package = rpi->get_write_package();
+		write_package->push_ack();
+		rpi->send_package(write_package);
+	}
+
+	static const uint32_t METHOD_ENABLE_INTENSITY_LOCK_MODE_ONE = 35;
+	void enable_intensity_lock_mode_one(RPIDataPackage* read_package) {
+		this->pid_one->enable_intensity_mode();
+
+		/*** send ACK ***/
+		RPIDataPackage* write_package = rpi->get_write_package();
+		write_package->push_ack();
+		rpi->send_package(write_package);
+	}
+
+	static const uint32_t METHOD_DISABLE_INTENSITY_LOCK_MODE_ONE = 36;
+	void disable_intensity_lock_mode_one(RPIDataPackage* read_package) {
+		this->pid_one->disable_intensity_mode();
+
+		/*** send ACK ***/
+		RPIDataPackage* write_package = rpi->get_write_package();
+		write_package->push_ack();
+		rpi->send_package(write_package);
+	}
+
+	static const uint32_t METHOD_ENABLE_INTENSITY_LOCK_MODE_TWO = 37;
+	void enable_intensity_lock_mode_two(RPIDataPackage* read_package) {
+		this->pid_two->enable_intensity_mode();
+
+		/*** send ACK ***/
+		RPIDataPackage* write_package = rpi->get_write_package();
+		write_package->push_ack();
+		rpi->send_package(write_package);
+	}
+
+	static const uint32_t METHOD_DISABLE_INTENSITY_LOCK_MODE_TWO = 38;
+	void disable_intensity_lock_mode_two(RPIDataPackage* read_package) {
+		this->pid_two->disable_intensity_mode();
 
 		/*** send ACK ***/
 		RPIDataPackage* write_package = rpi->get_write_package();
@@ -291,8 +344,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	if (htim->Instance == TIM2) {
 		module->sampling_timer_interrupt();
 	}
-	if (htim->Instance == TIM4) {
+	else if (htim->Instance == TIM4) {
 		module->rpi->comm_reset_timer_interrupt();
+	}
+	else if(htim->Instance == TIM7) {
+		module->scope_timer_interrupt();
 	}
 }
 
