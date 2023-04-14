@@ -80,7 +80,7 @@ public:
 	}
 
 	void run() {
-		initialize_adc_dac(ADC_UNIPOLAR_10V, ADC_UNIPOLAR_10V);
+		initialize_adc_dac(ADC_BIPOLAR_10V, ADC_BIPOLAR_10V);
 		//setup scope in double buffer mode
 		this->scope->setup_scope(SCOPE_SAMPLING_PRESCALER, SCOPE_SAMPLING_COUNTER_MAX, true, true, true, true, SCOPE_BUFFER_SIZE, true, true);
 		this->dac_1->write(0);

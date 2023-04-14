@@ -19,7 +19,7 @@ from lockstar_client.CavityLockClient import CavityLockClient
 class ScopeCanvas(FigureCanvas):
 
     def __init__(self, parent=None, width=5, height=4, dpi=100):
-        fig, self.ax_in, self.ax_out = plt.subplots(nrows=2, figsize=(width, height), dpi=dpi)
+        fig, (self.ax_in, self.ax_out) = plt.subplots(nrows=2, sharex=True, figsize=(width, height), dpi=dpi)
         # fig = Figure(figsize=(width, height), dpi=dpi)
         # self.axes = fig.add_subplot(111)
         super(ScopeCanvas, self).__init__(fig)
@@ -260,9 +260,9 @@ class CavityLockGUI(QtWidgets.QMainWindow):
         self.scope_canvas.draw()
 
 if __name__ == "__main__":
-    client = CavityLockClient('192.168.88.25', 10780, 1234)
-    # scope_sampling_rate = 2000
-    scope_sampling_rate = 800
+    client = CavityLockClient('192.168.88.220', 10780, 1234)
+    scope_sampling_rate = 4000
+    # scope_sampling_rate = 800
     # scope_buffer_length = 400
     scope_buffer_length = 1000
     update_rate = 2
@@ -277,6 +277,8 @@ if __name__ == "__main__":
         adc_active_mode=True
     )))
     print(asyncio.run(client.enable_scope()))
+    asyncio.run(client.set_ch_one_output_limits(-10, 10))
+    asyncio.run(client.set_ch_two_output_limits(-10, 10))
 
     app = QtWidgets.QApplication(sys.argv)
     w = CavityLockGUI(client, update_rate, scope_buffer_length, scope_sampling_rate)
