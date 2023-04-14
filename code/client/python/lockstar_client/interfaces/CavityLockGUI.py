@@ -1,5 +1,6 @@
 import sys
 import matplotlib
+import matplotlib.pyplot as plt
 matplotlib.use('Qt5Agg')
 
 
@@ -18,8 +19,9 @@ from lockstar_client.CavityLockClient import CavityLockClient
 class ScopeCanvas(FigureCanvas):
 
     def __init__(self, parent=None, width=5, height=4, dpi=100):
-        fig = Figure(figsize=(width, height), dpi=dpi)
-        self.axes = fig.add_subplot(111)
+        fig, self.ax_in, self.ax_out = plt.subplots(nrows=2, figsize=(width, height), dpi=dpi)
+        # fig = Figure(figsize=(width, height), dpi=dpi)
+        # self.axes = fig.add_subplot(111)
         super(ScopeCanvas, self).__init__(fig)
 
 
@@ -236,16 +238,21 @@ class CavityLockGUI(QtWidgets.QMainWindow):
         scope_data = asyncio.run(self.client.get_scope_data())
         # print(f'request took: {perf_counter() - t1:.1f} seconds')
         if type(scope_data) is dict:
-            self.scope_canvas.axes.cla()  # Clear the canvas.
+            self.scope_canvas.ax_in.cla()  # Clear the canvas.
+            self.scope_canvas.ax_out.cla()  # Clear the canvas.
             for trace_name in scope_data.keys():
                 trace = np.array(scope_data[trace_name])
                 
                 if len(trace) > 0:
                     # print(f'{perf_counter() - self.last_successful_update:.1f}s')
                     self.last_successful_update = perf_counter()
-                    self.scope_canvas.axes.plot(self.time_axis, trace, 'o', label=trace_name, ms=1)
+                    if trace_name in ['in_one', 'in_two']:
+                        self.scope_canvas.ax_in.plot(self.time_axis, trace, 'o', label=trace_name, ms=1)
+                    else:
+                        self.scope_canvas.ax_out.plot(self.time_axis, trace, 'o', label=trace_name, ms=1)
             
-            self.scope_canvas.axes.legend()
+            self.scope_canvas.ax_in.legend()
+            self.scope_canvas.ax_out.legend()
         else:
             pass
             # print(scope_data)
@@ -256,20 +263,20 @@ if __name__ == "__main__":
     client = CavityLockClient('192.168.88.25', 10780, 1234)
     # scope_sampling_rate = 2000
     scope_sampling_rate = 800
-    scope_buffer_length = 400
-    # scope_buffer_length = 1000
+    # scope_buffer_length = 400
+    scope_buffer_length = 1000
     update_rate = 2
 
-    # print(asyncio.run(client.setup_scope(
-    #     sampling_rate=scope_sampling_rate,
-    #     sample_in_one=True,
-    #     sample_in_two=True,
-    #     sample_out_one=True,
-    #     sample_out_two=True,
-    #     buffer_length=scope_buffer_length,
-    #     adc_active_mode=True
-    # )))
-    # print(asyncio.run(client.enable_scope()))
+    print(asyncio.run(client.setup_scope(
+        sampling_rate=scope_sampling_rate,
+        sample_in_one=True,
+        sample_in_two=False,
+        sample_out_one=True,
+        sample_out_two=False,
+        buffer_length=scope_buffer_length,
+        adc_active_mode=True
+    )))
+    print(asyncio.run(client.enable_scope()))
 
     app = QtWidgets.QApplication(sys.argv)
     w = CavityLockGUI(client, update_rate, scope_buffer_length, scope_sampling_rate)
