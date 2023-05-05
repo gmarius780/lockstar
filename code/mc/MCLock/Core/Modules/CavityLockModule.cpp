@@ -47,10 +47,10 @@ public:
 	static const uint32_t SCOPE_BUFFER_SIZE = 400;
 
 	//number of increase/decrease steps in one dither period (triangular) (hardcoded for now)
-	static const uint32_t NBR_DITHER_STEPS = 800;
-	static const uint32_t DITHER_INCREASE_INTERVAL_100PS = 3000; //increase the dithering after 1.25ms (12500*100ps) --> this yields a dither-period of: NBR_DITHER_STEPS*DITHER_INCREASE_INTERVAL_100PS = 500ms
+	static const uint32_t NBR_DITHER_STEPS = 10000;
+	static const uint32_t DITHER_INCREASE_INTERVAL_100NS = 1000; //increase the dithering after 0.1ms (1000*100ns) --> this yields a dither-period of: NBR_DITHER_STEPS*DITHER_INCREASE_INTERVAL_100PS = 1s
 
-	//loop timer oscillates with 1/100ps, the counter counts to 65535 --> the timer can capture 6ms --> enough to capture the dithering at 1.25ms steps
+	//loop timer oscillates with 1/100ns, the counter counts to 65535 --> the timer can capture approx 6.5ms --> enough to capture the dithering at 1.25ms steps
 	static const uint16_t LOOP_TIMER_PSC = 9;
 	static const uint16_t LOOP_TIMER_COUNTER_MAX = 0xFFFF;
 	static const uint32_t LOOP_TIMER_FRQ = 90000000;
@@ -146,7 +146,7 @@ public:
 			t_since_last_dither_step += t;
 
 			//PERFORM DITHER STEP IF NECCESSARY
-			if (t_since_last_dither_step >= DITHER_INCREASE_INTERVAL_100PS) {
+			if (t_since_last_dither_step >= DITHER_INCREASE_INTERVAL_100NS) {
 				if (i < int(NBR_DITHER_STEPS/2)) {
 					current_dither_two += dither_two_step;
 				} else {
@@ -190,7 +190,7 @@ public:
 			t_since_last_dither_step += t;
 
 			//PERFORM DITHER STEP IF NECCESSARY
-			if (t_since_last_dither_step >= DITHER_INCREASE_INTERVAL_100PS) {
+			if (t_since_last_dither_step >= DITHER_INCREASE_INTERVAL_100NS) {
 				if (i < int(NBR_DITHER_STEPS/2)) {
 					current_dither_one += dither_one_step;
 				} else {
@@ -231,7 +231,7 @@ public:
 			t_since_last_dither_step += (loop_timer->get_counter() - t);
 			t = loop_timer->get_counter();
 			//PERFORM DITHER STEP IF NECCESSARY
-			if (t_since_last_dither_step >= DITHER_INCREASE_INTERVAL_100PS) {
+			if (t_since_last_dither_step >= DITHER_INCREASE_INTERVAL_100NS) {
 				if (i < int(NBR_DITHER_STEPS/2)) {
 					current_dither_one += dither_one_step;
 					current_dither_two += dither_two_step;
