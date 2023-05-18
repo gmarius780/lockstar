@@ -48,7 +48,7 @@ public:
 		this->locked = false;
 	}
 
-	__attribute__((optimize(0)))
+	__attribute__((optimize(0))) //Otherwise the AWGPID Module hangs here and doesn't execute the main loop
 	void run() {
 		initialize_adc_dac(ADC_UNIPOLAR_10V, ADC_UNIPOLAR_10V);
 		this->dac_1->write(0);
