@@ -201,7 +201,6 @@ void DAC_Device::send_output_range() {
     arm_dma();
 
     // Wait till configuration is sent
-    //while(is_busy());
     while(busy);
 }
 __attribute__((section("sram_func")))

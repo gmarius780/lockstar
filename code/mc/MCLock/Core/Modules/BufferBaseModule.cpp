@@ -111,8 +111,6 @@ void BufferBaseModule::set_sampling_rate(RPIDataPackage* read_package) {
 	prescaler = read_package->pop_from_buffer<uint32_t>();
 	counter_max = read_package->pop_from_buffer<uint32_t>();
 
-	this->turn_output_off();
-	this->reset_output();
 	this->sampling_timer->set_auto_reload(counter_max);
 	this->sampling_timer->set_prescaler(prescaler);
 
@@ -281,8 +279,8 @@ void BufferBaseModule::turn_output_off() {
 	this->disable_sampling();
 	this->is_output_on = false;
 	this->is_output_ttl = false;
-	this->dac_1->write(0);
-	this->dac_2->write(0);
+	dac_1->write(0.);
+	dac_2->write(0.);
 	turn_LED6_off();
 }
 
