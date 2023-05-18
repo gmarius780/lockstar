@@ -167,6 +167,7 @@ void DAC_Device::config_output(ADC_HandleTypeDef* hadc, uint32_t ADC_SENL, uint3
     send_output_range();
 }
 
+__attribute__((optimize(0)))
 void DAC_Device::send_output_range() {
     busy = true;
 
@@ -200,7 +201,8 @@ void DAC_Device::send_output_range() {
     arm_dma();
 
     // Wait till configuration is sent
-    while(is_busy());
+    //while(is_busy());
+    while(busy);
 }
 __attribute__((section("sram_func")))
 void DAC_Device::arm_dma() {

@@ -48,6 +48,7 @@ public:
 		this->locked = false;
 	}
 
+	__attribute__((optimize(0)))
 	void run() {
 		initialize_adc_dac(ADC_UNIPOLAR_10V, ADC_UNIPOLAR_10V);
 		this->dac_1->write(0);
@@ -232,7 +233,7 @@ public:
 	void digital_in_rising_edge() {
 		if (this->is_output_ttl) {
 			this->output_next_chunk();
-			this->enable_sampling();
+			//this->enable_sampling();
 		}
 	}
 
