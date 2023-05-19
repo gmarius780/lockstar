@@ -48,6 +48,7 @@ public:
 		this->locked = false;
 	}
 
+	__attribute__((optimize(0))) //Otherwise the AWGPID Module hangs here and doesn't execute the main loop
 	void run() {
 		initialize_adc_dac(ADC_UNIPOLAR_10V, ADC_UNIPOLAR_10V);
 		this->dac_1->write(0);
@@ -64,7 +65,7 @@ public:
 
 		/*** work loop ***/
 		while(true) {
-			while(this->locked) {
+			while(this->locked and (is_output_on or is_output_ttl)) {
 				// Measuring elapsed time per work loop
 				t = timer->get_counter() - t;
 				dt = t/TIM3freq*psc;
@@ -73,6 +74,8 @@ public:
 				this->dac_1->write(this->pid_one->calculate_output(this->setpoint_one, adc->channel1->get_result(), dt));
 				this->dac_2->write(this->pid_two->calculate_output(this->setpoint_two, adc->channel2->get_result(), dt));
 			}
+
+
 		}
 	}
 
@@ -232,7 +235,7 @@ public:
 	void digital_in_rising_edge() {
 		if (this->is_output_ttl) {
 			this->output_next_chunk();
-			this->enable_sampling();
+			//this->enable_sampling();
 		}
 	}
 

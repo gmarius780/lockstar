@@ -52,7 +52,7 @@ if __name__ == "__main__":
             logging.StreamHandler()
         ]
     )
-    client = AWGPIDClient('192.168.88.13', 10780, 1234)
+    client = AWGPIDClient('192.168.88.25', 10780, 1234)
 
     
     if client.register_client_id():
@@ -85,15 +85,15 @@ if __name__ == "__main__":
 
 
         # print(client.set_ch_one_output_limits(0, 1))
-        print(client.initialize_buffers(len(ch_one_buffer), len(ch_two_buffer), len(ch_one_chunks), 
-                                        len(ch_two_chunks), sampling_rate))
-        print(client.set_ch_one_output_limits(-5, 5))
-        print(client.set_ch_two_output_limits(-5, 5))
-        print(client.set_ch_one_chunks(ch_one_chunks))
-        print(client.set_ch_two_chunks(ch_two_chunks))
-        print(client.set_ch_one_buffer(ch_one_buffer))
-        print(client.set_ch_two_buffer(ch_two_buffer))
-        print(client.set_pid_one(1,1,0))
-        print(client.set_pid_two(1,0,0))
-        # client.output_ttl()
+        print(asyncio.run(client.initialize_buffers(len(ch_one_buffer), len(ch_two_buffer), len(ch_one_chunks), 
+                                        len(ch_two_chunks), sampling_rate)))
+        print(asyncio.run(client.set_ch_one_output_limits(-5, 5)))
+        print(asyncio.run((client.set_ch_two_output_limits(-5, 5))))
+        print(asyncio.run(client.set_ch_one_chunks(ch_one_chunks)))
+        print(asyncio.run(client.set_ch_two_chunks(ch_two_chunks)))
+        print(asyncio.run(client.set_ch_one_buffer(ch_one_buffer)))
+        print(asyncio.run(client.set_ch_two_buffer(ch_two_buffer)))
+        print(asyncio.run(client.set_pid_one(1,1,0)))
+        print(asyncio.run(client.set_pid_two(1,0,0)))
+        print(asyncio.run(client.output_ttl()))
 
