@@ -89,7 +89,7 @@ float LinearizableDAC::linearize(float value) {
 	if(interpolation < 0)
 		interpolation = 0;
 	if(pivot_index > linearization_length-2)
-		return linearization_buffer[pivot_index];
+		return linearization_buffer[linearization_length - 1];
 	return linearization_buffer[pivot_index] + (linearization_buffer[pivot_index+1]-linearization_buffer[pivot_index])*interpolation;
 }
 
