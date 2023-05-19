@@ -1,0 +1,1302 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="pdoc 12.2.0"/>
+    <title>lockstar_client.interfaces.ScopeViewer API documentation</title>
+
+    <style>/*! * Bootstrap Reboot v5.0.0 (https://getbootstrap.com/) * Copyright 2011-2021 The Bootstrap Authors * Copyright 2011-2021 Twitter, Inc. * Licensed under MIT (https://github.com/twbs/bootstrap/blob/main/LICENSE) * Forked from Normalize.css, licensed MIT (https://github.com/necolas/normalize.css/blob/master/LICENSE.md) */*,::after,::before{box-sizing:border-box}@media (prefers-reduced-motion:no-preference){:root{scroll-behavior:smooth}}body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans","Liberation Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";font-size:1rem;font-weight:400;line-height:1.5;color:#212529;background-color:#fff;-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent}hr{margin:1rem 0;color:inherit;background-color:currentColor;border:0;opacity:.25}hr:not([size]){height:1px}h1,h2,h3,h4,h5,h6{margin-top:0;margin-bottom:.5rem;font-weight:500;line-height:1.2}h1{font-size:calc(1.375rem + 1.5vw)}@media (min-width:1200px){h1{font-size:2.5rem}}h2{font-size:calc(1.325rem + .9vw)}@media (min-width:1200px){h2{font-size:2rem}}h3{font-size:calc(1.3rem + .6vw)}@media (min-width:1200px){h3{font-size:1.75rem}}h4{font-size:calc(1.275rem + .3vw)}@media (min-width:1200px){h4{font-size:1.5rem}}h5{font-size:1.25rem}h6{font-size:1rem}p{margin-top:0;margin-bottom:1rem}abbr[data-bs-original-title],abbr[title]{-webkit-text-decoration:underline dotted;text-decoration:underline dotted;cursor:help;-webkit-text-decoration-skip-ink:none;text-decoration-skip-ink:none}address{margin-bottom:1rem;font-style:normal;line-height:inherit}ol,ul{padding-left:2rem}dl,ol,ul{margin-top:0;margin-bottom:1rem}ol ol,ol ul,ul ol,ul ul{margin-bottom:0}dt{font-weight:700}dd{margin-bottom:.5rem;margin-left:0}blockquote{margin:0 0 1rem}b,strong{font-weight:bolder}small{font-size:.875em}mark{padding:.2em;background-color:#fcf8e3}sub,sup{position:relative;font-size:.75em;line-height:0;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}a{color:#0d6efd;text-decoration:underline}a:hover{color:#0a58ca}a:not([href]):not([class]),a:not([href]):not([class]):hover{color:inherit;text-decoration:none}code,kbd,pre,samp{font-family:SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;font-size:1em;direction:ltr;unicode-bidi:bidi-override}pre{display:block;margin-top:0;margin-bottom:1rem;overflow:auto;font-size:.875em}pre code{font-size:inherit;color:inherit;word-break:normal}code{font-size:.875em;color:#d63384;word-wrap:break-word}a>code{color:inherit}kbd{padding:.2rem .4rem;font-size:.875em;color:#fff;background-color:#212529;border-radius:.2rem}kbd kbd{padding:0;font-size:1em;font-weight:700}figure{margin:0 0 1rem}img,svg{vertical-align:middle}table{caption-side:bottom;border-collapse:collapse}caption{padding-top:.5rem;padding-bottom:.5rem;color:#6c757d;text-align:left}th{text-align:inherit;text-align:-webkit-match-parent}tbody,td,tfoot,th,thead,tr{border-color:inherit;border-style:solid;border-width:0}label{display:inline-block}button{border-radius:0}button:focus:not(:focus-visible){outline:0}button,input,optgroup,select,textarea{margin:0;font-family:inherit;font-size:inherit;line-height:inherit}button,select{text-transform:none}[role=button]{cursor:pointer}select{word-wrap:normal}select:disabled{opacity:1}[list]::-webkit-calendar-picker-indicator{display:none}[type=button],[type=reset],[type=submit],button{-webkit-appearance:button}[type=button]:not(:disabled),[type=reset]:not(:disabled),[type=submit]:not(:disabled),button:not(:disabled){cursor:pointer}::-moz-focus-inner{padding:0;border-style:none}textarea{resize:vertical}fieldset{min-width:0;padding:0;margin:0;border:0}legend{float:left;width:100%;padding:0;margin-bottom:.5rem;font-size:calc(1.275rem + .3vw);line-height:inherit}@media (min-width:1200px){legend{font-size:1.5rem}}legend+*{clear:left}::-webkit-datetime-edit-day-field,::-webkit-datetime-edit-fields-wrapper,::-webkit-datetime-edit-hour-field,::-webkit-datetime-edit-minute,::-webkit-datetime-edit-month-field,::-webkit-datetime-edit-text,::-webkit-datetime-edit-year-field{padding:0}::-webkit-inner-spin-button{height:auto}[type=search]{outline-offset:-2px;-webkit-appearance:textfield}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-color-swatch-wrapper{padding:0}::file-selector-button{font:inherit}::-webkit-file-upload-button{font:inherit;-webkit-appearance:button}output{display:inline-block}iframe{border:0}summary{display:list-item;cursor:pointer}progress{vertical-align:baseline}[hidden]{display:none!important}</style>
+    <style>/*! syntax-highlighting.css */pre{line-height:125%;}span.linenos{color:inherit; background-color:transparent; padding-left:5px; padding-right:20px;}.pdoc-code .hll{background-color:#ffffcc}.pdoc-code{background:#f8f8f8;}.pdoc-code .c{color:#3D7B7B; font-style:italic}.pdoc-code .err{border:1px solid #FF0000}.pdoc-code .k{color:#008000; font-weight:bold}.pdoc-code .o{color:#666666}.pdoc-code .ch{color:#3D7B7B; font-style:italic}.pdoc-code .cm{color:#3D7B7B; font-style:italic}.pdoc-code .cp{color:#9C6500}.pdoc-code .cpf{color:#3D7B7B; font-style:italic}.pdoc-code .c1{color:#3D7B7B; font-style:italic}.pdoc-code .cs{color:#3D7B7B; font-style:italic}.pdoc-code .gd{color:#A00000}.pdoc-code .ge{font-style:italic}.pdoc-code .gr{color:#E40000}.pdoc-code .gh{color:#000080; font-weight:bold}.pdoc-code .gi{color:#008400}.pdoc-code .go{color:#717171}.pdoc-code .gp{color:#000080; font-weight:bold}.pdoc-code .gs{font-weight:bold}.pdoc-code .gu{color:#800080; font-weight:bold}.pdoc-code .gt{color:#0044DD}.pdoc-code .kc{color:#008000; font-weight:bold}.pdoc-code .kd{color:#008000; font-weight:bold}.pdoc-code .kn{color:#008000; font-weight:bold}.pdoc-code .kp{color:#008000}.pdoc-code .kr{color:#008000; font-weight:bold}.pdoc-code .kt{color:#B00040}.pdoc-code .m{color:#666666}.pdoc-code .s{color:#BA2121}.pdoc-code .na{color:#687822}.pdoc-code .nb{color:#008000}.pdoc-code .nc{color:#0000FF; font-weight:bold}.pdoc-code .no{color:#880000}.pdoc-code .nd{color:#AA22FF}.pdoc-code .ni{color:#717171; font-weight:bold}.pdoc-code .ne{color:#CB3F38; font-weight:bold}.pdoc-code .nf{color:#0000FF}.pdoc-code .nl{color:#767600}.pdoc-code .nn{color:#0000FF; font-weight:bold}.pdoc-code .nt{color:#008000; font-weight:bold}.pdoc-code .nv{color:#19177C}.pdoc-code .ow{color:#AA22FF; font-weight:bold}.pdoc-code .w{color:#bbbbbb}.pdoc-code .mb{color:#666666}.pdoc-code .mf{color:#666666}.pdoc-code .mh{color:#666666}.pdoc-code .mi{color:#666666}.pdoc-code .mo{color:#666666}.pdoc-code .sa{color:#BA2121}.pdoc-code .sb{color:#BA2121}.pdoc-code .sc{color:#BA2121}.pdoc-code .dl{color:#BA2121}.pdoc-code .sd{color:#BA2121; font-style:italic}.pdoc-code .s2{color:#BA2121}.pdoc-code .se{color:#AA5D1F; font-weight:bold}.pdoc-code .sh{color:#BA2121}.pdoc-code .si{color:#A45A77; font-weight:bold}.pdoc-code .sx{color:#008000}.pdoc-code .sr{color:#A45A77}.pdoc-code .s1{color:#BA2121}.pdoc-code .ss{color:#19177C}.pdoc-code .bp{color:#008000}.pdoc-code .fm{color:#0000FF}.pdoc-code .vc{color:#19177C}.pdoc-code .vg{color:#19177C}.pdoc-code .vi{color:#19177C}.pdoc-code .vm{color:#19177C}.pdoc-code .il{color:#666666}</style>
+    <style>/*! theme.css */:root{--pdoc-background:#fff;}.pdoc{--text:#212529;--muted:#6c757d;--link:#3660a5;--link-hover:#1659c5;--code:#f8f8f8;--active:#fff598;--accent:#eee;--accent2:#c1c1c1;--nav-hover:rgba(255, 255, 255, 0.5);--name:#0066BB;--def:#008800;--annotation:#007020;}</style>
+    <style>/*! layout.css */html, body{width:100%;height:100%;}html, main{scroll-behavior:smooth;}body{background-color:var(--pdoc-background);}@media (max-width:769px){#navtoggle{cursor:pointer;position:absolute;width:50px;height:40px;top:1rem;right:1rem;border-color:var(--text);color:var(--text);display:flex;opacity:0.8;}#navtoggle:hover{opacity:1;}#togglestate + div{display:none;}#togglestate:checked + div{display:inherit;}main, header{padding:2rem 3vw;}header + main{margin-top:-3rem;}.git-button{display:none !important;}nav input[type="search"]{max-width:77%;}nav input[type="search"]:first-child{margin-top:-6px;}nav input[type="search"]:valid ~ *{display:none !important;}}@media (min-width:770px){:root{--sidebar-width:clamp(12.5rem, 28vw, 22rem);}nav{position:fixed;overflow:auto;height:100vh;width:var(--sidebar-width);}main, header{padding:3rem 2rem 3rem calc(var(--sidebar-width) + 3rem);width:calc(54rem + var(--sidebar-width));max-width:100%;}header + main{margin-top:-4rem;}#navtoggle{display:none;}}#togglestate{position:absolute;height:0;opacity:0;}nav.pdoc{--pad:clamp(0.5rem, 2vw, 1.75rem);--indent:1.5rem;background-color:var(--accent);border-right:1px solid var(--accent2);box-shadow:0 0 20px rgba(50, 50, 50, .2) inset;padding:0 0 0 var(--pad);overflow-wrap:anywhere;scrollbar-width:thin; scrollbar-color:var(--accent2) transparent }nav.pdoc::-webkit-scrollbar{width:.4rem; }nav.pdoc::-webkit-scrollbar-thumb{background-color:var(--accent2); }nav.pdoc > div{padding:var(--pad) 0;}nav.pdoc .module-list-button{display:inline-flex;align-items:center;color:var(--text);border-color:var(--muted);margin-bottom:1rem;}nav.pdoc .module-list-button:hover{border-color:var(--text);}nav.pdoc input[type=search]{display:block;outline-offset:0;width:calc(100% - var(--pad));}nav.pdoc .logo{max-width:calc(100% - var(--pad));max-height:35vh;display:block;margin:0 auto 1rem;transform:translate(calc(-.5 * var(--pad)), 0);}nav.pdoc ul{list-style:none;padding-left:0;}nav.pdoc > div > ul{margin-left:calc(0px - var(--pad));}nav.pdoc li a{padding:.2rem 0 .2rem calc(var(--pad) + var(--indent));}nav.pdoc > div > ul > li > a{padding-left:var(--pad);}nav.pdoc li{transition:all 100ms;}nav.pdoc li:hover{background-color:var(--nav-hover);}nav.pdoc a, nav.pdoc a:hover{color:var(--text);}nav.pdoc a{display:block;}nav.pdoc > h2:first-of-type{margin-top:1.5rem;}nav.pdoc .class:before{content:"class ";color:var(--muted);}nav.pdoc .function:after{content:"()";color:var(--muted);}nav.pdoc footer:before{content:"";display:block;width:calc(100% - var(--pad));border-top:solid var(--accent2) 1px;margin-top:1.5rem;padding-top:.5rem;}nav.pdoc footer{font-size:small;}</style>
+    <style>/*! content.css */.pdoc{color:var(--text);box-sizing:border-box;line-height:1.5;background:none;}.pdoc .pdoc-button{display:inline-block;border:solid black 1px;border-radius:2px;font-size:.75rem;padding:calc(0.5em - 1px) 1em;transition:100ms all;}.pdoc .pdoc-alert{padding:1rem 1rem 1rem calc(1.5rem + 24px);border:1px solid transparent;border-radius:.25rem;background-repeat:no-repeat;background-position:1rem center;margin-bottom:1rem;}.pdoc .pdoc-alert > *:last-child{margin-bottom:0;}.pdoc .pdoc-alert-note {color:#084298;background-color:#cfe2ff;border-color:#b6d4fe;background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2224%22%20height%3D%2224%22%20fill%3D%22%23084298%22%20viewBox%3D%220%200%2016%2016%22%3E%3Cpath%20d%3D%22M8%2016A8%208%200%201%200%208%200a8%208%200%200%200%200%2016zm.93-9.412-1%204.705c-.07.34.029.533.304.533.194%200%20.487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703%200-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381%202.29-.287zM8%205.5a1%201%200%201%201%200-2%201%201%200%200%201%200%202z%22/%3E%3C/svg%3E");}.pdoc .pdoc-alert-warning{color:#664d03;background-color:#fff3cd;border-color:#ffecb5;background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2224%22%20height%3D%2224%22%20fill%3D%22%23664d03%22%20viewBox%3D%220%200%2016%2016%22%3E%3Cpath%20d%3D%22M8.982%201.566a1.13%201.13%200%200%200-1.96%200L.165%2013.233c-.457.778.091%201.767.98%201.767h13.713c.889%200%201.438-.99.98-1.767L8.982%201.566zM8%205c.535%200%20.954.462.9.995l-.35%203.507a.552.552%200%200%201-1.1%200L7.1%205.995A.905.905%200%200%201%208%205zm.002%206a1%201%200%201%201%200%202%201%201%200%200%201%200-2z%22/%3E%3C/svg%3E");}.pdoc .pdoc-alert-danger{color:#842029;background-color:#f8d7da;border-color:#f5c2c7;background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2224%22%20height%3D%2224%22%20fill%3D%22%23842029%22%20viewBox%3D%220%200%2016%2016%22%3E%3Cpath%20d%3D%22M5.52.359A.5.5%200%200%201%206%200h4a.5.5%200%200%201%20.474.658L8.694%206H12.5a.5.5%200%200%201%20.395.807l-7%209a.5.5%200%200%201-.873-.454L6.823%209.5H3.5a.5.5%200%200%201-.48-.641l2.5-8.5z%22/%3E%3C/svg%3E");}.pdoc .visually-hidden{position:absolute !important;width:1px !important;height:1px !important;padding:0 !important;margin:-1px !important;overflow:hidden !important;clip:rect(0, 0, 0, 0) !important;white-space:nowrap !important;border:0 !important;}.pdoc h1, .pdoc h2, .pdoc h3{font-weight:300;margin:.3em 0;padding:.2em 0;}.pdoc > section:not(.module-info) h1{font-size:1.5rem;font-weight:500;}.pdoc > section:not(.module-info) h2{font-size:1.4rem;font-weight:500;}.pdoc > section:not(.module-info) h3{font-size:1.3rem;font-weight:500;}.pdoc > section:not(.module-info) h4{font-size:1.2rem;}.pdoc > section:not(.module-info) h5{font-size:1.1rem;}.pdoc a{text-decoration:none;color:var(--link);}.pdoc a:hover{color:var(--link-hover);}.pdoc blockquote{margin-left:2rem;}.pdoc pre{border-top:1px solid var(--accent2);border-bottom:1px solid var(--accent2);margin-top:0;margin-bottom:1em;padding:.5rem 0 .5rem .5rem;overflow-x:auto;background-color:var(--code);}.pdoc code{color:var(--text);padding:.2em .4em;margin:0;font-size:85%;background-color:var(--code);border-radius:6px;}.pdoc a > code{color:inherit;}.pdoc pre > code{display:inline-block;font-size:inherit;background:none;border:none;padding:0;}.pdoc > section:not(.module-info){margin-bottom:1.5rem;}.pdoc .modulename{margin-top:0;font-weight:bold;}.pdoc .modulename a{color:var(--link);transition:100ms all;}.pdoc .git-button{float:right;border:solid var(--link) 1px;}.pdoc .git-button:hover{background-color:var(--link);color:var(--pdoc-background);}.view-source-toggle-state,.view-source-toggle-state ~ .pdoc-code{display:none;}.view-source-toggle-state:checked ~ .pdoc-code{display:block;}.view-source-button{display:inline-block;float:right;font-size:.75rem;line-height:1.5rem;color:var(--muted);padding:0 .4rem 0 1.3rem;cursor:pointer;text-indent:-2px;}.view-source-button > span{visibility:hidden;}.module-info .view-source-button{float:none;display:flex;justify-content:flex-end;margin:-1.2rem .4rem -.2rem 0;}.view-source-button::before{position:absolute;content:"View Source";display:list-item;list-style-type:disclosure-closed;}.view-source-toggle-state:checked ~ .attr .view-source-button::before,.view-source-toggle-state:checked ~ .view-source-button::before{list-style-type:disclosure-open;}.pdoc .docstring{margin-bottom:1.5rem;}.pdoc section:not(.module-info) .docstring{margin-left:clamp(0rem, 5vw - 2rem, 1rem);}.pdoc .docstring .pdoc-code{margin-left:1em;margin-right:1em;}.pdoc h1:target,.pdoc h2:target,.pdoc h3:target,.pdoc h4:target,.pdoc h5:target,.pdoc h6:target,.pdoc .pdoc-code > pre > span:target{background-color:var(--active);box-shadow:-1rem 0 0 0 var(--active);}.pdoc .pdoc-code > pre > span:target{display:block;}.pdoc div:target > .attr,.pdoc section:target > .attr,.pdoc dd:target > a{background-color:var(--active);}.pdoc *{scroll-margin:2rem;}.pdoc .pdoc-code .linenos{user-select:none;}.pdoc .attr:hover{filter:contrast(0.95);}.pdoc section, .pdoc .classattr{position:relative;}.pdoc .headerlink{--width:clamp(1rem, 3vw, 2rem);position:absolute;top:0;left:calc(0rem - var(--width));transition:all 100ms ease-in-out;opacity:0;}.pdoc .headerlink::before{content:"#";display:block;text-align:center;width:var(--width);height:2.3rem;line-height:2.3rem;font-size:1.5rem;}.pdoc .attr:hover ~ .headerlink,.pdoc *:target > .headerlink,.pdoc .headerlink:hover{opacity:1;}.pdoc .attr{display:block;margin:.5rem 0 .5rem;padding:.4rem .4rem .4rem 1rem;background-color:var(--accent);overflow-x:auto;}.pdoc .classattr{margin-left:2rem;}.pdoc .name{color:var(--name);font-weight:bold;}.pdoc .def{color:var(--def);font-weight:bold;}.pdoc .signature{background-color:transparent;}.pdoc .param, .pdoc .return-annotation{white-space:pre;}.pdoc .signature.multiline .param{display:block;}.pdoc .signature.condensed .param{display:inline-block;}.pdoc .annotation{color:var(--annotation);}.pdoc .inherited{margin-left:2rem;}.pdoc .inherited dt{font-weight:700;}.pdoc .inherited dt, .pdoc .inherited dd{display:inline;margin-left:0;margin-bottom:.5rem;}.pdoc .inherited dd:not(:last-child):after{content:", ";}.pdoc .inherited .class:before{content:"class ";}.pdoc .inherited .function a:after{content:"()";}.pdoc .search-result .docstring{overflow:auto;max-height:25vh;}.pdoc .search-result.focused > .attr{background-color:var(--active);}.pdoc .attribution{margin-top:2rem;display:block;opacity:0.5;transition:all 200ms;filter:grayscale(100%);}.pdoc .attribution:hover{opacity:1;filter:grayscale(0%);}.pdoc .attribution img{margin-left:5px;height:35px;vertical-align:middle;width:70px;transition:all 200ms;}.pdoc table{display:block;width:max-content;max-width:100%;overflow:auto;margin-bottom:1rem;}.pdoc table th{font-weight:600;}.pdoc table th, .pdoc table td{padding:6px 13px;border:1px solid var(--accent2);}</style>
+    <style>/*! custom.css */</style></head>
+<body>
+    <nav class="pdoc">
+        <label id="navtoggle" for="togglestate" class="pdoc-button"><svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'><path stroke-linecap='round' stroke="currentColor" stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/></svg></label>
+        <input id="togglestate" type="checkbox" aria-hidden="true" tabindex="-1">
+        <div>            <a class="pdoc-button module-list-button" href="../../index.html">
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-in-left" viewBox="0 0 16 16">
+  <path fill-rule="evenodd" d="M10 3.5a.5.5 0 0 0-.5-.5h-8a.5.5 0 0 0-.5.5v9a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5v-2a.5.5 0 0 1 1 0v2A1.5 1.5 0 0 1 9.5 14h-8A1.5 1.5 0 0 1 0 12.5v-9A1.5 1.5 0 0 1 1.5 2h8A1.5 1.5 0 0 1 11 3.5v2a.5.5 0 0 1-1 0v-2z"/>
+  <path fill-rule="evenodd" d="M4.146 8.354a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5H14.5a.5.5 0 0 1 0 1H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3z"/>
+</svg>                &nbsp;
+                Module Index
+            </a>
+
+
+            <input type="search" placeholder="Search..." role="searchbox" aria-label="search"
+                   pattern=".+" required>
+
+
+
+        <h2>API Documentation</h2>
+            <ul class="memberlist">
+            <li>
+                    <a class="class" href="#MplCanvas">MplCanvas</a>
+                            <ul class="memberlist">
+                        <li>
+                                <a class="function" href="#MplCanvas.__init__">MplCanvas</a>
+                        </li>
+                </ul>
+
+            </li>
+            <li>
+                    <a class="class" href="#ScopeViewer">ScopeViewer</a>
+                            <ul class="memberlist">
+                        <li>
+                                <a class="function" href="#ScopeViewer.__init__">ScopeViewer</a>
+                        </li>
+                        <li>
+                                <a class="function" href="#ScopeViewer.update_plot">update_plot</a>
+                        </li>
+                </ul>
+
+            </li>
+    </ul>
+
+
+
+        <a class="attribution" title="pdoc: Python API documentation generator" href="https://pdoc.dev" target="_blank">
+            built with <span class="visually-hidden">pdoc</span><img
+                alt="pdoc logo"
+                src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20role%3D%22img%22%20aria-label%3D%22pdoc%20logo%22%20width%3D%22300%22%20height%3D%22150%22%20viewBox%3D%22-1%200%2060%2030%22%3E%3Ctitle%3Epdoc%3C/title%3E%3Cpath%20d%3D%22M29.621%2021.293c-.011-.273-.214-.475-.511-.481a.5.5%200%200%200-.489.503l-.044%201.393c-.097.551-.695%201.215-1.566%201.704-.577.428-1.306.486-2.193.182-1.426-.617-2.467-1.654-3.304-2.487l-.173-.172a3.43%203.43%200%200%200-.365-.306.49.49%200%200%200-.286-.196c-1.718-1.06-4.931-1.47-7.353.191l-.219.15c-1.707%201.187-3.413%202.131-4.328%201.03-.02-.027-.49-.685-.141-1.763.233-.721.546-2.408.772-4.076.042-.09.067-.187.046-.288.166-1.347.277-2.625.241-3.351%201.378-1.008%202.271-2.586%202.271-4.362%200-.976-.272-1.935-.788-2.774-.057-.094-.122-.18-.184-.268.033-.167.052-.339.052-.516%200-1.477-1.202-2.679-2.679-2.679-.791%200-1.496.352-1.987.9a6.3%206.3%200%200%200-1.001.029c-.492-.564-1.207-.929-2.012-.929-1.477%200-2.679%201.202-2.679%202.679A2.65%202.65%200%200%200%20.97%206.554c-.383.747-.595%201.572-.595%202.41%200%202.311%201.507%204.29%203.635%205.107-.037.699-.147%202.27-.423%203.294l-.137.461c-.622%202.042-2.515%208.257%201.727%2010.643%201.614.908%203.06%201.248%204.317%201.248%202.665%200%204.492-1.524%205.322-2.401%201.476-1.559%202.886-1.854%206.491.82%201.877%201.393%203.514%201.753%204.861%201.068%202.223-1.713%202.811-3.867%203.399-6.374.077-.846.056-1.469.054-1.537zm-4.835%204.313c-.054.305-.156.586-.242.629-.034-.007-.131-.022-.307-.157-.145-.111-.314-.478-.456-.908.221.121.432.25.675.355.115.039.219.051.33.081zm-2.251-1.238c-.05.33-.158.648-.252.694-.022.001-.125-.018-.307-.157-.217-.166-.488-.906-.639-1.573.358.344.754.693%201.198%201.036zm-3.887-2.337c-.006-.116-.018-.231-.041-.342.635.145%201.189.368%201.599.625.097.231.166.481.174.642-.03.049-.055.101-.067.158-.046.013-.128.026-.298.004-.278-.037-.901-.57-1.367-1.087zm-1.127-.497c.116.306.176.625.12.71-.019.014-.117.045-.345.016-.206-.027-.604-.332-.986-.695.41-.051.816-.056%201.211-.031zm-4.535%201.535c.209.22.379.47.358.598-.006.041-.088.138-.351.234-.144.055-.539-.063-.979-.259a11.66%2011.66%200%200%200%20.972-.573zm.983-.664c.359-.237.738-.418%201.126-.554.25.237.479.548.457.694-.006.042-.087.138-.351.235-.174.064-.694-.105-1.232-.375zm-3.381%201.794c-.022.145-.061.29-.149.401-.133.166-.358.248-.69.251h-.002c-.133%200-.306-.26-.45-.621.417.091.854.07%201.291-.031zm-2.066-8.077a4.78%204.78%200%200%201-.775-.584c.172-.115.505-.254.88-.378l-.105.962zm-.331%202.302a10.32%2010.32%200%200%201-.828-.502c.202-.143.576-.328.984-.49l-.156.992zm-.45%202.157l-.701-.403c.214-.115.536-.249.891-.376a11.57%2011.57%200%200%201-.19.779zm-.181%201.716c.064.398.194.702.298.893-.194-.051-.435-.162-.736-.398.061-.119.224-.3.438-.495zM8.87%204.141c0%20.152-.123.276-.276.276s-.275-.124-.275-.276.123-.276.276-.276.275.124.275.276zm-.735-.389a1.15%201.15%200%200%200-.314.783%201.16%201.16%200%200%200%201.162%201.162c.457%200%20.842-.27%201.032-.653.026.117.042.238.042.362a1.68%201.68%200%200%201-1.679%201.679%201.68%201.68%200%200%201-1.679-1.679c0-.843.626-1.535%201.436-1.654zM5.059%205.406A1.68%201.68%200%200%201%203.38%207.085a1.68%201.68%200%200%201-1.679-1.679c0-.037.009-.072.011-.109.21.3.541.508.935.508a1.16%201.16%200%200%200%201.162-1.162%201.14%201.14%200%200%200-.474-.912c.015%200%20.03-.005.045-.005.926.001%201.679.754%201.679%201.68zM3.198%204.141c0%20.152-.123.276-.276.276s-.275-.124-.275-.276.123-.276.276-.276.275.124.275.276zM1.375%208.964c0-.52.103-1.035.288-1.52.466.394%201.06.64%201.717.64%201.144%200%202.116-.725%202.499-1.738.383%201.012%201.355%201.738%202.499%201.738.867%200%201.631-.421%202.121-1.062.307.605.478%201.267.478%201.942%200%202.486-2.153%204.51-4.801%204.51s-4.801-2.023-4.801-4.51zm24.342%2019.349c-.985.498-2.267.168-3.813-.979-3.073-2.281-5.453-3.199-7.813-.705-1.315%201.391-4.163%203.365-8.423.97-3.174-1.786-2.239-6.266-1.261-9.479l.146-.492c.276-1.02.395-2.457.444-3.268a6.11%206.11%200%200%200%201.18.115%206.01%206.01%200%200%200%202.536-.562l-.006.175c-.802.215-1.848.612-2.021%201.25-.079.295.021.601.274.837.219.203.415.364.598.501-.667.304-1.243.698-1.311%201.179-.02.144-.022.507.393.787.213.144.395.26.564.365-1.285.521-1.361.96-1.381%201.126-.018.142-.011.496.427.746l.854.489c-.473.389-.971.914-.999%201.429-.018.278.095.532.316.713.675.556%201.231.721%201.653.721.059%200%20.104-.014.158-.02.207.707.641%201.64%201.513%201.64h.013c.8-.008%201.236-.345%201.462-.626.173-.216.268-.457.325-.692.424.195.93.374%201.372.374.151%200%20.294-.021.423-.068.732-.27.944-.704.993-1.021.009-.061.003-.119.002-.179.266.086.538.147.789.147.15%200%20.294-.021.423-.069.542-.2.797-.489.914-.754.237.147.478.258.704.288.106.014.205.021.296.021.356%200%20.595-.101.767-.229.438.435%201.094.992%201.656%201.067.106.014.205.021.296.021a1.56%201.56%200%200%200%20.323-.035c.17.575.453%201.289.866%201.605.358.273.665.362.914.362a.99.99%200%200%200%20.421-.093%201.03%201.03%200%200%200%20.245-.164c.168.428.39.846.68%201.068.358.273.665.362.913.362a.99.99%200%200%200%20.421-.093c.317-.148.512-.448.639-.762.251.157.495.257.726.257.127%200%20.25-.024.37-.071.427-.17.706-.617.841-1.314.022-.015.047-.022.068-.038.067-.051.133-.104.196-.159-.443%201.486-1.107%202.761-2.086%203.257zM8.66%209.925a.5.5%200%201%200-1%200c0%20.653-.818%201.205-1.787%201.205s-1.787-.552-1.787-1.205a.5.5%200%201%200-1%200c0%201.216%201.25%202.205%202.787%202.205s2.787-.989%202.787-2.205zm4.4%2015.965l-.208.097c-2.661%201.258-4.708%201.436-6.086.527-1.542-1.017-1.88-3.19-1.844-4.198a.4.4%200%200%200-.385-.414c-.242-.029-.406.164-.414.385-.046%201.249.367%203.686%202.202%204.896.708.467%201.547.7%202.51.7%201.248%200%202.706-.392%204.362-1.174l.185-.086a.4.4%200%200%200%20.205-.527c-.089-.204-.326-.291-.527-.206zM9.547%202.292c.093.077.205.114.317.114a.5.5%200%200%200%20.318-.886L8.817.397a.5.5%200%200%200-.703.068.5.5%200%200%200%20.069.703l1.364%201.124zm-7.661-.065c.086%200%20.173-.022.253-.068l1.523-.893a.5.5%200%200%200-.506-.863l-1.523.892a.5.5%200%200%200-.179.685c.094.158.261.247.432.247z%22%20transform%3D%22matrix%28-1%200%200%201%2058%200%29%22%20fill%3D%22%233bb300%22/%3E%3Cpath%20d%3D%22M.3%2021.86V10.18q0-.46.02-.68.04-.22.18-.5.28-.54%201.34-.54%201.06%200%201.42.28.38.26.44.78.76-1.04%202.38-1.04%201.64%200%203.1%201.54%201.46%201.54%201.46%203.58%200%202.04-1.46%203.58-1.44%201.54-3.08%201.54-1.64%200-2.38-.92v4.04q0%20.46-.04.68-.02.22-.18.5-.14.3-.5.42-.36.12-.98.12-.62%200-1-.12-.36-.12-.52-.4-.14-.28-.18-.5-.02-.22-.02-.68zm3.96-9.42q-.46.54-.46%201.18%200%20.64.46%201.18.48.52%201.2.52.74%200%201.24-.52.52-.52.52-1.18%200-.66-.48-1.18-.48-.54-1.26-.54-.76%200-1.22.54zm14.741-8.36q.16-.3.54-.42.38-.12%201-.12.64%200%201.02.12.38.12.52.42.16.3.18.54.04.22.04.68v11.94q0%20.46-.04.7-.02.22-.18.5-.3.54-1.7.54-1.38%200-1.54-.98-.84.96-2.34.96-1.8%200-3.28-1.56-1.48-1.58-1.48-3.66%200-2.1%201.48-3.68%201.5-1.58%203.28-1.58%201.48%200%202.3%201v-4.2q0-.46.02-.68.04-.24.18-.52zm-3.24%2010.86q.52.54%201.26.54.74%200%201.22-.54.5-.54.5-1.18%200-.66-.48-1.22-.46-.56-1.26-.56-.8%200-1.28.56-.48.54-.48%201.2%200%20.66.52%201.2zm7.833-1.2q0-2.4%201.68-3.96%201.68-1.56%203.84-1.56%202.16%200%203.82%201.56%201.66%201.54%201.66%203.94%200%201.66-.86%202.96-.86%201.28-2.1%201.9-1.22.6-2.54.6-1.32%200-2.56-.64-1.24-.66-2.1-1.92-.84-1.28-.84-2.88zm4.18%201.44q.64.48%201.3.48.66%200%201.32-.5.66-.5.66-1.48%200-.98-.62-1.46-.62-.48-1.34-.48-.72%200-1.34.5-.62.5-.62%201.48%200%20.96.64%201.46zm11.412-1.44q0%20.84.56%201.32.56.46%201.18.46.64%200%201.18-.36.56-.38.9-.38.6%200%201.46%201.06.46.58.46%201.04%200%20.76-1.1%201.42-1.14.8-2.8.8-1.86%200-3.58-1.34-.82-.64-1.34-1.7-.52-1.08-.52-2.36%200-1.3.52-2.34.52-1.06%201.34-1.7%201.66-1.32%203.54-1.32.76%200%201.48.22.72.2%201.06.4l.32.2q.36.24.56.38.52.4.52.92%200%20.5-.42%201.14-.72%201.1-1.38%201.1-.38%200-1.08-.44-.36-.34-1.04-.34-.66%200-1.24.48-.58.48-.58%201.34z%22%20fill%3D%22green%22/%3E%3C/svg%3E"/>
+        </a>
+</div>
+    </nav>
+    <main class="pdoc">
+            <section class="module-info">
+                    <h1 class="modulename">
+lockstar_client<wbr>.interfaces<wbr>.ScopeViewer    </h1>
+
+                
+                        <input id="mod-ScopeViewer-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+
+                        <label class="view-source-button" for="mod-ScopeViewer-view-source"><span>View Source</span></label>
+
+                        <div class="pdoc-code codehilite"><pre><span></span><span id="L-1"><a href="#L-1"><span class="linenos"> 1</span></a><span class="kn">import</span> <span class="nn">sys</span>
+</span><span id="L-2"><a href="#L-2"><span class="linenos"> 2</span></a><span class="kn">import</span> <span class="nn">matplotlib</span>
+</span><span id="L-3"><a href="#L-3"><span class="linenos"> 3</span></a><span class="n">matplotlib</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="s1">&#39;Qt5Agg&#39;</span><span class="p">)</span>
+</span><span id="L-4"><a href="#L-4"><span class="linenos"> 4</span></a>
+</span><span id="L-5"><a href="#L-5"><span class="linenos"> 5</span></a>
+</span><span id="L-6"><a href="#L-6"><span class="linenos"> 6</span></a><span class="kn">from</span> <span class="nn">PyQt5</span> <span class="kn">import</span> <span class="n">QtCore</span><span class="p">,</span> <span class="n">QtWidgets</span>
+</span><span id="L-7"><a href="#L-7"><span class="linenos"> 7</span></a>
+</span><span id="L-8"><a href="#L-8"><span class="linenos"> 8</span></a><span class="kn">from</span> <span class="nn">matplotlib.backends.backend_qt5agg</span> <span class="kn">import</span> <span class="n">FigureCanvasQTAgg</span> <span class="k">as</span> <span class="n">FigureCanvas</span>
+</span><span id="L-9"><a href="#L-9"><span class="linenos"> 9</span></a><span class="kn">from</span> <span class="nn">matplotlib.figure</span> <span class="kn">import</span> <span class="n">Figure</span>
+</span><span id="L-10"><a href="#L-10"><span class="linenos">10</span></a><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+</span><span id="L-11"><a href="#L-11"><span class="linenos">11</span></a><span class="kn">import</span> <span class="nn">asyncio</span>
+</span><span id="L-12"><a href="#L-12"><span class="linenos">12</span></a>
+</span><span id="L-13"><a href="#L-13"><span class="linenos">13</span></a><span class="kn">from</span> <span class="nn">lockstar_client.AWGClient</span> <span class="kn">import</span> <span class="n">AWGClient</span>
+</span><span id="L-14"><a href="#L-14"><span class="linenos">14</span></a>
+</span><span id="L-15"><a href="#L-15"><span class="linenos">15</span></a><span class="k">class</span> <span class="nc">MplCanvas</span><span class="p">(</span><span class="n">FigureCanvas</span><span class="p">):</span>
+</span><span id="L-16"><a href="#L-16"><span class="linenos">16</span></a>
+</span><span id="L-17"><a href="#L-17"><span class="linenos">17</span></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
+</span><span id="L-18"><a href="#L-18"><span class="linenos">18</span></a>        <span class="n">fig</span> <span class="o">=</span> <span class="n">Figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">),</span> <span class="n">dpi</span><span class="o">=</span><span class="n">dpi</span><span class="p">)</span>
+</span><span id="L-19"><a href="#L-19"><span class="linenos">19</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">axes</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
+</span><span id="L-20"><a href="#L-20"><span class="linenos">20</span></a>        <span class="nb">super</span><span class="p">(</span><span class="n">MplCanvas</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
+</span><span id="L-21"><a href="#L-21"><span class="linenos">21</span></a>
+</span><span id="L-22"><a href="#L-22"><span class="linenos">22</span></a>
+</span><span id="L-23"><a href="#L-23"><span class="linenos">23</span></a><span class="k">class</span> <span class="nc">ScopeViewer</span><span class="p">(</span><span class="n">QtWidgets</span><span class="o">.</span><span class="n">QMainWindow</span><span class="p">):</span>
+</span><span id="L-24"><a href="#L-24"><span class="linenos">24</span></a>
+</span><span id="L-25"><a href="#L-25"><span class="linenos">25</span></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">refresh_rate</span><span class="p">,</span> <span class="n">scope_buffer_size</span><span class="p">,</span> <span class="n">scope_sampling_rate</span><span class="p">):</span>
+</span><span id="L-26"><a href="#L-26"><span class="linenos">26</span></a>        <span class="nb">super</span><span class="p">(</span><span class="n">ScopeViewer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+</span><span id="L-27"><a href="#L-27"><span class="linenos">27</span></a>
+</span><span id="L-28"><a href="#L-28"><span class="linenos">28</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">client</span> <span class="o">=</span> <span class="n">client</span>
+</span><span id="L-29"><a href="#L-29"><span class="linenos">29</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">refresh_rate</span> <span class="o">=</span> <span class="n">refresh_rate</span>
+</span><span id="L-30"><a href="#L-30"><span class="linenos">30</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">scope_buffer_size</span> <span class="o">=</span> <span class="n">scope_buffer_size</span>
+</span><span id="L-31"><a href="#L-31"><span class="linenos">31</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">scope_sampling_rate</span> <span class="o">=</span> <span class="n">scope_sampling_rate</span>
+</span><span id="L-32"><a href="#L-32"><span class="linenos">32</span></a>        
+</span><span id="L-33"><a href="#L-33"><span class="linenos">33</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">time_axis</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">scope_buffer_size</span><span class="p">)</span><span class="o">/</span><span class="n">scope_sampling_rate</span>
+</span><span id="L-34"><a href="#L-34"><span class="linenos">34</span></a>
+</span><span id="L-35"><a href="#L-35"><span class="linenos">35</span></a>        <span class="c1">#setup gui</span>
+</span><span id="L-36"><a href="#L-36"><span class="linenos">36</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span> <span class="o">=</span> <span class="n">MplCanvas</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+</span><span id="L-37"><a href="#L-37"><span class="linenos">37</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">setCentralWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="p">)</span>
+</span><span id="L-38"><a href="#L-38"><span class="linenos">38</span></a>
+</span><span id="L-39"><a href="#L-39"><span class="linenos">39</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">update_plot</span><span class="p">()</span>
+</span><span id="L-40"><a href="#L-40"><span class="linenos">40</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</span><span id="L-41"><a href="#L-41"><span class="linenos">41</span></a>
+</span><span id="L-42"><a href="#L-42"><span class="linenos">42</span></a>        <span class="c1"># Setup a timer to trigger the redraw by calling update_plot.</span>
+</span><span id="L-43"><a href="#L-43"><span class="linenos">43</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">timer</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QTimer</span><span class="p">()</span>
+</span><span id="L-44"><a href="#L-44"><span class="linenos">44</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">timer</span><span class="o">.</span><span class="n">setInterval</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="mi">1000</span><span class="o">/</span><span class="n">refresh_rate</span><span class="p">))</span>
+</span><span id="L-45"><a href="#L-45"><span class="linenos">45</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">timer</span><span class="o">.</span><span class="n">timeout</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">update_plot</span><span class="p">)</span>
+</span><span id="L-46"><a href="#L-46"><span class="linenos">46</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">timer</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</span><span id="L-47"><a href="#L-47"><span class="linenos">47</span></a>
+</span><span id="L-48"><a href="#L-48"><span class="linenos">48</span></a>    <span class="k">def</span> <span class="nf">update_plot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span id="L-49"><a href="#L-49"><span class="linenos">49</span></a>        <span class="c1"># Drop off the first y element, append a new one.</span>
+</span><span id="L-50"><a href="#L-50"><span class="linenos">50</span></a>        <span class="n">scope_data</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get_scope_data</span><span class="p">())</span>
+</span><span id="L-51"><a href="#L-51"><span class="linenos">51</span></a>        
+</span><span id="L-52"><a href="#L-52"><span class="linenos">52</span></a>        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">scope_data</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">dict</span><span class="p">:</span>
+</span><span id="L-53"><a href="#L-53"><span class="linenos">53</span></a>            <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">cla</span><span class="p">()</span>  <span class="c1"># Clear the canvas.</span>
+</span><span id="L-54"><a href="#L-54"><span class="linenos">54</span></a>            <span class="k">for</span> <span class="n">trace_name</span> <span class="ow">in</span> <span class="n">scope_data</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+</span><span id="L-55"><a href="#L-55"><span class="linenos">55</span></a>                <span class="n">trace</span> <span class="o">=</span> <span class="n">scope_data</span><span class="p">[</span><span class="n">trace_name</span><span class="p">]</span>
+</span><span id="L-56"><a href="#L-56"><span class="linenos">56</span></a>                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">trace</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+</span><span id="L-57"><a href="#L-57"><span class="linenos">57</span></a>                    <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time_axis</span><span class="p">,</span> <span class="n">trace</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">trace_name</span><span class="p">)</span>
+</span><span id="L-58"><a href="#L-58"><span class="linenos">58</span></a>            
+</span><span id="L-59"><a href="#L-59"><span class="linenos">59</span></a>            <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+</span><span id="L-60"><a href="#L-60"><span class="linenos">60</span></a>        <span class="k">else</span><span class="p">:</span>
+</span><span id="L-61"><a href="#L-61"><span class="linenos">61</span></a>            <span class="nb">print</span><span class="p">(</span><span class="n">scope_data</span><span class="p">)</span>
+</span><span id="L-62"><a href="#L-62"><span class="linenos">62</span></a>        <span class="c1"># Trigger the canvas to update and redraw.</span>
+</span><span id="L-63"><a href="#L-63"><span class="linenos">63</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</span><span id="L-64"><a href="#L-64"><span class="linenos">64</span></a>
+</span><span id="L-65"><a href="#L-65"><span class="linenos">65</span></a><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+</span><span id="L-66"><a href="#L-66"><span class="linenos">66</span></a>    <span class="n">client</span> <span class="o">=</span> <span class="n">AWGClient</span><span class="p">(</span><span class="s1">&#39;192.168.88.25&#39;</span><span class="p">,</span> <span class="mi">10780</span><span class="p">,</span> <span class="mi">1234</span><span class="p">)</span>
+</span><span id="L-67"><a href="#L-67"><span class="linenos">67</span></a>    <span class="n">scope_sampling_rate</span> <span class="o">=</span> <span class="mi">1000</span>
+</span><span id="L-68"><a href="#L-68"><span class="linenos">68</span></a>    <span class="n">scope_buffer_length</span> <span class="o">=</span> <span class="mi">100</span>
+</span><span id="L-69"><a href="#L-69"><span class="linenos">69</span></a>    <span class="n">update_rate</span> <span class="o">=</span> <span class="mi">5</span>
+</span><span id="L-70"><a href="#L-70"><span class="linenos">70</span></a>
+</span><span id="L-71"><a href="#L-71"><span class="linenos">71</span></a>    <span class="nb">print</span><span class="p">(</span><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">setup_scope</span><span class="p">(</span>
+</span><span id="L-72"><a href="#L-72"><span class="linenos">72</span></a>        <span class="n">sampling_rate</span><span class="o">=</span><span class="n">scope_sampling_rate</span><span class="p">,</span>
+</span><span id="L-73"><a href="#L-73"><span class="linenos">73</span></a>        <span class="n">sample_in_one</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+</span><span id="L-74"><a href="#L-74"><span class="linenos">74</span></a>        <span class="n">sample_in_two</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+</span><span id="L-75"><a href="#L-75"><span class="linenos">75</span></a>        <span class="n">sample_out_one</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+</span><span id="L-76"><a href="#L-76"><span class="linenos">76</span></a>        <span class="n">sample_out_two</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+</span><span id="L-77"><a href="#L-77"><span class="linenos">77</span></a>        <span class="n">buffer_length</span><span class="o">=</span><span class="n">scope_buffer_length</span><span class="p">,</span>
+</span><span id="L-78"><a href="#L-78"><span class="linenos">78</span></a>        <span class="n">adc_active_mode</span><span class="o">=</span><span class="kc">True</span>
+</span><span id="L-79"><a href="#L-79"><span class="linenos">79</span></a>    <span class="p">)))</span>
+</span><span id="L-80"><a href="#L-80"><span class="linenos">80</span></a>    <span class="nb">print</span><span class="p">(</span><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">enable_scope</span><span class="p">()))</span>
+</span><span id="L-81"><a href="#L-81"><span class="linenos">81</span></a>
+</span><span id="L-82"><a href="#L-82"><span class="linenos">82</span></a>    <span class="n">app</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QApplication</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span>
+</span><span id="L-83"><a href="#L-83"><span class="linenos">83</span></a>    <span class="n">w</span> <span class="o">=</span> <span class="n">ScopeViewer</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">update_rate</span><span class="p">,</span> <span class="n">scope_buffer_length</span><span class="p">,</span> <span class="n">scope_sampling_rate</span><span class="p">)</span>
+</span><span id="L-84"><a href="#L-84"><span class="linenos">84</span></a>    <span class="n">app</span><span class="o">.</span><span class="n">exec_</span><span class="p">()</span>
+</span></pre></div>
+
+
+            </section>
+                <section id="MplCanvas">
+                            <input id="MplCanvas-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+<div class="attr class">
+            
+    <span class="def">class</span>
+    <span class="name">MplCanvas</span><wbr>(<span class="base">matplotlib.backends.backend_qtagg.FigureCanvasQTAgg</span>):
+
+                <label class="view-source-button" for="MplCanvas-view-source"><span>View Source</span></label>
+
+    </div>
+    <a class="headerlink" href="#MplCanvas"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="MplCanvas-16"><a href="#MplCanvas-16"><span class="linenos">16</span></a><span class="k">class</span> <span class="nc">MplCanvas</span><span class="p">(</span><span class="n">FigureCanvas</span><span class="p">):</span>
+</span><span id="MplCanvas-17"><a href="#MplCanvas-17"><span class="linenos">17</span></a>
+</span><span id="MplCanvas-18"><a href="#MplCanvas-18"><span class="linenos">18</span></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
+</span><span id="MplCanvas-19"><a href="#MplCanvas-19"><span class="linenos">19</span></a>        <span class="n">fig</span> <span class="o">=</span> <span class="n">Figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">),</span> <span class="n">dpi</span><span class="o">=</span><span class="n">dpi</span><span class="p">)</span>
+</span><span id="MplCanvas-20"><a href="#MplCanvas-20"><span class="linenos">20</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">axes</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
+</span><span id="MplCanvas-21"><a href="#MplCanvas-21"><span class="linenos">21</span></a>        <span class="nb">super</span><span class="p">(</span><span class="n">MplCanvas</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
+</span></pre></div>
+
+
+            <div class="docstring"><p>QWidget(parent: QWidget = None, flags: Union[Qt.WindowFlags, Qt.WindowType] = Qt.WindowFlags())</p>
+</div>
+
+
+                            <div id="MplCanvas.__init__" class="classattr">
+                                        <input id="MplCanvas.__init__-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+<div class="attr function">
+            
+        <span class="name">MplCanvas</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">parent</span><span class="o">=</span><span class="kc">None</span>, </span><span class="param"><span class="n">width</span><span class="o">=</span><span class="mi">5</span>, </span><span class="param"><span class="n">height</span><span class="o">=</span><span class="mi">4</span>, </span><span class="param"><span class="n">dpi</span><span class="o">=</span><span class="mi">100</span></span>)</span>
+
+                <label class="view-source-button" for="MplCanvas.__init__-view-source"><span>View Source</span></label>
+
+    </div>
+    <a class="headerlink" href="#MplCanvas.__init__"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="MplCanvas.__init__-18"><a href="#MplCanvas.__init__-18"><span class="linenos">18</span></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
+</span><span id="MplCanvas.__init__-19"><a href="#MplCanvas.__init__-19"><span class="linenos">19</span></a>        <span class="n">fig</span> <span class="o">=</span> <span class="n">Figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">),</span> <span class="n">dpi</span><span class="o">=</span><span class="n">dpi</span><span class="p">)</span>
+</span><span id="MplCanvas.__init__-20"><a href="#MplCanvas.__init__-20"><span class="linenos">20</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">axes</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
+</span><span id="MplCanvas.__init__-21"><a href="#MplCanvas.__init__-21"><span class="linenos">21</span></a>        <span class="nb">super</span><span class="p">(</span><span class="n">MplCanvas</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
+</span></pre></div>
+
+
+    
+
+                            </div>
+                            <div class="inherited">
+                                <h5>Inherited Members</h5>
+                                <dl>
+                                    <div><dt>matplotlib.backends.backend_qtagg.FigureCanvasQTAgg</dt>
+                                <dd id="MplCanvas.paintEvent" class="function">paintEvent</dd>
+                <dd id="MplCanvas.print_figure" class="function">print_figure</dd>
+
+            </div>
+            <div><dt>matplotlib.backends.backend_agg.FigureCanvasAgg</dt>
+                                <dd id="MplCanvas.copy_from_bbox" class="function">copy_from_bbox</dd>
+                <dd id="MplCanvas.restore_region" class="function">restore_region</dd>
+                <dd id="MplCanvas.draw" class="function">draw</dd>
+                <dd id="MplCanvas.get_renderer" class="function">get_renderer</dd>
+                <dd id="MplCanvas.tostring_rgb" class="function">tostring_rgb</dd>
+                <dd id="MplCanvas.tostring_argb" class="function">tostring_argb</dd>
+                <dd id="MplCanvas.buffer_rgba" class="function">buffer_rgba</dd>
+                <dd id="MplCanvas.print_raw" class="function">print_raw</dd>
+                <dd id="MplCanvas.print_rgba" class="function">print_rgba</dd>
+                <dd id="MplCanvas.print_png" class="function">print_png</dd>
+                <dd id="MplCanvas.print_to_buffer" class="function">print_to_buffer</dd>
+                <dd id="MplCanvas.print_jpg" class="function">print_jpg</dd>
+                <dd id="MplCanvas.print_jpeg" class="function">print_jpeg</dd>
+                <dd id="MplCanvas.print_tif" class="function">print_tif</dd>
+                <dd id="MplCanvas.print_tiff" class="function">print_tiff</dd>
+
+            </div>
+            <div><dt>matplotlib.backends.backend_qt.FigureCanvasQT</dt>
+                                <dd id="MplCanvas.showEvent" class="function">showEvent</dd>
+                <dd id="MplCanvas.set_cursor" class="function">set_cursor</dd>
+                <dd id="MplCanvas.enterEvent" class="function">enterEvent</dd>
+                <dd id="MplCanvas.leaveEvent" class="function">leaveEvent</dd>
+                <dd id="MplCanvas.mouseEventCoords" class="function">mouseEventCoords</dd>
+                <dd id="MplCanvas.mousePressEvent" class="function">mousePressEvent</dd>
+                <dd id="MplCanvas.mouseDoubleClickEvent" class="function">mouseDoubleClickEvent</dd>
+                <dd id="MplCanvas.mouseMoveEvent" class="function">mouseMoveEvent</dd>
+                <dd id="MplCanvas.mouseReleaseEvent" class="function">mouseReleaseEvent</dd>
+                <dd id="MplCanvas.wheelEvent" class="function">wheelEvent</dd>
+                <dd id="MplCanvas.keyPressEvent" class="function">keyPressEvent</dd>
+                <dd id="MplCanvas.keyReleaseEvent" class="function">keyReleaseEvent</dd>
+                <dd id="MplCanvas.resizeEvent" class="function">resizeEvent</dd>
+                <dd id="MplCanvas.sizeHint" class="function">sizeHint</dd>
+                <dd id="MplCanvas.minumumSizeHint" class="function">minumumSizeHint</dd>
+                <dd id="MplCanvas.flush_events" class="function">flush_events</dd>
+                <dd id="MplCanvas.start_event_loop" class="function">start_event_loop</dd>
+                <dd id="MplCanvas.stop_event_loop" class="function">stop_event_loop</dd>
+                <dd id="MplCanvas.draw_idle" class="function">draw_idle</dd>
+                <dd id="MplCanvas.blit" class="function">blit</dd>
+                <dd id="MplCanvas.drawRectangle" class="function">drawRectangle</dd>
+
+            </div>
+            <div><dt>matplotlib.backend_bases.FigureCanvasBase</dt>
+                                <dd id="MplCanvas.supports_blit" class="function">supports_blit</dd>
+                <dd id="MplCanvas.is_saving" class="function">is_saving</dd>
+                <dd id="MplCanvas.pick" class="function">pick</dd>
+                <dd id="MplCanvas.draw_event" class="function">draw_event</dd>
+                <dd id="MplCanvas.resize_event" class="function">resize_event</dd>
+                <dd id="MplCanvas.close_event" class="function">close_event</dd>
+                <dd id="MplCanvas.key_press_event" class="function">key_press_event</dd>
+                <dd id="MplCanvas.key_release_event" class="function">key_release_event</dd>
+                <dd id="MplCanvas.pick_event" class="function">pick_event</dd>
+                <dd id="MplCanvas.scroll_event" class="function">scroll_event</dd>
+                <dd id="MplCanvas.button_press_event" class="function">button_press_event</dd>
+                <dd id="MplCanvas.button_release_event" class="function">button_release_event</dd>
+                <dd id="MplCanvas.motion_notify_event" class="function">motion_notify_event</dd>
+                <dd id="MplCanvas.leave_notify_event" class="function">leave_notify_event</dd>
+                <dd id="MplCanvas.enter_notify_event" class="function">enter_notify_event</dd>
+                <dd id="MplCanvas.inaxes" class="function">inaxes</dd>
+                <dd id="MplCanvas.grab_mouse" class="function">grab_mouse</dd>
+                <dd id="MplCanvas.release_mouse" class="function">release_mouse</dd>
+                <dd id="MplCanvas.device_pixel_ratio" class="variable">device_pixel_ratio</dd>
+                <dd id="MplCanvas.get_width_height" class="function">get_width_height</dd>
+                <dd id="MplCanvas.get_supported_filetypes" class="function">get_supported_filetypes</dd>
+                <dd id="MplCanvas.get_supported_filetypes_grouped" class="function">get_supported_filetypes_grouped</dd>
+                <dd id="MplCanvas.get_default_filetype" class="function">get_default_filetype</dd>
+                <dd id="MplCanvas.get_window_title" class="function">get_window_title</dd>
+                <dd id="MplCanvas.set_window_title" class="function">set_window_title</dd>
+                <dd id="MplCanvas.get_default_filename" class="function">get_default_filename</dd>
+                <dd id="MplCanvas.switch_backends" class="function">switch_backends</dd>
+                <dd id="MplCanvas.mpl_connect" class="function">mpl_connect</dd>
+                <dd id="MplCanvas.mpl_disconnect" class="function">mpl_disconnect</dd>
+                <dd id="MplCanvas.new_timer" class="function">new_timer</dd>
+
+            </div>
+            <div><dt>PyQt5.QtWidgets.QWidget</dt>
+                                <dd id="MplCanvas.resize" class="function">resize</dd>
+                <dd id="MplCanvas.RenderFlag" class="class">RenderFlag</dd>
+                <dd id="MplCanvas.RenderFlags" class="class">RenderFlags</dd>
+                <dd id="MplCanvas.acceptDrops" class="function">acceptDrops</dd>
+                <dd id="MplCanvas.accessibleDescription" class="function">accessibleDescription</dd>
+                <dd id="MplCanvas.accessibleName" class="function">accessibleName</dd>
+                <dd id="MplCanvas.actionEvent" class="function">actionEvent</dd>
+                <dd id="MplCanvas.actions" class="function">actions</dd>
+                <dd id="MplCanvas.activateWindow" class="function">activateWindow</dd>
+                <dd id="MplCanvas.addAction" class="function">addAction</dd>
+                <dd id="MplCanvas.addActions" class="function">addActions</dd>
+                <dd id="MplCanvas.adjustSize" class="function">adjustSize</dd>
+                <dd id="MplCanvas.autoFillBackground" class="function">autoFillBackground</dd>
+                <dd id="MplCanvas.backgroundRole" class="function">backgroundRole</dd>
+                <dd id="MplCanvas.baseSize" class="function">baseSize</dd>
+                <dd id="MplCanvas.changeEvent" class="function">changeEvent</dd>
+                <dd id="MplCanvas.childAt" class="function">childAt</dd>
+                <dd id="MplCanvas.childrenRect" class="function">childrenRect</dd>
+                <dd id="MplCanvas.childrenRegion" class="function">childrenRegion</dd>
+                <dd id="MplCanvas.clearFocus" class="function">clearFocus</dd>
+                <dd id="MplCanvas.clearMask" class="function">clearMask</dd>
+                <dd id="MplCanvas.close" class="function">close</dd>
+                <dd id="MplCanvas.closeEvent" class="function">closeEvent</dd>
+                <dd id="MplCanvas.contentsMargins" class="function">contentsMargins</dd>
+                <dd id="MplCanvas.contentsRect" class="function">contentsRect</dd>
+                <dd id="MplCanvas.contextMenuEvent" class="function">contextMenuEvent</dd>
+                <dd id="MplCanvas.contextMenuPolicy" class="function">contextMenuPolicy</dd>
+                <dd id="MplCanvas.create" class="function">create</dd>
+                <dd id="MplCanvas.createWindowContainer" class="function">createWindowContainer</dd>
+                <dd id="MplCanvas.cursor" class="function">cursor</dd>
+                <dd id="MplCanvas.destroy" class="function">destroy</dd>
+                <dd id="MplCanvas.devType" class="function">devType</dd>
+                <dd id="MplCanvas.dragEnterEvent" class="function">dragEnterEvent</dd>
+                <dd id="MplCanvas.dragLeaveEvent" class="function">dragLeaveEvent</dd>
+                <dd id="MplCanvas.dragMoveEvent" class="function">dragMoveEvent</dd>
+                <dd id="MplCanvas.dropEvent" class="function">dropEvent</dd>
+                <dd id="MplCanvas.effectiveWinId" class="function">effectiveWinId</dd>
+                <dd id="MplCanvas.ensurePolished" class="function">ensurePolished</dd>
+                <dd id="MplCanvas.event" class="function">event</dd>
+                <dd id="MplCanvas.find" class="function">find</dd>
+                <dd id="MplCanvas.focusInEvent" class="function">focusInEvent</dd>
+                <dd id="MplCanvas.focusNextChild" class="function">focusNextChild</dd>
+                <dd id="MplCanvas.focusNextPrevChild" class="function">focusNextPrevChild</dd>
+                <dd id="MplCanvas.focusOutEvent" class="function">focusOutEvent</dd>
+                <dd id="MplCanvas.focusPolicy" class="function">focusPolicy</dd>
+                <dd id="MplCanvas.focusPreviousChild" class="function">focusPreviousChild</dd>
+                <dd id="MplCanvas.focusProxy" class="function">focusProxy</dd>
+                <dd id="MplCanvas.focusWidget" class="function">focusWidget</dd>
+                <dd id="MplCanvas.font" class="function">font</dd>
+                <dd id="MplCanvas.fontInfo" class="function">fontInfo</dd>
+                <dd id="MplCanvas.fontMetrics" class="function">fontMetrics</dd>
+                <dd id="MplCanvas.foregroundRole" class="function">foregroundRole</dd>
+                <dd id="MplCanvas.frameGeometry" class="function">frameGeometry</dd>
+                <dd id="MplCanvas.frameSize" class="function">frameSize</dd>
+                <dd id="MplCanvas.geometry" class="function">geometry</dd>
+                <dd id="MplCanvas.getContentsMargins" class="function">getContentsMargins</dd>
+                <dd id="MplCanvas.grab" class="function">grab</dd>
+                <dd id="MplCanvas.grabGesture" class="function">grabGesture</dd>
+                <dd id="MplCanvas.grabKeyboard" class="function">grabKeyboard</dd>
+                <dd id="MplCanvas.grabMouse" class="function">grabMouse</dd>
+                <dd id="MplCanvas.grabShortcut" class="function">grabShortcut</dd>
+                <dd id="MplCanvas.graphicsEffect" class="function">graphicsEffect</dd>
+                <dd id="MplCanvas.graphicsProxyWidget" class="function">graphicsProxyWidget</dd>
+                <dd id="MplCanvas.hasFocus" class="function">hasFocus</dd>
+                <dd id="MplCanvas.hasHeightForWidth" class="function">hasHeightForWidth</dd>
+                <dd id="MplCanvas.hasMouseTracking" class="function">hasMouseTracking</dd>
+                <dd id="MplCanvas.hasTabletTracking" class="function">hasTabletTracking</dd>
+                <dd id="MplCanvas.height" class="function">height</dd>
+                <dd id="MplCanvas.heightForWidth" class="function">heightForWidth</dd>
+                <dd id="MplCanvas.hide" class="function">hide</dd>
+                <dd id="MplCanvas.hideEvent" class="function">hideEvent</dd>
+                <dd id="MplCanvas.initPainter" class="function">initPainter</dd>
+                <dd id="MplCanvas.inputMethodEvent" class="function">inputMethodEvent</dd>
+                <dd id="MplCanvas.inputMethodHints" class="function">inputMethodHints</dd>
+                <dd id="MplCanvas.inputMethodQuery" class="function">inputMethodQuery</dd>
+                <dd id="MplCanvas.insertAction" class="function">insertAction</dd>
+                <dd id="MplCanvas.insertActions" class="function">insertActions</dd>
+                <dd id="MplCanvas.isActiveWindow" class="function">isActiveWindow</dd>
+                <dd id="MplCanvas.isAncestorOf" class="function">isAncestorOf</dd>
+                <dd id="MplCanvas.isEnabled" class="function">isEnabled</dd>
+                <dd id="MplCanvas.isEnabledTo" class="function">isEnabledTo</dd>
+                <dd id="MplCanvas.isFullScreen" class="function">isFullScreen</dd>
+                <dd id="MplCanvas.isHidden" class="function">isHidden</dd>
+                <dd id="MplCanvas.isLeftToRight" class="function">isLeftToRight</dd>
+                <dd id="MplCanvas.isMaximized" class="function">isMaximized</dd>
+                <dd id="MplCanvas.isMinimized" class="function">isMinimized</dd>
+                <dd id="MplCanvas.isModal" class="function">isModal</dd>
+                <dd id="MplCanvas.isRightToLeft" class="function">isRightToLeft</dd>
+                <dd id="MplCanvas.isVisible" class="function">isVisible</dd>
+                <dd id="MplCanvas.isVisibleTo" class="function">isVisibleTo</dd>
+                <dd id="MplCanvas.isWindow" class="function">isWindow</dd>
+                <dd id="MplCanvas.isWindowModified" class="function">isWindowModified</dd>
+                <dd id="MplCanvas.keyboardGrabber" class="function">keyboardGrabber</dd>
+                <dd id="MplCanvas.layout" class="function">layout</dd>
+                <dd id="MplCanvas.layoutDirection" class="function">layoutDirection</dd>
+                <dd id="MplCanvas.locale" class="function">locale</dd>
+                <dd id="MplCanvas.lower" class="function">lower</dd>
+                <dd id="MplCanvas.mapFrom" class="function">mapFrom</dd>
+                <dd id="MplCanvas.mapFromGlobal" class="function">mapFromGlobal</dd>
+                <dd id="MplCanvas.mapFromParent" class="function">mapFromParent</dd>
+                <dd id="MplCanvas.mapTo" class="function">mapTo</dd>
+                <dd id="MplCanvas.mapToGlobal" class="function">mapToGlobal</dd>
+                <dd id="MplCanvas.mapToParent" class="function">mapToParent</dd>
+                <dd id="MplCanvas.mask" class="function">mask</dd>
+                <dd id="MplCanvas.maximumHeight" class="function">maximumHeight</dd>
+                <dd id="MplCanvas.maximumSize" class="function">maximumSize</dd>
+                <dd id="MplCanvas.maximumWidth" class="function">maximumWidth</dd>
+                <dd id="MplCanvas.metric" class="function">metric</dd>
+                <dd id="MplCanvas.minimumHeight" class="function">minimumHeight</dd>
+                <dd id="MplCanvas.minimumSize" class="function">minimumSize</dd>
+                <dd id="MplCanvas.minimumSizeHint" class="function">minimumSizeHint</dd>
+                <dd id="MplCanvas.minimumWidth" class="function">minimumWidth</dd>
+                <dd id="MplCanvas.mouseGrabber" class="function">mouseGrabber</dd>
+                <dd id="MplCanvas.move" class="function">move</dd>
+                <dd id="MplCanvas.moveEvent" class="function">moveEvent</dd>
+                <dd id="MplCanvas.nativeEvent" class="function">nativeEvent</dd>
+                <dd id="MplCanvas.nativeParentWidget" class="function">nativeParentWidget</dd>
+                <dd id="MplCanvas.nextInFocusChain" class="function">nextInFocusChain</dd>
+                <dd id="MplCanvas.normalGeometry" class="function">normalGeometry</dd>
+                <dd id="MplCanvas.overrideWindowFlags" class="function">overrideWindowFlags</dd>
+                <dd id="MplCanvas.overrideWindowState" class="function">overrideWindowState</dd>
+                <dd id="MplCanvas.paintEngine" class="function">paintEngine</dd>
+                <dd id="MplCanvas.palette" class="function">palette</dd>
+                <dd id="MplCanvas.parentWidget" class="function">parentWidget</dd>
+                <dd id="MplCanvas.pos" class="function">pos</dd>
+                <dd id="MplCanvas.previousInFocusChain" class="function">previousInFocusChain</dd>
+                <dd id="MplCanvas.raise_" class="function">raise_</dd>
+                <dd id="MplCanvas.rect" class="function">rect</dd>
+                <dd id="MplCanvas.releaseKeyboard" class="function">releaseKeyboard</dd>
+                <dd id="MplCanvas.releaseMouse" class="function">releaseMouse</dd>
+                <dd id="MplCanvas.releaseShortcut" class="function">releaseShortcut</dd>
+                <dd id="MplCanvas.removeAction" class="function">removeAction</dd>
+                <dd id="MplCanvas.render" class="function">render</dd>
+                <dd id="MplCanvas.repaint" class="function">repaint</dd>
+                <dd id="MplCanvas.restoreGeometry" class="function">restoreGeometry</dd>
+                <dd id="MplCanvas.saveGeometry" class="function">saveGeometry</dd>
+                <dd id="MplCanvas.screen" class="function">screen</dd>
+                <dd id="MplCanvas.scroll" class="function">scroll</dd>
+                <dd id="MplCanvas.setAcceptDrops" class="function">setAcceptDrops</dd>
+                <dd id="MplCanvas.setAccessibleDescription" class="function">setAccessibleDescription</dd>
+                <dd id="MplCanvas.setAccessibleName" class="function">setAccessibleName</dd>
+                <dd id="MplCanvas.setAttribute" class="function">setAttribute</dd>
+                <dd id="MplCanvas.setAutoFillBackground" class="function">setAutoFillBackground</dd>
+                <dd id="MplCanvas.setBackgroundRole" class="function">setBackgroundRole</dd>
+                <dd id="MplCanvas.setBaseSize" class="function">setBaseSize</dd>
+                <dd id="MplCanvas.setContentsMargins" class="function">setContentsMargins</dd>
+                <dd id="MplCanvas.setContextMenuPolicy" class="function">setContextMenuPolicy</dd>
+                <dd id="MplCanvas.setCursor" class="function">setCursor</dd>
+                <dd id="MplCanvas.setDisabled" class="function">setDisabled</dd>
+                <dd id="MplCanvas.setEnabled" class="function">setEnabled</dd>
+                <dd id="MplCanvas.setFixedHeight" class="function">setFixedHeight</dd>
+                <dd id="MplCanvas.setFixedSize" class="function">setFixedSize</dd>
+                <dd id="MplCanvas.setFixedWidth" class="function">setFixedWidth</dd>
+                <dd id="MplCanvas.setFocus" class="function">setFocus</dd>
+                <dd id="MplCanvas.setFocusPolicy" class="function">setFocusPolicy</dd>
+                <dd id="MplCanvas.setFocusProxy" class="function">setFocusProxy</dd>
+                <dd id="MplCanvas.setFont" class="function">setFont</dd>
+                <dd id="MplCanvas.setForegroundRole" class="function">setForegroundRole</dd>
+                <dd id="MplCanvas.setGeometry" class="function">setGeometry</dd>
+                <dd id="MplCanvas.setGraphicsEffect" class="function">setGraphicsEffect</dd>
+                <dd id="MplCanvas.setHidden" class="function">setHidden</dd>
+                <dd id="MplCanvas.setInputMethodHints" class="function">setInputMethodHints</dd>
+                <dd id="MplCanvas.setLayout" class="function">setLayout</dd>
+                <dd id="MplCanvas.setLayoutDirection" class="function">setLayoutDirection</dd>
+                <dd id="MplCanvas.setLocale" class="function">setLocale</dd>
+                <dd id="MplCanvas.setMask" class="function">setMask</dd>
+                <dd id="MplCanvas.setMaximumHeight" class="function">setMaximumHeight</dd>
+                <dd id="MplCanvas.setMaximumSize" class="function">setMaximumSize</dd>
+                <dd id="MplCanvas.setMaximumWidth" class="function">setMaximumWidth</dd>
+                <dd id="MplCanvas.setMinimumHeight" class="function">setMinimumHeight</dd>
+                <dd id="MplCanvas.setMinimumSize" class="function">setMinimumSize</dd>
+                <dd id="MplCanvas.setMinimumWidth" class="function">setMinimumWidth</dd>
+                <dd id="MplCanvas.setMouseTracking" class="function">setMouseTracking</dd>
+                <dd id="MplCanvas.setPalette" class="function">setPalette</dd>
+                <dd id="MplCanvas.setParent" class="function">setParent</dd>
+                <dd id="MplCanvas.setShortcutAutoRepeat" class="function">setShortcutAutoRepeat</dd>
+                <dd id="MplCanvas.setShortcutEnabled" class="function">setShortcutEnabled</dd>
+                <dd id="MplCanvas.setSizeIncrement" class="function">setSizeIncrement</dd>
+                <dd id="MplCanvas.setSizePolicy" class="function">setSizePolicy</dd>
+                <dd id="MplCanvas.setStatusTip" class="function">setStatusTip</dd>
+                <dd id="MplCanvas.setStyle" class="function">setStyle</dd>
+                <dd id="MplCanvas.setStyleSheet" class="function">setStyleSheet</dd>
+                <dd id="MplCanvas.setTabOrder" class="function">setTabOrder</dd>
+                <dd id="MplCanvas.setTabletTracking" class="function">setTabletTracking</dd>
+                <dd id="MplCanvas.setToolTip" class="function">setToolTip</dd>
+                <dd id="MplCanvas.setToolTipDuration" class="function">setToolTipDuration</dd>
+                <dd id="MplCanvas.setUpdatesEnabled" class="function">setUpdatesEnabled</dd>
+                <dd id="MplCanvas.setVisible" class="function">setVisible</dd>
+                <dd id="MplCanvas.setWhatsThis" class="function">setWhatsThis</dd>
+                <dd id="MplCanvas.setWindowFilePath" class="function">setWindowFilePath</dd>
+                <dd id="MplCanvas.setWindowFlag" class="function">setWindowFlag</dd>
+                <dd id="MplCanvas.setWindowFlags" class="function">setWindowFlags</dd>
+                <dd id="MplCanvas.setWindowIcon" class="function">setWindowIcon</dd>
+                <dd id="MplCanvas.setWindowIconText" class="function">setWindowIconText</dd>
+                <dd id="MplCanvas.setWindowModality" class="function">setWindowModality</dd>
+                <dd id="MplCanvas.setWindowModified" class="function">setWindowModified</dd>
+                <dd id="MplCanvas.setWindowOpacity" class="function">setWindowOpacity</dd>
+                <dd id="MplCanvas.setWindowRole" class="function">setWindowRole</dd>
+                <dd id="MplCanvas.setWindowState" class="function">setWindowState</dd>
+                <dd id="MplCanvas.setWindowTitle" class="function">setWindowTitle</dd>
+                <dd id="MplCanvas.sharedPainter" class="function">sharedPainter</dd>
+                <dd id="MplCanvas.show" class="function">show</dd>
+                <dd id="MplCanvas.showFullScreen" class="function">showFullScreen</dd>
+                <dd id="MplCanvas.showMaximized" class="function">showMaximized</dd>
+                <dd id="MplCanvas.showMinimized" class="function">showMinimized</dd>
+                <dd id="MplCanvas.showNormal" class="function">showNormal</dd>
+                <dd id="MplCanvas.size" class="function">size</dd>
+                <dd id="MplCanvas.sizeIncrement" class="function">sizeIncrement</dd>
+                <dd id="MplCanvas.sizePolicy" class="function">sizePolicy</dd>
+                <dd id="MplCanvas.stackUnder" class="function">stackUnder</dd>
+                <dd id="MplCanvas.statusTip" class="function">statusTip</dd>
+                <dd id="MplCanvas.style" class="function">style</dd>
+                <dd id="MplCanvas.styleSheet" class="function">styleSheet</dd>
+                <dd id="MplCanvas.tabletEvent" class="function">tabletEvent</dd>
+                <dd id="MplCanvas.testAttribute" class="function">testAttribute</dd>
+                <dd id="MplCanvas.toolTip" class="function">toolTip</dd>
+                <dd id="MplCanvas.toolTipDuration" class="function">toolTipDuration</dd>
+                <dd id="MplCanvas.underMouse" class="function">underMouse</dd>
+                <dd id="MplCanvas.ungrabGesture" class="function">ungrabGesture</dd>
+                <dd id="MplCanvas.unsetCursor" class="function">unsetCursor</dd>
+                <dd id="MplCanvas.unsetLayoutDirection" class="function">unsetLayoutDirection</dd>
+                <dd id="MplCanvas.unsetLocale" class="function">unsetLocale</dd>
+                <dd id="MplCanvas.update" class="function">update</dd>
+                <dd id="MplCanvas.updateGeometry" class="function">updateGeometry</dd>
+                <dd id="MplCanvas.updateMicroFocus" class="function">updateMicroFocus</dd>
+                <dd id="MplCanvas.updatesEnabled" class="function">updatesEnabled</dd>
+                <dd id="MplCanvas.visibleRegion" class="function">visibleRegion</dd>
+                <dd id="MplCanvas.whatsThis" class="function">whatsThis</dd>
+                <dd id="MplCanvas.width" class="function">width</dd>
+                <dd id="MplCanvas.winId" class="function">winId</dd>
+                <dd id="MplCanvas.window" class="function">window</dd>
+                <dd id="MplCanvas.windowFilePath" class="function">windowFilePath</dd>
+                <dd id="MplCanvas.windowFlags" class="function">windowFlags</dd>
+                <dd id="MplCanvas.windowHandle" class="function">windowHandle</dd>
+                <dd id="MplCanvas.windowIcon" class="function">windowIcon</dd>
+                <dd id="MplCanvas.windowIconText" class="function">windowIconText</dd>
+                <dd id="MplCanvas.windowModality" class="function">windowModality</dd>
+                <dd id="MplCanvas.windowOpacity" class="function">windowOpacity</dd>
+                <dd id="MplCanvas.windowRole" class="function">windowRole</dd>
+                <dd id="MplCanvas.windowState" class="function">windowState</dd>
+                <dd id="MplCanvas.windowTitle" class="function">windowTitle</dd>
+                <dd id="MplCanvas.windowType" class="function">windowType</dd>
+                <dd id="MplCanvas.x" class="function">x</dd>
+                <dd id="MplCanvas.y" class="function">y</dd>
+                <dd id="MplCanvas.windowIconTextChanged" class="function">windowIconTextChanged</dd>
+                <dd id="MplCanvas.windowIconChanged" class="function">windowIconChanged</dd>
+                <dd id="MplCanvas.windowTitleChanged" class="function">windowTitleChanged</dd>
+                <dd id="MplCanvas.customContextMenuRequested" class="function">customContextMenuRequested</dd>
+
+            </div>
+            <div><dt>PyQt5.QtCore.QObject</dt>
+                                <dd id="MplCanvas.blockSignals" class="function">blockSignals</dd>
+                <dd id="MplCanvas.childEvent" class="function">childEvent</dd>
+                <dd id="MplCanvas.children" class="function">children</dd>
+                <dd id="MplCanvas.connectNotify" class="function">connectNotify</dd>
+                <dd id="MplCanvas.customEvent" class="function">customEvent</dd>
+                <dd id="MplCanvas.deleteLater" class="function">deleteLater</dd>
+                <dd id="MplCanvas.disconnect" class="function">disconnect</dd>
+                <dd id="MplCanvas.disconnectNotify" class="function">disconnectNotify</dd>
+                <dd id="MplCanvas.dumpObjectInfo" class="function">dumpObjectInfo</dd>
+                <dd id="MplCanvas.dumpObjectTree" class="function">dumpObjectTree</dd>
+                <dd id="MplCanvas.dynamicPropertyNames" class="function">dynamicPropertyNames</dd>
+                <dd id="MplCanvas.eventFilter" class="function">eventFilter</dd>
+                <dd id="MplCanvas.findChild" class="function">findChild</dd>
+                <dd id="MplCanvas.findChildren" class="function">findChildren</dd>
+                <dd id="MplCanvas.inherits" class="function">inherits</dd>
+                <dd id="MplCanvas.installEventFilter" class="function">installEventFilter</dd>
+                <dd id="MplCanvas.isSignalConnected" class="function">isSignalConnected</dd>
+                <dd id="MplCanvas.isWidgetType" class="function">isWidgetType</dd>
+                <dd id="MplCanvas.isWindowType" class="function">isWindowType</dd>
+                <dd id="MplCanvas.killTimer" class="function">killTimer</dd>
+                <dd id="MplCanvas.metaObject" class="function">metaObject</dd>
+                <dd id="MplCanvas.moveToThread" class="function">moveToThread</dd>
+                <dd id="MplCanvas.objectName" class="function">objectName</dd>
+                <dd id="MplCanvas.parent" class="function">parent</dd>
+                <dd id="MplCanvas.property" class="function">property</dd>
+                <dd id="MplCanvas.pyqtConfigure" class="function">pyqtConfigure</dd>
+                <dd id="MplCanvas.receivers" class="function">receivers</dd>
+                <dd id="MplCanvas.removeEventFilter" class="function">removeEventFilter</dd>
+                <dd id="MplCanvas.sender" class="function">sender</dd>
+                <dd id="MplCanvas.senderSignalIndex" class="function">senderSignalIndex</dd>
+                <dd id="MplCanvas.setObjectName" class="function">setObjectName</dd>
+                <dd id="MplCanvas.setProperty" class="function">setProperty</dd>
+                <dd id="MplCanvas.signalsBlocked" class="function">signalsBlocked</dd>
+                <dd id="MplCanvas.startTimer" class="function">startTimer</dd>
+                <dd id="MplCanvas.thread" class="function">thread</dd>
+                <dd id="MplCanvas.timerEvent" class="function">timerEvent</dd>
+                <dd id="MplCanvas.tr" class="function">tr</dd>
+                <dd id="MplCanvas.objectNameChanged" class="function">objectNameChanged</dd>
+                <dd id="MplCanvas.destroyed" class="function">destroyed</dd>
+
+            </div>
+            <div><dt>PyQt5.QtGui.QPaintDevice</dt>
+                                <dd id="MplCanvas.PaintDeviceMetric" class="class">PaintDeviceMetric</dd>
+                <dd id="MplCanvas.colorCount" class="function">colorCount</dd>
+                <dd id="MplCanvas.depth" class="function">depth</dd>
+                <dd id="MplCanvas.devicePixelRatio" class="function">devicePixelRatio</dd>
+                <dd id="MplCanvas.devicePixelRatioF" class="function">devicePixelRatioF</dd>
+                <dd id="MplCanvas.devicePixelRatioFScale" class="function">devicePixelRatioFScale</dd>
+                <dd id="MplCanvas.heightMM" class="function">heightMM</dd>
+                <dd id="MplCanvas.logicalDpiX" class="function">logicalDpiX</dd>
+                <dd id="MplCanvas.logicalDpiY" class="function">logicalDpiY</dd>
+                <dd id="MplCanvas.paintingActive" class="function">paintingActive</dd>
+                <dd id="MplCanvas.physicalDpiX" class="function">physicalDpiX</dd>
+                <dd id="MplCanvas.physicalDpiY" class="function">physicalDpiY</dd>
+                <dd id="MplCanvas.widthMM" class="function">widthMM</dd>
+
+            </div>
+                                </dl>
+                            </div>
+                </section>
+                <section id="ScopeViewer">
+                            <input id="ScopeViewer-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+<div class="attr class">
+            
+    <span class="def">class</span>
+    <span class="name">ScopeViewer</span><wbr>(<span class="base">PyQt5.QtWidgets.QMainWindow</span>):
+
+                <label class="view-source-button" for="ScopeViewer-view-source"><span>View Source</span></label>
+
+    </div>
+    <a class="headerlink" href="#ScopeViewer"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="ScopeViewer-24"><a href="#ScopeViewer-24"><span class="linenos">24</span></a><span class="k">class</span> <span class="nc">ScopeViewer</span><span class="p">(</span><span class="n">QtWidgets</span><span class="o">.</span><span class="n">QMainWindow</span><span class="p">):</span>
+</span><span id="ScopeViewer-25"><a href="#ScopeViewer-25"><span class="linenos">25</span></a>
+</span><span id="ScopeViewer-26"><a href="#ScopeViewer-26"><span class="linenos">26</span></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">refresh_rate</span><span class="p">,</span> <span class="n">scope_buffer_size</span><span class="p">,</span> <span class="n">scope_sampling_rate</span><span class="p">):</span>
+</span><span id="ScopeViewer-27"><a href="#ScopeViewer-27"><span class="linenos">27</span></a>        <span class="nb">super</span><span class="p">(</span><span class="n">ScopeViewer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+</span><span id="ScopeViewer-28"><a href="#ScopeViewer-28"><span class="linenos">28</span></a>
+</span><span id="ScopeViewer-29"><a href="#ScopeViewer-29"><span class="linenos">29</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">client</span> <span class="o">=</span> <span class="n">client</span>
+</span><span id="ScopeViewer-30"><a href="#ScopeViewer-30"><span class="linenos">30</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">refresh_rate</span> <span class="o">=</span> <span class="n">refresh_rate</span>
+</span><span id="ScopeViewer-31"><a href="#ScopeViewer-31"><span class="linenos">31</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">scope_buffer_size</span> <span class="o">=</span> <span class="n">scope_buffer_size</span>
+</span><span id="ScopeViewer-32"><a href="#ScopeViewer-32"><span class="linenos">32</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">scope_sampling_rate</span> <span class="o">=</span> <span class="n">scope_sampling_rate</span>
+</span><span id="ScopeViewer-33"><a href="#ScopeViewer-33"><span class="linenos">33</span></a>        
+</span><span id="ScopeViewer-34"><a href="#ScopeViewer-34"><span class="linenos">34</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">time_axis</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">scope_buffer_size</span><span class="p">)</span><span class="o">/</span><span class="n">scope_sampling_rate</span>
+</span><span id="ScopeViewer-35"><a href="#ScopeViewer-35"><span class="linenos">35</span></a>
+</span><span id="ScopeViewer-36"><a href="#ScopeViewer-36"><span class="linenos">36</span></a>        <span class="c1">#setup gui</span>
+</span><span id="ScopeViewer-37"><a href="#ScopeViewer-37"><span class="linenos">37</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span> <span class="o">=</span> <span class="n">MplCanvas</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+</span><span id="ScopeViewer-38"><a href="#ScopeViewer-38"><span class="linenos">38</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">setCentralWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="p">)</span>
+</span><span id="ScopeViewer-39"><a href="#ScopeViewer-39"><span class="linenos">39</span></a>
+</span><span id="ScopeViewer-40"><a href="#ScopeViewer-40"><span class="linenos">40</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">update_plot</span><span class="p">()</span>
+</span><span id="ScopeViewer-41"><a href="#ScopeViewer-41"><span class="linenos">41</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</span><span id="ScopeViewer-42"><a href="#ScopeViewer-42"><span class="linenos">42</span></a>
+</span><span id="ScopeViewer-43"><a href="#ScopeViewer-43"><span class="linenos">43</span></a>        <span class="c1"># Setup a timer to trigger the redraw by calling update_plot.</span>
+</span><span id="ScopeViewer-44"><a href="#ScopeViewer-44"><span class="linenos">44</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">timer</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QTimer</span><span class="p">()</span>
+</span><span id="ScopeViewer-45"><a href="#ScopeViewer-45"><span class="linenos">45</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">timer</span><span class="o">.</span><span class="n">setInterval</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="mi">1000</span><span class="o">/</span><span class="n">refresh_rate</span><span class="p">))</span>
+</span><span id="ScopeViewer-46"><a href="#ScopeViewer-46"><span class="linenos">46</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">timer</span><span class="o">.</span><span class="n">timeout</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">update_plot</span><span class="p">)</span>
+</span><span id="ScopeViewer-47"><a href="#ScopeViewer-47"><span class="linenos">47</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">timer</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</span><span id="ScopeViewer-48"><a href="#ScopeViewer-48"><span class="linenos">48</span></a>
+</span><span id="ScopeViewer-49"><a href="#ScopeViewer-49"><span class="linenos">49</span></a>    <span class="k">def</span> <span class="nf">update_plot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span id="ScopeViewer-50"><a href="#ScopeViewer-50"><span class="linenos">50</span></a>        <span class="c1"># Drop off the first y element, append a new one.</span>
+</span><span id="ScopeViewer-51"><a href="#ScopeViewer-51"><span class="linenos">51</span></a>        <span class="n">scope_data</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get_scope_data</span><span class="p">())</span>
+</span><span id="ScopeViewer-52"><a href="#ScopeViewer-52"><span class="linenos">52</span></a>        
+</span><span id="ScopeViewer-53"><a href="#ScopeViewer-53"><span class="linenos">53</span></a>        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">scope_data</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">dict</span><span class="p">:</span>
+</span><span id="ScopeViewer-54"><a href="#ScopeViewer-54"><span class="linenos">54</span></a>            <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">cla</span><span class="p">()</span>  <span class="c1"># Clear the canvas.</span>
+</span><span id="ScopeViewer-55"><a href="#ScopeViewer-55"><span class="linenos">55</span></a>            <span class="k">for</span> <span class="n">trace_name</span> <span class="ow">in</span> <span class="n">scope_data</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+</span><span id="ScopeViewer-56"><a href="#ScopeViewer-56"><span class="linenos">56</span></a>                <span class="n">trace</span> <span class="o">=</span> <span class="n">scope_data</span><span class="p">[</span><span class="n">trace_name</span><span class="p">]</span>
+</span><span id="ScopeViewer-57"><a href="#ScopeViewer-57"><span class="linenos">57</span></a>                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">trace</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+</span><span id="ScopeViewer-58"><a href="#ScopeViewer-58"><span class="linenos">58</span></a>                    <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time_axis</span><span class="p">,</span> <span class="n">trace</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">trace_name</span><span class="p">)</span>
+</span><span id="ScopeViewer-59"><a href="#ScopeViewer-59"><span class="linenos">59</span></a>            
+</span><span id="ScopeViewer-60"><a href="#ScopeViewer-60"><span class="linenos">60</span></a>            <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+</span><span id="ScopeViewer-61"><a href="#ScopeViewer-61"><span class="linenos">61</span></a>        <span class="k">else</span><span class="p">:</span>
+</span><span id="ScopeViewer-62"><a href="#ScopeViewer-62"><span class="linenos">62</span></a>            <span class="nb">print</span><span class="p">(</span><span class="n">scope_data</span><span class="p">)</span>
+</span><span id="ScopeViewer-63"><a href="#ScopeViewer-63"><span class="linenos">63</span></a>        <span class="c1"># Trigger the canvas to update and redraw.</span>
+</span><span id="ScopeViewer-64"><a href="#ScopeViewer-64"><span class="linenos">64</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</span></pre></div>
+
+
+            <div class="docstring"><p>QMainWindow(parent: QWidget = None, flags: Union[Qt.WindowFlags, Qt.WindowType] = Qt.WindowFlags())</p>
+</div>
+
+
+                            <div id="ScopeViewer.__init__" class="classattr">
+                                        <input id="ScopeViewer.__init__-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+<div class="attr function">
+            
+        <span class="name">ScopeViewer</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">client</span>, </span><span class="param"><span class="n">refresh_rate</span>, </span><span class="param"><span class="n">scope_buffer_size</span>, </span><span class="param"><span class="n">scope_sampling_rate</span></span>)</span>
+
+                <label class="view-source-button" for="ScopeViewer.__init__-view-source"><span>View Source</span></label>
+
+    </div>
+    <a class="headerlink" href="#ScopeViewer.__init__"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="ScopeViewer.__init__-26"><a href="#ScopeViewer.__init__-26"><span class="linenos">26</span></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">refresh_rate</span><span class="p">,</span> <span class="n">scope_buffer_size</span><span class="p">,</span> <span class="n">scope_sampling_rate</span><span class="p">):</span>
+</span><span id="ScopeViewer.__init__-27"><a href="#ScopeViewer.__init__-27"><span class="linenos">27</span></a>        <span class="nb">super</span><span class="p">(</span><span class="n">ScopeViewer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+</span><span id="ScopeViewer.__init__-28"><a href="#ScopeViewer.__init__-28"><span class="linenos">28</span></a>
+</span><span id="ScopeViewer.__init__-29"><a href="#ScopeViewer.__init__-29"><span class="linenos">29</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">client</span> <span class="o">=</span> <span class="n">client</span>
+</span><span id="ScopeViewer.__init__-30"><a href="#ScopeViewer.__init__-30"><span class="linenos">30</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">refresh_rate</span> <span class="o">=</span> <span class="n">refresh_rate</span>
+</span><span id="ScopeViewer.__init__-31"><a href="#ScopeViewer.__init__-31"><span class="linenos">31</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">scope_buffer_size</span> <span class="o">=</span> <span class="n">scope_buffer_size</span>
+</span><span id="ScopeViewer.__init__-32"><a href="#ScopeViewer.__init__-32"><span class="linenos">32</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">scope_sampling_rate</span> <span class="o">=</span> <span class="n">scope_sampling_rate</span>
+</span><span id="ScopeViewer.__init__-33"><a href="#ScopeViewer.__init__-33"><span class="linenos">33</span></a>        
+</span><span id="ScopeViewer.__init__-34"><a href="#ScopeViewer.__init__-34"><span class="linenos">34</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">time_axis</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">scope_buffer_size</span><span class="p">)</span><span class="o">/</span><span class="n">scope_sampling_rate</span>
+</span><span id="ScopeViewer.__init__-35"><a href="#ScopeViewer.__init__-35"><span class="linenos">35</span></a>
+</span><span id="ScopeViewer.__init__-36"><a href="#ScopeViewer.__init__-36"><span class="linenos">36</span></a>        <span class="c1">#setup gui</span>
+</span><span id="ScopeViewer.__init__-37"><a href="#ScopeViewer.__init__-37"><span class="linenos">37</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span> <span class="o">=</span> <span class="n">MplCanvas</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+</span><span id="ScopeViewer.__init__-38"><a href="#ScopeViewer.__init__-38"><span class="linenos">38</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">setCentralWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="p">)</span>
+</span><span id="ScopeViewer.__init__-39"><a href="#ScopeViewer.__init__-39"><span class="linenos">39</span></a>
+</span><span id="ScopeViewer.__init__-40"><a href="#ScopeViewer.__init__-40"><span class="linenos">40</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">update_plot</span><span class="p">()</span>
+</span><span id="ScopeViewer.__init__-41"><a href="#ScopeViewer.__init__-41"><span class="linenos">41</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</span><span id="ScopeViewer.__init__-42"><a href="#ScopeViewer.__init__-42"><span class="linenos">42</span></a>
+</span><span id="ScopeViewer.__init__-43"><a href="#ScopeViewer.__init__-43"><span class="linenos">43</span></a>        <span class="c1"># Setup a timer to trigger the redraw by calling update_plot.</span>
+</span><span id="ScopeViewer.__init__-44"><a href="#ScopeViewer.__init__-44"><span class="linenos">44</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">timer</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QTimer</span><span class="p">()</span>
+</span><span id="ScopeViewer.__init__-45"><a href="#ScopeViewer.__init__-45"><span class="linenos">45</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">timer</span><span class="o">.</span><span class="n">setInterval</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="mi">1000</span><span class="o">/</span><span class="n">refresh_rate</span><span class="p">))</span>
+</span><span id="ScopeViewer.__init__-46"><a href="#ScopeViewer.__init__-46"><span class="linenos">46</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">timer</span><span class="o">.</span><span class="n">timeout</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">update_plot</span><span class="p">)</span>
+</span><span id="ScopeViewer.__init__-47"><a href="#ScopeViewer.__init__-47"><span class="linenos">47</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">timer</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</span></pre></div>
+
+
+    
+
+                            </div>
+                            <div id="ScopeViewer.update_plot" class="classattr">
+                                        <input id="ScopeViewer.update_plot-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+<div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">update_plot</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">):</span></span>
+
+                <label class="view-source-button" for="ScopeViewer.update_plot-view-source"><span>View Source</span></label>
+
+    </div>
+    <a class="headerlink" href="#ScopeViewer.update_plot"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="ScopeViewer.update_plot-49"><a href="#ScopeViewer.update_plot-49"><span class="linenos">49</span></a>    <span class="k">def</span> <span class="nf">update_plot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span id="ScopeViewer.update_plot-50"><a href="#ScopeViewer.update_plot-50"><span class="linenos">50</span></a>        <span class="c1"># Drop off the first y element, append a new one.</span>
+</span><span id="ScopeViewer.update_plot-51"><a href="#ScopeViewer.update_plot-51"><span class="linenos">51</span></a>        <span class="n">scope_data</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get_scope_data</span><span class="p">())</span>
+</span><span id="ScopeViewer.update_plot-52"><a href="#ScopeViewer.update_plot-52"><span class="linenos">52</span></a>        
+</span><span id="ScopeViewer.update_plot-53"><a href="#ScopeViewer.update_plot-53"><span class="linenos">53</span></a>        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">scope_data</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">dict</span><span class="p">:</span>
+</span><span id="ScopeViewer.update_plot-54"><a href="#ScopeViewer.update_plot-54"><span class="linenos">54</span></a>            <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">cla</span><span class="p">()</span>  <span class="c1"># Clear the canvas.</span>
+</span><span id="ScopeViewer.update_plot-55"><a href="#ScopeViewer.update_plot-55"><span class="linenos">55</span></a>            <span class="k">for</span> <span class="n">trace_name</span> <span class="ow">in</span> <span class="n">scope_data</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+</span><span id="ScopeViewer.update_plot-56"><a href="#ScopeViewer.update_plot-56"><span class="linenos">56</span></a>                <span class="n">trace</span> <span class="o">=</span> <span class="n">scope_data</span><span class="p">[</span><span class="n">trace_name</span><span class="p">]</span>
+</span><span id="ScopeViewer.update_plot-57"><a href="#ScopeViewer.update_plot-57"><span class="linenos">57</span></a>                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">trace</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+</span><span id="ScopeViewer.update_plot-58"><a href="#ScopeViewer.update_plot-58"><span class="linenos">58</span></a>                    <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time_axis</span><span class="p">,</span> <span class="n">trace</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">trace_name</span><span class="p">)</span>
+</span><span id="ScopeViewer.update_plot-59"><a href="#ScopeViewer.update_plot-59"><span class="linenos">59</span></a>            
+</span><span id="ScopeViewer.update_plot-60"><a href="#ScopeViewer.update_plot-60"><span class="linenos">60</span></a>            <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+</span><span id="ScopeViewer.update_plot-61"><a href="#ScopeViewer.update_plot-61"><span class="linenos">61</span></a>        <span class="k">else</span><span class="p">:</span>
+</span><span id="ScopeViewer.update_plot-62"><a href="#ScopeViewer.update_plot-62"><span class="linenos">62</span></a>            <span class="nb">print</span><span class="p">(</span><span class="n">scope_data</span><span class="p">)</span>
+</span><span id="ScopeViewer.update_plot-63"><a href="#ScopeViewer.update_plot-63"><span class="linenos">63</span></a>        <span class="c1"># Trigger the canvas to update and redraw.</span>
+</span><span id="ScopeViewer.update_plot-64"><a href="#ScopeViewer.update_plot-64"><span class="linenos">64</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</span></pre></div>
+
+
+    
+
+                            </div>
+                            <div class="inherited">
+                                <h5>Inherited Members</h5>
+                                <dl>
+                                    <div><dt>PyQt5.QtWidgets.QMainWindow</dt>
+                                <dd id="ScopeViewer.DockOption" class="class">DockOption</dd>
+                <dd id="ScopeViewer.DockOptions" class="class">DockOptions</dd>
+                <dd id="ScopeViewer.addDockWidget" class="function">addDockWidget</dd>
+                <dd id="ScopeViewer.addToolBar" class="function">addToolBar</dd>
+                <dd id="ScopeViewer.addToolBarBreak" class="function">addToolBarBreak</dd>
+                <dd id="ScopeViewer.centralWidget" class="function">centralWidget</dd>
+                <dd id="ScopeViewer.contextMenuEvent" class="function">contextMenuEvent</dd>
+                <dd id="ScopeViewer.corner" class="function">corner</dd>
+                <dd id="ScopeViewer.createPopupMenu" class="function">createPopupMenu</dd>
+                <dd id="ScopeViewer.dockOptions" class="function">dockOptions</dd>
+                <dd id="ScopeViewer.dockWidgetArea" class="function">dockWidgetArea</dd>
+                <dd id="ScopeViewer.documentMode" class="function">documentMode</dd>
+                <dd id="ScopeViewer.event" class="function">event</dd>
+                <dd id="ScopeViewer.iconSize" class="function">iconSize</dd>
+                <dd id="ScopeViewer.insertToolBar" class="function">insertToolBar</dd>
+                <dd id="ScopeViewer.insertToolBarBreak" class="function">insertToolBarBreak</dd>
+                <dd id="ScopeViewer.isAnimated" class="function">isAnimated</dd>
+                <dd id="ScopeViewer.isDockNestingEnabled" class="function">isDockNestingEnabled</dd>
+                <dd id="ScopeViewer.isSeparator" class="function">isSeparator</dd>
+                <dd id="ScopeViewer.menuBar" class="function">menuBar</dd>
+                <dd id="ScopeViewer.menuWidget" class="function">menuWidget</dd>
+                <dd id="ScopeViewer.removeDockWidget" class="function">removeDockWidget</dd>
+                <dd id="ScopeViewer.removeToolBar" class="function">removeToolBar</dd>
+                <dd id="ScopeViewer.removeToolBarBreak" class="function">removeToolBarBreak</dd>
+                <dd id="ScopeViewer.resizeDocks" class="function">resizeDocks</dd>
+                <dd id="ScopeViewer.restoreDockWidget" class="function">restoreDockWidget</dd>
+                <dd id="ScopeViewer.restoreState" class="function">restoreState</dd>
+                <dd id="ScopeViewer.saveState" class="function">saveState</dd>
+                <dd id="ScopeViewer.setAnimated" class="function">setAnimated</dd>
+                <dd id="ScopeViewer.setCentralWidget" class="function">setCentralWidget</dd>
+                <dd id="ScopeViewer.setCorner" class="function">setCorner</dd>
+                <dd id="ScopeViewer.setDockNestingEnabled" class="function">setDockNestingEnabled</dd>
+                <dd id="ScopeViewer.setDockOptions" class="function">setDockOptions</dd>
+                <dd id="ScopeViewer.setDocumentMode" class="function">setDocumentMode</dd>
+                <dd id="ScopeViewer.setIconSize" class="function">setIconSize</dd>
+                <dd id="ScopeViewer.setMenuBar" class="function">setMenuBar</dd>
+                <dd id="ScopeViewer.setMenuWidget" class="function">setMenuWidget</dd>
+                <dd id="ScopeViewer.setStatusBar" class="function">setStatusBar</dd>
+                <dd id="ScopeViewer.setTabPosition" class="function">setTabPosition</dd>
+                <dd id="ScopeViewer.setTabShape" class="function">setTabShape</dd>
+                <dd id="ScopeViewer.setToolButtonStyle" class="function">setToolButtonStyle</dd>
+                <dd id="ScopeViewer.setUnifiedTitleAndToolBarOnMac" class="function">setUnifiedTitleAndToolBarOnMac</dd>
+                <dd id="ScopeViewer.splitDockWidget" class="function">splitDockWidget</dd>
+                <dd id="ScopeViewer.statusBar" class="function">statusBar</dd>
+                <dd id="ScopeViewer.tabPosition" class="function">tabPosition</dd>
+                <dd id="ScopeViewer.tabShape" class="function">tabShape</dd>
+                <dd id="ScopeViewer.tabifiedDockWidgets" class="function">tabifiedDockWidgets</dd>
+                <dd id="ScopeViewer.tabifyDockWidget" class="function">tabifyDockWidget</dd>
+                <dd id="ScopeViewer.takeCentralWidget" class="function">takeCentralWidget</dd>
+                <dd id="ScopeViewer.toolBarArea" class="function">toolBarArea</dd>
+                <dd id="ScopeViewer.toolBarBreak" class="function">toolBarBreak</dd>
+                <dd id="ScopeViewer.toolButtonStyle" class="function">toolButtonStyle</dd>
+                <dd id="ScopeViewer.unifiedTitleAndToolBarOnMac" class="function">unifiedTitleAndToolBarOnMac</dd>
+                <dd id="ScopeViewer.tabifiedDockWidgetActivated" class="function">tabifiedDockWidgetActivated</dd>
+                <dd id="ScopeViewer.toolButtonStyleChanged" class="function">toolButtonStyleChanged</dd>
+                <dd id="ScopeViewer.iconSizeChanged" class="function">iconSizeChanged</dd>
+
+            </div>
+            <div><dt>PyQt5.QtWidgets.QWidget</dt>
+                                <dd id="ScopeViewer.RenderFlag" class="class">RenderFlag</dd>
+                <dd id="ScopeViewer.RenderFlags" class="class">RenderFlags</dd>
+                <dd id="ScopeViewer.acceptDrops" class="function">acceptDrops</dd>
+                <dd id="ScopeViewer.accessibleDescription" class="function">accessibleDescription</dd>
+                <dd id="ScopeViewer.accessibleName" class="function">accessibleName</dd>
+                <dd id="ScopeViewer.actionEvent" class="function">actionEvent</dd>
+                <dd id="ScopeViewer.actions" class="function">actions</dd>
+                <dd id="ScopeViewer.activateWindow" class="function">activateWindow</dd>
+                <dd id="ScopeViewer.addAction" class="function">addAction</dd>
+                <dd id="ScopeViewer.addActions" class="function">addActions</dd>
+                <dd id="ScopeViewer.adjustSize" class="function">adjustSize</dd>
+                <dd id="ScopeViewer.autoFillBackground" class="function">autoFillBackground</dd>
+                <dd id="ScopeViewer.backgroundRole" class="function">backgroundRole</dd>
+                <dd id="ScopeViewer.baseSize" class="function">baseSize</dd>
+                <dd id="ScopeViewer.changeEvent" class="function">changeEvent</dd>
+                <dd id="ScopeViewer.childAt" class="function">childAt</dd>
+                <dd id="ScopeViewer.childrenRect" class="function">childrenRect</dd>
+                <dd id="ScopeViewer.childrenRegion" class="function">childrenRegion</dd>
+                <dd id="ScopeViewer.clearFocus" class="function">clearFocus</dd>
+                <dd id="ScopeViewer.clearMask" class="function">clearMask</dd>
+                <dd id="ScopeViewer.close" class="function">close</dd>
+                <dd id="ScopeViewer.closeEvent" class="function">closeEvent</dd>
+                <dd id="ScopeViewer.contentsMargins" class="function">contentsMargins</dd>
+                <dd id="ScopeViewer.contentsRect" class="function">contentsRect</dd>
+                <dd id="ScopeViewer.contextMenuPolicy" class="function">contextMenuPolicy</dd>
+                <dd id="ScopeViewer.create" class="function">create</dd>
+                <dd id="ScopeViewer.createWindowContainer" class="function">createWindowContainer</dd>
+                <dd id="ScopeViewer.cursor" class="function">cursor</dd>
+                <dd id="ScopeViewer.destroy" class="function">destroy</dd>
+                <dd id="ScopeViewer.devType" class="function">devType</dd>
+                <dd id="ScopeViewer.dragEnterEvent" class="function">dragEnterEvent</dd>
+                <dd id="ScopeViewer.dragLeaveEvent" class="function">dragLeaveEvent</dd>
+                <dd id="ScopeViewer.dragMoveEvent" class="function">dragMoveEvent</dd>
+                <dd id="ScopeViewer.dropEvent" class="function">dropEvent</dd>
+                <dd id="ScopeViewer.effectiveWinId" class="function">effectiveWinId</dd>
+                <dd id="ScopeViewer.ensurePolished" class="function">ensurePolished</dd>
+                <dd id="ScopeViewer.enterEvent" class="function">enterEvent</dd>
+                <dd id="ScopeViewer.find" class="function">find</dd>
+                <dd id="ScopeViewer.focusInEvent" class="function">focusInEvent</dd>
+                <dd id="ScopeViewer.focusNextChild" class="function">focusNextChild</dd>
+                <dd id="ScopeViewer.focusNextPrevChild" class="function">focusNextPrevChild</dd>
+                <dd id="ScopeViewer.focusOutEvent" class="function">focusOutEvent</dd>
+                <dd id="ScopeViewer.focusPolicy" class="function">focusPolicy</dd>
+                <dd id="ScopeViewer.focusPreviousChild" class="function">focusPreviousChild</dd>
+                <dd id="ScopeViewer.focusProxy" class="function">focusProxy</dd>
+                <dd id="ScopeViewer.focusWidget" class="function">focusWidget</dd>
+                <dd id="ScopeViewer.font" class="function">font</dd>
+                <dd id="ScopeViewer.fontInfo" class="function">fontInfo</dd>
+                <dd id="ScopeViewer.fontMetrics" class="function">fontMetrics</dd>
+                <dd id="ScopeViewer.foregroundRole" class="function">foregroundRole</dd>
+                <dd id="ScopeViewer.frameGeometry" class="function">frameGeometry</dd>
+                <dd id="ScopeViewer.frameSize" class="function">frameSize</dd>
+                <dd id="ScopeViewer.geometry" class="function">geometry</dd>
+                <dd id="ScopeViewer.getContentsMargins" class="function">getContentsMargins</dd>
+                <dd id="ScopeViewer.grab" class="function">grab</dd>
+                <dd id="ScopeViewer.grabGesture" class="function">grabGesture</dd>
+                <dd id="ScopeViewer.grabKeyboard" class="function">grabKeyboard</dd>
+                <dd id="ScopeViewer.grabMouse" class="function">grabMouse</dd>
+                <dd id="ScopeViewer.grabShortcut" class="function">grabShortcut</dd>
+                <dd id="ScopeViewer.graphicsEffect" class="function">graphicsEffect</dd>
+                <dd id="ScopeViewer.graphicsProxyWidget" class="function">graphicsProxyWidget</dd>
+                <dd id="ScopeViewer.hasFocus" class="function">hasFocus</dd>
+                <dd id="ScopeViewer.hasHeightForWidth" class="function">hasHeightForWidth</dd>
+                <dd id="ScopeViewer.hasMouseTracking" class="function">hasMouseTracking</dd>
+                <dd id="ScopeViewer.hasTabletTracking" class="function">hasTabletTracking</dd>
+                <dd id="ScopeViewer.height" class="function">height</dd>
+                <dd id="ScopeViewer.heightForWidth" class="function">heightForWidth</dd>
+                <dd id="ScopeViewer.hide" class="function">hide</dd>
+                <dd id="ScopeViewer.hideEvent" class="function">hideEvent</dd>
+                <dd id="ScopeViewer.initPainter" class="function">initPainter</dd>
+                <dd id="ScopeViewer.inputMethodEvent" class="function">inputMethodEvent</dd>
+                <dd id="ScopeViewer.inputMethodHints" class="function">inputMethodHints</dd>
+                <dd id="ScopeViewer.inputMethodQuery" class="function">inputMethodQuery</dd>
+                <dd id="ScopeViewer.insertAction" class="function">insertAction</dd>
+                <dd id="ScopeViewer.insertActions" class="function">insertActions</dd>
+                <dd id="ScopeViewer.isActiveWindow" class="function">isActiveWindow</dd>
+                <dd id="ScopeViewer.isAncestorOf" class="function">isAncestorOf</dd>
+                <dd id="ScopeViewer.isEnabled" class="function">isEnabled</dd>
+                <dd id="ScopeViewer.isEnabledTo" class="function">isEnabledTo</dd>
+                <dd id="ScopeViewer.isFullScreen" class="function">isFullScreen</dd>
+                <dd id="ScopeViewer.isHidden" class="function">isHidden</dd>
+                <dd id="ScopeViewer.isLeftToRight" class="function">isLeftToRight</dd>
+                <dd id="ScopeViewer.isMaximized" class="function">isMaximized</dd>
+                <dd id="ScopeViewer.isMinimized" class="function">isMinimized</dd>
+                <dd id="ScopeViewer.isModal" class="function">isModal</dd>
+                <dd id="ScopeViewer.isRightToLeft" class="function">isRightToLeft</dd>
+                <dd id="ScopeViewer.isVisible" class="function">isVisible</dd>
+                <dd id="ScopeViewer.isVisibleTo" class="function">isVisibleTo</dd>
+                <dd id="ScopeViewer.isWindow" class="function">isWindow</dd>
+                <dd id="ScopeViewer.isWindowModified" class="function">isWindowModified</dd>
+                <dd id="ScopeViewer.keyPressEvent" class="function">keyPressEvent</dd>
+                <dd id="ScopeViewer.keyReleaseEvent" class="function">keyReleaseEvent</dd>
+                <dd id="ScopeViewer.keyboardGrabber" class="function">keyboardGrabber</dd>
+                <dd id="ScopeViewer.layout" class="function">layout</dd>
+                <dd id="ScopeViewer.layoutDirection" class="function">layoutDirection</dd>
+                <dd id="ScopeViewer.leaveEvent" class="function">leaveEvent</dd>
+                <dd id="ScopeViewer.locale" class="function">locale</dd>
+                <dd id="ScopeViewer.lower" class="function">lower</dd>
+                <dd id="ScopeViewer.mapFrom" class="function">mapFrom</dd>
+                <dd id="ScopeViewer.mapFromGlobal" class="function">mapFromGlobal</dd>
+                <dd id="ScopeViewer.mapFromParent" class="function">mapFromParent</dd>
+                <dd id="ScopeViewer.mapTo" class="function">mapTo</dd>
+                <dd id="ScopeViewer.mapToGlobal" class="function">mapToGlobal</dd>
+                <dd id="ScopeViewer.mapToParent" class="function">mapToParent</dd>
+                <dd id="ScopeViewer.mask" class="function">mask</dd>
+                <dd id="ScopeViewer.maximumHeight" class="function">maximumHeight</dd>
+                <dd id="ScopeViewer.maximumSize" class="function">maximumSize</dd>
+                <dd id="ScopeViewer.maximumWidth" class="function">maximumWidth</dd>
+                <dd id="ScopeViewer.metric" class="function">metric</dd>
+                <dd id="ScopeViewer.minimumHeight" class="function">minimumHeight</dd>
+                <dd id="ScopeViewer.minimumSize" class="function">minimumSize</dd>
+                <dd id="ScopeViewer.minimumSizeHint" class="function">minimumSizeHint</dd>
+                <dd id="ScopeViewer.minimumWidth" class="function">minimumWidth</dd>
+                <dd id="ScopeViewer.mouseDoubleClickEvent" class="function">mouseDoubleClickEvent</dd>
+                <dd id="ScopeViewer.mouseGrabber" class="function">mouseGrabber</dd>
+                <dd id="ScopeViewer.mouseMoveEvent" class="function">mouseMoveEvent</dd>
+                <dd id="ScopeViewer.mousePressEvent" class="function">mousePressEvent</dd>
+                <dd id="ScopeViewer.mouseReleaseEvent" class="function">mouseReleaseEvent</dd>
+                <dd id="ScopeViewer.move" class="function">move</dd>
+                <dd id="ScopeViewer.moveEvent" class="function">moveEvent</dd>
+                <dd id="ScopeViewer.nativeEvent" class="function">nativeEvent</dd>
+                <dd id="ScopeViewer.nativeParentWidget" class="function">nativeParentWidget</dd>
+                <dd id="ScopeViewer.nextInFocusChain" class="function">nextInFocusChain</dd>
+                <dd id="ScopeViewer.normalGeometry" class="function">normalGeometry</dd>
+                <dd id="ScopeViewer.overrideWindowFlags" class="function">overrideWindowFlags</dd>
+                <dd id="ScopeViewer.overrideWindowState" class="function">overrideWindowState</dd>
+                <dd id="ScopeViewer.paintEngine" class="function">paintEngine</dd>
+                <dd id="ScopeViewer.paintEvent" class="function">paintEvent</dd>
+                <dd id="ScopeViewer.palette" class="function">palette</dd>
+                <dd id="ScopeViewer.parentWidget" class="function">parentWidget</dd>
+                <dd id="ScopeViewer.pos" class="function">pos</dd>
+                <dd id="ScopeViewer.previousInFocusChain" class="function">previousInFocusChain</dd>
+                <dd id="ScopeViewer.raise_" class="function">raise_</dd>
+                <dd id="ScopeViewer.rect" class="function">rect</dd>
+                <dd id="ScopeViewer.releaseKeyboard" class="function">releaseKeyboard</dd>
+                <dd id="ScopeViewer.releaseMouse" class="function">releaseMouse</dd>
+                <dd id="ScopeViewer.releaseShortcut" class="function">releaseShortcut</dd>
+                <dd id="ScopeViewer.removeAction" class="function">removeAction</dd>
+                <dd id="ScopeViewer.render" class="function">render</dd>
+                <dd id="ScopeViewer.repaint" class="function">repaint</dd>
+                <dd id="ScopeViewer.resize" class="function">resize</dd>
+                <dd id="ScopeViewer.resizeEvent" class="function">resizeEvent</dd>
+                <dd id="ScopeViewer.restoreGeometry" class="function">restoreGeometry</dd>
+                <dd id="ScopeViewer.saveGeometry" class="function">saveGeometry</dd>
+                <dd id="ScopeViewer.screen" class="function">screen</dd>
+                <dd id="ScopeViewer.scroll" class="function">scroll</dd>
+                <dd id="ScopeViewer.setAcceptDrops" class="function">setAcceptDrops</dd>
+                <dd id="ScopeViewer.setAccessibleDescription" class="function">setAccessibleDescription</dd>
+                <dd id="ScopeViewer.setAccessibleName" class="function">setAccessibleName</dd>
+                <dd id="ScopeViewer.setAttribute" class="function">setAttribute</dd>
+                <dd id="ScopeViewer.setAutoFillBackground" class="function">setAutoFillBackground</dd>
+                <dd id="ScopeViewer.setBackgroundRole" class="function">setBackgroundRole</dd>
+                <dd id="ScopeViewer.setBaseSize" class="function">setBaseSize</dd>
+                <dd id="ScopeViewer.setContentsMargins" class="function">setContentsMargins</dd>
+                <dd id="ScopeViewer.setContextMenuPolicy" class="function">setContextMenuPolicy</dd>
+                <dd id="ScopeViewer.setCursor" class="function">setCursor</dd>
+                <dd id="ScopeViewer.setDisabled" class="function">setDisabled</dd>
+                <dd id="ScopeViewer.setEnabled" class="function">setEnabled</dd>
+                <dd id="ScopeViewer.setFixedHeight" class="function">setFixedHeight</dd>
+                <dd id="ScopeViewer.setFixedSize" class="function">setFixedSize</dd>
+                <dd id="ScopeViewer.setFixedWidth" class="function">setFixedWidth</dd>
+                <dd id="ScopeViewer.setFocus" class="function">setFocus</dd>
+                <dd id="ScopeViewer.setFocusPolicy" class="function">setFocusPolicy</dd>
+                <dd id="ScopeViewer.setFocusProxy" class="function">setFocusProxy</dd>
+                <dd id="ScopeViewer.setFont" class="function">setFont</dd>
+                <dd id="ScopeViewer.setForegroundRole" class="function">setForegroundRole</dd>
+                <dd id="ScopeViewer.setGeometry" class="function">setGeometry</dd>
+                <dd id="ScopeViewer.setGraphicsEffect" class="function">setGraphicsEffect</dd>
+                <dd id="ScopeViewer.setHidden" class="function">setHidden</dd>
+                <dd id="ScopeViewer.setInputMethodHints" class="function">setInputMethodHints</dd>
+                <dd id="ScopeViewer.setLayout" class="function">setLayout</dd>
+                <dd id="ScopeViewer.setLayoutDirection" class="function">setLayoutDirection</dd>
+                <dd id="ScopeViewer.setLocale" class="function">setLocale</dd>
+                <dd id="ScopeViewer.setMask" class="function">setMask</dd>
+                <dd id="ScopeViewer.setMaximumHeight" class="function">setMaximumHeight</dd>
+                <dd id="ScopeViewer.setMaximumSize" class="function">setMaximumSize</dd>
+                <dd id="ScopeViewer.setMaximumWidth" class="function">setMaximumWidth</dd>
+                <dd id="ScopeViewer.setMinimumHeight" class="function">setMinimumHeight</dd>
+                <dd id="ScopeViewer.setMinimumSize" class="function">setMinimumSize</dd>
+                <dd id="ScopeViewer.setMinimumWidth" class="function">setMinimumWidth</dd>
+                <dd id="ScopeViewer.setMouseTracking" class="function">setMouseTracking</dd>
+                <dd id="ScopeViewer.setPalette" class="function">setPalette</dd>
+                <dd id="ScopeViewer.setParent" class="function">setParent</dd>
+                <dd id="ScopeViewer.setShortcutAutoRepeat" class="function">setShortcutAutoRepeat</dd>
+                <dd id="ScopeViewer.setShortcutEnabled" class="function">setShortcutEnabled</dd>
+                <dd id="ScopeViewer.setSizeIncrement" class="function">setSizeIncrement</dd>
+                <dd id="ScopeViewer.setSizePolicy" class="function">setSizePolicy</dd>
+                <dd id="ScopeViewer.setStatusTip" class="function">setStatusTip</dd>
+                <dd id="ScopeViewer.setStyle" class="function">setStyle</dd>
+                <dd id="ScopeViewer.setStyleSheet" class="function">setStyleSheet</dd>
+                <dd id="ScopeViewer.setTabOrder" class="function">setTabOrder</dd>
+                <dd id="ScopeViewer.setTabletTracking" class="function">setTabletTracking</dd>
+                <dd id="ScopeViewer.setToolTip" class="function">setToolTip</dd>
+                <dd id="ScopeViewer.setToolTipDuration" class="function">setToolTipDuration</dd>
+                <dd id="ScopeViewer.setUpdatesEnabled" class="function">setUpdatesEnabled</dd>
+                <dd id="ScopeViewer.setVisible" class="function">setVisible</dd>
+                <dd id="ScopeViewer.setWhatsThis" class="function">setWhatsThis</dd>
+                <dd id="ScopeViewer.setWindowFilePath" class="function">setWindowFilePath</dd>
+                <dd id="ScopeViewer.setWindowFlag" class="function">setWindowFlag</dd>
+                <dd id="ScopeViewer.setWindowFlags" class="function">setWindowFlags</dd>
+                <dd id="ScopeViewer.setWindowIcon" class="function">setWindowIcon</dd>
+                <dd id="ScopeViewer.setWindowIconText" class="function">setWindowIconText</dd>
+                <dd id="ScopeViewer.setWindowModality" class="function">setWindowModality</dd>
+                <dd id="ScopeViewer.setWindowModified" class="function">setWindowModified</dd>
+                <dd id="ScopeViewer.setWindowOpacity" class="function">setWindowOpacity</dd>
+                <dd id="ScopeViewer.setWindowRole" class="function">setWindowRole</dd>
+                <dd id="ScopeViewer.setWindowState" class="function">setWindowState</dd>
+                <dd id="ScopeViewer.setWindowTitle" class="function">setWindowTitle</dd>
+                <dd id="ScopeViewer.sharedPainter" class="function">sharedPainter</dd>
+                <dd id="ScopeViewer.show" class="function">show</dd>
+                <dd id="ScopeViewer.showEvent" class="function">showEvent</dd>
+                <dd id="ScopeViewer.showFullScreen" class="function">showFullScreen</dd>
+                <dd id="ScopeViewer.showMaximized" class="function">showMaximized</dd>
+                <dd id="ScopeViewer.showMinimized" class="function">showMinimized</dd>
+                <dd id="ScopeViewer.showNormal" class="function">showNormal</dd>
+                <dd id="ScopeViewer.size" class="function">size</dd>
+                <dd id="ScopeViewer.sizeHint" class="function">sizeHint</dd>
+                <dd id="ScopeViewer.sizeIncrement" class="function">sizeIncrement</dd>
+                <dd id="ScopeViewer.sizePolicy" class="function">sizePolicy</dd>
+                <dd id="ScopeViewer.stackUnder" class="function">stackUnder</dd>
+                <dd id="ScopeViewer.statusTip" class="function">statusTip</dd>
+                <dd id="ScopeViewer.style" class="function">style</dd>
+                <dd id="ScopeViewer.styleSheet" class="function">styleSheet</dd>
+                <dd id="ScopeViewer.tabletEvent" class="function">tabletEvent</dd>
+                <dd id="ScopeViewer.testAttribute" class="function">testAttribute</dd>
+                <dd id="ScopeViewer.toolTip" class="function">toolTip</dd>
+                <dd id="ScopeViewer.toolTipDuration" class="function">toolTipDuration</dd>
+                <dd id="ScopeViewer.underMouse" class="function">underMouse</dd>
+                <dd id="ScopeViewer.ungrabGesture" class="function">ungrabGesture</dd>
+                <dd id="ScopeViewer.unsetCursor" class="function">unsetCursor</dd>
+                <dd id="ScopeViewer.unsetLayoutDirection" class="function">unsetLayoutDirection</dd>
+                <dd id="ScopeViewer.unsetLocale" class="function">unsetLocale</dd>
+                <dd id="ScopeViewer.update" class="function">update</dd>
+                <dd id="ScopeViewer.updateGeometry" class="function">updateGeometry</dd>
+                <dd id="ScopeViewer.updateMicroFocus" class="function">updateMicroFocus</dd>
+                <dd id="ScopeViewer.updatesEnabled" class="function">updatesEnabled</dd>
+                <dd id="ScopeViewer.visibleRegion" class="function">visibleRegion</dd>
+                <dd id="ScopeViewer.whatsThis" class="function">whatsThis</dd>
+                <dd id="ScopeViewer.wheelEvent" class="function">wheelEvent</dd>
+                <dd id="ScopeViewer.width" class="function">width</dd>
+                <dd id="ScopeViewer.winId" class="function">winId</dd>
+                <dd id="ScopeViewer.window" class="function">window</dd>
+                <dd id="ScopeViewer.windowFilePath" class="function">windowFilePath</dd>
+                <dd id="ScopeViewer.windowFlags" class="function">windowFlags</dd>
+                <dd id="ScopeViewer.windowHandle" class="function">windowHandle</dd>
+                <dd id="ScopeViewer.windowIcon" class="function">windowIcon</dd>
+                <dd id="ScopeViewer.windowIconText" class="function">windowIconText</dd>
+                <dd id="ScopeViewer.windowModality" class="function">windowModality</dd>
+                <dd id="ScopeViewer.windowOpacity" class="function">windowOpacity</dd>
+                <dd id="ScopeViewer.windowRole" class="function">windowRole</dd>
+                <dd id="ScopeViewer.windowState" class="function">windowState</dd>
+                <dd id="ScopeViewer.windowTitle" class="function">windowTitle</dd>
+                <dd id="ScopeViewer.windowType" class="function">windowType</dd>
+                <dd id="ScopeViewer.x" class="function">x</dd>
+                <dd id="ScopeViewer.y" class="function">y</dd>
+                <dd id="ScopeViewer.windowIconTextChanged" class="function">windowIconTextChanged</dd>
+                <dd id="ScopeViewer.windowIconChanged" class="function">windowIconChanged</dd>
+                <dd id="ScopeViewer.windowTitleChanged" class="function">windowTitleChanged</dd>
+                <dd id="ScopeViewer.customContextMenuRequested" class="function">customContextMenuRequested</dd>
+
+            </div>
+            <div><dt>PyQt5.QtCore.QObject</dt>
+                                <dd id="ScopeViewer.blockSignals" class="function">blockSignals</dd>
+                <dd id="ScopeViewer.childEvent" class="function">childEvent</dd>
+                <dd id="ScopeViewer.children" class="function">children</dd>
+                <dd id="ScopeViewer.connectNotify" class="function">connectNotify</dd>
+                <dd id="ScopeViewer.customEvent" class="function">customEvent</dd>
+                <dd id="ScopeViewer.deleteLater" class="function">deleteLater</dd>
+                <dd id="ScopeViewer.disconnect" class="function">disconnect</dd>
+                <dd id="ScopeViewer.disconnectNotify" class="function">disconnectNotify</dd>
+                <dd id="ScopeViewer.dumpObjectInfo" class="function">dumpObjectInfo</dd>
+                <dd id="ScopeViewer.dumpObjectTree" class="function">dumpObjectTree</dd>
+                <dd id="ScopeViewer.dynamicPropertyNames" class="function">dynamicPropertyNames</dd>
+                <dd id="ScopeViewer.eventFilter" class="function">eventFilter</dd>
+                <dd id="ScopeViewer.findChild" class="function">findChild</dd>
+                <dd id="ScopeViewer.findChildren" class="function">findChildren</dd>
+                <dd id="ScopeViewer.inherits" class="function">inherits</dd>
+                <dd id="ScopeViewer.installEventFilter" class="function">installEventFilter</dd>
+                <dd id="ScopeViewer.isSignalConnected" class="function">isSignalConnected</dd>
+                <dd id="ScopeViewer.isWidgetType" class="function">isWidgetType</dd>
+                <dd id="ScopeViewer.isWindowType" class="function">isWindowType</dd>
+                <dd id="ScopeViewer.killTimer" class="function">killTimer</dd>
+                <dd id="ScopeViewer.metaObject" class="function">metaObject</dd>
+                <dd id="ScopeViewer.moveToThread" class="function">moveToThread</dd>
+                <dd id="ScopeViewer.objectName" class="function">objectName</dd>
+                <dd id="ScopeViewer.parent" class="function">parent</dd>
+                <dd id="ScopeViewer.property" class="function">property</dd>
+                <dd id="ScopeViewer.pyqtConfigure" class="function">pyqtConfigure</dd>
+                <dd id="ScopeViewer.receivers" class="function">receivers</dd>
+                <dd id="ScopeViewer.removeEventFilter" class="function">removeEventFilter</dd>
+                <dd id="ScopeViewer.sender" class="function">sender</dd>
+                <dd id="ScopeViewer.senderSignalIndex" class="function">senderSignalIndex</dd>
+                <dd id="ScopeViewer.setObjectName" class="function">setObjectName</dd>
+                <dd id="ScopeViewer.setProperty" class="function">setProperty</dd>
+                <dd id="ScopeViewer.signalsBlocked" class="function">signalsBlocked</dd>
+                <dd id="ScopeViewer.startTimer" class="function">startTimer</dd>
+                <dd id="ScopeViewer.thread" class="function">thread</dd>
+                <dd id="ScopeViewer.timerEvent" class="function">timerEvent</dd>
+                <dd id="ScopeViewer.tr" class="function">tr</dd>
+                <dd id="ScopeViewer.objectNameChanged" class="function">objectNameChanged</dd>
+                <dd id="ScopeViewer.destroyed" class="function">destroyed</dd>
+
+            </div>
+            <div><dt>PyQt5.QtGui.QPaintDevice</dt>
+                                <dd id="ScopeViewer.PaintDeviceMetric" class="class">PaintDeviceMetric</dd>
+                <dd id="ScopeViewer.colorCount" class="function">colorCount</dd>
+                <dd id="ScopeViewer.depth" class="function">depth</dd>
+                <dd id="ScopeViewer.devicePixelRatio" class="function">devicePixelRatio</dd>
+                <dd id="ScopeViewer.devicePixelRatioF" class="function">devicePixelRatioF</dd>
+                <dd id="ScopeViewer.devicePixelRatioFScale" class="function">devicePixelRatioFScale</dd>
+                <dd id="ScopeViewer.heightMM" class="function">heightMM</dd>
+                <dd id="ScopeViewer.logicalDpiX" class="function">logicalDpiX</dd>
+                <dd id="ScopeViewer.logicalDpiY" class="function">logicalDpiY</dd>
+                <dd id="ScopeViewer.paintingActive" class="function">paintingActive</dd>
+                <dd id="ScopeViewer.physicalDpiX" class="function">physicalDpiX</dd>
+                <dd id="ScopeViewer.physicalDpiY" class="function">physicalDpiY</dd>
+                <dd id="ScopeViewer.widthMM" class="function">widthMM</dd>
+
+            </div>
+                                </dl>
+                            </div>
+                </section>
+    </main>
+<script>
+    function escapeHTML(html) {
+        return document.createElement('div').appendChild(document.createTextNode(html)).parentNode.innerHTML;
+    }
+
+    const originalContent = document.querySelector("main.pdoc");
+    let currentContent = originalContent;
+
+    function setContent(innerHTML) {
+        let elem;
+        if (innerHTML) {
+            elem = document.createElement("main");
+            elem.classList.add("pdoc");
+            elem.innerHTML = innerHTML;
+        } else {
+            elem = originalContent;
+        }
+        if (currentContent !== elem) {
+            currentContent.replaceWith(elem);
+            currentContent = elem;
+        }
+    }
+
+    function getSearchTerm() {
+        return (new URL(window.location)).searchParams.get("search");
+    }
+
+    const searchBox = document.querySelector(".pdoc input[type=search]");
+    searchBox.addEventListener("input", function () {
+        let url = new URL(window.location);
+        if (searchBox.value.trim()) {
+            url.hash = "";
+            url.searchParams.set("search", searchBox.value);
+        } else {
+            url.searchParams.delete("search");
+        }
+        history.replaceState("", "", url.toString());
+        onInput();
+    });
+    window.addEventListener("popstate", onInput);
+
+
+    let search, searchErr;
+
+    async function initialize() {
+        try {
+            search = await new Promise((resolve, reject) => {
+                const script = document.createElement("script");
+                script.type = "text/javascript";
+                script.async = true;
+                script.onload = () => resolve(window.pdocSearch);
+                script.onerror = (e) => reject(e);
+                script.src = "../../search.js";
+                document.getElementsByTagName("head")[0].appendChild(script);
+            });
+        } catch (e) {
+            console.error("Cannot fetch pdoc search index");
+            searchErr = "Cannot fetch search index.";
+        }
+        onInput();
+
+        document.querySelector("nav.pdoc").addEventListener("click", e => {
+            if (e.target.hash) {
+                searchBox.value = "";
+                searchBox.dispatchEvent(new Event("input"));
+            }
+        });
+    }
+
+    function onInput() {
+        setContent((() => {
+            const term = getSearchTerm();
+            if (!term) {
+                return null
+            }
+            if (searchErr) {
+                return `<h3>Error: ${searchErr}</h3>`
+            }
+            if (!search) {
+                return "<h3>Searching...</h3>"
+            }
+
+            window.scrollTo({top: 0, left: 0, behavior: 'auto'});
+
+            const results = search(term);
+
+            let html;
+            if (results.length === 0) {
+                html = `No search results for '${escapeHTML(term)}'.`
+            } else {
+                html = `<h4>${results.length} search result${results.length > 1 ? "s" : ""} for '${escapeHTML(term)}'.</h4>`;
+            }
+            for (let result of results.slice(0, 10)) {
+                let doc = result.doc;
+                let url = `../../${doc.modulename.replaceAll(".", "/")}.html`;
+                if (doc.qualname) {
+                    url += `#${doc.qualname}`;
+                }
+
+                let heading;
+                switch (result.doc.type) {
+                    case "function":
+                        if (doc.fullname.endsWith(".__init__")) {
+                            heading = `<span class="name">${doc.fullname.replace(/\.__init__$/, "")}</span>${doc.signature}`;
+                        } else {
+                            heading = `<span class="def">${doc.funcdef}</span> <span class="name">${doc.fullname}</span>${doc.signature}`;
+                        }
+                        break;
+                    case "class":
+                        heading = `<span class="def">class</span> <span class="name">${doc.fullname}</span>`;
+                        if (doc.bases)
+                            heading += `<wbr>(<span class="base">${doc.bases}</span>)`;
+                        heading += `:`;
+                        break;
+                    case "variable":
+                        heading = `<span class="name">${doc.fullname}</span>`;
+                        if (doc.annotation)
+                            heading += `<span class="annotation">${doc.annotation}</span>`;
+                        if (doc.default_value)
+                            heading += `<span class="default_value">${doc.default_value}</span>`;
+                        break;
+                    default:
+                        heading = `<span class="name">${doc.fullname}</span>`;
+                        break;
+                }
+                html += `
+                        <section class="search-result">
+                        <a href="${url}" class="attr ${doc.type}">${heading}</a>
+                        <div class="docstring">${doc.doc}</div>
+                        </section>
+                    `;
+
+            }
+            return html;
+        })());
+    }
+
+    if (getSearchTerm()) {
+        initialize();
+        searchBox.value = getSearchTerm();
+        onInput();
+    } else {
+        searchBox.addEventListener("focus", initialize, {once: true});
+    }
+
+    searchBox.addEventListener("keydown", e => {
+        if (["ArrowDown", "ArrowUp", "Enter"].includes(e.key)) {
+            let focused = currentContent.querySelector(".search-result.focused");
+            if (!focused) {
+                currentContent.querySelector(".search-result").classList.add("focused");
+            } else if (
+                e.key === "ArrowDown"
+                && focused.nextElementSibling
+                && focused.nextElementSibling.classList.contains("search-result")
+            ) {
+                focused.classList.remove("focused");
+                focused.nextElementSibling.classList.add("focused");
+                focused.nextElementSibling.scrollIntoView({
+                    behavior: "smooth",
+                    block: "nearest",
+                    inline: "nearest"
+                });
+            } else if (
+                e.key === "ArrowUp"
+                && focused.previousElementSibling
+                && focused.previousElementSibling.classList.contains("search-result")
+            ) {
+                focused.classList.remove("focused");
+                focused.previousElementSibling.classList.add("focused");
+                focused.previousElementSibling.scrollIntoView({
+                    behavior: "smooth",
+                    block: "nearest",
+                    inline: "nearest"
+                });
+            } else if (
+                e.key === "Enter"
+            ) {
+                focused.querySelector("a").click();
+            }
+        }
+    });
+</script></body>
+</html>

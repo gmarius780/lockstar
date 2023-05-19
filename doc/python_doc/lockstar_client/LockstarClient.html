@@ -39,10 +39,46 @@
                                 <a class="function" href="#LockstarClient.__init__">LockstarClient</a>
                         </li>
                         <li>
-                                <a class="function" href="#LockstarClient.register_client_id">register_client_id</a>
+                                <a class="function" href="#LockstarClient.set_ch_one_output_limits">set_ch_one_output_limits</a>
                         </li>
                         <li>
-                                <a class="function" href="#LockstarClient.start_calibration">start_calibration</a>
+                                <a class="function" href="#LockstarClient.set_ch_two_output_limits">set_ch_two_output_limits</a>
+                        </li>
+                        <li>
+                                <a class="function" href="#LockstarClient.set_linearization_one">set_linearization_one</a>
+                        </li>
+                        <li>
+                                <a class="function" href="#LockstarClient.set_linearization_two">set_linearization_two</a>
+                        </li>
+                        <li>
+                                <a class="function" href="#LockstarClient.set_linearization_two_from_file">set_linearization_two_from_file</a>
+                        </li>
+                        <li>
+                                <a class="function" href="#LockstarClient.set_linearization_one_from_file">set_linearization_one_from_file</a>
+                        </li>
+                        <li>
+                                <a class="function" href="#LockstarClient.set_linearization_length_one">set_linearization_length_one</a>
+                        </li>
+                        <li>
+                                <a class="function" href="#LockstarClient.set_linearization_length_two">set_linearization_length_two</a>
+                        </li>
+                        <li>
+                                <a class="function" href="#LockstarClient.enable_linearization_one">enable_linearization_one</a>
+                        </li>
+                        <li>
+                                <a class="function" href="#LockstarClient.enable_linearization_two">enable_linearization_two</a>
+                        </li>
+                        <li>
+                                <a class="function" href="#LockstarClient.disable_linearization_one">disable_linearization_one</a>
+                        </li>
+                        <li>
+                                <a class="function" href="#LockstarClient.disable_linearization_two">disable_linearization_two</a>
+                        </li>
+                        <li>
+                                <a class="function" href="#LockstarClient.flash_mc">flash_mc</a>
+                        </li>
+                        <li>
+                                <a class="function" href="#LockstarClient.register_client_id">register_client_id</a>
                         </li>
                 </ul>
 
@@ -68,48 +104,146 @@ lockstar_client<wbr>.LockstarClient    </h1>
 
                         <label class="view-source-button" for="mod-LockstarClient-view-source"><span>View Source</span></label>
 
-                        <div class="pdoc-code codehilite"><pre><span></span><span id="L-1"><a href="#L-1"><span class="linenos"> 1</span></a><span class="kn">import</span> <span class="nn">asyncio</span>
-</span><span id="L-2"><a href="#L-2"><span class="linenos"> 2</span></a><span class="kn">import</span> <span class="nn">logging</span>
-</span><span id="L-3"><a href="#L-3"><span class="linenos"> 3</span></a><span class="kn">from</span> <span class="nn">lockstar_general.backend.BackendResponse</span> <span class="kn">import</span> <span class="n">BackendResponse</span>
-</span><span id="L-4"><a href="#L-4"><span class="linenos"> 4</span></a><span class="kn">from</span> <span class="nn">lockstar_general.backend.BackendCall</span> <span class="kn">import</span> <span class="n">BackendCall</span>
-</span><span id="L-5"><a href="#L-5"><span class="linenos"> 5</span></a>
-</span><span id="L-6"><a href="#L-6"><span class="linenos"> 6</span></a><span class="k">class</span> <span class="nc">LockstarClient</span><span class="p">():</span>
-</span><span id="L-7"><a href="#L-7"><span class="linenos"> 7</span></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lockstar_ip</span><span class="p">,</span> <span class="n">lockstar_port</span><span class="p">,</span> <span class="n">client_id</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-</span><span id="L-8"><a href="#L-8"><span class="linenos"> 8</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">lockstar_ip</span> <span class="o">=</span> <span class="n">lockstar_ip</span>
-</span><span id="L-9"><a href="#L-9"><span class="linenos"> 9</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">lockstar_port</span> <span class="o">=</span> <span class="n">lockstar_port</span>
-</span><span id="L-10"><a href="#L-10"><span class="linenos">10</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">client_id</span> <span class="o">=</span> <span class="n">client_id</span>
-</span><span id="L-11"><a href="#L-11"><span class="linenos">11</span></a>
-</span><span id="L-12"><a href="#L-12"><span class="linenos">12</span></a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">_call_lockstar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">backend_call</span><span class="p">):</span>
-</span><span id="L-13"><a href="#L-13"><span class="linenos">13</span></a>        <span class="sd">&quot;&quot;&quot;Send backend_call to lockstar and await response</span>
-</span><span id="L-14"><a href="#L-14"><span class="linenos">14</span></a>
-</span><span id="L-15"><a href="#L-15"><span class="linenos">15</span></a><span class="sd">        Args:</span>
-</span><span id="L-16"><a href="#L-16"><span class="linenos">16</span></a><span class="sd">            backend_call (BackendCall): call to send</span>
-</span><span id="L-17"><a href="#L-17"><span class="linenos">17</span></a>
-</span><span id="L-18"><a href="#L-18"><span class="linenos">18</span></a><span class="sd">        Returns:</span>
-</span><span id="L-19"><a href="#L-19"><span class="linenos">19</span></a><span class="sd">            BackendResponse: response</span>
-</span><span id="L-20"><a href="#L-20"><span class="linenos">20</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="L-21"><a href="#L-21"><span class="linenos">21</span></a>        <span class="n">reader</span><span class="p">,</span> <span class="n">writer</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">open_connection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lockstar_ip</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lockstar_port</span><span class="p">)</span>
-</span><span id="L-22"><a href="#L-22"><span class="linenos">22</span></a>        <span class="n">writer</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">backend_call</span><span class="o">.</span><span class="n">to_bytes</span><span class="p">())</span>
-</span><span id="L-23"><a href="#L-23"><span class="linenos">23</span></a>        <span class="k">await</span> <span class="n">writer</span><span class="o">.</span><span class="n">drain</span><span class="p">()</span>
-</span><span id="L-24"><a href="#L-24"><span class="linenos">24</span></a>        <span class="n">byte_response</span> <span class="o">=</span> <span class="p">(</span><span class="k">await</span> <span class="n">reader</span><span class="o">.</span><span class="n">readuntil</span><span class="p">(</span><span class="n">BackendResponse</span><span class="o">.</span><span class="n">DELIMITTER</span><span class="p">))[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-</span><span id="L-25"><a href="#L-25"><span class="linenos">25</span></a>        <span class="n">response</span> <span class="o">=</span> <span class="n">BackendResponse</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">byte_response</span><span class="p">)</span>
-</span><span id="L-26"><a href="#L-26"><span class="linenos">26</span></a>        <span class="n">writer</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-</span><span id="L-27"><a href="#L-27"><span class="linenos">27</span></a>        <span class="k">await</span> <span class="n">writer</span><span class="o">.</span><span class="n">wait_closed</span><span class="p">()</span>
-</span><span id="L-28"><a href="#L-28"><span class="linenos">28</span></a>        <span class="k">return</span> <span class="n">response</span>
-</span><span id="L-29"><a href="#L-29"><span class="linenos">29</span></a>
-</span><span id="L-30"><a href="#L-30"><span class="linenos">30</span></a>    <span class="k">def</span> <span class="nf">register_client_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="L-31"><a href="#L-31"><span class="linenos">31</span></a>        <span class="n">bc</span> <span class="o">=</span> <span class="n">BackendCall</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span> <span class="s1">&#39;GeneralModule&#39;</span><span class="p">,</span> <span class="s1">&#39;register_client&#39;</span><span class="p">,</span>
-</span><span id="L-32"><a href="#L-32"><span class="linenos">32</span></a>                        <span class="n">args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;client_id&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">client_id</span><span class="p">})</span>
-</span><span id="L-33"><a href="#L-33"><span class="linenos">33</span></a>        
-</span><span id="L-34"><a href="#L-34"><span class="linenos">34</span></a>        <span class="n">response</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_call_lockstar</span><span class="p">(</span><span class="n">bc</span><span class="p">))</span>
-</span><span id="L-35"><a href="#L-35"><span class="linenos">35</span></a>
-</span><span id="L-36"><a href="#L-36"><span class="linenos">36</span></a>        <span class="k">if</span> <span class="ow">not</span> <span class="n">response</span><span class="o">.</span><span class="n">is_ACK</span><span class="p">():</span>
-</span><span id="L-37"><a href="#L-37"><span class="linenos">37</span></a>            <span class="n">logging</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;LockstarClient: could not register my client id: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">client_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-</span><span id="L-38"><a href="#L-38"><span class="linenos">38</span></a>
-</span><span id="L-39"><a href="#L-39"><span class="linenos">39</span></a>        <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">is_ACK</span><span class="p">()</span>
-</span><span id="L-40"><a href="#L-40"><span class="linenos">40</span></a>
-</span><span id="L-41"><a href="#L-41"><span class="linenos">41</span></a>    <span class="k">def</span> <span class="nf">start_calibration</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="L-42"><a href="#L-42"><span class="linenos">42</span></a>        <span class="k">pass</span>
+                        <div class="pdoc-code codehilite"><pre><span></span><span id="L-1"><a href="#L-1"><span class="linenos">  1</span></a><span class="kn">import</span> <span class="nn">asyncio</span>
+</span><span id="L-2"><a href="#L-2"><span class="linenos">  2</span></a><span class="kn">import</span> <span class="nn">logging</span>
+</span><span id="L-3"><a href="#L-3"><span class="linenos">  3</span></a><span class="kn">from</span> <span class="nn">lockstar_general.backend.BackendResponse</span> <span class="kn">import</span> <span class="n">BackendResponse</span>
+</span><span id="L-4"><a href="#L-4"><span class="linenos">  4</span></a><span class="kn">from</span> <span class="nn">lockstar_general.backend.BackendCall</span> <span class="kn">import</span> <span class="n">BackendCall</span>
+</span><span id="L-5"><a href="#L-5"><span class="linenos">  5</span></a><span class="kn">from</span> <span class="nn">lockstar_client.ClientSettings</span> <span class="kn">import</span> <span class="n">ClientSettings</span>
+</span><span id="L-6"><a href="#L-6"><span class="linenos">  6</span></a><span class="kn">import</span> <span class="nn">json</span>
+</span><span id="L-7"><a href="#L-7"><span class="linenos">  7</span></a>
+</span><span id="L-8"><a href="#L-8"><span class="linenos">  8</span></a><span class="k">class</span> <span class="nc">LockstarClient</span><span class="p">():</span>
+</span><span id="L-9"><a href="#L-9"><span class="linenos">  9</span></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lockstar_ip</span><span class="p">,</span> <span class="n">lockstar_port</span><span class="p">,</span> <span class="n">client_id</span><span class="p">,</span> <span class="n">module_name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="L-10"><a href="#L-10"><span class="linenos"> 10</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">lockstar_ip</span> <span class="o">=</span> <span class="n">lockstar_ip</span>
+</span><span id="L-11"><a href="#L-11"><span class="linenos"> 11</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">lockstar_port</span> <span class="o">=</span> <span class="n">lockstar_port</span>
+</span><span id="L-12"><a href="#L-12"><span class="linenos"> 12</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">client_id</span> <span class="o">=</span> <span class="n">client_id</span>
+</span><span id="L-13"><a href="#L-13"><span class="linenos"> 13</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">module_name</span> <span class="o">=</span> <span class="n">module_name</span>
+</span><span id="L-14"><a href="#L-14"><span class="linenos"> 14</span></a>
+</span><span id="L-15"><a href="#L-15"><span class="linenos"> 15</span></a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_ch_one_output_limits</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">min</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">max</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+</span><span id="L-16"><a href="#L-16"><span class="linenos"> 16</span></a>        <span class="n">bc</span> <span class="o">=</span> <span class="n">BackendCall</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">module_name</span><span class="p">,</span> <span class="s1">&#39;set_ch_one_output_limits&#39;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;min&#39;</span><span class="p">:</span> <span class="nb">min</span><span class="p">,</span> <span class="s1">&#39;max&#39;</span><span class="p">:</span> <span class="nb">max</span><span class="p">})</span>
+</span><span id="L-17"><a href="#L-17"><span class="linenos"> 17</span></a>        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_lockstar</span><span class="p">(</span><span class="n">bc</span><span class="p">)</span>
+</span><span id="L-18"><a href="#L-18"><span class="linenos"> 18</span></a>
+</span><span id="L-19"><a href="#L-19"><span class="linenos"> 19</span></a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_ch_two_output_limits</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">min</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">max</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+</span><span id="L-20"><a href="#L-20"><span class="linenos"> 20</span></a>        <span class="n">bc</span> <span class="o">=</span> <span class="n">BackendCall</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">module_name</span><span class="p">,</span> <span class="s1">&#39;set_ch_two_output_limits&#39;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;min&#39;</span><span class="p">:</span> <span class="nb">min</span><span class="p">,</span> <span class="s1">&#39;max&#39;</span><span class="p">:</span> <span class="nb">max</span><span class="p">})</span>
+</span><span id="L-21"><a href="#L-21"><span class="linenos"> 21</span></a>        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_lockstar</span><span class="p">(</span><span class="n">bc</span><span class="p">)</span>
+</span><span id="L-22"><a href="#L-22"><span class="linenos"> 22</span></a>
+</span><span id="L-23"><a href="#L-23"><span class="linenos"> 23</span></a>    <span class="c1">#==== Linearization Methods START====</span>
+</span><span id="L-24"><a href="#L-24"><span class="linenos"> 24</span></a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_linearization_one</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">linearization</span><span class="p">,</span> <span class="n">min_output_voltage</span><span class="p">,</span> <span class="n">max_output_voltage</span><span class="p">):</span>
+</span><span id="L-25"><a href="#L-25"><span class="linenos"> 25</span></a>        <span class="sd">&quot;&quot;&quot;Sets the parameters used by the DAC_ONE to linearize the systems response</span>
+</span><span id="L-26"><a href="#L-26"><span class="linenos"> 26</span></a>
+</span><span id="L-27"><a href="#L-27"><span class="linenos"> 27</span></a><span class="sd">        Args:</span>
+</span><span id="L-28"><a href="#L-28"><span class="linenos"> 28</span></a><span class="sd">            linearization (_type_): _description_</span>
+</span><span id="L-29"><a href="#L-29"><span class="linenos"> 29</span></a>
+</span><span id="L-30"><a href="#L-30"><span class="linenos"> 30</span></a><span class="sd">        Returns:</span>
+</span><span id="L-31"><a href="#L-31"><span class="linenos"> 31</span></a><span class="sd">            _type_: _description_</span>
+</span><span id="L-32"><a href="#L-32"><span class="linenos"> 32</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="L-33"><a href="#L-33"><span class="linenos"> 33</span></a>        <span class="n">bc</span> <span class="o">=</span> <span class="n">BackendCall</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">module_name</span><span class="p">,</span> <span class="s1">&#39;set_linearization_one&#39;</span><span class="p">,</span> 
+</span><span id="L-34"><a href="#L-34"><span class="linenos"> 34</span></a>                        <span class="n">args</span><span class="o">=</span><span class="p">{</span>
+</span><span id="L-35"><a href="#L-35"><span class="linenos"> 35</span></a>                            <span class="s1">&#39;linearization&#39;</span><span class="p">:</span> <span class="n">linearization</span><span class="p">,</span>
+</span><span id="L-36"><a href="#L-36"><span class="linenos"> 36</span></a>                            <span class="s1">&#39;min_output_voltage&#39;</span><span class="p">:</span> <span class="n">min_output_voltage</span><span class="p">,</span>
+</span><span id="L-37"><a href="#L-37"><span class="linenos"> 37</span></a>                            <span class="s1">&#39;max_output_voltage&#39;</span><span class="p">:</span> <span class="n">max_output_voltage</span>
+</span><span id="L-38"><a href="#L-38"><span class="linenos"> 38</span></a>                        <span class="p">})</span>
+</span><span id="L-39"><a href="#L-39"><span class="linenos"> 39</span></a>        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_lockstar</span><span class="p">(</span><span class="n">bc</span><span class="p">)</span>
+</span><span id="L-40"><a href="#L-40"><span class="linenos"> 40</span></a>
+</span><span id="L-41"><a href="#L-41"><span class="linenos"> 41</span></a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_linearization_two</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">linearization</span><span class="p">,</span> <span class="n">min_output_voltage</span><span class="p">,</span> <span class="n">max_output_voltage</span><span class="p">):</span>
+</span><span id="L-42"><a href="#L-42"><span class="linenos"> 42</span></a>        <span class="sd">&quot;&quot;&quot;Sets the parameters used by the DAC_ONE to linearize the systems response</span>
+</span><span id="L-43"><a href="#L-43"><span class="linenos"> 43</span></a>
+</span><span id="L-44"><a href="#L-44"><span class="linenos"> 44</span></a><span class="sd">        Args:</span>
+</span><span id="L-45"><a href="#L-45"><span class="linenos"> 45</span></a><span class="sd">            linearization (_type_): _description_</span>
+</span><span id="L-46"><a href="#L-46"><span class="linenos"> 46</span></a>
+</span><span id="L-47"><a href="#L-47"><span class="linenos"> 47</span></a><span class="sd">        Returns:</span>
+</span><span id="L-48"><a href="#L-48"><span class="linenos"> 48</span></a><span class="sd">            _type_: _description_</span>
+</span><span id="L-49"><a href="#L-49"><span class="linenos"> 49</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="L-50"><a href="#L-50"><span class="linenos"> 50</span></a>        <span class="n">bc</span> <span class="o">=</span> <span class="n">BackendCall</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">module_name</span><span class="p">,</span> <span class="s1">&#39;set_linearization_two&#39;</span><span class="p">,</span> 
+</span><span id="L-51"><a href="#L-51"><span class="linenos"> 51</span></a>                        <span class="n">args</span><span class="o">=</span><span class="p">{</span>
+</span><span id="L-52"><a href="#L-52"><span class="linenos"> 52</span></a>                            <span class="s1">&#39;linearization&#39;</span><span class="p">:</span> <span class="n">linearization</span><span class="p">,</span>
+</span><span id="L-53"><a href="#L-53"><span class="linenos"> 53</span></a>                            <span class="s1">&#39;min_output_voltage&#39;</span><span class="p">:</span> <span class="n">min_output_voltage</span><span class="p">,</span>
+</span><span id="L-54"><a href="#L-54"><span class="linenos"> 54</span></a>                            <span class="s1">&#39;max_output_voltage&#39;</span><span class="p">:</span> <span class="n">max_output_voltage</span>
+</span><span id="L-55"><a href="#L-55"><span class="linenos"> 55</span></a>                        <span class="p">})</span>
+</span><span id="L-56"><a href="#L-56"><span class="linenos"> 56</span></a>        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_lockstar</span><span class="p">(</span><span class="n">bc</span><span class="p">)</span>
+</span><span id="L-57"><a href="#L-57"><span class="linenos"> 57</span></a>
+</span><span id="L-58"><a href="#L-58"><span class="linenos"> 58</span></a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_linearization_two_from_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">local_file</span><span class="p">):</span>
+</span><span id="L-59"><a href="#L-59"><span class="linenos"> 59</span></a>        <span class="sd">&quot;&quot;&quot; calls set_linearization_two with the linearization gotten from local_file (stored by LinearizationClient.store_linearization_locally)</span>
+</span><span id="L-60"><a href="#L-60"><span class="linenos"> 60</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="L-61"><a href="#L-61"><span class="linenos"> 61</span></a>
+</span><span id="L-62"><a href="#L-62"><span class="linenos"> 62</span></a>        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">local_file</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+</span><span id="L-63"><a href="#L-63"><span class="linenos"> 63</span></a>            <span class="n">lin_dict</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+</span><span id="L-64"><a href="#L-64"><span class="linenos"> 64</span></a>
+</span><span id="L-65"><a href="#L-65"><span class="linenos"> 65</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_linearization_two</span><span class="p">(</span><span class="n">linearization</span><span class="o">=</span><span class="n">lin_dict</span><span class="p">[</span><span class="s1">&#39;linearization&#39;</span><span class="p">],</span> 
+</span><span id="L-66"><a href="#L-66"><span class="linenos"> 66</span></a>                                    <span class="n">min_output_voltage</span><span class="o">=</span><span class="n">lin_dict</span><span class="p">[</span><span class="s1">&#39;min_output_voltage&#39;</span><span class="p">],</span>
+</span><span id="L-67"><a href="#L-67"><span class="linenos"> 67</span></a>                                    <span class="n">max_output_voltage</span><span class="o">=</span><span class="n">lin_dict</span><span class="p">[</span><span class="s1">&#39;max_output_voltage&#39;</span><span class="p">])</span>
+</span><span id="L-68"><a href="#L-68"><span class="linenos"> 68</span></a>
+</span><span id="L-69"><a href="#L-69"><span class="linenos"> 69</span></a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_linearization_one_from_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">local_file</span><span class="p">):</span>
+</span><span id="L-70"><a href="#L-70"><span class="linenos"> 70</span></a>        <span class="sd">&quot;&quot;&quot; calls set_linearization_one with the linearization gotten from local_file (stored by LinearizationClient.store_linearization_locally)</span>
+</span><span id="L-71"><a href="#L-71"><span class="linenos"> 71</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="L-72"><a href="#L-72"><span class="linenos"> 72</span></a>
+</span><span id="L-73"><a href="#L-73"><span class="linenos"> 73</span></a>        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">local_file</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+</span><span id="L-74"><a href="#L-74"><span class="linenos"> 74</span></a>            <span class="n">lin_dict</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+</span><span id="L-75"><a href="#L-75"><span class="linenos"> 75</span></a>
+</span><span id="L-76"><a href="#L-76"><span class="linenos"> 76</span></a>        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_linearization_one</span><span class="p">(</span><span class="n">linearization</span><span class="o">=</span><span class="n">lin_dict</span><span class="p">[</span><span class="s1">&#39;linearization&#39;</span><span class="p">],</span> 
+</span><span id="L-77"><a href="#L-77"><span class="linenos"> 77</span></a>                                    <span class="n">min_output_voltage</span><span class="o">=</span><span class="n">lin_dict</span><span class="p">[</span><span class="s1">&#39;min_output_voltage&#39;</span><span class="p">],</span>
+</span><span id="L-78"><a href="#L-78"><span class="linenos"> 78</span></a>                                    <span class="n">max_output_voltage</span><span class="o">=</span><span class="n">lin_dict</span><span class="p">[</span><span class="s1">&#39;max_output_voltage&#39;</span><span class="p">])</span>
+</span><span id="L-79"><a href="#L-79"><span class="linenos"> 79</span></a>
+</span><span id="L-80"><a href="#L-80"><span class="linenos"> 80</span></a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_linearization_length_one</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">linearization_length</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+</span><span id="L-81"><a href="#L-81"><span class="linenos"> 81</span></a>        <span class="n">bc</span> <span class="o">=</span> <span class="n">BackendCall</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">module_name</span><span class="p">,</span> <span class="s1">&#39;set_linearization_length_one&#39;</span><span class="p">,</span> 
+</span><span id="L-82"><a href="#L-82"><span class="linenos"> 82</span></a>                        <span class="n">args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;linearization_length&#39;</span><span class="p">:</span> <span class="n">linearization_length</span><span class="p">})</span>
+</span><span id="L-83"><a href="#L-83"><span class="linenos"> 83</span></a>        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_lockstar</span><span class="p">(</span><span class="n">bc</span><span class="p">)</span>
+</span><span id="L-84"><a href="#L-84"><span class="linenos"> 84</span></a>
+</span><span id="L-85"><a href="#L-85"><span class="linenos"> 85</span></a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_linearization_length_two</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">linearization_length</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+</span><span id="L-86"><a href="#L-86"><span class="linenos"> 86</span></a>        <span class="n">bc</span> <span class="o">=</span> <span class="n">BackendCall</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">module_name</span><span class="p">,</span> <span class="s1">&#39;set_linearization_length_two&#39;</span><span class="p">,</span> 
+</span><span id="L-87"><a href="#L-87"><span class="linenos"> 87</span></a>                        <span class="n">args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;linearization_length&#39;</span><span class="p">:</span> <span class="n">linearization_length</span><span class="p">})</span>
+</span><span id="L-88"><a href="#L-88"><span class="linenos"> 88</span></a>        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_lockstar</span><span class="p">(</span><span class="n">bc</span><span class="p">)</span>
+</span><span id="L-89"><a href="#L-89"><span class="linenos"> 89</span></a>
+</span><span id="L-90"><a href="#L-90"><span class="linenos"> 90</span></a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">enable_linearization_one</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span id="L-91"><a href="#L-91"><span class="linenos"> 91</span></a>        <span class="n">bc</span> <span class="o">=</span> <span class="n">BackendCall</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">module_name</span><span class="p">,</span> <span class="s1">&#39;enable_linearization_one&#39;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">{})</span>
+</span><span id="L-92"><a href="#L-92"><span class="linenos"> 92</span></a>        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_lockstar</span><span class="p">(</span><span class="n">bc</span><span class="p">)</span>
+</span><span id="L-93"><a href="#L-93"><span class="linenos"> 93</span></a>
+</span><span id="L-94"><a href="#L-94"><span class="linenos"> 94</span></a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">enable_linearization_two</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span id="L-95"><a href="#L-95"><span class="linenos"> 95</span></a>        <span class="n">bc</span> <span class="o">=</span> <span class="n">BackendCall</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">module_name</span><span class="p">,</span> <span class="s1">&#39;enable_linearization_two&#39;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">{})</span>
+</span><span id="L-96"><a href="#L-96"><span class="linenos"> 96</span></a>        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_lockstar</span><span class="p">(</span><span class="n">bc</span><span class="p">)</span>
+</span><span id="L-97"><a href="#L-97"><span class="linenos"> 97</span></a>
+</span><span id="L-98"><a href="#L-98"><span class="linenos"> 98</span></a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">disable_linearization_one</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span id="L-99"><a href="#L-99"><span class="linenos"> 99</span></a>        <span class="n">bc</span> <span class="o">=</span> <span class="n">BackendCall</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">module_name</span><span class="p">,</span> <span class="s1">&#39;disable_linearization_one&#39;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">{})</span>
+</span><span id="L-100"><a href="#L-100"><span class="linenos">100</span></a>        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_lockstar</span><span class="p">(</span><span class="n">bc</span><span class="p">)</span>
+</span><span id="L-101"><a href="#L-101"><span class="linenos">101</span></a>
+</span><span id="L-102"><a href="#L-102"><span class="linenos">102</span></a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">disable_linearization_two</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span id="L-103"><a href="#L-103"><span class="linenos">103</span></a>        <span class="n">bc</span> <span class="o">=</span> <span class="n">BackendCall</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">module_name</span><span class="p">,</span> <span class="s1">&#39;disable_linearization_two&#39;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">{})</span>
+</span><span id="L-104"><a href="#L-104"><span class="linenos">104</span></a>        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_lockstar</span><span class="p">(</span><span class="n">bc</span><span class="p">)</span>
+</span><span id="L-105"><a href="#L-105"><span class="linenos">105</span></a>
+</span><span id="L-106"><a href="#L-106"><span class="linenos">106</span></a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">flash_mc</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span id="L-107"><a href="#L-107"><span class="linenos">107</span></a>        <span class="n">bc</span> <span class="o">=</span> <span class="n">BackendCall</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">module_name</span><span class="p">,</span> <span class="s1">&#39;flash_mc&#39;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">{})</span>
+</span><span id="L-108"><a href="#L-108"><span class="linenos">108</span></a>        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_lockstar</span><span class="p">(</span><span class="n">bc</span><span class="p">)</span>
+</span><span id="L-109"><a href="#L-109"><span class="linenos">109</span></a>   
+</span><span id="L-110"><a href="#L-110"><span class="linenos">110</span></a>    <span class="c1">#==== Linearization Methods END====</span>
+</span><span id="L-111"><a href="#L-111"><span class="linenos">111</span></a>
+</span><span id="L-112"><a href="#L-112"><span class="linenos">112</span></a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">_call_lockstar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">backend_call</span><span class="p">):</span>
+</span><span id="L-113"><a href="#L-113"><span class="linenos">113</span></a>        <span class="sd">&quot;&quot;&quot;Send backend_call to lockstar and await response</span>
+</span><span id="L-114"><a href="#L-114"><span class="linenos">114</span></a>
+</span><span id="L-115"><a href="#L-115"><span class="linenos">115</span></a><span class="sd">        Args:</span>
+</span><span id="L-116"><a href="#L-116"><span class="linenos">116</span></a><span class="sd">            backend_call (BackendCall): call to send</span>
+</span><span id="L-117"><a href="#L-117"><span class="linenos">117</span></a>
+</span><span id="L-118"><a href="#L-118"><span class="linenos">118</span></a><span class="sd">        Returns:</span>
+</span><span id="L-119"><a href="#L-119"><span class="linenos">119</span></a><span class="sd">            BackendResponse: response</span>
+</span><span id="L-120"><a href="#L-120"><span class="linenos">120</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="L-121"><a href="#L-121"><span class="linenos">121</span></a>        <span class="n">reader</span><span class="p">,</span> <span class="n">writer</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">open_connection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lockstar_ip</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lockstar_port</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="n">ClientSettings</span><span class="o">.</span><span class="n">read_buffer_limit_bytes</span><span class="p">)</span>
+</span><span id="L-122"><a href="#L-122"><span class="linenos">122</span></a>        <span class="n">writer</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">backend_call</span><span class="o">.</span><span class="n">to_bytes</span><span class="p">())</span>
+</span><span id="L-123"><a href="#L-123"><span class="linenos">123</span></a>        <span class="k">await</span> <span class="n">writer</span><span class="o">.</span><span class="n">drain</span><span class="p">()</span>
+</span><span id="L-124"><a href="#L-124"><span class="linenos">124</span></a>        <span class="n">byte_response</span> <span class="o">=</span> <span class="p">(</span><span class="k">await</span> <span class="n">reader</span><span class="o">.</span><span class="n">readuntil</span><span class="p">(</span><span class="n">BackendResponse</span><span class="o">.</span><span class="n">DELIMITTER</span><span class="p">))[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+</span><span id="L-125"><a href="#L-125"><span class="linenos">125</span></a>        <span class="n">response</span> <span class="o">=</span> <span class="n">BackendResponse</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">byte_response</span><span class="p">)</span>
+</span><span id="L-126"><a href="#L-126"><span class="linenos">126</span></a>        <span class="n">writer</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</span><span id="L-127"><a href="#L-127"><span class="linenos">127</span></a>        <span class="k">await</span> <span class="n">writer</span><span class="o">.</span><span class="n">wait_closed</span><span class="p">()</span>
+</span><span id="L-128"><a href="#L-128"><span class="linenos">128</span></a>        <span class="k">return</span> <span class="n">response</span>
+</span><span id="L-129"><a href="#L-129"><span class="linenos">129</span></a>
+</span><span id="L-130"><a href="#L-130"><span class="linenos">130</span></a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">register_client_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span id="L-131"><a href="#L-131"><span class="linenos">131</span></a>        <span class="n">bc</span> <span class="o">=</span> <span class="n">BackendCall</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span> <span class="s1">&#39;GeneralModule&#39;</span><span class="p">,</span> <span class="s1">&#39;register_client&#39;</span><span class="p">,</span>
+</span><span id="L-132"><a href="#L-132"><span class="linenos">132</span></a>                        <span class="n">args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;client_id&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">client_id</span><span class="p">})</span>
+</span><span id="L-133"><a href="#L-133"><span class="linenos">133</span></a>        
+</span><span id="L-134"><a href="#L-134"><span class="linenos">134</span></a>        <span class="c1">#response = asyncio.run(self._call_lockstar(bc))</span>
+</span><span id="L-135"><a href="#L-135"><span class="linenos">135</span></a>        <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_lockstar</span><span class="p">(</span><span class="n">bc</span><span class="p">)</span>
+</span><span id="L-136"><a href="#L-136"><span class="linenos">136</span></a>
+</span><span id="L-137"><a href="#L-137"><span class="linenos">137</span></a>        <span class="k">if</span> <span class="ow">not</span> <span class="n">response</span><span class="o">.</span><span class="n">is_ACK</span><span class="p">():</span>
+</span><span id="L-138"><a href="#L-138"><span class="linenos">138</span></a>            <span class="n">logging</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;LockstarClient: could not register my client id: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">client_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+</span><span id="L-139"><a href="#L-139"><span class="linenos">139</span></a>
+</span><span id="L-140"><a href="#L-140"><span class="linenos">140</span></a>        <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">is_ACK</span><span class="p">()</span>
 </span></pre></div>
 
 
@@ -125,43 +259,139 @@ lockstar_client<wbr>.LockstarClient    </h1>
 
     </div>
     <a class="headerlink" href="#LockstarClient"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="LockstarClient-7"><a href="#LockstarClient-7"><span class="linenos"> 7</span></a><span class="k">class</span> <span class="nc">LockstarClient</span><span class="p">():</span>
-</span><span id="LockstarClient-8"><a href="#LockstarClient-8"><span class="linenos"> 8</span></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lockstar_ip</span><span class="p">,</span> <span class="n">lockstar_port</span><span class="p">,</span> <span class="n">client_id</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-</span><span id="LockstarClient-9"><a href="#LockstarClient-9"><span class="linenos"> 9</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">lockstar_ip</span> <span class="o">=</span> <span class="n">lockstar_ip</span>
-</span><span id="LockstarClient-10"><a href="#LockstarClient-10"><span class="linenos">10</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">lockstar_port</span> <span class="o">=</span> <span class="n">lockstar_port</span>
-</span><span id="LockstarClient-11"><a href="#LockstarClient-11"><span class="linenos">11</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">client_id</span> <span class="o">=</span> <span class="n">client_id</span>
-</span><span id="LockstarClient-12"><a href="#LockstarClient-12"><span class="linenos">12</span></a>
-</span><span id="LockstarClient-13"><a href="#LockstarClient-13"><span class="linenos">13</span></a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">_call_lockstar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">backend_call</span><span class="p">):</span>
-</span><span id="LockstarClient-14"><a href="#LockstarClient-14"><span class="linenos">14</span></a>        <span class="sd">&quot;&quot;&quot;Send backend_call to lockstar and await response</span>
-</span><span id="LockstarClient-15"><a href="#LockstarClient-15"><span class="linenos">15</span></a>
-</span><span id="LockstarClient-16"><a href="#LockstarClient-16"><span class="linenos">16</span></a><span class="sd">        Args:</span>
-</span><span id="LockstarClient-17"><a href="#LockstarClient-17"><span class="linenos">17</span></a><span class="sd">            backend_call (BackendCall): call to send</span>
-</span><span id="LockstarClient-18"><a href="#LockstarClient-18"><span class="linenos">18</span></a>
-</span><span id="LockstarClient-19"><a href="#LockstarClient-19"><span class="linenos">19</span></a><span class="sd">        Returns:</span>
-</span><span id="LockstarClient-20"><a href="#LockstarClient-20"><span class="linenos">20</span></a><span class="sd">            BackendResponse: response</span>
-</span><span id="LockstarClient-21"><a href="#LockstarClient-21"><span class="linenos">21</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="LockstarClient-22"><a href="#LockstarClient-22"><span class="linenos">22</span></a>        <span class="n">reader</span><span class="p">,</span> <span class="n">writer</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">open_connection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lockstar_ip</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lockstar_port</span><span class="p">)</span>
-</span><span id="LockstarClient-23"><a href="#LockstarClient-23"><span class="linenos">23</span></a>        <span class="n">writer</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">backend_call</span><span class="o">.</span><span class="n">to_bytes</span><span class="p">())</span>
-</span><span id="LockstarClient-24"><a href="#LockstarClient-24"><span class="linenos">24</span></a>        <span class="k">await</span> <span class="n">writer</span><span class="o">.</span><span class="n">drain</span><span class="p">()</span>
-</span><span id="LockstarClient-25"><a href="#LockstarClient-25"><span class="linenos">25</span></a>        <span class="n">byte_response</span> <span class="o">=</span> <span class="p">(</span><span class="k">await</span> <span class="n">reader</span><span class="o">.</span><span class="n">readuntil</span><span class="p">(</span><span class="n">BackendResponse</span><span class="o">.</span><span class="n">DELIMITTER</span><span class="p">))[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-</span><span id="LockstarClient-26"><a href="#LockstarClient-26"><span class="linenos">26</span></a>        <span class="n">response</span> <span class="o">=</span> <span class="n">BackendResponse</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">byte_response</span><span class="p">)</span>
-</span><span id="LockstarClient-27"><a href="#LockstarClient-27"><span class="linenos">27</span></a>        <span class="n">writer</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-</span><span id="LockstarClient-28"><a href="#LockstarClient-28"><span class="linenos">28</span></a>        <span class="k">await</span> <span class="n">writer</span><span class="o">.</span><span class="n">wait_closed</span><span class="p">()</span>
-</span><span id="LockstarClient-29"><a href="#LockstarClient-29"><span class="linenos">29</span></a>        <span class="k">return</span> <span class="n">response</span>
-</span><span id="LockstarClient-30"><a href="#LockstarClient-30"><span class="linenos">30</span></a>
-</span><span id="LockstarClient-31"><a href="#LockstarClient-31"><span class="linenos">31</span></a>    <span class="k">def</span> <span class="nf">register_client_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="LockstarClient-32"><a href="#LockstarClient-32"><span class="linenos">32</span></a>        <span class="n">bc</span> <span class="o">=</span> <span class="n">BackendCall</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span> <span class="s1">&#39;GeneralModule&#39;</span><span class="p">,</span> <span class="s1">&#39;register_client&#39;</span><span class="p">,</span>
-</span><span id="LockstarClient-33"><a href="#LockstarClient-33"><span class="linenos">33</span></a>                        <span class="n">args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;client_id&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">client_id</span><span class="p">})</span>
-</span><span id="LockstarClient-34"><a href="#LockstarClient-34"><span class="linenos">34</span></a>        
-</span><span id="LockstarClient-35"><a href="#LockstarClient-35"><span class="linenos">35</span></a>        <span class="n">response</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_call_lockstar</span><span class="p">(</span><span class="n">bc</span><span class="p">))</span>
-</span><span id="LockstarClient-36"><a href="#LockstarClient-36"><span class="linenos">36</span></a>
-</span><span id="LockstarClient-37"><a href="#LockstarClient-37"><span class="linenos">37</span></a>        <span class="k">if</span> <span class="ow">not</span> <span class="n">response</span><span class="o">.</span><span class="n">is_ACK</span><span class="p">():</span>
-</span><span id="LockstarClient-38"><a href="#LockstarClient-38"><span class="linenos">38</span></a>            <span class="n">logging</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;LockstarClient: could not register my client id: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">client_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-</span><span id="LockstarClient-39"><a href="#LockstarClient-39"><span class="linenos">39</span></a>
-</span><span id="LockstarClient-40"><a href="#LockstarClient-40"><span class="linenos">40</span></a>        <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">is_ACK</span><span class="p">()</span>
-</span><span id="LockstarClient-41"><a href="#LockstarClient-41"><span class="linenos">41</span></a>
-</span><span id="LockstarClient-42"><a href="#LockstarClient-42"><span class="linenos">42</span></a>    <span class="k">def</span> <span class="nf">start_calibration</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="LockstarClient-43"><a href="#LockstarClient-43"><span class="linenos">43</span></a>        <span class="k">pass</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="LockstarClient-9"><a href="#LockstarClient-9"><span class="linenos">  9</span></a><span class="k">class</span> <span class="nc">LockstarClient</span><span class="p">():</span>
+</span><span id="LockstarClient-10"><a href="#LockstarClient-10"><span class="linenos"> 10</span></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lockstar_ip</span><span class="p">,</span> <span class="n">lockstar_port</span><span class="p">,</span> <span class="n">client_id</span><span class="p">,</span> <span class="n">module_name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="LockstarClient-11"><a href="#LockstarClient-11"><span class="linenos"> 11</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">lockstar_ip</span> <span class="o">=</span> <span class="n">lockstar_ip</span>
+</span><span id="LockstarClient-12"><a href="#LockstarClient-12"><span class="linenos"> 12</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">lockstar_port</span> <span class="o">=</span> <span class="n">lockstar_port</span>
+</span><span id="LockstarClient-13"><a href="#LockstarClient-13"><span class="linenos"> 13</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">client_id</span> <span class="o">=</span> <span class="n">client_id</span>
+</span><span id="LockstarClient-14"><a href="#LockstarClient-14"><span class="linenos"> 14</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">module_name</span> <span class="o">=</span> <span class="n">module_name</span>
+</span><span id="LockstarClient-15"><a href="#LockstarClient-15"><span class="linenos"> 15</span></a>
+</span><span id="LockstarClient-16"><a href="#LockstarClient-16"><span class="linenos"> 16</span></a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_ch_one_output_limits</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">min</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">max</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+</span><span id="LockstarClient-17"><a href="#LockstarClient-17"><span class="linenos"> 17</span></a>        <span class="n">bc</span> <span class="o">=</span> <span class="n">BackendCall</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">module_name</span><span class="p">,</span> <span class="s1">&#39;set_ch_one_output_limits&#39;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;min&#39;</span><span class="p">:</span> <span class="nb">min</span><span class="p">,</span> <span class="s1">&#39;max&#39;</span><span class="p">:</span> <span class="nb">max</span><span class="p">})</span>
+</span><span id="LockstarClient-18"><a href="#LockstarClient-18"><span class="linenos"> 18</span></a>        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_lockstar</span><span class="p">(</span><span class="n">bc</span><span class="p">)</span>
+</span><span id="LockstarClient-19"><a href="#LockstarClient-19"><span class="linenos"> 19</span></a>
+</span><span id="LockstarClient-20"><a href="#LockstarClient-20"><span class="linenos"> 20</span></a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_ch_two_output_limits</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">min</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">max</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+</span><span id="LockstarClient-21"><a href="#LockstarClient-21"><span class="linenos"> 21</span></a>        <span class="n">bc</span> <span class="o">=</span> <span class="n">BackendCall</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">module_name</span><span class="p">,</span> <span class="s1">&#39;set_ch_two_output_limits&#39;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;min&#39;</span><span class="p">:</span> <span class="nb">min</span><span class="p">,</span> <span class="s1">&#39;max&#39;</span><span class="p">:</span> <span class="nb">max</span><span class="p">})</span>
+</span><span id="LockstarClient-22"><a href="#LockstarClient-22"><span class="linenos"> 22</span></a>        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_lockstar</span><span class="p">(</span><span class="n">bc</span><span class="p">)</span>
+</span><span id="LockstarClient-23"><a href="#LockstarClient-23"><span class="linenos"> 23</span></a>
+</span><span id="LockstarClient-24"><a href="#LockstarClient-24"><span class="linenos"> 24</span></a>    <span class="c1">#==== Linearization Methods START====</span>
+</span><span id="LockstarClient-25"><a href="#LockstarClient-25"><span class="linenos"> 25</span></a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_linearization_one</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">linearization</span><span class="p">,</span> <span class="n">min_output_voltage</span><span class="p">,</span> <span class="n">max_output_voltage</span><span class="p">):</span>
+</span><span id="LockstarClient-26"><a href="#LockstarClient-26"><span class="linenos"> 26</span></a>        <span class="sd">&quot;&quot;&quot;Sets the parameters used by the DAC_ONE to linearize the systems response</span>
+</span><span id="LockstarClient-27"><a href="#LockstarClient-27"><span class="linenos"> 27</span></a>
+</span><span id="LockstarClient-28"><a href="#LockstarClient-28"><span class="linenos"> 28</span></a><span class="sd">        Args:</span>
+</span><span id="LockstarClient-29"><a href="#LockstarClient-29"><span class="linenos"> 29</span></a><span class="sd">            linearization (_type_): _description_</span>
+</span><span id="LockstarClient-30"><a href="#LockstarClient-30"><span class="linenos"> 30</span></a>
+</span><span id="LockstarClient-31"><a href="#LockstarClient-31"><span class="linenos"> 31</span></a><span class="sd">        Returns:</span>
+</span><span id="LockstarClient-32"><a href="#LockstarClient-32"><span class="linenos"> 32</span></a><span class="sd">            _type_: _description_</span>
+</span><span id="LockstarClient-33"><a href="#LockstarClient-33"><span class="linenos"> 33</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="LockstarClient-34"><a href="#LockstarClient-34"><span class="linenos"> 34</span></a>        <span class="n">bc</span> <span class="o">=</span> <span class="n">BackendCall</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">module_name</span><span class="p">,</span> <span class="s1">&#39;set_linearization_one&#39;</span><span class="p">,</span> 
+</span><span id="LockstarClient-35"><a href="#LockstarClient-35"><span class="linenos"> 35</span></a>                        <span class="n">args</span><span class="o">=</span><span class="p">{</span>
+</span><span id="LockstarClient-36"><a href="#LockstarClient-36"><span class="linenos"> 36</span></a>                            <span class="s1">&#39;linearization&#39;</span><span class="p">:</span> <span class="n">linearization</span><span class="p">,</span>
+</span><span id="LockstarClient-37"><a href="#LockstarClient-37"><span class="linenos"> 37</span></a>                            <span class="s1">&#39;min_output_voltage&#39;</span><span class="p">:</span> <span class="n">min_output_voltage</span><span class="p">,</span>
+</span><span id="LockstarClient-38"><a href="#LockstarClient-38"><span class="linenos"> 38</span></a>                            <span class="s1">&#39;max_output_voltage&#39;</span><span class="p">:</span> <span class="n">max_output_voltage</span>
+</span><span id="LockstarClient-39"><a href="#LockstarClient-39"><span class="linenos"> 39</span></a>                        <span class="p">})</span>
+</span><span id="LockstarClient-40"><a href="#LockstarClient-40"><span class="linenos"> 40</span></a>        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_lockstar</span><span class="p">(</span><span class="n">bc</span><span class="p">)</span>
+</span><span id="LockstarClient-41"><a href="#LockstarClient-41"><span class="linenos"> 41</span></a>
+</span><span id="LockstarClient-42"><a href="#LockstarClient-42"><span class="linenos"> 42</span></a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_linearization_two</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">linearization</span><span class="p">,</span> <span class="n">min_output_voltage</span><span class="p">,</span> <span class="n">max_output_voltage</span><span class="p">):</span>
+</span><span id="LockstarClient-43"><a href="#LockstarClient-43"><span class="linenos"> 43</span></a>        <span class="sd">&quot;&quot;&quot;Sets the parameters used by the DAC_ONE to linearize the systems response</span>
+</span><span id="LockstarClient-44"><a href="#LockstarClient-44"><span class="linenos"> 44</span></a>
+</span><span id="LockstarClient-45"><a href="#LockstarClient-45"><span class="linenos"> 45</span></a><span class="sd">        Args:</span>
+</span><span id="LockstarClient-46"><a href="#LockstarClient-46"><span class="linenos"> 46</span></a><span class="sd">            linearization (_type_): _description_</span>
+</span><span id="LockstarClient-47"><a href="#LockstarClient-47"><span class="linenos"> 47</span></a>
+</span><span id="LockstarClient-48"><a href="#LockstarClient-48"><span class="linenos"> 48</span></a><span class="sd">        Returns:</span>
+</span><span id="LockstarClient-49"><a href="#LockstarClient-49"><span class="linenos"> 49</span></a><span class="sd">            _type_: _description_</span>
+</span><span id="LockstarClient-50"><a href="#LockstarClient-50"><span class="linenos"> 50</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="LockstarClient-51"><a href="#LockstarClient-51"><span class="linenos"> 51</span></a>        <span class="n">bc</span> <span class="o">=</span> <span class="n">BackendCall</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">module_name</span><span class="p">,</span> <span class="s1">&#39;set_linearization_two&#39;</span><span class="p">,</span> 
+</span><span id="LockstarClient-52"><a href="#LockstarClient-52"><span class="linenos"> 52</span></a>                        <span class="n">args</span><span class="o">=</span><span class="p">{</span>
+</span><span id="LockstarClient-53"><a href="#LockstarClient-53"><span class="linenos"> 53</span></a>                            <span class="s1">&#39;linearization&#39;</span><span class="p">:</span> <span class="n">linearization</span><span class="p">,</span>
+</span><span id="LockstarClient-54"><a href="#LockstarClient-54"><span class="linenos"> 54</span></a>                            <span class="s1">&#39;min_output_voltage&#39;</span><span class="p">:</span> <span class="n">min_output_voltage</span><span class="p">,</span>
+</span><span id="LockstarClient-55"><a href="#LockstarClient-55"><span class="linenos"> 55</span></a>                            <span class="s1">&#39;max_output_voltage&#39;</span><span class="p">:</span> <span class="n">max_output_voltage</span>
+</span><span id="LockstarClient-56"><a href="#LockstarClient-56"><span class="linenos"> 56</span></a>                        <span class="p">})</span>
+</span><span id="LockstarClient-57"><a href="#LockstarClient-57"><span class="linenos"> 57</span></a>        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_lockstar</span><span class="p">(</span><span class="n">bc</span><span class="p">)</span>
+</span><span id="LockstarClient-58"><a href="#LockstarClient-58"><span class="linenos"> 58</span></a>
+</span><span id="LockstarClient-59"><a href="#LockstarClient-59"><span class="linenos"> 59</span></a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_linearization_two_from_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">local_file</span><span class="p">):</span>
+</span><span id="LockstarClient-60"><a href="#LockstarClient-60"><span class="linenos"> 60</span></a>        <span class="sd">&quot;&quot;&quot; calls set_linearization_two with the linearization gotten from local_file (stored by LinearizationClient.store_linearization_locally)</span>
+</span><span id="LockstarClient-61"><a href="#LockstarClient-61"><span class="linenos"> 61</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="LockstarClient-62"><a href="#LockstarClient-62"><span class="linenos"> 62</span></a>
+</span><span id="LockstarClient-63"><a href="#LockstarClient-63"><span class="linenos"> 63</span></a>        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">local_file</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+</span><span id="LockstarClient-64"><a href="#LockstarClient-64"><span class="linenos"> 64</span></a>            <span class="n">lin_dict</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+</span><span id="LockstarClient-65"><a href="#LockstarClient-65"><span class="linenos"> 65</span></a>
+</span><span id="LockstarClient-66"><a href="#LockstarClient-66"><span class="linenos"> 66</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_linearization_two</span><span class="p">(</span><span class="n">linearization</span><span class="o">=</span><span class="n">lin_dict</span><span class="p">[</span><span class="s1">&#39;linearization&#39;</span><span class="p">],</span> 
+</span><span id="LockstarClient-67"><a href="#LockstarClient-67"><span class="linenos"> 67</span></a>                                    <span class="n">min_output_voltage</span><span class="o">=</span><span class="n">lin_dict</span><span class="p">[</span><span class="s1">&#39;min_output_voltage&#39;</span><span class="p">],</span>
+</span><span id="LockstarClient-68"><a href="#LockstarClient-68"><span class="linenos"> 68</span></a>                                    <span class="n">max_output_voltage</span><span class="o">=</span><span class="n">lin_dict</span><span class="p">[</span><span class="s1">&#39;max_output_voltage&#39;</span><span class="p">])</span>
+</span><span id="LockstarClient-69"><a href="#LockstarClient-69"><span class="linenos"> 69</span></a>
+</span><span id="LockstarClient-70"><a href="#LockstarClient-70"><span class="linenos"> 70</span></a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_linearization_one_from_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">local_file</span><span class="p">):</span>
+</span><span id="LockstarClient-71"><a href="#LockstarClient-71"><span class="linenos"> 71</span></a>        <span class="sd">&quot;&quot;&quot; calls set_linearization_one with the linearization gotten from local_file (stored by LinearizationClient.store_linearization_locally)</span>
+</span><span id="LockstarClient-72"><a href="#LockstarClient-72"><span class="linenos"> 72</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="LockstarClient-73"><a href="#LockstarClient-73"><span class="linenos"> 73</span></a>
+</span><span id="LockstarClient-74"><a href="#LockstarClient-74"><span class="linenos"> 74</span></a>        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">local_file</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+</span><span id="LockstarClient-75"><a href="#LockstarClient-75"><span class="linenos"> 75</span></a>            <span class="n">lin_dict</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+</span><span id="LockstarClient-76"><a href="#LockstarClient-76"><span class="linenos"> 76</span></a>
+</span><span id="LockstarClient-77"><a href="#LockstarClient-77"><span class="linenos"> 77</span></a>        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_linearization_one</span><span class="p">(</span><span class="n">linearization</span><span class="o">=</span><span class="n">lin_dict</span><span class="p">[</span><span class="s1">&#39;linearization&#39;</span><span class="p">],</span> 
+</span><span id="LockstarClient-78"><a href="#LockstarClient-78"><span class="linenos"> 78</span></a>                                    <span class="n">min_output_voltage</span><span class="o">=</span><span class="n">lin_dict</span><span class="p">[</span><span class="s1">&#39;min_output_voltage&#39;</span><span class="p">],</span>
+</span><span id="LockstarClient-79"><a href="#LockstarClient-79"><span class="linenos"> 79</span></a>                                    <span class="n">max_output_voltage</span><span class="o">=</span><span class="n">lin_dict</span><span class="p">[</span><span class="s1">&#39;max_output_voltage&#39;</span><span class="p">])</span>
+</span><span id="LockstarClient-80"><a href="#LockstarClient-80"><span class="linenos"> 80</span></a>
+</span><span id="LockstarClient-81"><a href="#LockstarClient-81"><span class="linenos"> 81</span></a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_linearization_length_one</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">linearization_length</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+</span><span id="LockstarClient-82"><a href="#LockstarClient-82"><span class="linenos"> 82</span></a>        <span class="n">bc</span> <span class="o">=</span> <span class="n">BackendCall</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">module_name</span><span class="p">,</span> <span class="s1">&#39;set_linearization_length_one&#39;</span><span class="p">,</span> 
+</span><span id="LockstarClient-83"><a href="#LockstarClient-83"><span class="linenos"> 83</span></a>                        <span class="n">args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;linearization_length&#39;</span><span class="p">:</span> <span class="n">linearization_length</span><span class="p">})</span>
+</span><span id="LockstarClient-84"><a href="#LockstarClient-84"><span class="linenos"> 84</span></a>        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_lockstar</span><span class="p">(</span><span class="n">bc</span><span class="p">)</span>
+</span><span id="LockstarClient-85"><a href="#LockstarClient-85"><span class="linenos"> 85</span></a>
+</span><span id="LockstarClient-86"><a href="#LockstarClient-86"><span class="linenos"> 86</span></a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_linearization_length_two</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">linearization_length</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+</span><span id="LockstarClient-87"><a href="#LockstarClient-87"><span class="linenos"> 87</span></a>        <span class="n">bc</span> <span class="o">=</span> <span class="n">BackendCall</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">module_name</span><span class="p">,</span> <span class="s1">&#39;set_linearization_length_two&#39;</span><span class="p">,</span> 
+</span><span id="LockstarClient-88"><a href="#LockstarClient-88"><span class="linenos"> 88</span></a>                        <span class="n">args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;linearization_length&#39;</span><span class="p">:</span> <span class="n">linearization_length</span><span class="p">})</span>
+</span><span id="LockstarClient-89"><a href="#LockstarClient-89"><span class="linenos"> 89</span></a>        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_lockstar</span><span class="p">(</span><span class="n">bc</span><span class="p">)</span>
+</span><span id="LockstarClient-90"><a href="#LockstarClient-90"><span class="linenos"> 90</span></a>
+</span><span id="LockstarClient-91"><a href="#LockstarClient-91"><span class="linenos"> 91</span></a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">enable_linearization_one</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span id="LockstarClient-92"><a href="#LockstarClient-92"><span class="linenos"> 92</span></a>        <span class="n">bc</span> <span class="o">=</span> <span class="n">BackendCall</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">module_name</span><span class="p">,</span> <span class="s1">&#39;enable_linearization_one&#39;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">{})</span>
+</span><span id="LockstarClient-93"><a href="#LockstarClient-93"><span class="linenos"> 93</span></a>        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_lockstar</span><span class="p">(</span><span class="n">bc</span><span class="p">)</span>
+</span><span id="LockstarClient-94"><a href="#LockstarClient-94"><span class="linenos"> 94</span></a>
+</span><span id="LockstarClient-95"><a href="#LockstarClient-95"><span class="linenos"> 95</span></a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">enable_linearization_two</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span id="LockstarClient-96"><a href="#LockstarClient-96"><span class="linenos"> 96</span></a>        <span class="n">bc</span> <span class="o">=</span> <span class="n">BackendCall</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">module_name</span><span class="p">,</span> <span class="s1">&#39;enable_linearization_two&#39;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">{})</span>
+</span><span id="LockstarClient-97"><a href="#LockstarClient-97"><span class="linenos"> 97</span></a>        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_lockstar</span><span class="p">(</span><span class="n">bc</span><span class="p">)</span>
+</span><span id="LockstarClient-98"><a href="#LockstarClient-98"><span class="linenos"> 98</span></a>
+</span><span id="LockstarClient-99"><a href="#LockstarClient-99"><span class="linenos"> 99</span></a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">disable_linearization_one</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span id="LockstarClient-100"><a href="#LockstarClient-100"><span class="linenos">100</span></a>        <span class="n">bc</span> <span class="o">=</span> <span class="n">BackendCall</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">module_name</span><span class="p">,</span> <span class="s1">&#39;disable_linearization_one&#39;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">{})</span>
+</span><span id="LockstarClient-101"><a href="#LockstarClient-101"><span class="linenos">101</span></a>        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_lockstar</span><span class="p">(</span><span class="n">bc</span><span class="p">)</span>
+</span><span id="LockstarClient-102"><a href="#LockstarClient-102"><span class="linenos">102</span></a>
+</span><span id="LockstarClient-103"><a href="#LockstarClient-103"><span class="linenos">103</span></a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">disable_linearization_two</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span id="LockstarClient-104"><a href="#LockstarClient-104"><span class="linenos">104</span></a>        <span class="n">bc</span> <span class="o">=</span> <span class="n">BackendCall</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">module_name</span><span class="p">,</span> <span class="s1">&#39;disable_linearization_two&#39;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">{})</span>
+</span><span id="LockstarClient-105"><a href="#LockstarClient-105"><span class="linenos">105</span></a>        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_lockstar</span><span class="p">(</span><span class="n">bc</span><span class="p">)</span>
+</span><span id="LockstarClient-106"><a href="#LockstarClient-106"><span class="linenos">106</span></a>
+</span><span id="LockstarClient-107"><a href="#LockstarClient-107"><span class="linenos">107</span></a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">flash_mc</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span id="LockstarClient-108"><a href="#LockstarClient-108"><span class="linenos">108</span></a>        <span class="n">bc</span> <span class="o">=</span> <span class="n">BackendCall</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">module_name</span><span class="p">,</span> <span class="s1">&#39;flash_mc&#39;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">{})</span>
+</span><span id="LockstarClient-109"><a href="#LockstarClient-109"><span class="linenos">109</span></a>        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_lockstar</span><span class="p">(</span><span class="n">bc</span><span class="p">)</span>
+</span><span id="LockstarClient-110"><a href="#LockstarClient-110"><span class="linenos">110</span></a>   
+</span><span id="LockstarClient-111"><a href="#LockstarClient-111"><span class="linenos">111</span></a>    <span class="c1">#==== Linearization Methods END====</span>
+</span><span id="LockstarClient-112"><a href="#LockstarClient-112"><span class="linenos">112</span></a>
+</span><span id="LockstarClient-113"><a href="#LockstarClient-113"><span class="linenos">113</span></a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">_call_lockstar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">backend_call</span><span class="p">):</span>
+</span><span id="LockstarClient-114"><a href="#LockstarClient-114"><span class="linenos">114</span></a>        <span class="sd">&quot;&quot;&quot;Send backend_call to lockstar and await response</span>
+</span><span id="LockstarClient-115"><a href="#LockstarClient-115"><span class="linenos">115</span></a>
+</span><span id="LockstarClient-116"><a href="#LockstarClient-116"><span class="linenos">116</span></a><span class="sd">        Args:</span>
+</span><span id="LockstarClient-117"><a href="#LockstarClient-117"><span class="linenos">117</span></a><span class="sd">            backend_call (BackendCall): call to send</span>
+</span><span id="LockstarClient-118"><a href="#LockstarClient-118"><span class="linenos">118</span></a>
+</span><span id="LockstarClient-119"><a href="#LockstarClient-119"><span class="linenos">119</span></a><span class="sd">        Returns:</span>
+</span><span id="LockstarClient-120"><a href="#LockstarClient-120"><span class="linenos">120</span></a><span class="sd">            BackendResponse: response</span>
+</span><span id="LockstarClient-121"><a href="#LockstarClient-121"><span class="linenos">121</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="LockstarClient-122"><a href="#LockstarClient-122"><span class="linenos">122</span></a>        <span class="n">reader</span><span class="p">,</span> <span class="n">writer</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">open_connection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lockstar_ip</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lockstar_port</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="n">ClientSettings</span><span class="o">.</span><span class="n">read_buffer_limit_bytes</span><span class="p">)</span>
+</span><span id="LockstarClient-123"><a href="#LockstarClient-123"><span class="linenos">123</span></a>        <span class="n">writer</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">backend_call</span><span class="o">.</span><span class="n">to_bytes</span><span class="p">())</span>
+</span><span id="LockstarClient-124"><a href="#LockstarClient-124"><span class="linenos">124</span></a>        <span class="k">await</span> <span class="n">writer</span><span class="o">.</span><span class="n">drain</span><span class="p">()</span>
+</span><span id="LockstarClient-125"><a href="#LockstarClient-125"><span class="linenos">125</span></a>        <span class="n">byte_response</span> <span class="o">=</span> <span class="p">(</span><span class="k">await</span> <span class="n">reader</span><span class="o">.</span><span class="n">readuntil</span><span class="p">(</span><span class="n">BackendResponse</span><span class="o">.</span><span class="n">DELIMITTER</span><span class="p">))[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+</span><span id="LockstarClient-126"><a href="#LockstarClient-126"><span class="linenos">126</span></a>        <span class="n">response</span> <span class="o">=</span> <span class="n">BackendResponse</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">byte_response</span><span class="p">)</span>
+</span><span id="LockstarClient-127"><a href="#LockstarClient-127"><span class="linenos">127</span></a>        <span class="n">writer</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</span><span id="LockstarClient-128"><a href="#LockstarClient-128"><span class="linenos">128</span></a>        <span class="k">await</span> <span class="n">writer</span><span class="o">.</span><span class="n">wait_closed</span><span class="p">()</span>
+</span><span id="LockstarClient-129"><a href="#LockstarClient-129"><span class="linenos">129</span></a>        <span class="k">return</span> <span class="n">response</span>
+</span><span id="LockstarClient-130"><a href="#LockstarClient-130"><span class="linenos">130</span></a>
+</span><span id="LockstarClient-131"><a href="#LockstarClient-131"><span class="linenos">131</span></a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">register_client_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span id="LockstarClient-132"><a href="#LockstarClient-132"><span class="linenos">132</span></a>        <span class="n">bc</span> <span class="o">=</span> <span class="n">BackendCall</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span> <span class="s1">&#39;GeneralModule&#39;</span><span class="p">,</span> <span class="s1">&#39;register_client&#39;</span><span class="p">,</span>
+</span><span id="LockstarClient-133"><a href="#LockstarClient-133"><span class="linenos">133</span></a>                        <span class="n">args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;client_id&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">client_id</span><span class="p">})</span>
+</span><span id="LockstarClient-134"><a href="#LockstarClient-134"><span class="linenos">134</span></a>        
+</span><span id="LockstarClient-135"><a href="#LockstarClient-135"><span class="linenos">135</span></a>        <span class="c1">#response = asyncio.run(self._call_lockstar(bc))</span>
+</span><span id="LockstarClient-136"><a href="#LockstarClient-136"><span class="linenos">136</span></a>        <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_lockstar</span><span class="p">(</span><span class="n">bc</span><span class="p">)</span>
+</span><span id="LockstarClient-137"><a href="#LockstarClient-137"><span class="linenos">137</span></a>
+</span><span id="LockstarClient-138"><a href="#LockstarClient-138"><span class="linenos">138</span></a>        <span class="k">if</span> <span class="ow">not</span> <span class="n">response</span><span class="o">.</span><span class="n">is_ACK</span><span class="p">():</span>
+</span><span id="LockstarClient-139"><a href="#LockstarClient-139"><span class="linenos">139</span></a>            <span class="n">logging</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;LockstarClient: could not register my client id: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">client_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+</span><span id="LockstarClient-140"><a href="#LockstarClient-140"><span class="linenos">140</span></a>
+</span><span id="LockstarClient-141"><a href="#LockstarClient-141"><span class="linenos">141</span></a>        <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">is_ACK</span><span class="p">()</span>
 </span></pre></div>
 
 
@@ -171,16 +401,339 @@ lockstar_client<wbr>.LockstarClient    </h1>
                                         <input id="LockstarClient.__init__-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
 <div class="attr function">
             
-        <span class="name">LockstarClient</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">lockstar_ip</span>, </span><span class="param"><span class="n">lockstar_port</span>, </span><span class="param"><span class="n">client_id</span></span>)</span>
+        <span class="name">LockstarClient</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">lockstar_ip</span>, </span><span class="param"><span class="n">lockstar_port</span>, </span><span class="param"><span class="n">client_id</span>, </span><span class="param"><span class="n">module_name</span></span>)</span>
 
                 <label class="view-source-button" for="LockstarClient.__init__-view-source"><span>View Source</span></label>
 
     </div>
     <a class="headerlink" href="#LockstarClient.__init__"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="LockstarClient.__init__-8"><a href="#LockstarClient.__init__-8"><span class="linenos"> 8</span></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lockstar_ip</span><span class="p">,</span> <span class="n">lockstar_port</span><span class="p">,</span> <span class="n">client_id</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-</span><span id="LockstarClient.__init__-9"><a href="#LockstarClient.__init__-9"><span class="linenos"> 9</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">lockstar_ip</span> <span class="o">=</span> <span class="n">lockstar_ip</span>
-</span><span id="LockstarClient.__init__-10"><a href="#LockstarClient.__init__-10"><span class="linenos">10</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">lockstar_port</span> <span class="o">=</span> <span class="n">lockstar_port</span>
-</span><span id="LockstarClient.__init__-11"><a href="#LockstarClient.__init__-11"><span class="linenos">11</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">client_id</span> <span class="o">=</span> <span class="n">client_id</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="LockstarClient.__init__-10"><a href="#LockstarClient.__init__-10"><span class="linenos">10</span></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lockstar_ip</span><span class="p">,</span> <span class="n">lockstar_port</span><span class="p">,</span> <span class="n">client_id</span><span class="p">,</span> <span class="n">module_name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="LockstarClient.__init__-11"><a href="#LockstarClient.__init__-11"><span class="linenos">11</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">lockstar_ip</span> <span class="o">=</span> <span class="n">lockstar_ip</span>
+</span><span id="LockstarClient.__init__-12"><a href="#LockstarClient.__init__-12"><span class="linenos">12</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">lockstar_port</span> <span class="o">=</span> <span class="n">lockstar_port</span>
+</span><span id="LockstarClient.__init__-13"><a href="#LockstarClient.__init__-13"><span class="linenos">13</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">client_id</span> <span class="o">=</span> <span class="n">client_id</span>
+</span><span id="LockstarClient.__init__-14"><a href="#LockstarClient.__init__-14"><span class="linenos">14</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">module_name</span> <span class="o">=</span> <span class="n">module_name</span>
+</span></pre></div>
+
+
+    
+
+                            </div>
+                            <div id="LockstarClient.set_ch_one_output_limits" class="classattr">
+                                        <input id="LockstarClient.set_ch_one_output_limits-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+<div class="attr function">
+            
+        <span class="def">async def</span>
+        <span class="name">set_ch_one_output_limits</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="nb">min</span><span class="p">:</span> <span class="nb">float</span>, </span><span class="param"><span class="nb">max</span><span class="p">:</span> <span class="nb">float</span></span><span class="return-annotation">):</span></span>
+
+                <label class="view-source-button" for="LockstarClient.set_ch_one_output_limits-view-source"><span>View Source</span></label>
+
+    </div>
+    <a class="headerlink" href="#LockstarClient.set_ch_one_output_limits"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="LockstarClient.set_ch_one_output_limits-16"><a href="#LockstarClient.set_ch_one_output_limits-16"><span class="linenos">16</span></a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_ch_one_output_limits</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">min</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">max</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+</span><span id="LockstarClient.set_ch_one_output_limits-17"><a href="#LockstarClient.set_ch_one_output_limits-17"><span class="linenos">17</span></a>        <span class="n">bc</span> <span class="o">=</span> <span class="n">BackendCall</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">module_name</span><span class="p">,</span> <span class="s1">&#39;set_ch_one_output_limits&#39;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;min&#39;</span><span class="p">:</span> <span class="nb">min</span><span class="p">,</span> <span class="s1">&#39;max&#39;</span><span class="p">:</span> <span class="nb">max</span><span class="p">})</span>
+</span><span id="LockstarClient.set_ch_one_output_limits-18"><a href="#LockstarClient.set_ch_one_output_limits-18"><span class="linenos">18</span></a>        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_lockstar</span><span class="p">(</span><span class="n">bc</span><span class="p">)</span>
+</span></pre></div>
+
+
+    
+
+                            </div>
+                            <div id="LockstarClient.set_ch_two_output_limits" class="classattr">
+                                        <input id="LockstarClient.set_ch_two_output_limits-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+<div class="attr function">
+            
+        <span class="def">async def</span>
+        <span class="name">set_ch_two_output_limits</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="nb">min</span><span class="p">:</span> <span class="nb">float</span>, </span><span class="param"><span class="nb">max</span><span class="p">:</span> <span class="nb">float</span></span><span class="return-annotation">):</span></span>
+
+                <label class="view-source-button" for="LockstarClient.set_ch_two_output_limits-view-source"><span>View Source</span></label>
+
+    </div>
+    <a class="headerlink" href="#LockstarClient.set_ch_two_output_limits"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="LockstarClient.set_ch_two_output_limits-20"><a href="#LockstarClient.set_ch_two_output_limits-20"><span class="linenos">20</span></a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_ch_two_output_limits</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">min</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">max</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+</span><span id="LockstarClient.set_ch_two_output_limits-21"><a href="#LockstarClient.set_ch_two_output_limits-21"><span class="linenos">21</span></a>        <span class="n">bc</span> <span class="o">=</span> <span class="n">BackendCall</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">module_name</span><span class="p">,</span> <span class="s1">&#39;set_ch_two_output_limits&#39;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;min&#39;</span><span class="p">:</span> <span class="nb">min</span><span class="p">,</span> <span class="s1">&#39;max&#39;</span><span class="p">:</span> <span class="nb">max</span><span class="p">})</span>
+</span><span id="LockstarClient.set_ch_two_output_limits-22"><a href="#LockstarClient.set_ch_two_output_limits-22"><span class="linenos">22</span></a>        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_lockstar</span><span class="p">(</span><span class="n">bc</span><span class="p">)</span>
+</span></pre></div>
+
+
+    
+
+                            </div>
+                            <div id="LockstarClient.set_linearization_one" class="classattr">
+                                        <input id="LockstarClient.set_linearization_one-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+<div class="attr function">
+            
+        <span class="def">async def</span>
+        <span class="name">set_linearization_one</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">linearization</span>, </span><span class="param"><span class="n">min_output_voltage</span>, </span><span class="param"><span class="n">max_output_voltage</span></span><span class="return-annotation">):</span></span>
+
+                <label class="view-source-button" for="LockstarClient.set_linearization_one-view-source"><span>View Source</span></label>
+
+    </div>
+    <a class="headerlink" href="#LockstarClient.set_linearization_one"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="LockstarClient.set_linearization_one-25"><a href="#LockstarClient.set_linearization_one-25"><span class="linenos">25</span></a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_linearization_one</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">linearization</span><span class="p">,</span> <span class="n">min_output_voltage</span><span class="p">,</span> <span class="n">max_output_voltage</span><span class="p">):</span>
+</span><span id="LockstarClient.set_linearization_one-26"><a href="#LockstarClient.set_linearization_one-26"><span class="linenos">26</span></a>        <span class="sd">&quot;&quot;&quot;Sets the parameters used by the DAC_ONE to linearize the systems response</span>
+</span><span id="LockstarClient.set_linearization_one-27"><a href="#LockstarClient.set_linearization_one-27"><span class="linenos">27</span></a>
+</span><span id="LockstarClient.set_linearization_one-28"><a href="#LockstarClient.set_linearization_one-28"><span class="linenos">28</span></a><span class="sd">        Args:</span>
+</span><span id="LockstarClient.set_linearization_one-29"><a href="#LockstarClient.set_linearization_one-29"><span class="linenos">29</span></a><span class="sd">            linearization (_type_): _description_</span>
+</span><span id="LockstarClient.set_linearization_one-30"><a href="#LockstarClient.set_linearization_one-30"><span class="linenos">30</span></a>
+</span><span id="LockstarClient.set_linearization_one-31"><a href="#LockstarClient.set_linearization_one-31"><span class="linenos">31</span></a><span class="sd">        Returns:</span>
+</span><span id="LockstarClient.set_linearization_one-32"><a href="#LockstarClient.set_linearization_one-32"><span class="linenos">32</span></a><span class="sd">            _type_: _description_</span>
+</span><span id="LockstarClient.set_linearization_one-33"><a href="#LockstarClient.set_linearization_one-33"><span class="linenos">33</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="LockstarClient.set_linearization_one-34"><a href="#LockstarClient.set_linearization_one-34"><span class="linenos">34</span></a>        <span class="n">bc</span> <span class="o">=</span> <span class="n">BackendCall</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">module_name</span><span class="p">,</span> <span class="s1">&#39;set_linearization_one&#39;</span><span class="p">,</span> 
+</span><span id="LockstarClient.set_linearization_one-35"><a href="#LockstarClient.set_linearization_one-35"><span class="linenos">35</span></a>                        <span class="n">args</span><span class="o">=</span><span class="p">{</span>
+</span><span id="LockstarClient.set_linearization_one-36"><a href="#LockstarClient.set_linearization_one-36"><span class="linenos">36</span></a>                            <span class="s1">&#39;linearization&#39;</span><span class="p">:</span> <span class="n">linearization</span><span class="p">,</span>
+</span><span id="LockstarClient.set_linearization_one-37"><a href="#LockstarClient.set_linearization_one-37"><span class="linenos">37</span></a>                            <span class="s1">&#39;min_output_voltage&#39;</span><span class="p">:</span> <span class="n">min_output_voltage</span><span class="p">,</span>
+</span><span id="LockstarClient.set_linearization_one-38"><a href="#LockstarClient.set_linearization_one-38"><span class="linenos">38</span></a>                            <span class="s1">&#39;max_output_voltage&#39;</span><span class="p">:</span> <span class="n">max_output_voltage</span>
+</span><span id="LockstarClient.set_linearization_one-39"><a href="#LockstarClient.set_linearization_one-39"><span class="linenos">39</span></a>                        <span class="p">})</span>
+</span><span id="LockstarClient.set_linearization_one-40"><a href="#LockstarClient.set_linearization_one-40"><span class="linenos">40</span></a>        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_lockstar</span><span class="p">(</span><span class="n">bc</span><span class="p">)</span>
+</span></pre></div>
+
+
+            <div class="docstring"><p>Sets the parameters used by the DAC_ONE to linearize the systems response</p>
+
+<p>Args:
+    linearization (_type_): _description_</p>
+
+<p>Returns:
+    _type_: _description_</p>
+</div>
+
+
+                            </div>
+                            <div id="LockstarClient.set_linearization_two" class="classattr">
+                                        <input id="LockstarClient.set_linearization_two-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+<div class="attr function">
+            
+        <span class="def">async def</span>
+        <span class="name">set_linearization_two</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">linearization</span>, </span><span class="param"><span class="n">min_output_voltage</span>, </span><span class="param"><span class="n">max_output_voltage</span></span><span class="return-annotation">):</span></span>
+
+                <label class="view-source-button" for="LockstarClient.set_linearization_two-view-source"><span>View Source</span></label>
+
+    </div>
+    <a class="headerlink" href="#LockstarClient.set_linearization_two"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="LockstarClient.set_linearization_two-42"><a href="#LockstarClient.set_linearization_two-42"><span class="linenos">42</span></a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_linearization_two</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">linearization</span><span class="p">,</span> <span class="n">min_output_voltage</span><span class="p">,</span> <span class="n">max_output_voltage</span><span class="p">):</span>
+</span><span id="LockstarClient.set_linearization_two-43"><a href="#LockstarClient.set_linearization_two-43"><span class="linenos">43</span></a>        <span class="sd">&quot;&quot;&quot;Sets the parameters used by the DAC_ONE to linearize the systems response</span>
+</span><span id="LockstarClient.set_linearization_two-44"><a href="#LockstarClient.set_linearization_two-44"><span class="linenos">44</span></a>
+</span><span id="LockstarClient.set_linearization_two-45"><a href="#LockstarClient.set_linearization_two-45"><span class="linenos">45</span></a><span class="sd">        Args:</span>
+</span><span id="LockstarClient.set_linearization_two-46"><a href="#LockstarClient.set_linearization_two-46"><span class="linenos">46</span></a><span class="sd">            linearization (_type_): _description_</span>
+</span><span id="LockstarClient.set_linearization_two-47"><a href="#LockstarClient.set_linearization_two-47"><span class="linenos">47</span></a>
+</span><span id="LockstarClient.set_linearization_two-48"><a href="#LockstarClient.set_linearization_two-48"><span class="linenos">48</span></a><span class="sd">        Returns:</span>
+</span><span id="LockstarClient.set_linearization_two-49"><a href="#LockstarClient.set_linearization_two-49"><span class="linenos">49</span></a><span class="sd">            _type_: _description_</span>
+</span><span id="LockstarClient.set_linearization_two-50"><a href="#LockstarClient.set_linearization_two-50"><span class="linenos">50</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="LockstarClient.set_linearization_two-51"><a href="#LockstarClient.set_linearization_two-51"><span class="linenos">51</span></a>        <span class="n">bc</span> <span class="o">=</span> <span class="n">BackendCall</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">module_name</span><span class="p">,</span> <span class="s1">&#39;set_linearization_two&#39;</span><span class="p">,</span> 
+</span><span id="LockstarClient.set_linearization_two-52"><a href="#LockstarClient.set_linearization_two-52"><span class="linenos">52</span></a>                        <span class="n">args</span><span class="o">=</span><span class="p">{</span>
+</span><span id="LockstarClient.set_linearization_two-53"><a href="#LockstarClient.set_linearization_two-53"><span class="linenos">53</span></a>                            <span class="s1">&#39;linearization&#39;</span><span class="p">:</span> <span class="n">linearization</span><span class="p">,</span>
+</span><span id="LockstarClient.set_linearization_two-54"><a href="#LockstarClient.set_linearization_two-54"><span class="linenos">54</span></a>                            <span class="s1">&#39;min_output_voltage&#39;</span><span class="p">:</span> <span class="n">min_output_voltage</span><span class="p">,</span>
+</span><span id="LockstarClient.set_linearization_two-55"><a href="#LockstarClient.set_linearization_two-55"><span class="linenos">55</span></a>                            <span class="s1">&#39;max_output_voltage&#39;</span><span class="p">:</span> <span class="n">max_output_voltage</span>
+</span><span id="LockstarClient.set_linearization_two-56"><a href="#LockstarClient.set_linearization_two-56"><span class="linenos">56</span></a>                        <span class="p">})</span>
+</span><span id="LockstarClient.set_linearization_two-57"><a href="#LockstarClient.set_linearization_two-57"><span class="linenos">57</span></a>        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_lockstar</span><span class="p">(</span><span class="n">bc</span><span class="p">)</span>
+</span></pre></div>
+
+
+            <div class="docstring"><p>Sets the parameters used by the DAC_ONE to linearize the systems response</p>
+
+<p>Args:
+    linearization (_type_): _description_</p>
+
+<p>Returns:
+    _type_: _description_</p>
+</div>
+
+
+                            </div>
+                            <div id="LockstarClient.set_linearization_two_from_file" class="classattr">
+                                        <input id="LockstarClient.set_linearization_two_from_file-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+<div class="attr function">
+            
+        <span class="def">async def</span>
+        <span class="name">set_linearization_two_from_file</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">local_file</span></span><span class="return-annotation">):</span></span>
+
+                <label class="view-source-button" for="LockstarClient.set_linearization_two_from_file-view-source"><span>View Source</span></label>
+
+    </div>
+    <a class="headerlink" href="#LockstarClient.set_linearization_two_from_file"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="LockstarClient.set_linearization_two_from_file-59"><a href="#LockstarClient.set_linearization_two_from_file-59"><span class="linenos">59</span></a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_linearization_two_from_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">local_file</span><span class="p">):</span>
+</span><span id="LockstarClient.set_linearization_two_from_file-60"><a href="#LockstarClient.set_linearization_two_from_file-60"><span class="linenos">60</span></a>        <span class="sd">&quot;&quot;&quot; calls set_linearization_two with the linearization gotten from local_file (stored by LinearizationClient.store_linearization_locally)</span>
+</span><span id="LockstarClient.set_linearization_two_from_file-61"><a href="#LockstarClient.set_linearization_two_from_file-61"><span class="linenos">61</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="LockstarClient.set_linearization_two_from_file-62"><a href="#LockstarClient.set_linearization_two_from_file-62"><span class="linenos">62</span></a>
+</span><span id="LockstarClient.set_linearization_two_from_file-63"><a href="#LockstarClient.set_linearization_two_from_file-63"><span class="linenos">63</span></a>        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">local_file</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+</span><span id="LockstarClient.set_linearization_two_from_file-64"><a href="#LockstarClient.set_linearization_two_from_file-64"><span class="linenos">64</span></a>            <span class="n">lin_dict</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+</span><span id="LockstarClient.set_linearization_two_from_file-65"><a href="#LockstarClient.set_linearization_two_from_file-65"><span class="linenos">65</span></a>
+</span><span id="LockstarClient.set_linearization_two_from_file-66"><a href="#LockstarClient.set_linearization_two_from_file-66"><span class="linenos">66</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_linearization_two</span><span class="p">(</span><span class="n">linearization</span><span class="o">=</span><span class="n">lin_dict</span><span class="p">[</span><span class="s1">&#39;linearization&#39;</span><span class="p">],</span> 
+</span><span id="LockstarClient.set_linearization_two_from_file-67"><a href="#LockstarClient.set_linearization_two_from_file-67"><span class="linenos">67</span></a>                                    <span class="n">min_output_voltage</span><span class="o">=</span><span class="n">lin_dict</span><span class="p">[</span><span class="s1">&#39;min_output_voltage&#39;</span><span class="p">],</span>
+</span><span id="LockstarClient.set_linearization_two_from_file-68"><a href="#LockstarClient.set_linearization_two_from_file-68"><span class="linenos">68</span></a>                                    <span class="n">max_output_voltage</span><span class="o">=</span><span class="n">lin_dict</span><span class="p">[</span><span class="s1">&#39;max_output_voltage&#39;</span><span class="p">])</span>
+</span></pre></div>
+
+
+            <div class="docstring"><p>calls set_linearization_two with the linearization gotten from local_file (stored by LinearizationClient.store_linearization_locally)</p>
+</div>
+
+
+                            </div>
+                            <div id="LockstarClient.set_linearization_one_from_file" class="classattr">
+                                        <input id="LockstarClient.set_linearization_one_from_file-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+<div class="attr function">
+            
+        <span class="def">async def</span>
+        <span class="name">set_linearization_one_from_file</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">local_file</span></span><span class="return-annotation">):</span></span>
+
+                <label class="view-source-button" for="LockstarClient.set_linearization_one_from_file-view-source"><span>View Source</span></label>
+
+    </div>
+    <a class="headerlink" href="#LockstarClient.set_linearization_one_from_file"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="LockstarClient.set_linearization_one_from_file-70"><a href="#LockstarClient.set_linearization_one_from_file-70"><span class="linenos">70</span></a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_linearization_one_from_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">local_file</span><span class="p">):</span>
+</span><span id="LockstarClient.set_linearization_one_from_file-71"><a href="#LockstarClient.set_linearization_one_from_file-71"><span class="linenos">71</span></a>        <span class="sd">&quot;&quot;&quot; calls set_linearization_one with the linearization gotten from local_file (stored by LinearizationClient.store_linearization_locally)</span>
+</span><span id="LockstarClient.set_linearization_one_from_file-72"><a href="#LockstarClient.set_linearization_one_from_file-72"><span class="linenos">72</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="LockstarClient.set_linearization_one_from_file-73"><a href="#LockstarClient.set_linearization_one_from_file-73"><span class="linenos">73</span></a>
+</span><span id="LockstarClient.set_linearization_one_from_file-74"><a href="#LockstarClient.set_linearization_one_from_file-74"><span class="linenos">74</span></a>        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">local_file</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+</span><span id="LockstarClient.set_linearization_one_from_file-75"><a href="#LockstarClient.set_linearization_one_from_file-75"><span class="linenos">75</span></a>            <span class="n">lin_dict</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+</span><span id="LockstarClient.set_linearization_one_from_file-76"><a href="#LockstarClient.set_linearization_one_from_file-76"><span class="linenos">76</span></a>
+</span><span id="LockstarClient.set_linearization_one_from_file-77"><a href="#LockstarClient.set_linearization_one_from_file-77"><span class="linenos">77</span></a>        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_linearization_one</span><span class="p">(</span><span class="n">linearization</span><span class="o">=</span><span class="n">lin_dict</span><span class="p">[</span><span class="s1">&#39;linearization&#39;</span><span class="p">],</span> 
+</span><span id="LockstarClient.set_linearization_one_from_file-78"><a href="#LockstarClient.set_linearization_one_from_file-78"><span class="linenos">78</span></a>                                    <span class="n">min_output_voltage</span><span class="o">=</span><span class="n">lin_dict</span><span class="p">[</span><span class="s1">&#39;min_output_voltage&#39;</span><span class="p">],</span>
+</span><span id="LockstarClient.set_linearization_one_from_file-79"><a href="#LockstarClient.set_linearization_one_from_file-79"><span class="linenos">79</span></a>                                    <span class="n">max_output_voltage</span><span class="o">=</span><span class="n">lin_dict</span><span class="p">[</span><span class="s1">&#39;max_output_voltage&#39;</span><span class="p">])</span>
+</span></pre></div>
+
+
+            <div class="docstring"><p>calls set_linearization_one with the linearization gotten from local_file (stored by LinearizationClient.store_linearization_locally)</p>
+</div>
+
+
+                            </div>
+                            <div id="LockstarClient.set_linearization_length_one" class="classattr">
+                                        <input id="LockstarClient.set_linearization_length_one-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+<div class="attr function">
+            
+        <span class="def">async def</span>
+        <span class="name">set_linearization_length_one</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">linearization_length</span><span class="p">:</span> <span class="nb">int</span></span><span class="return-annotation">):</span></span>
+
+                <label class="view-source-button" for="LockstarClient.set_linearization_length_one-view-source"><span>View Source</span></label>
+
+    </div>
+    <a class="headerlink" href="#LockstarClient.set_linearization_length_one"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="LockstarClient.set_linearization_length_one-81"><a href="#LockstarClient.set_linearization_length_one-81"><span class="linenos">81</span></a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_linearization_length_one</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">linearization_length</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+</span><span id="LockstarClient.set_linearization_length_one-82"><a href="#LockstarClient.set_linearization_length_one-82"><span class="linenos">82</span></a>        <span class="n">bc</span> <span class="o">=</span> <span class="n">BackendCall</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">module_name</span><span class="p">,</span> <span class="s1">&#39;set_linearization_length_one&#39;</span><span class="p">,</span> 
+</span><span id="LockstarClient.set_linearization_length_one-83"><a href="#LockstarClient.set_linearization_length_one-83"><span class="linenos">83</span></a>                        <span class="n">args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;linearization_length&#39;</span><span class="p">:</span> <span class="n">linearization_length</span><span class="p">})</span>
+</span><span id="LockstarClient.set_linearization_length_one-84"><a href="#LockstarClient.set_linearization_length_one-84"><span class="linenos">84</span></a>        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_lockstar</span><span class="p">(</span><span class="n">bc</span><span class="p">)</span>
+</span></pre></div>
+
+
+    
+
+                            </div>
+                            <div id="LockstarClient.set_linearization_length_two" class="classattr">
+                                        <input id="LockstarClient.set_linearization_length_two-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+<div class="attr function">
+            
+        <span class="def">async def</span>
+        <span class="name">set_linearization_length_two</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span>, </span><span class="param"><span class="n">linearization_length</span><span class="p">:</span> <span class="nb">int</span></span><span class="return-annotation">):</span></span>
+
+                <label class="view-source-button" for="LockstarClient.set_linearization_length_two-view-source"><span>View Source</span></label>
+
+    </div>
+    <a class="headerlink" href="#LockstarClient.set_linearization_length_two"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="LockstarClient.set_linearization_length_two-86"><a href="#LockstarClient.set_linearization_length_two-86"><span class="linenos">86</span></a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_linearization_length_two</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">linearization_length</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+</span><span id="LockstarClient.set_linearization_length_two-87"><a href="#LockstarClient.set_linearization_length_two-87"><span class="linenos">87</span></a>        <span class="n">bc</span> <span class="o">=</span> <span class="n">BackendCall</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">module_name</span><span class="p">,</span> <span class="s1">&#39;set_linearization_length_two&#39;</span><span class="p">,</span> 
+</span><span id="LockstarClient.set_linearization_length_two-88"><a href="#LockstarClient.set_linearization_length_two-88"><span class="linenos">88</span></a>                        <span class="n">args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;linearization_length&#39;</span><span class="p">:</span> <span class="n">linearization_length</span><span class="p">})</span>
+</span><span id="LockstarClient.set_linearization_length_two-89"><a href="#LockstarClient.set_linearization_length_two-89"><span class="linenos">89</span></a>        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_lockstar</span><span class="p">(</span><span class="n">bc</span><span class="p">)</span>
+</span></pre></div>
+
+
+    
+
+                            </div>
+                            <div id="LockstarClient.enable_linearization_one" class="classattr">
+                                        <input id="LockstarClient.enable_linearization_one-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+<div class="attr function">
+            
+        <span class="def">async def</span>
+        <span class="name">enable_linearization_one</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">):</span></span>
+
+                <label class="view-source-button" for="LockstarClient.enable_linearization_one-view-source"><span>View Source</span></label>
+
+    </div>
+    <a class="headerlink" href="#LockstarClient.enable_linearization_one"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="LockstarClient.enable_linearization_one-91"><a href="#LockstarClient.enable_linearization_one-91"><span class="linenos">91</span></a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">enable_linearization_one</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span id="LockstarClient.enable_linearization_one-92"><a href="#LockstarClient.enable_linearization_one-92"><span class="linenos">92</span></a>        <span class="n">bc</span> <span class="o">=</span> <span class="n">BackendCall</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">module_name</span><span class="p">,</span> <span class="s1">&#39;enable_linearization_one&#39;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">{})</span>
+</span><span id="LockstarClient.enable_linearization_one-93"><a href="#LockstarClient.enable_linearization_one-93"><span class="linenos">93</span></a>        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_lockstar</span><span class="p">(</span><span class="n">bc</span><span class="p">)</span>
+</span></pre></div>
+
+
+    
+
+                            </div>
+                            <div id="LockstarClient.enable_linearization_two" class="classattr">
+                                        <input id="LockstarClient.enable_linearization_two-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+<div class="attr function">
+            
+        <span class="def">async def</span>
+        <span class="name">enable_linearization_two</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">):</span></span>
+
+                <label class="view-source-button" for="LockstarClient.enable_linearization_two-view-source"><span>View Source</span></label>
+
+    </div>
+    <a class="headerlink" href="#LockstarClient.enable_linearization_two"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="LockstarClient.enable_linearization_two-95"><a href="#LockstarClient.enable_linearization_two-95"><span class="linenos">95</span></a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">enable_linearization_two</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span id="LockstarClient.enable_linearization_two-96"><a href="#LockstarClient.enable_linearization_two-96"><span class="linenos">96</span></a>        <span class="n">bc</span> <span class="o">=</span> <span class="n">BackendCall</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">module_name</span><span class="p">,</span> <span class="s1">&#39;enable_linearization_two&#39;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">{})</span>
+</span><span id="LockstarClient.enable_linearization_two-97"><a href="#LockstarClient.enable_linearization_two-97"><span class="linenos">97</span></a>        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_lockstar</span><span class="p">(</span><span class="n">bc</span><span class="p">)</span>
+</span></pre></div>
+
+
+    
+
+                            </div>
+                            <div id="LockstarClient.disable_linearization_one" class="classattr">
+                                        <input id="LockstarClient.disable_linearization_one-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+<div class="attr function">
+            
+        <span class="def">async def</span>
+        <span class="name">disable_linearization_one</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">):</span></span>
+
+                <label class="view-source-button" for="LockstarClient.disable_linearization_one-view-source"><span>View Source</span></label>
+
+    </div>
+    <a class="headerlink" href="#LockstarClient.disable_linearization_one"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="LockstarClient.disable_linearization_one-99"><a href="#LockstarClient.disable_linearization_one-99"><span class="linenos"> 99</span></a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">disable_linearization_one</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span id="LockstarClient.disable_linearization_one-100"><a href="#LockstarClient.disable_linearization_one-100"><span class="linenos">100</span></a>        <span class="n">bc</span> <span class="o">=</span> <span class="n">BackendCall</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">module_name</span><span class="p">,</span> <span class="s1">&#39;disable_linearization_one&#39;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">{})</span>
+</span><span id="LockstarClient.disable_linearization_one-101"><a href="#LockstarClient.disable_linearization_one-101"><span class="linenos">101</span></a>        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_lockstar</span><span class="p">(</span><span class="n">bc</span><span class="p">)</span>
+</span></pre></div>
+
+
+    
+
+                            </div>
+                            <div id="LockstarClient.disable_linearization_two" class="classattr">
+                                        <input id="LockstarClient.disable_linearization_two-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+<div class="attr function">
+            
+        <span class="def">async def</span>
+        <span class="name">disable_linearization_two</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">):</span></span>
+
+                <label class="view-source-button" for="LockstarClient.disable_linearization_two-view-source"><span>View Source</span></label>
+
+    </div>
+    <a class="headerlink" href="#LockstarClient.disable_linearization_two"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="LockstarClient.disable_linearization_two-103"><a href="#LockstarClient.disable_linearization_two-103"><span class="linenos">103</span></a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">disable_linearization_two</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span id="LockstarClient.disable_linearization_two-104"><a href="#LockstarClient.disable_linearization_two-104"><span class="linenos">104</span></a>        <span class="n">bc</span> <span class="o">=</span> <span class="n">BackendCall</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">module_name</span><span class="p">,</span> <span class="s1">&#39;disable_linearization_two&#39;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">{})</span>
+</span><span id="LockstarClient.disable_linearization_two-105"><a href="#LockstarClient.disable_linearization_two-105"><span class="linenos">105</span></a>        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_lockstar</span><span class="p">(</span><span class="n">bc</span><span class="p">)</span>
+</span></pre></div>
+
+
+    
+
+                            </div>
+                            <div id="LockstarClient.flash_mc" class="classattr">
+                                        <input id="LockstarClient.flash_mc-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+<div class="attr function">
+            
+        <span class="def">async def</span>
+        <span class="name">flash_mc</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">):</span></span>
+
+                <label class="view-source-button" for="LockstarClient.flash_mc-view-source"><span>View Source</span></label>
+
+    </div>
+    <a class="headerlink" href="#LockstarClient.flash_mc"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="LockstarClient.flash_mc-107"><a href="#LockstarClient.flash_mc-107"><span class="linenos">107</span></a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">flash_mc</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span id="LockstarClient.flash_mc-108"><a href="#LockstarClient.flash_mc-108"><span class="linenos">108</span></a>        <span class="n">bc</span> <span class="o">=</span> <span class="n">BackendCall</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">module_name</span><span class="p">,</span> <span class="s1">&#39;flash_mc&#39;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">{})</span>
+</span><span id="LockstarClient.flash_mc-109"><a href="#LockstarClient.flash_mc-109"><span class="linenos">109</span></a>        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_lockstar</span><span class="p">(</span><span class="n">bc</span><span class="p">)</span>
 </span></pre></div>
 
 
@@ -191,42 +744,24 @@ lockstar_client<wbr>.LockstarClient    </h1>
                                         <input id="LockstarClient.register_client_id-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
 <div class="attr function">
             
-        <span class="def">def</span>
+        <span class="def">async def</span>
         <span class="name">register_client_id</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">):</span></span>
 
                 <label class="view-source-button" for="LockstarClient.register_client_id-view-source"><span>View Source</span></label>
 
     </div>
     <a class="headerlink" href="#LockstarClient.register_client_id"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="LockstarClient.register_client_id-31"><a href="#LockstarClient.register_client_id-31"><span class="linenos">31</span></a>    <span class="k">def</span> <span class="nf">register_client_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="LockstarClient.register_client_id-32"><a href="#LockstarClient.register_client_id-32"><span class="linenos">32</span></a>        <span class="n">bc</span> <span class="o">=</span> <span class="n">BackendCall</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span> <span class="s1">&#39;GeneralModule&#39;</span><span class="p">,</span> <span class="s1">&#39;register_client&#39;</span><span class="p">,</span>
-</span><span id="LockstarClient.register_client_id-33"><a href="#LockstarClient.register_client_id-33"><span class="linenos">33</span></a>                        <span class="n">args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;client_id&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">client_id</span><span class="p">})</span>
-</span><span id="LockstarClient.register_client_id-34"><a href="#LockstarClient.register_client_id-34"><span class="linenos">34</span></a>        
-</span><span id="LockstarClient.register_client_id-35"><a href="#LockstarClient.register_client_id-35"><span class="linenos">35</span></a>        <span class="n">response</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_call_lockstar</span><span class="p">(</span><span class="n">bc</span><span class="p">))</span>
-</span><span id="LockstarClient.register_client_id-36"><a href="#LockstarClient.register_client_id-36"><span class="linenos">36</span></a>
-</span><span id="LockstarClient.register_client_id-37"><a href="#LockstarClient.register_client_id-37"><span class="linenos">37</span></a>        <span class="k">if</span> <span class="ow">not</span> <span class="n">response</span><span class="o">.</span><span class="n">is_ACK</span><span class="p">():</span>
-</span><span id="LockstarClient.register_client_id-38"><a href="#LockstarClient.register_client_id-38"><span class="linenos">38</span></a>            <span class="n">logging</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;LockstarClient: could not register my client id: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">client_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-</span><span id="LockstarClient.register_client_id-39"><a href="#LockstarClient.register_client_id-39"><span class="linenos">39</span></a>
-</span><span id="LockstarClient.register_client_id-40"><a href="#LockstarClient.register_client_id-40"><span class="linenos">40</span></a>        <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">is_ACK</span><span class="p">()</span>
-</span></pre></div>
-
-
-    
-
-                            </div>
-                            <div id="LockstarClient.start_calibration" class="classattr">
-                                        <input id="LockstarClient.start_calibration-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
-<div class="attr function">
-            
-        <span class="def">def</span>
-        <span class="name">start_calibration</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">):</span></span>
-
-                <label class="view-source-button" for="LockstarClient.start_calibration-view-source"><span>View Source</span></label>
-
-    </div>
-    <a class="headerlink" href="#LockstarClient.start_calibration"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="LockstarClient.start_calibration-42"><a href="#LockstarClient.start_calibration-42"><span class="linenos">42</span></a>    <span class="k">def</span> <span class="nf">start_calibration</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="LockstarClient.start_calibration-43"><a href="#LockstarClient.start_calibration-43"><span class="linenos">43</span></a>        <span class="k">pass</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="LockstarClient.register_client_id-131"><a href="#LockstarClient.register_client_id-131"><span class="linenos">131</span></a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">register_client_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span id="LockstarClient.register_client_id-132"><a href="#LockstarClient.register_client_id-132"><span class="linenos">132</span></a>        <span class="n">bc</span> <span class="o">=</span> <span class="n">BackendCall</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span> <span class="s1">&#39;GeneralModule&#39;</span><span class="p">,</span> <span class="s1">&#39;register_client&#39;</span><span class="p">,</span>
+</span><span id="LockstarClient.register_client_id-133"><a href="#LockstarClient.register_client_id-133"><span class="linenos">133</span></a>                        <span class="n">args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;client_id&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">client_id</span><span class="p">})</span>
+</span><span id="LockstarClient.register_client_id-134"><a href="#LockstarClient.register_client_id-134"><span class="linenos">134</span></a>        
+</span><span id="LockstarClient.register_client_id-135"><a href="#LockstarClient.register_client_id-135"><span class="linenos">135</span></a>        <span class="c1">#response = asyncio.run(self._call_lockstar(bc))</span>
+</span><span id="LockstarClient.register_client_id-136"><a href="#LockstarClient.register_client_id-136"><span class="linenos">136</span></a>        <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_lockstar</span><span class="p">(</span><span class="n">bc</span><span class="p">)</span>
+</span><span id="LockstarClient.register_client_id-137"><a href="#LockstarClient.register_client_id-137"><span class="linenos">137</span></a>
+</span><span id="LockstarClient.register_client_id-138"><a href="#LockstarClient.register_client_id-138"><span class="linenos">138</span></a>        <span class="k">if</span> <span class="ow">not</span> <span class="n">response</span><span class="o">.</span><span class="n">is_ACK</span><span class="p">():</span>
+</span><span id="LockstarClient.register_client_id-139"><a href="#LockstarClient.register_client_id-139"><span class="linenos">139</span></a>            <span class="n">logging</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;LockstarClient: could not register my client id: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">client_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+</span><span id="LockstarClient.register_client_id-140"><a href="#LockstarClient.register_client_id-140"><span class="linenos">140</span></a>
+</span><span id="LockstarClient.register_client_id-141"><a href="#LockstarClient.register_client_id-141"><span class="linenos">141</span></a>        <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">is_ACK</span><span class="p">()</span>
 </span></pre></div>
 
 
