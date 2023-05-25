@@ -143,7 +143,7 @@ class MC:
         try:
             logging.info(f'nbr of bytes: {mc_data_package.get_nbr_of_bytes()}')
             await self.initiate_communication(mc_data_package.get_nbr_of_bytes())
-            sleep(0.005)#sleep to wait for the mc to start DMA
+            sleep(0.05)#sleep to wait for the mc to start DMA
         except Exception as ex:
             logging.error(f'MC:write_mc_data_package: invalid data package: {ex}')
 

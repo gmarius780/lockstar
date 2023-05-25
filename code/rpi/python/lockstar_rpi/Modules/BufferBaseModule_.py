@@ -185,7 +185,7 @@ class BufferBaseModule_(ScopeModule_):
             mc_data_package.push_to_buffer('uint32_t', self.prescaler)
             mc_data_package.push_to_buffer('uint32_t', self.counter_max)
             await MC.I().write_mc_data_package(mc_data_package)
-            sleep(0.1)
+            # sleep(0.1)
             result = await self.check_for_ack(writer=(writer if respond else None))
             if result:
                 self.buffer_one_size = buffer_one_size
