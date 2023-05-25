@@ -25,7 +25,9 @@ public:
 	bool handle_rpi_base_methods() override;
 
 public:
-	static const uint32_t BUFFER_LIMIT_kBYTES = 160; //if this is chosen too large (200) there is no warning, the MC simply crashes (hangs in syscalls.c _exit())
+	//if this is chosen too large (200) there is no warning, the MC simply crashes (hangs in syscalls.c _exit())
+	//Had to reduce it in order to make room for the larger rpi-read buffer
+	static const uint32_t BUFFER_LIMIT_kBYTES = 140;
 	static const uint32_t MAX_NBR_OF_CHUNKS = 100;
 
 	static const uint32_t METHOD_INITIALIZE_BUFFERS = 18;

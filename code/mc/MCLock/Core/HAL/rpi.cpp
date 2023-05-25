@@ -9,7 +9,7 @@
 #include "../Inc/main.h"
 
 RPI::RPI() {
-	read_buffer = new uint8_t[2550];
+	read_buffer = new uint8_t[255*READ_NBR_BYTES_MULTIPLIER];
 	write_buffer = new uint8_t[4096];
 
 	/*Configure communication_reset_timer
@@ -111,7 +111,7 @@ RPI::RPI() {
 	this->write_package = new RPIDataPackage();
 
 	is_communicating = false;
-	this->current_nbr_of_bytes = 0;
+	current_nbr_of_bytes = 0;
 	while(spi->isBusy());
 	spi->enableRxIRQ();
 	spi->disableTxIRQ();
@@ -128,7 +128,7 @@ void RPI::spi_interrupt() {
 		//get new command from rpi
 		comm_reset_timer->enable_interrupt();
 		comm_reset_timer->enable();
-		current_nbr_of_bytes = 10 * ((uint32_t)*(volatile uint8_t *)spi->getDRAddress());
+		current_nbr_of_bytes = READ_NBR_BYTES_MULTIPLIER * ((uint32_t)*(volatile uint8_t *)spi->getDRAddress());
 		if (current_nbr_of_bytes != 0) {
 			is_communicating = true;
 			this->start_dma_in_communication(this->current_nbr_of_bytes);
