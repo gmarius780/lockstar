@@ -18,3 +18,6 @@ class BackendSettings:
     #in Scope.h
     scope_max_buffer_length_nbr_of_floats = 10000 
     scope_max_sampling_rate = 10000
+    #The RPI sends one byte (0-255) via spi to the MC. This value times READ_NBR_BYTES_MULTIPLIER is interpreted
+	#als the number of bytes, the MC has to expect from the rpi in this data package
+    MC_READ_NBR_BYTES_MULTIPLIER = int(100)

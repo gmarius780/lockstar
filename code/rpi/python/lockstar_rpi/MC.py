@@ -17,9 +17,6 @@ class MC:
     """Represents the Microcontroller: Sends and receives MCDataPackage's to/from the MC
     """
     __instance = None
-    #The RPI sends one byte (0-255) via spi to the MC. This value times READ_NBR_BYTES_MULTIPLIER is interpreted
-	#als the number of bytes, the MC has to expect from the rpi in this data package
-    READ_NBR_BYTES_MULTIPLIER = int(100)
 
 
     @staticmethod
@@ -152,8 +149,8 @@ class MC:
 
         #fill up bytes such that len is a multiple of READ_NBR_BYTES_MULTIPLIER, because MC expects multiples of MC.READ_NBR_BYTES_MULTIPLIER
         arr_bytes = mc_data_package.get_bytes()
-        if len(arr_bytes) % MC.READ_NBR_BYTES_MULTIPLIER != 0:
-            arr_bytes += bytes((MC.READ_NBR_BYTES_MULTIPLIER*ceil(len(arr_bytes)/MC.READ_NBR_BYTES_MULTIPLIER) - len(arr_bytes))*[0])
+        if len(arr_bytes) % BackendSettings.MC_READ_NBR_BYTES_MULTIPLIER != 0:
+            arr_bytes += bytes((BackendSettings.MC_READ_NBR_BYTES_MULTIPLIER*ceil(len(arr_bytes)/BackendSettings.MC_READ_NBR_BYTES_MULTIPLIER) - len(arr_bytes))*[0])
         await self.write(arr_bytes)
 
     async def initiate_communication(self, nbr_of_bytes_to_send):
@@ -162,7 +159,7 @@ class MC:
         Args:
         :param    tens_of_bytes_to_read (int): dens of bytes to expect for the MC via DMA
         """
-        await self.write(pack('<B', ceil(nbr_of_bytes_to_send/MC.READ_NBR_BYTES_MULTIPLIER)))
+        await self.write(pack('<B', ceil(nbr_of_bytes_to_send/BackendSettings.MC_READ_NBR_BYTES_MULTIPLIER)))
 
     async def write(self, arr_bytes):
         async with self._rpi_lock:
