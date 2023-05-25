@@ -6,6 +6,7 @@ import logging
 from lockstar_rpi.MC import MC
 from lockstar_rpi.MCDataPackage import MCDataPackage
 from math import floor
+from time import perf_counter
 
 from lockstar_rpi.Helpers.SamplingRate import SamplingRate
 
@@ -65,8 +66,12 @@ class BufferBaseModule_(ScopeModule_):
         logging.debug('Backend: output_ttl')
         mc_data_package = MCDataPackage()
         mc_data_package.push_to_buffer('uint32_t', 13) # method_identifier
+        t_start = perf_counter()
         await MC.I().write_mc_data_package(mc_data_package)
+        logging.info(f'---------time to write mc_data_package: {perf_counter() - t_start} s')
+        t_start = perf_counter()
         result = await self.check_for_ack(writer=(writer if respond else None))
+        logging.info(f'---------time to write check_for_ack: {perf_counter() - t_start} s')
         if result:
             self.is_output_ttl = True
         return result
@@ -107,7 +112,7 @@ class BufferBaseModule_(ScopeModule_):
                 mc_data_package.push_to_buffer('uint32_t', nbr_values_to_read)
                 for f in buffer[i:i+nbr_values_to_read]:
                     mc_data_package.push_to_buffer('float', f)
-                logging.debug(f'send packet of length: {nbr_values_to_read}')
+                logging.debug(f'send {nbr_values_to_read} floats')
                 await MC.I().write_mc_data_package(mc_data_package)
                 #wait for acknowledgment of reception by MC
                 ack = await self.check_for_ack(writer=None)
