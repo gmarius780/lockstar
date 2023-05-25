@@ -74,7 +74,7 @@ class MC:
                     return MCDataPackage.pop_ack_nack_from_buffer(bytes(raw_data))
                 else:
                     logging.debug('gpio low')
-                    sleep(0.1)
+                    sleep(0.05)
             except Exception as ex:
                 exception = ex
         logging.error(f'MC.read_mc_data_package: cannot unpack data: {payload_length}: {exception}: {raw_data}')
@@ -143,7 +143,7 @@ class MC:
         try:
             logging.info(f'nbr of bytes: {mc_data_package.get_nbr_of_bytes()}')
             await self.initiate_communication(mc_data_package.get_nbr_of_bytes())
-            sleep(0.2)#sleep to wait for the mc to start DMA
+            sleep(0.005)#sleep to wait for the mc to start DMA
         except Exception as ex:
             logging.error(f'MC:write_mc_data_package: invalid data package: {ex}')
 

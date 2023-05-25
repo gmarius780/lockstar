@@ -235,7 +235,7 @@ class IOModule_(Module):
 
     async def check_for_ack(self, writer=None):
         """Waits for ACK/NACK from the MC and responds accordingly to the client"""
-        sleep(0.3)
+        sleep(0.05)
         ack =  await MC.I().read_ack()
         if writer is not None:
             if ack:
