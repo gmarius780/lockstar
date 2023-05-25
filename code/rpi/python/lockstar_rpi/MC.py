@@ -74,7 +74,7 @@ class MC:
                     return MCDataPackage.pop_ack_nack_from_buffer(bytes(raw_data))
                 else:
                     logging.debug('gpio low')
-                    sleep(0.05)
+                    sleep(0.05) #leave the MC time to work
             except Exception as ex:
                 exception = ex
         logging.error(f'MC.read_mc_data_package: cannot unpack data: {payload_length}: {exception}: {raw_data}')
@@ -98,7 +98,7 @@ class MC:
                 else:
                     logging.debug('gpio low')
                     # sleep(0.1)
-                    sleep(0.05)
+                    sleep(0.05) #leave the MC time to work
             except Exception as ex:
                 exception = ex
         
