@@ -98,7 +98,7 @@ class MC:
                 else:
                     logging.debug('gpio low')
                     # sleep(0.1)
-                    sleep(0.05) #leave the MC time to work
+                    sleep(0.1) #leave the MC time to work
             except Exception as ex:
                 exception = ex
         
