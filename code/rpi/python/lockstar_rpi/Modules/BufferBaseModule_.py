@@ -95,7 +95,7 @@ class BufferBaseModule_(ScopeModule_):
 
             logging.debug(f'Backend: set ch {"one" if buffer_one else "two"} buffer')
             # send buffer in packets of floor(MCDataPackage.MAX_NBR_BYTES - 100)/4 floats
-            number_of_floats_per_package = floor((MCDataPackage.MAX_NBR_BYTES - 100)/4)
+            number_of_floats_per_package = floor((MCDataPackage.MAX_NBR_BYTES_TO_MC - 100)/4)
             for i in range(0, len(buffer), number_of_floats_per_package):
                 
                 mc_data_package = MCDataPackage()

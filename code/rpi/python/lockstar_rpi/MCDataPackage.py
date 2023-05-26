@@ -7,7 +7,9 @@ from numpy import uint32
 
 
 class MCDataPackage:
-    MAX_NBR_BYTES = 255 * BackendSettings.MC_READ_NBR_BYTES_MULTIPLIER
+    """Package to hold data sent TO/FROM the MC to the RPI"""
+    MAX_NBR_BYTES_TO_MC = 255 * BackendSettings.MC_READ_NBR_BYTES_MULTIPLIER #corresponds to rpi.h read_buffer
+    MAX_NBR_BYTES_FROM_MC = 4096 #corresponds to rpi.h write_buffer
 
     def __init__(self) -> None:
         self.buffer = []
