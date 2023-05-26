@@ -169,7 +169,7 @@ class LinearizationModule(IOModule_):
             mc_data_package.push_to_buffer('uint32_t',buffer_offset)
             mc_data_package.push_to_buffer('uint32_t',max_package_size)
             await MC.I().write_mc_data_package(mc_data_package)
-            sleep(0.2)
+            # sleep(0.2)
             
             response_list = ['float']*max_package_size
             response_length, response_list = await MC.I().read_mc_data_package(response_list)
