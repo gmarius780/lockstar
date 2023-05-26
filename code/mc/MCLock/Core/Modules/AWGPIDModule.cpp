@@ -70,7 +70,7 @@ public:
 				t = timer->get_counter() - t;
 				dt = t/TIM3freq*psc;
 				t = timer->get_counter();
-
+				this->adc->start_conversion();
 				this->dac_1->write(this->pid_one->calculate_output(this->setpoint_one, adc->channel1->get_result(), dt));
 				this->dac_2->write(this->pid_two->calculate_output(this->setpoint_two, adc->channel2->get_result(), dt));
 			}
