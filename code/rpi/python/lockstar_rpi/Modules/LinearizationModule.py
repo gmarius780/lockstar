@@ -188,12 +188,17 @@ class LinearizationModule(IOModule_):
             await MC.I().write_mc_data_package(mc_data_package)
         
             response_list = ['float']*(self.ramp_length%max_package_size)
-            response_length,response_list = await MC.I().read_mc_data_package(response_list)
-            gain_measurement_list[-(self.ramp_length%max_package_size):] = response_list       
+            response = await MC.I().read_mc_data_package(response_list)
+            if not isinstance(response_length, bool):
+                response_length,response_list = response
+                gain_measurement_list[-(self.ramp_length%max_package_size):] = response_list       
         
-        measured_gain = np.array(gain_measurement_list)
-        logging.debug('get_gain_measurement_result: Measurement received!')
-        return measured_gain
+                measured_gain = np.array(gain_measurement_list)
+                logging.debug('get_gain_measurement_result: Measurement received!')
+                return measured_gain
+            else:
+                logging.error('Gain measurement failed')
+                return []
         
     @staticmethod  
     def calculate_monotone_envelope(data,increment=1e-6):
