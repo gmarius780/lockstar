@@ -198,13 +198,19 @@ void Module::set_linearization(RPIDataPackage* read_package, LinearizableDAC *da
 void Module::set_linearization_length_one(RPIDataPackage* read_package) {
 	/***Read arguments***/
 	uint32_t linearization_buffer_length = read_package->pop_from_buffer<uint32_t>();
+	if (linearization_buffer_length <= dac_1->MAX_LINEARIZATION_LENGTH) {
+		dac_1->set_linearization_length(linearization_buffer_length);
 
-	dac_1->set_linearization_length(linearization_buffer_length);
-
-	/*** send ACK ***/
-	RPIDataPackage* write_package = rpi->get_write_package();
-	write_package->push_ack();
-	rpi->send_package(write_package);
+		/*** send ACK ***/
+		RPIDataPackage* write_package = rpi->get_write_package();
+		write_package->push_ack();
+		rpi->send_package(write_package);
+	} else {
+		/*** send NACK because linearization length is too long ***/
+		RPIDataPackage* write_package = rpi->get_write_package();
+		write_package->push_nack();
+		rpi->send_package(write_package);
+	}
 }
 
 /**
@@ -218,12 +224,20 @@ void Module::set_linearization_length_one(RPIDataPackage* read_package) {
 void Module::set_linearization_length_two(RPIDataPackage* read_package) {
 	/***Read arguments***/
 	uint32_t linearization_buffer_length = read_package->pop_from_buffer<uint32_t>();
-	dac_2->set_linearization_length(linearization_buffer_length);
 
-	/*** send ACK ***/
-	RPIDataPackage* write_package = rpi->get_write_package();
-	write_package->push_ack();
-	rpi->send_package(write_package);
+	if (linearization_buffer_length <= dac_2->MAX_LINEARIZATION_LENGTH) {
+		dac_2->set_linearization_length(linearization_buffer_length);
+
+		/*** send ACK ***/
+		RPIDataPackage* write_package = rpi->get_write_package();
+		write_package->push_ack();
+		rpi->send_package(write_package);
+	} else {
+		/*** send NACK because linearization length is too long ***/
+		RPIDataPackage* write_package = rpi->get_write_package();
+		write_package->push_nack();
+		rpi->send_package(write_package);
+	}
 }
 
 void Module::enable_linearization_one(RPIDataPackage* read_package) {

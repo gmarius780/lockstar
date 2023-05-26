@@ -49,7 +49,7 @@ public:
 	bool enable_linearization();
 	void disable_linearization();
 
-
+	static uint16_t MAX_LINEARIZATION_LENGTH = 2000; //max length of linearization, used to precreate the buffers
 
 private:
 	float linearize(float value);

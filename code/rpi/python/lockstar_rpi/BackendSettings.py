@@ -21,3 +21,4 @@ class BackendSettings:
     #The RPI sends one byte (0-255) via spi to the MC. This value times READ_NBR_BYTES_MULTIPLIER is interpreted
 	#als the number of bytes, the MC has to expect from the rpi in this data package
     MC_READ_NBR_BYTES_MULTIPLIER = int(100)
+    MAX_LINEARIZATION_LENGTH = 2000 #corresponds to the static flag in LinearizableDAC.h

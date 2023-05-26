@@ -124,7 +124,7 @@ class LinearizationModule(IOModule_):
         METHOD_IDENTIFIER = 11
         logging.debug('Backend: set_ramp_parameters')
 
-        if ramp_length <2 or settling_time_ms <=0:
+        if ramp_length <2 or settling_time_ms <=0 or ramp_length > BackendSettings.MAX_LINEARIZATION_LENGTH:
             logging.error('set_ramp_parameters: Ramp parameters invalid!')
             return False
         
