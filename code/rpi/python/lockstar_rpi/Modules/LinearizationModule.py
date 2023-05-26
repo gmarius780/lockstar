@@ -189,7 +189,7 @@ class LinearizationModule(IOModule_):
         
             response_list = ['float']*(self.ramp_length%max_package_size)
             response = await MC.I().read_mc_data_package(response_list)
-            if not isinstance(response_length, bool):
+            if not isinstance(response, bool):
                 response_length,response_list = response
                 gain_measurement_list[-(self.ramp_length%max_package_size):] = response_list       
         
