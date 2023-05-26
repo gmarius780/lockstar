@@ -98,7 +98,7 @@ class MC:
                 else:
                     logging.debug('gpio low')
                     # sleep(0.1)
-                    sleep(0.1) #leave the MC time to work
+                    sleep(0.05) #leave the MC time to work
             except Exception as ex:
                 exception = ex
         
@@ -144,7 +144,7 @@ class MC:
         try:
             logging.info(f'nbr of bytes: {mc_data_package.get_nbr_of_bytes()}')
             await self.initiate_communication(mc_data_package.get_nbr_of_bytes())
-            sleep(0.2)#sleep to wait for the mc to start DMA (needed)
+            sleep(0.05)#sleep to wait for the mc to start DMA (needed)
         except Exception as ex:
             logging.error(f'MC:write_mc_data_package: invalid data package: {ex}')
 
