@@ -1,12 +1,15 @@
 from multiprocessing.sharedctypes import Value
 from struct import pack, unpack, calcsize # https://docs.python.org/3/library/struct.html
 import logging
+from lockstar_rpi.BackendSettings import BackendSettings
 
 from numpy import uint32
 
 
 class MCDataPackage:
-    MAX_NBR_BYTES = 2550
+    """Package to hold data sent TO/FROM the MC to the RPI"""
+    MAX_NBR_BYTES_TO_MC = 255 * BackendSettings.MC_READ_NBR_BYTES_MULTIPLIER #corresponds to rpi.h read_buffer
+    MAX_NBR_BYTES_FROM_MC = 4096 #corresponds to rpi.h write_buffer
 
     def __init__(self) -> None:
         self.buffer = []

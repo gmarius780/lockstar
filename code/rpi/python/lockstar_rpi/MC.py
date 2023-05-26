@@ -18,6 +18,7 @@ class MC:
     """
     __instance = None
 
+
     @staticmethod
     def I():
         if MC.__instance is None:
@@ -73,7 +74,7 @@ class MC:
                     return MCDataPackage.pop_ack_nack_from_buffer(bytes(raw_data))
                 else:
                     logging.debug('gpio low')
-                    sleep(0.1)
+                    sleep(0.05) #leave the MC time to work
             except Exception as ex:
                 exception = ex
         logging.error(f'MC.read_mc_data_package: cannot unpack data: {payload_length}: {exception}: {raw_data}')
@@ -96,7 +97,8 @@ class MC:
                     return payload_length, unpacked_data
                 else:
                     logging.debug('gpio low')
-                    sleep(0.1)
+                    # sleep(0.1)
+                    sleep(0.05) #leave the MC time to work
             except Exception as ex:
                 exception = ex
         
@@ -142,14 +144,14 @@ class MC:
         try:
             logging.info(f'nbr of bytes: {mc_data_package.get_nbr_of_bytes()}')
             await self.initiate_communication(mc_data_package.get_nbr_of_bytes())
-            sleep(0.2)#sleep to wait for the mc to start DMA
+            sleep(0.05)#sleep to wait for the mc to start DMA (needed)
         except Exception as ex:
             logging.error(f'MC:write_mc_data_package: invalid data package: {ex}')
 
-        #fill up bytes such that len is a multiple of 10, because MC expects multiples of 10
+        #fill up bytes such that len is a multiple of READ_NBR_BYTES_MULTIPLIER, because MC expects multiples of MC.READ_NBR_BYTES_MULTIPLIER
         arr_bytes = mc_data_package.get_bytes()
-        if len(arr_bytes) % 10 != 0:
-            arr_bytes += bytes((10*ceil(len(arr_bytes)/10) - len(arr_bytes))*[0])
+        if len(arr_bytes) % BackendSettings.MC_READ_NBR_BYTES_MULTIPLIER != 0:
+            arr_bytes += bytes((BackendSettings.MC_READ_NBR_BYTES_MULTIPLIER*ceil(len(arr_bytes)/BackendSettings.MC_READ_NBR_BYTES_MULTIPLIER) - len(arr_bytes))*[0])
         await self.write(arr_bytes)
 
     async def initiate_communication(self, nbr_of_bytes_to_send):
@@ -158,7 +160,7 @@ class MC:
         Args:
         :param    tens_of_bytes_to_read (int): dens of bytes to expect for the MC via DMA
         """
-        await self.write(pack('<B', ceil(nbr_of_bytes_to_send/10)))
+        await self.write(pack('<B', ceil(nbr_of_bytes_to_send/BackendSettings.MC_READ_NBR_BYTES_MULTIPLIER)))
 
     async def write(self, arr_bytes):
         async with self._rpi_lock:

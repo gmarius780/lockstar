@@ -180,7 +180,7 @@ class ScopeModule_(IOModule_):
                     scope_traces[sample_dict_key] = []
 
             # max nbr of samples PER CHANNEL that can be downloaded from the MC per request
-            max_package_size = floor(floor((MCDataPackage.MAX_NBR_BYTES - 100)/4)/nbr_of_recorded_channels)
+            max_package_size = floor(floor((MCDataPackage.MAX_NBR_BYTES_FROM_MC - 100)/4)/nbr_of_recorded_channels)
             nbr_of_packages = ceil(self.scope_buffer_length / max_package_size)
             nbr_of_full_packages = self.scope_buffer_length // max_package_size
 

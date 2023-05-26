@@ -32,6 +32,9 @@ public:
 	void send_package(RPIDataPackage* write_package);
 	volatile uint8_t* get_read_buffer();
 
+	//The RPI sends one byte (0-255) via spi to the MC. This value times READ_NBR_BYTES_MULTIPLIER is interpreted
+	//als the number of bytes, the MC has to expect from the rpi in this data package
+	static const uint16_t READ_NBR_BYTES_MULTIPLIER = 100;
 private:
 
 
@@ -51,6 +54,8 @@ private:
 	static const uint32_t COMM_RESET_COUNTER_MAX = 30000;
 //	static const uint32_t COMM_RESET_PRESCALER = 9000;
 	static const uint32_t COMM_RESET_PRESCALER = 36000;
+
+
 
 	bool is_communicating; //true after spi interrupt was fired until dma communication is finished
 	uint32_t current_nbr_of_bytes;

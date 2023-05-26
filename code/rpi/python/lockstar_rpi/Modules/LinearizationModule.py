@@ -124,8 +124,11 @@ class LinearizationModule(IOModule_):
         METHOD_IDENTIFIER = 11
         logging.debug('Backend: set_ramp_parameters')
 
-        if ramp_length <2 or settling_time_ms <=0:
+        if ramp_length <2 or settling_time_ms <=0 or ramp_length > BackendSettings.MAX_LINEARIZATION_LENGTH:
             logging.error('set_ramp_parameters: Ramp parameters invalid!')
+            if writer is not None:
+                writer.write(BackendResponse.NACK().to_bytes())
+                await writer.drain()
             return False
         
         self.ramp_start = ramp_start
@@ -142,12 +145,14 @@ class LinearizationModule(IOModule_):
         await MC.I().write_mc_data_package(mc_data_package)
         if not await MC.I().read_ack():
             logging.error('linearize_ch: set_ramp_parameters failed')
-            writer.write(BackendResponse.NACK().to_bytes())
-            await writer.drain()
+            if writer is not None:
+                writer.write(BackendResponse.NACK().to_bytes())
+                await writer.drain()
             return False
         else:
-            writer.write(BackendResponse.ACK().to_bytes())
-            await writer.drain()
+            if writer is not None:
+                writer.write(BackendResponse.ACK().to_bytes())
+                await writer.drain()
             return True
 
 
@@ -156,7 +161,7 @@ class LinearizationModule(IOModule_):
         METHOD_IDENTIFIER = 14
         logging.debug('Backend: get_gain_measurement_result')
         
-        max_package_size = floor((MCDataPackage.MAX_NBR_BYTES-100)/4)
+        max_package_size = floor((MCDataPackage.MAX_NBR_BYTES_FROM_MC-100)/4)
         number_of_ramp_packages = ceil(self.ramp_length/max_package_size)
         number_of_full_ramp_packages = self.ramp_length//max_package_size
                 
@@ -188,12 +193,17 @@ class LinearizationModule(IOModule_):
             await MC.I().write_mc_data_package(mc_data_package)
         
             response_list = ['float']*(self.ramp_length%max_package_size)
-            response_length,response_list = await MC.I().read_mc_data_package(response_list)
-            gain_measurement_list[-(self.ramp_length%max_package_size):] = response_list       
+            response = await MC.I().read_mc_data_package(response_list)
+            if not isinstance(response, bool):
+                response_length,response_list = response
+                gain_measurement_list[-(self.ramp_length%max_package_size):] = response_list       
         
-        measured_gain = np.array(gain_measurement_list)
-        logging.debug('get_gain_measurement_result: Measurement received!')
-        return measured_gain
+                measured_gain = np.array(gain_measurement_list)
+                logging.debug('get_gain_measurement_result: Measurement received!')
+                return measured_gain
+            else:
+                logging.error('Gain measurement failed')
+                return None
         
     @staticmethod  
     def calculate_monotone_envelope(data,increment=1e-6):

@@ -14,6 +14,8 @@ LinearizableDAC::LinearizableDAC(uint8_t SPI, uint8_t dma_stream_out, uint8_t dm
 	linearization_enabled = false;
 	linearization_length = 0;
 	current_pivot_index = 0;
+
+	linearization_buffer = new float[MAX_LINEARIZATION_LENGTH]();
 }
 
 LinearizableDAC::~LinearizableDAC() {
@@ -64,7 +66,6 @@ float LinearizableDAC::get_last_output() {
 
 void LinearizableDAC::set_linearization_length(uint32_t length) {
 	linearization_length = length;
-	linearization_buffer = new float[length]();
 }
 
 void LinearizableDAC::disable_linearization() {
@@ -89,7 +90,7 @@ float LinearizableDAC::linearize(float value) {
 	if(interpolation < 0)
 		interpolation = 0;
 	if(pivot_index > linearization_length-2)
-		return linearization_buffer[pivot_index];
+		return linearization_buffer[linearization_length - 1];
 	return linearization_buffer[pivot_index] + (linearization_buffer[pivot_index+1]-linearization_buffer[pivot_index])*interpolation;
 }
 

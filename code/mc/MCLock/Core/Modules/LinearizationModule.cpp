@@ -63,6 +63,8 @@ public:
 		//Initialize state machine
 		state.active_channel = CH_NOT_SET;
 		state.current_state = IDLE;
+
+		gain_measurement_buffer = new float[this->dac_1->MAX_LINEARIZATION_LENGTH]();
 	}
 
 	void run() {
@@ -169,16 +171,20 @@ public:
 			ramp_length = read_package->pop_from_buffer<uint32_t>();
 			ramp_range = ramp_end - ramp_start;
 			ramp_stepsize = ramp_range/ramp_length;
-
-			gain_measurement_buffer = new float[ramp_length]();
-
 			settling_time_ms = read_package->pop_from_buffer<uint32_t>();
 
-			state.current_state = RECEIVED_RAMP_PARAMETERS;
-			/*** send ACK ***/
-			RPIDataPackage* write_package = rpi->get_write_package();
-			write_package->push_ack();
-			rpi->send_package(write_package);
+			if (ramp_length <= this->dac_1->MAX_LINEARIZATION_LENGTH) {
+				state.current_state = RECEIVED_RAMP_PARAMETERS;
+				/*** send ACK ***/
+				RPIDataPackage* write_package = rpi->get_write_package();
+				write_package->push_ack();
+				rpi->send_package(write_package);
+			} else {
+				/*** send NACK because the ramp_length is too high***/
+				RPIDataPackage* write_package = rpi->get_write_package();
+				write_package->push_nack();
+				rpi->send_package(write_package);
+			}
 		} else {
 			/*** send NACK because the MC is not ready to read new ramp params***/
 			RPIDataPackage* write_package = rpi->get_write_package();

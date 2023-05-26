@@ -6,6 +6,7 @@ from lockstar_rpi.Modules.Module import Module
 from lockstar_general.backend.BackendResponse import BackendResponse
 from math import floor, ceil
 from time import sleep
+from lockstar_rpi.BackendSettings import BackendSettings
 
 
 class IOModule_(Module):
@@ -98,7 +99,7 @@ class IOModule_(Module):
                 await writer.drain()
             return False
 
-        max_package_size = floor((MCDataPackage.MAX_NBR_BYTES-100)/4)
+        max_package_size = floor((MCDataPackage.MAX_NBR_BYTES_TO_MC-100)/4)
         number_of_ramp_packages = ceil(ramp_length/max_package_size)
         number_of_full_ramp_packages = ramp_length//max_package_size
 
@@ -173,6 +174,12 @@ class IOModule_(Module):
 
     async def set_linearization_length_one(self, linearization_length: int, writer, respond=True):
         logging.debug('Backend: set_linearization_length_one')
+        if linearization_length > BackendSettings.MAX_LINEARIZATION_LENGTH:
+            logging.error(f'linearization length must not be larger than {BackendSettings.MAX_LINEARIZATION_LENGTH} ({linearization_length})')
+            if writer is not None:
+                writer.write(BackendResponse.NACK().to_bytes())
+                await writer.drain()
+            return False
         mc_data_package = MCDataPackage()
         mc_data_package.push_to_buffer('uint32_t', 84) # method_identifier
         mc_data_package.push_to_buffer('uint32_t', linearization_length)
@@ -184,6 +191,12 @@ class IOModule_(Module):
 
     async def set_linearization_length_two(self, linearization_length: int, writer, respond=True):
         logging.debug('Backend: set_linearization_length_two')
+        if linearization_length > BackendSettings.MAX_LINEARIZATION_LENGTH:
+            logging.error(f'linearization length must not be larger than {BackendSettings.MAX_LINEARIZATION_LENGTH} ({linearization_length})')
+            if writer is not None:
+                writer.write(BackendResponse.NACK().to_bytes())
+                await writer.drain()
+            return False
         mc_data_package = MCDataPackage()
         mc_data_package.push_to_buffer('uint32_t', 85) # method_identifier
         mc_data_package.push_to_buffer('uint32_t', linearization_length)
@@ -235,7 +248,7 @@ class IOModule_(Module):
 
     async def check_for_ack(self, writer=None):
         """Waits for ACK/NACK from the MC and responds accordingly to the client"""
-        sleep(0.3)
+        sleep(0.05)
         ack =  await MC.I().read_ack()
         if writer is not None:
             if ack:
