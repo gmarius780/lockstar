@@ -198,7 +198,7 @@ class LinearizationModule(IOModule_):
                 return measured_gain
             else:
                 logging.error('Gain measurement failed')
-                return []
+                return None
         
     @staticmethod  
     def calculate_monotone_envelope(data,increment=1e-6):
