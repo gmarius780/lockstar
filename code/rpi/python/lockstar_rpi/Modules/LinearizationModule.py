@@ -126,6 +126,9 @@ class LinearizationModule(IOModule_):
 
         if ramp_length <2 or settling_time_ms <=0 or ramp_length > BackendSettings.MAX_LINEARIZATION_LENGTH:
             logging.error('set_ramp_parameters: Ramp parameters invalid!')
+            if writer is not None:
+                writer.write(BackendResponse.NACK().to_bytes())
+                await writer.drain()
             return False
         
         self.ramp_start = ramp_start
@@ -142,12 +145,14 @@ class LinearizationModule(IOModule_):
         await MC.I().write_mc_data_package(mc_data_package)
         if not await MC.I().read_ack():
             logging.error('linearize_ch: set_ramp_parameters failed')
-            writer.write(BackendResponse.NACK().to_bytes())
-            await writer.drain()
+            if writer is not None:
+                writer.write(BackendResponse.NACK().to_bytes())
+                await writer.drain()
             return False
         else:
-            writer.write(BackendResponse.ACK().to_bytes())
-            await writer.drain()
+            if writer is not None:
+                writer.write(BackendResponse.ACK().to_bytes())
+                await writer.drain()
             return True
 
 
