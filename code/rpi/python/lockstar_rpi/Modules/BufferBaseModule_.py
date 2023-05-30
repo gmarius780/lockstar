@@ -14,7 +14,7 @@ class BufferBaseModule_(ScopeModule_):
     """Base class for AWGModule and AWGPIDModule. Implements the functionality to have two buffers which the user can use to 
     store arbitrary waveforms. Additionally it allows to split the buffers into chunks, which are output individually.
     """
-    BUFFER_LIMIT_kBYTES = 160
+    BUFFER_LIMIT_kBYTES = 140
     MAX_NBR_OF_CHUNKS = 100
 
 

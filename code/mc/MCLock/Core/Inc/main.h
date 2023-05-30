@@ -129,8 +129,8 @@ void start(void);
 //DEFINE WHICH MODULE TO RUN!!
 //#define AWG_PID_MODULE
 //#define AWG_MODULE
-#define SINGLE_PID_MODULE
-//#define LINEARIZATION_MODULE
+//#define SINGLE_PID_MODULE
+#define LINEARIZATION_MODULE
 //#define ANALOG_OUTPUT_MODULE
 
 /* USER CODE END Private defines */

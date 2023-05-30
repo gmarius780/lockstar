@@ -90,6 +90,12 @@ void BufferBaseModule::initialize_buffers(RPIDataPackage* read_package) {
 		RPIDataPackage* write_package = rpi->get_write_package();
 		write_package->push_nack();
 		rpi->send_package(write_package);
+		buffer_one_size = 0;
+		buffer_two_size = 0;
+		chunks_one_size = 0;
+		chunks_two_size = 0;
+
+		return;
 	} else {
 		//set pointers according to the received buffer sizes
 		this->reset_output();
@@ -315,7 +321,7 @@ bool BufferBaseModule::output_next_chunk() {
 		if (current_chunk_one == chunks_one) {//first chunk
 			current_output_one = buffer_one;
 		} else { //n-th chunk
-			current_output_one = buffer_one + *(current_chunk_one-1);
+			current_output_one = buffer_one + *(current_chunk_one-1)+1;
 		}
 		current_end_chunk_one = buffer_one + *(current_chunk_one++);
 
@@ -325,7 +331,7 @@ bool BufferBaseModule::output_next_chunk() {
 		if (current_chunk_two == chunks_two) {//first chunk
 			current_output_two = buffer_two;
 		} else { //n-th chunk
-			current_output_two = buffer_two + *(current_chunk_two-1);
+			current_output_two = buffer_two + *(current_chunk_two-1)+1;
 		}
 		current_end_chunk_two = buffer_two + *(current_chunk_two++);
 

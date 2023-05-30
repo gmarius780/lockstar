@@ -244,7 +244,7 @@ public:
 
 	//__attribute__((section("sram_func")))
 	void sampling_timer_interrupt() {
-		if (current_output_one < current_end_chunk_one) {
+		if (current_output_one <= current_end_chunk_one) {
 			this->setpoint_one = *(current_output_one++);
 		} else {
 			if (current_output_two >= current_end_chunk_two) {
@@ -253,7 +253,7 @@ public:
 			}
 		}
 
-		if (current_output_two < current_end_chunk_two) {
+		if (current_output_two <= current_end_chunk_two) {
 			this->setpoint_two = *(current_output_two++);
 		} else {
 			if (current_output_one >= current_end_chunk_one) {
