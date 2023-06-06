@@ -1,1 +1,0 @@
-http://code.enthought.com/enstaller/eggs/source
