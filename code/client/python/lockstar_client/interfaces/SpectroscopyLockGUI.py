@@ -41,7 +41,7 @@ class SpectroscopyLockGUI(QtWidgets.QMainWindow):
         self.line_ch_out = None
 
         #=== members
-        self.p = self.i = self.d 
+        self.p = self.i = self.d = 0
         self.locked = False
 
         #===setup gui
@@ -160,6 +160,8 @@ class SpectroscopyLockGUI(QtWidgets.QMainWindow):
 
     def update_plot(self):
         # Drop off the first y element, append a new one.
+        if self.locked: #the module does not automatically enable the scope when it is lock --> save resources
+            asyncio.run(self.client.enable_scope())
         t1 = perf_counter()
         scope_data = asyncio.run(self.client.get_scope_data())
         print(f'request took: {perf_counter() - t1:.5f} seconds')
@@ -177,12 +179,22 @@ class SpectroscopyLockGUI(QtWidgets.QMainWindow):
                             self.scope_canvas.ax_in.legend()
                         else:
                             self.line_ch_in.set_ydata(trace)
+                            ymin = np.min(trace)
+                            ymin = 0.9*ymin if ymin >= 0 else 1.1*ymin
+                            ymax = np.max(trace)
+                            ymax = 1.1*ymax if ymax >= 0 else 0.9*ymax
+                            self.scope_canvas.ax_in.set_ylim((ymin, ymax))
                     elif trace_name == 'out_one':
                         if self.line_ch_out is None:
                             self.line_ch_out, = self.scope_canvas.ax_out.plot(self.time_axis, trace, 'o', label=trace_name, ms=1)
                             self.scope_canvas.ax_out.legend()
                         else:
                             self.line_ch_out.set_ydata(trace)
+                            ymin = np.min(trace)
+                            ymin = 0.9*ymin if ymin >= 0 else 1.1*ymin
+                            ymax = np.max(trace)
+                            ymax = 1.1*ymax if ymax >= 0 else 0.9*ymax
+                            self.scope_canvas.ax_out.set_ylim((ymin, ymax))
                     
                     self.scope_canvas.fig.canvas.draw()
                     self.scope_canvas.fig.canvas.flush_events()
