@@ -104,7 +104,7 @@ void start(void);
 //CAN BE DIFFERENT FOR EACH MODULE:
 #define SCOPE_BUFFER_LENGTH 2000 //total number of points the scope can record for the inputs and outputs together. The user can choose how to distribute those points
 //DEFINE WHICH MODULE TO RUN!!
-#define DOUBLE_DITHER_LOCK_MODULE
+#define SPECTROSCOPY_LOCK_MODULE
 //#define SINGLE_PID_MODULE
 //#define LINEARIZATION_MODULE
 //#define ANALOG_OUTPUT_MODULE
