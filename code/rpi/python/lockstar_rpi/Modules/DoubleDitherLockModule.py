@@ -24,6 +24,8 @@ class DoubleDitherLockModule(ScopeModule_):
         self.dither_offset_two = 0
         self.locked_two = False
 
+        self.dither_frq = 5
+
         #the scope is automatically setup by the MC in the DoubleDitherLockModule
         self.scope_max_buffer_length_nbr_of_floats = 2000
     
@@ -165,6 +167,33 @@ class DoubleDitherLockModule(ScopeModule_):
             self.setpoint_two = setpoint
         return result
     
+    async def set_dither_frq(self, dither_frq: float, writer, respond=True):
+        """Set the dither (saw tooth waveform) frequency
+
+        Args:
+            dither_frq (float): Hz (not larger than 10Hz)
+        """
+        logging.debug('DoubleDitherLockModule: set_dither_frq')
+        if dither_frq > 10:
+            logging.error(f'DoubleDitherLockModule: dither frequency has to be smaller than 10Hz')
+            if writer is not None:
+                writer.write(BackendResponse.NACK().to_bytes())
+            await writer.drain()
+            return False
+        mc_data_package = MCDataPackage()
+        mc_data_package.push_to_buffer('uint32_t', 21) # method_identifier
+        mc_data_package.push_to_buffer('float', dither_frq)
+        await MC.I().write_mc_data_package(mc_data_package)
+        
+        result = await self.check_for_ack(writer=(writer if respond else None))
+        if result:
+            # set the appropritate scope sampling rate such that it resolves the new dither frequency
+            max_scope_samples = max([self.scope_nbr_samples_in_one, self.scope_nbr_samples_in_two, self.scope_nbr_samples_out_one, self.scope_nbr_samples_out_two])
+            self.set_scope_sampling_rate(max_scope_samples*dither_frq)
+
+            self.dither_frq = dither_frq
+        return result
+    
     
     # ==== END: client methods
 
@@ -190,6 +219,7 @@ class DoubleDitherLockModule(ScopeModule_):
                     success = success and await self.set_setpoint_two(config_dict['setpoint_two'], None)
                     success = success and await self.set_dither_one(config_dict['dither_amp_one'], config_dict['dither_offset_one'], None)
                     success = success and await self.set_dither_two(config_dict['dither_amp_two'], config_dict['dither_offset_two'], None)
+                    success = success and await self.set_dither_frq(config_dict['dither_frq'], None)
 
                     if config_dict['locked_one'] == True:
                         success = success and await self.lock_one(None)

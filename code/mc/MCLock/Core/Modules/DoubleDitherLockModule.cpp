@@ -41,14 +41,9 @@ struct DitheringParams {
 
 class DoubleDitherLockModule: public ScopeModule {
 public:
-	//dither is happening with a period of  2 Hz --> scope samples with: 2kHz, since the dithering step increase happens in 500us steps
-	static const uint32_t SCOPE_SAMPLING_PRESCALER = 2500;
-	static const uint32_t SCOPE_SAMPLING_COUNTER_MAX = 45;
-	static const uint32_t SCOPE_BUFFER_SIZE = 400;
-
 	//number of increase/decrease steps in one dither period (triangular) (hardcoded for now)
 	static const uint32_t NBR_DITHER_STEPS = 10000;
-	static const uint32_t DITHER_INCREASE_INTERVAL_100NS = 1000; //increase the dithering after 0.1ms (1000*100ns) --> this yields a dither-period of: NBR_DITHER_STEPS*DITHER_INCREASE_INTERVAL_100PS = 1s
+	//static const uint32_t DITHER_INCREASE_INTERVAL_100NS = 200; //increase the dithering after 20 us (200*100ns) --> this yields a dither-period of: NBR_DITHER_STEPS*DITHER_INCREASE_INTERVAL_100PS = 200ms,
 
 	//loop timer oscillates with 1/100ns, the counter counts to 65535 --> the timer can capture approx 6.5ms --> enough to capture the dithering at 1.25ms steps
 	static const uint16_t LOOP_TIMER_PSC = 9;
@@ -71,6 +66,7 @@ public:
 		dither_one.offset = 0;
 		dither_two.amp = 0;
 		dither_two.offset = 0;
+		dither_step_increase_interval_100_ns = 200;
 
 		setpoint_one = setpoint_two = 0;
 
@@ -144,7 +140,7 @@ public:
 			t_since_last_dither_step += t;
 
 			//PERFORM DITHER STEP IF NECCESSARY
-			if (t_since_last_dither_step >= DITHER_INCREASE_INTERVAL_100NS) {
+			if (t_since_last_dither_step >= dither_step_increase_interval_100_ns) {
 				if (i < int(NBR_DITHER_STEPS/2)) {
 					current_dither_two += dither_two_step;
 				} else {
@@ -188,7 +184,7 @@ public:
 			t_since_last_dither_step += t;
 
 			//PERFORM DITHER STEP IF NECCESSARY
-			if (t_since_last_dither_step >= DITHER_INCREASE_INTERVAL_100NS) {
+			if (t_since_last_dither_step >= dither_step_increase_interval_100_ns) {
 				if (i < int(NBR_DITHER_STEPS/2)) {
 					current_dither_one += dither_one_step;
 				} else {
@@ -229,7 +225,7 @@ public:
 			t_since_last_dither_step += (loop_timer->get_counter() - t);
 			t = loop_timer->get_counter();
 			//PERFORM DITHER STEP IF NECCESSARY
-			if (t_since_last_dither_step >= DITHER_INCREASE_INTERVAL_100NS) {
+			if (t_since_last_dither_step >= dither_step_increase_interval_100_ns) {
 				if (i < int(NBR_DITHER_STEPS/2)) {
 					current_dither_one += dither_one_step;
 					current_dither_two += dither_two_step;
@@ -285,6 +281,9 @@ public:
 				break;
 			case METHOD_SET_SETPOINT_TWO:
 				set_setpoint_two(read_package);
+				break;
+			case METHOD_SET_DITHER_FRQ:
+				set_dither_frq(read_package);
 				break;
 			default:
 				/*** send NACK because the method_identifier is not valid ***/
@@ -485,6 +484,25 @@ public:
 		rpi->send_package(write_package);
 	}
 
+	static const uint32_t METHOD_SET_DITHER_FRQ = 21;
+	void set_dither_frq(RPIDataPackage* read_package) {
+		/***Read arguments***/
+		float dither_frq_Hz = read_package->pop_from_buffer<float>();
+		if (dither_frq_Hz <= 10) {
+			this->dither_step_increase_interval_100_ns = uint32_t(1/dither_frq_Hz / NBR_DITHER_STEPS / 0.0000001);
+			/*** send ACK ***/
+			RPIDataPackage* write_package = rpi->get_write_package();
+			write_package->push_ack();
+			rpi->send_package(write_package);
+		} else {
+			/*** send NACK ***/
+			RPIDataPackage* write_package = rpi->get_write_package();
+			write_package->push_nack();
+			rpi->send_package(write_package);
+		}
+
+	}
+
 	/*** END: METHODS ACCESSIBLE FROM THE RPI ***/
 
 	void rpi_dma_in_interrupt() {
@@ -504,6 +522,7 @@ public:
 	DitheringParams dither_one, dither_two;
 	BasicTimer* loop_timer;
 	float setpoint_one, setpoint_two;
+	uint32_t dither_step_increase_interval_100_ns; //after dither_step_increase_interval_100_ns*100ns the dither signal will be increased by one step
 
 	void(DoubleDitherLockModule::*current_work_function)();
 };

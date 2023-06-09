@@ -50,6 +50,10 @@ class DoubleDitherLockClient(ScopeClient):
     async def set_setpoint_two(self,  setpoint: float):
         bc = BackendCall(self.client_id, self.module_name, 'set_setpoint_two', args={'setpoint': setpoint})
         return await self._call_lockstar(bc)
+    
+    async def set_dither_frq(self,  dither_frq: float):
+        bc = BackendCall(self.client_id, self.module_name, 'set_dither_frq', args={'dither_frq': dither_frq})
+        return await self._call_lockstar(bc)
 
 
 if __name__ == "__main__":

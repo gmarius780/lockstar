@@ -261,12 +261,11 @@ class DoubleDitherLockGUI(QtWidgets.QMainWindow):
 
 if __name__ == "__main__":
     client = DoubleDitherLockClient('192.168.88.25', 10780, 1234)
-    scope_sampling_rate = 20
+    scope_sampling_rate = 10000
     # scope_sampling_rate = 800
     # scope_buffer_length = 400
-    scope_buffer_length = 10
-    update_rate = 2
-
+    scope_buffer_length = 500
+    update_rate = 5
     print(asyncio.run(client.setup_scope(
         sampling_rate=scope_sampling_rate,
         nbr_samples_in_one=scope_buffer_length,

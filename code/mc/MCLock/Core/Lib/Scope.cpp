@@ -114,10 +114,10 @@ bool Scope::sample() {
 	if(setup) {
 		if (buffer_index <  max_buffer_size and ready_to_write) {
 			if (led_off) {
-				turn_LED6_on();
+				//turn_LED6_on();
 				led_off = false;
 			} else {
-				turn_LED6_off();
+				//turn_LED6_off();
 				led_off = true;
 			}
 			if (adc_active_mode)
@@ -141,7 +141,8 @@ bool Scope::sample() {
 			buffer_index = 0;
 			ready_to_write = false;
 			ready_to_read = true;
-			this->disable();
+			this->disable(); //Next batch of samples will only be taken once enable() will be called again.
+			//turn_LED5_off();
 		}
 		return true;
 	} else {
@@ -159,6 +160,7 @@ void Scope::timer_interrupt() {
 bool Scope::push_buffers_to_rpi_data_package(RPIDataPackage* data_package, uint32_t buffer_offset, uint32_t package_size) {
 	uint32_t total_nbr_samples = nbr_samples_in_one + nbr_samples_in_two + nbr_samples_out_one + nbr_samples_out_two;
 	if(setup and buffer_offset + package_size <= total_nbr_samples) {
+
 		if (ready_to_read) { //return only if a complete trace is in the write buffer
 			//swap read/write buffers if write buffer is full
 			if (double_buffer_mode and not ready_to_write) {
@@ -188,6 +190,7 @@ bool Scope::push_buffers_to_rpi_data_package(RPIDataPackage* data_package, uint3
 
 			if (buffer_offset + package_size == total_nbr_samples) { // the whole buffer has been read
 				ready_to_read = false;
+				//turn_LED5_on();
 
 				if (not double_buffer_mode) { //in single buffer mode writing can only start now
 					ready_to_write = true;
