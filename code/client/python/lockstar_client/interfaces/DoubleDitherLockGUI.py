@@ -14,7 +14,7 @@ import asyncio
 
 from time import perf_counter
 
-from lockstar_client.CavityLockClient import CavityLockClient
+from lockstar_client.DoubleDitherLockClient import DoubleDitherLockClient
 
 class ScopeCanvas(FigureCanvas):
 
@@ -260,7 +260,7 @@ class DoubleDitherLockGUI(QtWidgets.QMainWindow):
         self.scope_canvas.draw()
 
 if __name__ == "__main__":
-    client = CavityLockClient('192.168.88.25', 10780, 1234)
+    client = DoubleDitherLockClient('192.168.88.25', 10780, 1234)
     scope_sampling_rate = 4000
     # scope_sampling_rate = 800
     # scope_buffer_length = 400
@@ -269,18 +269,18 @@ if __name__ == "__main__":
 
     print(asyncio.run(client.setup_scope(
         sampling_rate=scope_sampling_rate,
-        sample_in_one=1000,
-        sample_in_two=0,
-        sample_out_one=1000,
-        sample_out_two=0,
+        nbr_samples_in_one=999,
+        nbr_samples_in_two=0,
+        nbr_samples_out_one=999,
+        nbr_samples_out_two=0,
         adc_active_mode=True,
         double_buffer_mode=True
     )))
-    print(asyncio.run(client.enable_scope()))
-    asyncio.run(client.set_ch_one_output_limits(-10, 10))
-    asyncio.run(client.set_ch_two_output_limits(-10, 10))
+    # print(asyncio.run(client.enable_scope()))
+    # asyncio.run(client.set_ch_one_output_limits(-10, 10))
+    # asyncio.run(client.set_ch_two_output_limits(-10, 10))
 
-    app = QtWidgets.QApplication(sys.argv)
-    w = DoubleDitherLockGUI(client, update_rate, scope_buffer_length, scope_sampling_rate)
-    app.exec_()
+    # app = QtWidgets.QApplication(sys.argv)
+    # w = DoubleDitherLockGUI(client, update_rate, scope_buffer_length, scope_sampling_rate)
+    # app.exec_()
 

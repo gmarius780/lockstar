@@ -8,7 +8,7 @@ class DoubleDitherLockClient(ScopeClient):
 
 
     def __init__(self, lockstar_ip, lockstar_port, client_id) -> None:
-        super().__init__(lockstar_ip, lockstar_port, client_id, 'CavityLockModule')
+        super().__init__(lockstar_ip, lockstar_port, client_id, 'DoubleDitherLockModule')
 
 
     async def set_pid_one(self,  p: float, i: float, d: float):

@@ -5,10 +5,6 @@ from lockstar_rpi.MC import MC
 from lockstar_rpi.MCDataPackage import MCDataPackage
 
 class DoubleDitherLockModule(ScopeModule_):
-    SCOPE_BUFFER_SIZE = 400 #must match the MC code
-    # SCOPE_BUFFER_SIZE = 1000 #must match the MC code
-    SCOPE_SAMPLING_RATE = 800 #must match the MC code
-    # SCOPE_SAMPLING_RATE = 2000 #must match the MC code
 
     def __init__(self) -> None:
         super().__init__()
@@ -29,12 +25,8 @@ class DoubleDitherLockModule(ScopeModule_):
         self.locked_two = False
 
         #the scope is automatically setup by the MC in the DoubleDitherLockModule
-        self.scope_adc_active_mode = False
-        self.scope_buffer_length = DoubleDitherLockModule.SCOPE_BUFFER_SIZE
-        self.scope_sample_in_one = self.scope_sample_in_two = self.scope_sample_out_one = self.scope_sample_out_two = True
-        self.scope_sampling_rate = DoubleDitherLockModule.SCOPE_SAMPLING_RATE
-        self.scope_enabled = True
-        self.scope_setup = True 
+        self.scope_max_buffer_length_nbr_of_floats = 2000
+    
 
 
     # ==== START: client methods 
