@@ -196,3 +196,10 @@ web/api/__pycache__/*
 # Libraries
 /lib
 
+# LTSpice
+# Simulation Outputs
+*.raw
+*.fft
+
+# Netlist
+*.net
