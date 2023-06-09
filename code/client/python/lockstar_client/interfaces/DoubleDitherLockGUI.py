@@ -264,8 +264,8 @@ if __name__ == "__main__":
     scope_sampling_rate = 4000
     # scope_sampling_rate = 800
     # scope_buffer_length = 400
-    scope_buffer_length = 1000
-    update_rate = 2
+    scope_buffer_length = 999
+    update_rate = 5
 
     print(asyncio.run(client.setup_scope(
         sampling_rate=scope_sampling_rate,
@@ -276,11 +276,11 @@ if __name__ == "__main__":
         adc_active_mode=True,
         double_buffer_mode=True
     )))
-    # print(asyncio.run(client.enable_scope()))
-    # asyncio.run(client.set_ch_one_output_limits(-10, 10))
-    # asyncio.run(client.set_ch_two_output_limits(-10, 10))
+    print(asyncio.run(client.enable_scope()))
+    asyncio.run(client.set_ch_one_output_limits(-10, 10))
+    asyncio.run(client.set_ch_two_output_limits(-10, 10))
 
-    # app = QtWidgets.QApplication(sys.argv)
-    # w = DoubleDitherLockGUI(client, update_rate, scope_buffer_length, scope_sampling_rate)
-    # app.exec_()
+    app = QtWidgets.QApplication(sys.argv)
+    w = DoubleDitherLockGUI(client, update_rate, scope_buffer_length, scope_sampling_rate)
+    app.exec_()
 
