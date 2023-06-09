@@ -16,6 +16,8 @@ DAC_Device::DAC_Device(uint8_t spi_lane, uint8_t dma_stream_out, uint8_t dma_cha
 
     last_output = 0;
 
+    max_hardware_output = min_hardware_output = 0;
+
     max_output 	= 0;
     min_output 	= 0;
     busy 		= false;

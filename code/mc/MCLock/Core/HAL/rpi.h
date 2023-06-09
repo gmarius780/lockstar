@@ -12,6 +12,7 @@
 #include "../Lib/RPIDataPackage.h"
 #include "../HAL/BasicTimer.hpp"
 #include "dma.hpp"
+#include "../Inc/main.h"
 
 
 class RPI {
@@ -67,6 +68,7 @@ private:
 
 	void dma_out_ready_pin_high();
 	void dma_out_ready_pin_low();
+
 };
 
 #endif /* HAL_RPI_H_ */

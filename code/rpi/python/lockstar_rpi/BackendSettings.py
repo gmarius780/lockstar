@@ -16,7 +16,6 @@ class BackendSettings:
     elf_directory = join(dirname(__file__), 'Modules', 'mc_images')
     #max nbr of floats per channel that can be recorded, must be equal to the value
     #in Scope.h
-    scope_max_buffer_length_nbr_of_floats = 10000 
     scope_max_sampling_rate = 10000
     #The RPI sends one byte (0-255) via spi to the MC. This value times READ_NBR_BYTES_MULTIPLIER is interpreted
 	#als the number of bytes, the MC has to expect from the rpi in this data package

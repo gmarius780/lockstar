@@ -101,36 +101,12 @@ void start(void);
 #define _16Bit_MIN					0x8000
 #define _16Bit_MAX					0x7fff
 
-//#define Receive_Pid_Vars 			0x0001
-//#define Send_Measured_Data 			0x0002
-//#define Measure_by_Mode				0x0003
-//#define Receive_AOM_Data 			0x0004
-//#define Check_AOM_data 				0x0005
-//#define Measure_AOM_Data 			0x0006
-////#define Start_Signal_Output 		0x0007
-//#define Stop_Signal_Output 			0x0008
-//#define Start_Old_Lock 				0x0009
-//#define Set_Scan_Range	 			0x000a
-//#define Save_Waypoints_Lock 		0x000b
-//#define Send_AOM_Data		 		0x000c
-
-
-//#define PID_Save_Data 				0x0100
-//#define Ziegler_Nichols 			0x0101
-//#define AOM_Save_Data 				0x0102
-//#define Test_AOM_Data 				0x0103
-//#define Continuous_PID 				0x0104
-//#define Measure_Both 				0x0105
-//#define Continuous_Signal 			0x0106
-//#define Old_Lock 					0x0107
-//#define Lock_And_Measure 			0x0108
-//#define Continuous_Lock 			0x0109
-
+//CAN BE DIFFERENT FOR EACH MODULE:
+#define SCOPE_BUFFER_LENGTH 2000 //total number of points the scope can record for the inputs and outputs together. The user can choose how to distribute those points
 //DEFINE WHICH MODULE TO RUN!!
-//#define AWG_PID_MODULE
-//#define AWG_MODULE
+#define DOUBLE_DITHER_LOCK_MODULE
 //#define SINGLE_PID_MODULE
-#define LINEARIZATION_MODULE
+//#define LINEARIZATION_MODULE
 //#define ANALOG_OUTPUT_MODULE
 
 /* USER CODE END Private defines */

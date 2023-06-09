@@ -6,7 +6,6 @@
  */
 
 #include "rpi.h"
-#include "../Inc/main.h"
 
 RPI::RPI() {
 	read_buffer = new uint8_t[255*READ_NBR_BYTES_MULTIPLIER];
@@ -120,7 +119,7 @@ RPI::RPI() {
 }
 
 RPI::~RPI() {
-	// TODO Auto-generated destructor stub
+
 }
 
 void RPI::spi_interrupt() {

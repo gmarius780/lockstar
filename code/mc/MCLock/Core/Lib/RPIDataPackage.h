@@ -41,6 +41,10 @@ public:
 
 	uint32_t nbr_of_bytes_to_send();
 
+	void reset() {
+		current_buffer = buffer;
+	}
+
 private:
 	uint8_t *buffer;
 	uint8_t *current_buffer;
