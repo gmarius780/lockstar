@@ -71,6 +71,7 @@ private:
 	bool setup; //whether setup_scope has been called successfully
 	bool adc_active_mode; //whether or not scope should call adc->star_conversion()
 	uint32_t nbr_samples_in_one, nbr_samples_in_two, nbr_samples_out_one, nbr_samples_out_two;
+	uint32_t max_buffer_size; //length largest buffer of the four
 	//read and write buffers are needed for double_buffer_mode: They are of the same length. The Scope
 	//writes newly recorded values in the write buffer and returns values from the _read buffer.
 	//Once the write buffer is full, the scope waits (does not record more values) until push_buffers_to_rpi_data_package()

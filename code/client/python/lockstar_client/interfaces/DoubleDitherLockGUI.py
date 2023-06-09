@@ -254,8 +254,8 @@ class DoubleDitherLockGUI(QtWidgets.QMainWindow):
             # self.scope_canvas.ax_in.legend()
             # self.scope_canvas.ax_out.legend()
         else:
-            pass
-            # print(scope_data)
+            
+            print(scope_data)
         # Trigger the canvas to update and redraw.
         self.scope_canvas.draw()
 
@@ -265,7 +265,7 @@ if __name__ == "__main__":
     # scope_sampling_rate = 800
     # scope_buffer_length = 400
     scope_buffer_length = 999
-    update_rate = 5
+    update_rate = 1
 
     print(asyncio.run(client.setup_scope(
         sampling_rate=scope_sampling_rate,

@@ -55,6 +55,7 @@ bool Scope::setup_scope(uint32_t sampling_prescaler, uint32_t sampling_counter_m
 			this->nbr_samples_in_two = nbr_samples_in_two;
 			this->nbr_samples_out_one = nbr_samples_out_one;
 			this->nbr_samples_out_two = nbr_samples_out_two;
+			this->max_buffer_size = std::max(nbr_samples_in_one, std::max(nbr_samples_in_two, std::max(nbr_samples_out_one, nbr_samples_out_two)));
 			this->adc_active_mode = adc_active_mode;
 
 			this->double_buffer_mode = double_buffer_mode;
@@ -108,7 +109,7 @@ bool Scope::setup_scope(uint32_t sampling_prescaler, uint32_t sampling_counter_m
 bool Scope::sample() {
 	//if buffer_index >= buffer_length: push_buffers_to_rpi_data_package has to be called first
 	if(setup) {
-		if (buffer_index <  std::max(nbr_samples_in_one, std::max(nbr_samples_in_two, std::max(nbr_samples_out_one, nbr_samples_out_two))) and ready_to_write) {
+		if (buffer_index <  max_buffer_size and ready_to_write) {
 			if (adc_active_mode)
 				this->adc->start_conversion();
 			if (buffer_index < nbr_samples_in_one) {
