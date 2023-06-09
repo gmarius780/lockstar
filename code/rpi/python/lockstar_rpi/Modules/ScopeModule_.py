@@ -238,6 +238,7 @@ class ScopeModule_(IOModule_):
                     return False
                 else: 
                     response_length, response_list = response
+                    logging.debug(f'test: {len(response_list)}')
 
                     buffer[-remaining_package_size:] = response_list[0:remaining_package_size]
             
