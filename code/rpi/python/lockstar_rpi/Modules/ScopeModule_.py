@@ -251,7 +251,7 @@ class ScopeModule_(IOModule_):
                 else:
                     scope_traces[sample_dict_key] = []
 
-                print(f'{sample_dict_key} - {nbr_samples}')
+                logging.debug(f'{sample_dict_key} - {nbr_samples}')
 
             logging.debug(f'MC-communication time: {perf_counter() - t_start:.1f}s')
             t_start = perf_counter()
