@@ -245,11 +245,13 @@ class ScopeModule_(IOModule_):
             scope_traces = {}
             i_buffer = 0
             for nbr_samples, sample_dict_key in zip(nbr_of_samples_per_channel, sample_dict_keys):
-                    if nbr_samples > 0:
-                        scope_traces[sample_dict_key] = buffer[i_buffer:i_buffer+nbr_samples]
-                        i_buffer += nbr_samples
-                    else:
-                        scope_traces[sample_dict_key] = []
+                if nbr_samples > 0:
+                    scope_traces[sample_dict_key] = buffer[i_buffer:i_buffer+nbr_samples]
+                    i_buffer += nbr_samples
+                else:
+                    scope_traces[sample_dict_key] = []
+
+                print(f'{sample_dict_key} - {nbr_samples}')
 
             logging.debug(f'MC-communication time: {perf_counter() - t_start:.1f}s')
             t_start = perf_counter()

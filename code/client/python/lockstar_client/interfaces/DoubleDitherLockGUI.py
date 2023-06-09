@@ -251,8 +251,8 @@ class DoubleDitherLockGUI(QtWidgets.QMainWindow):
                     else:
                         self.scope_canvas.ax_out.plot(self.time_axis, trace, 'o', label=trace_name, ms=1)
             
-            self.scope_canvas.ax_in.legend()
-            self.scope_canvas.ax_out.legend()
+            # self.scope_canvas.ax_in.legend()
+            # self.scope_canvas.ax_out.legend()
         else:
             pass
             # print(scope_data)
