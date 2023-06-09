@@ -213,7 +213,7 @@ class ScopeModule_(IOModule_):
                     i_end_trace = i_start_trace + max_package_size
 
                     #store results in corresponding dict entry
-                    buffer[i_start_trace:i_end_trace] = response_list[i_start_trace:i_end_trace]
+                    buffer[i_start_trace:i_end_trace] = response_list[0:max_package_size]
         
                     buffer_offset += max_package_size
                     logging.debug(f"get_scope_data: received package number {package_number+1}.")
