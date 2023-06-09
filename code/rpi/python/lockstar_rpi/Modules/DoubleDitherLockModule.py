@@ -189,7 +189,7 @@ class DoubleDitherLockModule(ScopeModule_):
         if result:
             # set the appropritate scope sampling rate such that it resolves the new dither frequency
             max_scope_samples = max([self.scope_nbr_samples_in_one, self.scope_nbr_samples_in_two, self.scope_nbr_samples_out_one, self.scope_nbr_samples_out_two])
-            self.set_scope_sampling_rate(max_scope_samples*dither_frq, writer, respond=respond)
+            await self.set_scope_sampling_rate(max_scope_samples*dither_frq, writer, respond=respond)
 
             self.dither_frq = dither_frq
         return result
