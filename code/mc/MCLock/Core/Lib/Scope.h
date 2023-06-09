@@ -88,6 +88,8 @@ private:
 	LinearizableDAC *dac_1, *dac_2;
 
 	bool double_buffer_mode;
+
+	bool led_off;
 };
 
 #endif /* LIB_SCOPE_H_ */

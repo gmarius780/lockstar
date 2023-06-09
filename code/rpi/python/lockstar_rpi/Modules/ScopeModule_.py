@@ -201,7 +201,7 @@ class ScopeModule_(IOModule_):
                 datatype_list = ['float']*max_package_size
                 response = await MC.I().read_mc_data_package(datatype_list)
                 if response == False:
-                    logging.error(f'ScopeModule.get_scope_data - read package of length: {max_package_size} failed!')
+                    logging.error(f'ScopeModule.get_scope_data - read package nbr{package_number} of length: {max_package_size} failed!')
                     if writer is not None and respond:
                         writer.write(BackendResponse.NACK().to_bytes())
                         await writer.drain()
@@ -238,7 +238,6 @@ class ScopeModule_(IOModule_):
                     return False
                 else: 
                     response_length, response_list = response
-                    logging.debug(f'test: {len(response_list)}')
 
                     buffer[-remaining_package_size:] = response_list[0:remaining_package_size]
             
@@ -248,12 +247,9 @@ class ScopeModule_(IOModule_):
             for nbr_samples, sample_dict_key in zip(nbr_of_samples_per_channel, sample_dict_keys):
                 if nbr_samples > 0:
                     scope_traces[sample_dict_key] = buffer[i_buffer:i_buffer+nbr_samples]
-                    logging.debug(f'{sample_dict_key} - {len(buffer)} - {i_buffer} - {nbr_samples}')
                     i_buffer += nbr_samples
                 else:
                     scope_traces[sample_dict_key] = []
-
-                logging.debug(f'{sample_dict_key} - {nbr_samples}')
 
             logging.debug(f'MC-communication time: {perf_counter() - t_start:.1f}s')
             t_start = perf_counter()

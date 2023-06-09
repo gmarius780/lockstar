@@ -6,6 +6,7 @@
  */
 
 #include "Scope.h"
+#include "../HAL/leds.hpp"
 
 //@suppress("Class members should be properly initialized")
 Scope::Scope(ADC_Device *adc, LinearizableDAC *dac_1, LinearizableDAC *dac_2) {
@@ -28,6 +29,8 @@ Scope::Scope(ADC_Device *adc, LinearizableDAC *dac_1, LinearizableDAC *dac_2) {
 	ready_to_read = ready_to_write = double_buffer_mode = false;
 	buffer_in_one_read = buffer_in_one_write = buffer_in_two_read = buffer_in_two_write = 0;
 	buffer_out_one_read = buffer_out_one_write = buffer_out_two_read = buffer_out_two_write = 0;
+
+	led_off = true;
 
 	this->adc = adc;
 	this->dac_1 = dac_1;
@@ -110,6 +113,13 @@ bool Scope::sample() {
 	//if buffer_index >= buffer_length: push_buffers_to_rpi_data_package has to be called first
 	if(setup) {
 		if (buffer_index <  max_buffer_size and ready_to_write) {
+			if (led_off) {
+				turn_LED6_on();
+				led_off = false;
+			} else {
+				turn_LED6_off();
+				led_off = true;
+			}
 			if (adc_active_mode)
 				this->adc->start_conversion();
 			if (buffer_index < nbr_samples_in_one) {
@@ -225,7 +235,7 @@ void Scope::swap_buffers() {
 bool Scope::set_sampling_rate(uint32_t sampling_prescaler, uint32_t sampling_counter_max) {
 	timer->set_prescaler(sampling_prescaler);
 	timer->set_auto_reload(sampling_counter_max);
-	timer->reset_counter();
+	//timer->reset_counter();
 	return true;
 }
 
