@@ -231,7 +231,7 @@ class ScopeModule_(IOModule_):
 
                 response = await MC.I().read_mc_data_package(datatype_list)
                 if response == False:
-                    logging.error(f'ScopeModule.get_scope_data - read package of length: {remaining_package_size} failed!')
+                    logging.error(f'ScopeModule.get_scope_data - read LAST package of length: {remaining_package_size} failed!')
                     if writer is not None and respond:
                         writer.write(BackendResponse.NACK().to_bytes())
                         await writer.drain()
