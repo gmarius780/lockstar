@@ -27,6 +27,10 @@ modules = [
      {
         'module_name': 'LinearizationModule',
         'compiler_flag': 'LINEARIZATION_MODULE'
+    },
+         {
+        'module_name': 'AnalogOutputModule',
+        'compiler_flag': 'LINEARIZATION_MODULE'
     }
 ]
 
