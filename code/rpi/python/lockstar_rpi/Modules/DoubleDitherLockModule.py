@@ -4,13 +4,12 @@ import logging
 from lockstar_rpi.MC import MC
 from lockstar_rpi.MCDataPackage import MCDataPackage
 
-class CavityLockModule(ScopeModule_):
+class DoubleDitherLockModule(ScopeModule_):
     SCOPE_BUFFER_SIZE = 400 #must match the MC code
     # SCOPE_BUFFER_SIZE = 1000 #must match the MC code
     SCOPE_SAMPLING_RATE = 800 #must match the MC code
     # SCOPE_SAMPLING_RATE = 2000 #must match the MC code
 
-    """Basic Module which implements a simple PID controller by using input_1 as error_signal, input_2 as setpoint and output 1 for the control signal"""
     def __init__(self) -> None:
         super().__init__()
         self.p_one = 0
@@ -29,11 +28,11 @@ class CavityLockModule(ScopeModule_):
         self.dither_offset_two = 0
         self.locked_two = False
 
-        #the scope is automatically setup by the MC in the cavitylock module
+        #the scope is automatically setup by the MC in the DoubleDitherLockModule
         self.scope_adc_active_mode = False
-        self.scope_buffer_length = CavityLockModule.SCOPE_BUFFER_SIZE
+        self.scope_buffer_length = DoubleDitherLockModule.SCOPE_BUFFER_SIZE
         self.scope_sample_in_one = self.scope_sample_in_two = self.scope_sample_out_one = self.scope_sample_out_two = True
-        self.scope_sampling_rate = CavityLockModule.SCOPE_SAMPLING_RATE
+        self.scope_sampling_rate = DoubleDitherLockModule.SCOPE_SAMPLING_RATE
         self.scope_enabled = True
         self.scope_setup = True 
 
@@ -51,7 +50,7 @@ class CavityLockModule(ScopeModule_):
         return ack
 
     async def set_pid_one(self, p: float, i: float, d: float, writer, respond=True):
-        logging.debug('CavityLockModule: set_pid_one')
+        logging.debug('DoubleDitherLockModule: set_pid_one')
         mc_data_package = MCDataPackage()
         mc_data_package.push_to_buffer('uint32_t', 11) # method_identifier
         mc_data_package.push_to_buffer('float', p) # p
@@ -67,7 +66,7 @@ class CavityLockModule(ScopeModule_):
         return result
     
     async def set_pid_two(self, p: float, i: float, d: float, writer, respond=True):
-        logging.debug('CavityLockModule: set_pid_two')
+        logging.debug('DoubleDitherLockModule: set_pid_two')
         mc_data_package = MCDataPackage()
         mc_data_package.push_to_buffer('uint32_t', 12) # method_identifier
         mc_data_package.push_to_buffer('float', p) # p
@@ -83,7 +82,7 @@ class CavityLockModule(ScopeModule_):
         return result
 
     async def lock_one(self, writer, respond=True):
-        logging.debug('CavityLockModule: lock_one')
+        logging.debug('DoubleDitherLockModule: lock_one')
         mc_data_package = MCDataPackage()
         mc_data_package.push_to_buffer('uint32_t', 13) # method_identifier
         await MC.I().write_mc_data_package(mc_data_package)
@@ -93,7 +92,7 @@ class CavityLockModule(ScopeModule_):
         return result
     
     async def lock_two(self, writer, respond=True):
-        logging.debug('CavityLockModule: lock_two')
+        logging.debug('DoubleDitherLockModule: lock_two')
         mc_data_package = MCDataPackage()
         mc_data_package.push_to_buffer('uint32_t', 14) # method_identifier
         await MC.I().write_mc_data_package(mc_data_package)
@@ -103,7 +102,7 @@ class CavityLockModule(ScopeModule_):
         return result
 
     async def unlock_one(self, writer, respond=True):
-        logging.debug('CavityLockModule: unlock_one')
+        logging.debug('DoubleDitherLockModule: unlock_one')
         mc_data_package = MCDataPackage()
         mc_data_package.push_to_buffer('uint32_t', 15) # method_identifier
         await MC.I().write_mc_data_package(mc_data_package)
@@ -113,7 +112,7 @@ class CavityLockModule(ScopeModule_):
         return result
 
     async def unlock_two(self, writer, respond=True):
-        logging.debug('CavityLockModule: unlock_two')
+        logging.debug('DoubleDitherLockModule: unlock_two')
         mc_data_package = MCDataPackage()
         mc_data_package.push_to_buffer('uint32_t', 16) # method_identifier
         await MC.I().write_mc_data_package(mc_data_package)
@@ -123,7 +122,7 @@ class CavityLockModule(ScopeModule_):
         return result
 
     async def set_dither_one(self, amp: float, offset: float, writer, respond=True):
-        logging.debug('CavityLockModule: set_dither_one')
+        logging.debug('DoubleDitherLockModule: set_dither_one')
         mc_data_package = MCDataPackage()
         mc_data_package.push_to_buffer('uint32_t', 17) # method_identifier
         mc_data_package.push_to_buffer('float', amp)
@@ -137,7 +136,7 @@ class CavityLockModule(ScopeModule_):
         return result
 
     async def set_dither_two(self, amp: float, offset: float, writer, respond=True):
-        logging.debug('CavityLockModule: set_dither_two')
+        logging.debug('DoubleDitherLockModule: set_dither_two')
         mc_data_package = MCDataPackage()
         mc_data_package.push_to_buffer('uint32_t', 18) # method_identifier
         mc_data_package.push_to_buffer('float', amp)
@@ -151,7 +150,7 @@ class CavityLockModule(ScopeModule_):
         return result
 
     async def set_setpoint_one(self, setpoint: float, writer, respond=True):
-        logging.debug('CavityLockModule: set_setpoint_one')
+        logging.debug('DoubleDitherLockModule: set_setpoint_one')
         mc_data_package = MCDataPackage()
         mc_data_package.push_to_buffer('uint32_t', 19) # method_identifier
         mc_data_package.push_to_buffer('float', setpoint)
@@ -163,7 +162,7 @@ class CavityLockModule(ScopeModule_):
         return result
 
     async def set_setpoint_two(self, setpoint: float, writer, respond=True):
-        logging.debug('CavityLockModule: set_setpoint_two')
+        logging.debug('DoubleDitherLockModule: set_setpoint_two')
         mc_data_package = MCDataPackage()
         mc_data_package.push_to_buffer('uint32_t', 20) # method_identifier
         mc_data_package.push_to_buffer('float', setpoint)
@@ -188,7 +187,7 @@ class CavityLockModule(ScopeModule_):
         try:
             await super().launch_from_config(config_dict)
             
-            #if the config dict contains the parameters of CavityLockModule, configure the MC
+            #if the config dict contains the parameters of DoubleDitherLockModule, configure the MC
             if 'p_one' in config_dict.keys() and 'locked_one' in config_dict.keys() and 'p_two' in config_dict.keys():
                 retry_counter = 10
                 success = False
@@ -207,7 +206,7 @@ class CavityLockModule(ScopeModule_):
                     retry_counter -= 1
             
         except Exception as ex:
-            logging.error(f'CavityLockModule: canot launch_from_config: {ex}')
+            logging.error(f'DoubleDitherLockModule: canot launch_from_config: {ex}')
             
 
 

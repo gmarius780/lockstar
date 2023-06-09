@@ -1,5 +1,5 @@
 /*
- * CavityLockModule.cpp
+ * DoubleDitherLockModule.cpp
  *
  *  Implements two pid controllers that can be used for a PDH (Pound-Drever-Hall) type of Lock.
  *  Dithering to find the correct output-offset is implemented as well
@@ -25,7 +25,7 @@
 
 #include "ScopeModule.h"
 
-#ifdef CAVITY_LOCK_MODULE
+#ifdef DOUBLE_DITHER_LOCK_MODULE
 
 enum ModuleState {
 			BOTH_LOCKED, //both pid's running
@@ -39,7 +39,7 @@ struct DitheringParams {
 	float offset;
 };
 
-class CavityLockModule: public ScopeModule {
+class DoubleDitherLockModule: public ScopeModule {
 public:
 	//dither is happening with a period of  2 Hz --> scope samples with: 2kHz, since the dithering step increase happens in 500us steps
 	static const uint32_t SCOPE_SAMPLING_PRESCALER = 2500;
@@ -55,7 +55,7 @@ public:
 	static const uint16_t LOOP_TIMER_COUNTER_MAX = 0xFFFF;
 	static const uint32_t LOOP_TIMER_FRQ = 90000000;
 
-	CavityLockModule() : ScopeModule() {
+	DoubleDitherLockModule() : ScopeModule() {
 		initialize_rpi();
 		turn_LED6_off();
 		turn_LED5_on();
@@ -66,7 +66,7 @@ public:
 		pid_two->disable_intensity_mode();
 
 		state = NONE_LOCKED;
-		current_work_function = &CavityLockModule::work_none_locked;
+		current_work_function = &DoubleDitherLockModule::work_none_locked;
 		dither_one.amp = 0;
 		dither_one.offset = 0;
 		dither_two.amp = 0;
@@ -81,8 +81,6 @@ public:
 
 	void run() {
 		initialize_adc_dac(ADC_BIPOLAR_10V, ADC_BIPOLAR_10V);
-		//setup scope in double buffer mode
-		this->scope->setup_scope(SCOPE_SAMPLING_PRESCALER, SCOPE_SAMPLING_COUNTER_MAX, true, true, true, true, SCOPE_BUFFER_SIZE, true, true);
 		this->dac_1->write(0);
 		this->dac_2->write(0);
 
@@ -336,14 +334,14 @@ public:
 		switch(state) {
 		case NONE_LOCKED:
 			state = ONE_LOCKED;
-			current_work_function = &CavityLockModule::work_one_locked;
+			current_work_function = &DoubleDitherLockModule::work_one_locked;
 			break;
 		case ONE_LOCKED:
 			break;
 		case TWO_LOCKED:
 			state = BOTH_LOCKED;
 			turn_LED6_on();
-			current_work_function = &CavityLockModule::work_both_locked;
+			current_work_function = &DoubleDitherLockModule::work_both_locked;
 			break;
 		case BOTH_LOCKED:
 			break;
@@ -362,12 +360,12 @@ public:
 		switch(state) {
 		case NONE_LOCKED:
 			state = TWO_LOCKED;
-			current_work_function = &CavityLockModule::work_two_locked;
+			current_work_function = &DoubleDitherLockModule::work_two_locked;
 			break;
 		case ONE_LOCKED:
 			state = BOTH_LOCKED;
 			turn_LED6_on();
-			current_work_function = &CavityLockModule::work_both_locked;
+			current_work_function = &DoubleDitherLockModule::work_both_locked;
 			break;
 		case TWO_LOCKED:
 			break;
@@ -389,13 +387,13 @@ public:
 			break;
 		case ONE_LOCKED:
 			state = NONE_LOCKED;
-			current_work_function = &CavityLockModule::work_none_locked;
+			current_work_function = &DoubleDitherLockModule::work_none_locked;
 			break;
 		case TWO_LOCKED:
 			break;
 		case BOTH_LOCKED:
 			state = TWO_LOCKED;
-			current_work_function = &CavityLockModule::work_two_locked;
+			current_work_function = &DoubleDitherLockModule::work_two_locked;
 			break;
 		}
 		turn_LED6_off();
@@ -416,11 +414,11 @@ public:
 			break;
 		case TWO_LOCKED:
 			state = NONE_LOCKED;
-			current_work_function = &CavityLockModule::work_none_locked;
+			current_work_function = &DoubleDitherLockModule::work_none_locked;
 			break;
 		case BOTH_LOCKED:
 			state = ONE_LOCKED;
-			current_work_function = &CavityLockModule::work_one_locked;
+			current_work_function = &DoubleDitherLockModule::work_one_locked;
 			break;
 		}
 		turn_LED6_off();
@@ -507,11 +505,11 @@ public:
 	BasicTimer* loop_timer;
 	float setpoint_one, setpoint_two;
 
-	void(CavityLockModule::*current_work_function)();
+	void(DoubleDitherLockModule::*current_work_function)();
 };
 
 
-CavityLockModule *module;
+DoubleDitherLockModule *module;
 
 /******************************
  *         INTERRUPTS          *
@@ -598,7 +596,7 @@ void start(void)
 	/* After power on, give all devices a moment to properly start up */
 	HAL_Delay(200);
 
-	module = new CavityLockModule();
+	module = new DoubleDitherLockModule();
 
 	module->run();
 

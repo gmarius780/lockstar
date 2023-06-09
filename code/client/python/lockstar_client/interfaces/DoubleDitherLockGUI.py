@@ -25,10 +25,10 @@ class ScopeCanvas(FigureCanvas):
         super(ScopeCanvas, self).__init__(fig)
 
 
-class CavityLockGUI(QtWidgets.QMainWindow):
+class DoubleDitherLockGUI(QtWidgets.QMainWindow):
 
     def __init__(self, client, refresh_rate, scope_buffer_size, scope_sampling_rate):
-        super(CavityLockGUI, self).__init__()
+        super(DoubleDitherLockGUI, self).__init__()
 
         self.client = client
         self.refresh_rate = refresh_rate
@@ -58,23 +58,23 @@ class CavityLockGUI(QtWidgets.QMainWindow):
 
         pid_one_box_layout = QGridLayout()
 
-        self.num_p_one = CavityLockGUI.create_numeric_widget('p', 0, 10, 0.01, self.pid_one_changed)
+        self.num_p_one = DoubleDitherLockGUI.create_numeric_widget('p', 0, 10, 0.01, self.pid_one_changed)
         pid_one_box_layout.addWidget(self.num_p_one, 1, 0, 1, 1)
-        self.num_i_one = CavityLockGUI.create_numeric_widget('i', 0, 1e7, 1, self.pid_one_changed)
+        self.num_i_one = DoubleDitherLockGUI.create_numeric_widget('i', 0, 1e7, 1, self.pid_one_changed)
         pid_one_box_layout.addWidget(self.num_i_one, 1, 1, 1, 1)
-        self.num_d_one = CavityLockGUI.create_numeric_widget('d', 0, 10, 0.01, self.pid_one_changed)
+        self.num_d_one = DoubleDitherLockGUI.create_numeric_widget('d', 0, 10, 0.01, self.pid_one_changed)
         pid_one_box_layout.addWidget(self.num_d_one, 1, 2, 1, 1)
         self.btn_set_pid_one = QPushButton('Set')
         self.btn_set_pid_one.clicked.connect(self.set_pid_one_clicked)
         self.btn_set_pid_one.setCheckable(False)
         pid_one_box_layout.addWidget(self.btn_set_pid_one, 1, 3, 1, 1)
 
-        self.num_setpoint_one = CavityLockGUI.create_numeric_widget('set(mV)', -10000, 10000, 0.1, self.setpoint_one_changed)
+        self.num_setpoint_one = DoubleDitherLockGUI.create_numeric_widget('set(mV)', -10000, 10000, 0.1, self.setpoint_one_changed)
         pid_one_box_layout.addWidget(self.num_setpoint_one, 1, 4, 1, 2)
 
-        self.num_dither_amp_one = CavityLockGUI.create_numeric_widget('amp', -10, 10, 0.1, self.dither_one_changed)
+        self.num_dither_amp_one = DoubleDitherLockGUI.create_numeric_widget('amp', -10, 10, 0.1, self.dither_one_changed)
         pid_one_box_layout.addWidget(self.num_dither_amp_one, 2, 0, 1, 2)
-        self.num_dither_offset_one = CavityLockGUI.create_numeric_widget('offset', -10, 10, 0.1, self.dither_one_changed)
+        self.num_dither_offset_one = DoubleDitherLockGUI.create_numeric_widget('offset', -10, 10, 0.1, self.dither_one_changed)
         pid_one_box_layout.addWidget(self.num_dither_offset_one, 2, 2, 1, 3)
         self.btn_set_dither_one = QPushButton('Set')
         self.btn_set_dither_one.clicked.connect(self.set_dither_one_clicked)
@@ -96,23 +96,23 @@ class CavityLockGUI(QtWidgets.QMainWindow):
         pid_two_box = QGroupBox("PID two")
         
         pid_two_box_layout = QGridLayout()
-        self.num_p_two = CavityLockGUI.create_numeric_widget('p', 0, 10, 0.01, self.pid_two_changed)
+        self.num_p_two = DoubleDitherLockGUI.create_numeric_widget('p', 0, 10, 0.01, self.pid_two_changed)
         pid_two_box_layout.addWidget(self.num_p_two, 5, 0, 1, 1)
-        self.num_i_two = CavityLockGUI.create_numeric_widget('i', 0, 1e7, 1, self.pid_two_changed)
+        self.num_i_two = DoubleDitherLockGUI.create_numeric_widget('i', 0, 1e7, 1, self.pid_two_changed)
         pid_two_box_layout.addWidget(self.num_i_two, 5, 1, 1, 1)
-        self.num_d_two = CavityLockGUI.create_numeric_widget('d', 0, 10, 0.01, self.pid_two_changed)
+        self.num_d_two = DoubleDitherLockGUI.create_numeric_widget('d', 0, 10, 0.01, self.pid_two_changed)
         pid_two_box_layout.addWidget(self.num_d_two, 5, 2, 1, 1)
         self.btn_set_pid_two = QPushButton('Set')
         self.btn_set_pid_two.clicked.connect(self.set_pid_two_clicked)
         self.btn_set_pid_two.setCheckable(False)
         pid_two_box_layout.addWidget(self.btn_set_pid_two, 5, 3, 1, 1)
 
-        self.num_setpoint_two = CavityLockGUI.create_numeric_widget('set(mV)', -10000, 10000, 0.1, self.setpoint_two_changed)
+        self.num_setpoint_two = DoubleDitherLockGUI.create_numeric_widget('set(mV)', -10000, 10000, 0.1, self.setpoint_two_changed)
         pid_two_box_layout.addWidget(self.num_setpoint_two, 5, 4, 1, 2)
 
-        self.num_dither_amp_two = CavityLockGUI.create_numeric_widget('amp', -10, 10, 0.1, self.dither_two_changed)
+        self.num_dither_amp_two = DoubleDitherLockGUI.create_numeric_widget('amp', -10, 10, 0.1, self.dither_two_changed)
         pid_two_box_layout.addWidget(self.num_dither_amp_two, 6, 0, 1, 2)
-        self.num_dither_offset_two = CavityLockGUI.create_numeric_widget('offset', -10, 10, 0.1, self.dither_two_changed)
+        self.num_dither_offset_two = DoubleDitherLockGUI.create_numeric_widget('offset', -10, 10, 0.1, self.dither_two_changed)
         pid_two_box_layout.addWidget(self.num_dither_offset_two, 6, 2, 1, 3)
         self.btn_set_dither_two = QPushButton('Set')
         self.btn_set_dither_two.clicked.connect(self.set_dither_two_clicked)
@@ -260,7 +260,7 @@ class CavityLockGUI(QtWidgets.QMainWindow):
         self.scope_canvas.draw()
 
 if __name__ == "__main__":
-    client = CavityLockClient('192.168.88.220', 10780, 1234)
+    client = CavityLockClient('192.168.88.25', 10780, 1234)
     scope_sampling_rate = 4000
     # scope_sampling_rate = 800
     # scope_buffer_length = 400
@@ -269,18 +269,18 @@ if __name__ == "__main__":
 
     print(asyncio.run(client.setup_scope(
         sampling_rate=scope_sampling_rate,
-        sample_in_one=True,
-        sample_in_two=False,
-        sample_out_one=True,
-        sample_out_two=False,
-        buffer_length=scope_buffer_length,
-        adc_active_mode=True
+        sample_in_one=1000,
+        sample_in_two=0,
+        sample_out_one=1000,
+        sample_out_two=0,
+        adc_active_mode=True,
+        double_buffer_mode=True
     )))
     print(asyncio.run(client.enable_scope()))
     asyncio.run(client.set_ch_one_output_limits(-10, 10))
     asyncio.run(client.set_ch_two_output_limits(-10, 10))
 
     app = QtWidgets.QApplication(sys.argv)
-    w = CavityLockGUI(client, update_rate, scope_buffer_length, scope_sampling_rate)
+    w = DoubleDitherLockGUI(client, update_rate, scope_buffer_length, scope_sampling_rate)
     app.exec_()
 

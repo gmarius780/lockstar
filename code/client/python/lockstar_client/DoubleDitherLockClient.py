@@ -4,7 +4,7 @@ from lockstar_client.ScopeClient import ScopeClient
 from lockstar_general.backend.BackendResponse import BackendResponse
 from lockstar_general.backend.BackendCall import BackendCall
 
-class CavityLockClient(ScopeClient):
+class DoubleDitherLockClient(ScopeClient):
 
 
     def __init__(self, lockstar_ip, lockstar_port, client_id) -> None:
@@ -65,7 +65,7 @@ if __name__ == "__main__":
     #         logging.StreamHandler()
     #     ]
     # )
-    client = CavityLockClient('192.168.88.25', 10780, 1234)
+    client = DoubleDitherLockClient('192.168.88.25', 10780, 1234)
 
     asyncio.run(client.register_client_id())
 

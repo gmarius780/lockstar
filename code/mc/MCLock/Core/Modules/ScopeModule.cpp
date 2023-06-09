@@ -24,17 +24,16 @@ void ScopeModule::setup_scope(RPIDataPackage* read_package) {
 	uint32_t sampling_prescaler = read_package->pop_from_buffer<uint32_t>();
 	uint32_t sampling_counter_max = read_package->pop_from_buffer<uint32_t>();
 
-	bool sample_in_one = read_package->pop_from_buffer<bool>();
-	bool sample_in_two = read_package->pop_from_buffer<bool>();
-	bool sample_out_one = read_package->pop_from_buffer<bool>();
-	bool sample_out_two = read_package->pop_from_buffer<bool>();
-
-	uint32_t buffer_length = read_package->pop_from_buffer<uint32_t>();
+	uint32_t nbr_samples_in_one = read_package->pop_from_buffer<uint32_t>();
+	uint32_t nbr_samples_in_two = read_package->pop_from_buffer<uint32_t>();
+	uint32_t nbr_samples_out_one = read_package->pop_from_buffer<uint32_t>();
+	uint32_t nbr_samples_out_two = read_package->pop_from_buffer<uint32_t>();
 
 	bool adc_active_mode = read_package->pop_from_buffer<bool>();
+	bool double_buffer_mode = read_package->pop_from_buffer<bool>();
 
-	bool success = scope->setup_scope(sampling_prescaler, sampling_counter_max, sample_in_one, sample_in_two,  \
-			sample_out_one, sample_out_two, buffer_length, adc_active_mode);
+	bool success = scope->setup_scope(sampling_prescaler, sampling_counter_max, nbr_samples_in_one, nbr_samples_in_two,  \
+			nbr_samples_out_one, nbr_samples_out_two, adc_active_mode, double_buffer_mode);
 
 	/*** send ACK ***/
 	RPIDataPackage* write_package = rpi->get_write_package();

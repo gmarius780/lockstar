@@ -12,7 +12,4 @@ class BackendSettings:
     mc_internal_clock_rate = 90e6
     mc_max_counter = 65536
     elf_directory = join(dirname(__file__), 'Modules', 'mc_images')
-    #max nbr of floats per channel that can be recorded, must be equal to the value
-    #in Scope.h
-    scope_max_buffer_length_nbr_of_floats = 10000 
     scope_max_sampling_rate = 10000

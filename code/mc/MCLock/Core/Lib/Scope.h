@@ -12,11 +12,10 @@
 #include "../HAL/BasicTimer.hpp"
 #include "LinearizableDAC.h"
 #include "../HAL/ADCDevice.hpp"
+#include "../Inc/main.h"
 
 class Scope {
 public:
-	static const uint32_t MAX_BUFFER_LENGTH_NBR_OF_FLOATS = 10000;
-
 	Scope(ADC_Device *adc, LinearizableDAC *dac_1, LinearizableDAC *dac_2);
 	virtual ~Scope();
 
@@ -30,15 +29,15 @@ public:
 	 * sample_<in/out>_<one/two> specify wheter to record the corresponding trace
 	 * buffer_length: the length of the buffer that is created for each of the sample_<in/out>_<one/two> you set to true
 	 */
-	bool setup_scope(uint32_t sampling_prescaler, uint32_t sampling_counter_max, bool sample_in_one, bool sample_in_two, \
-			bool sample_out_one, bool sample_out_two, uint32_t buffer_length, bool adc_active_mode);
+	bool setup_scope(uint32_t sampling_prescaler, uint32_t sampling_counter_max, uint32_t nbr_samples_in_one, uint32_t nbr_samples_in_two, \
+			uint32_t nbr_samples_out_one, uint32_t nbr_samples_out_two, bool adc_active_mode);
 
 	/**
 	 * Double buffer mode: Two buffers are initialized which increases the throughput. (see comments above the member declaration
 	 * of the buffers (buffer_in_one_read, ...)
 	 */
-	bool setup_scope(uint32_t sampling_prescaler, uint32_t sampling_counter_max, bool sample_in_one, bool sample_in_two, \
-				bool sample_out_one, bool sample_out_two, uint32_t buffer_length, bool adc_active_mode, bool double_buffer_mode);
+	bool setup_scope(uint32_t sampling_prescaler, uint32_t sampling_counter_max, uint32_t nbr_samples_in_one, uint32_t nbr_samples_in_two, \
+			uint32_t nbr_samples_out_one, uint32_t nbr_samples_out_two, bool adc_active_mode, bool double_buffer_mode);
 
 	bool set_sampling_rate(uint32_t sampling_prescaler, uint32_t sampling_counter_max);
 
@@ -71,16 +70,16 @@ private:
 
 	bool setup; //whether setup_scope has been called successfully
 	bool adc_active_mode; //whether or not scope should call adc->star_conversion()
-	bool sample_in_one, sample_in_two, sample_out_one, sample_out_two;
-	uint32_t buffer_length;
+	uint32_t nbr_samples_in_one, nbr_samples_in_two, nbr_samples_out_one, nbr_samples_out_two;
 	//read and write buffers are needed for double_buffer_mode: They are of the same length. The Scope
 	//writes newly recorded values in the write buffer and returns values from the _read buffer.
 	//Once the write buffer is full, the scope waits (does not record more values) until push_buffers_to_rpi_data_package()
 	//is called, then the read and write buffers are swapped such that the new read-(former write) buffer is returned to
 	//the caller and the Scope continues to record in the new write-(former read) buffer
+	float *buffer_write, *buffer_read;
 	float *buffer_in_one_read, *buffer_in_two_read, *buffer_out_one_read, *buffer_out_two_read;
 	float *buffer_in_one_write, *buffer_in_two_write, *buffer_out_one_write, *buffer_out_two_write;
-	uint32_t buffer_index;
+	uint32_t buffer_index; //points to the currently written position in the buffer
 	bool ready_to_read; //a full trace has been recorded to the write buffer
 	bool ready_to_write; //the write buffer is not full yet
 	BasicTimer *timer;

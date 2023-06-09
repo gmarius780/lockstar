@@ -26,7 +26,7 @@ class ScopeClient(LockstarClient):
         return await self._call_lockstar(bc)
 
     async def setup_scope(self, sampling_rate: int, sample_in_one: bool, sample_in_two: bool, \
-        sample_out_one: bool, sample_out_two: bool, buffer_length: int, adc_active_mode: bool):
+        sample_out_one: bool, sample_out_two: bool, buffer_length: int, adc_active_mode: bool, double_buffer_mode: bool):
         """Sets up the scope such that recorded data can be querried by calling scope_get_data. Data can be recorded from
         all analog inputs and outputs by putting the appropriate sample_<in/out>_<one_two> to true. The number of samples
         per channel can be set by <buffer_length> and the sampling rate by <sampling_rate>. If adc_active_mode==True, the scope
@@ -41,10 +41,11 @@ class ScopeClient(LockstarClient):
             sample_out_two (bool): whether or not to record the corresponding channel
             buffer_length (int): number of floats per activated channel to be recorded
             adc_active_mode (bool): whether or not the scope should call adc->start_conversion itself
+            double_buffer_mode (bool): two buffers will be created such that one can be read out while the other is being written to
         """
         bc = BackendCall(self.client_id, self.module_name, 'setup_scope', args={
             'sampling_rate': sampling_rate, 'sample_in_one': sample_in_one, 'sample_in_two': sample_in_two,
             'sample_out_one': sample_out_one, 'sample_out_two': sample_out_two, 'buffer_length': buffer_length,
-            'adc_active_mode': adc_active_mode
+            'adc_active_mode': adc_active_mode, 'double_buffer_mode': double_buffer_mode
         })
         return await self._call_lockstar(bc)
