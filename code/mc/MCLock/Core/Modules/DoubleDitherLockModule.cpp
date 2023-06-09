@@ -103,7 +103,8 @@ public:
 		//performs 10000 PID cycles to avoid jumping in and out of this function unnecessarily often as this will be the function which is run the most often
 		//this loop should take 10000 * 10 us = 100ms
 		this->scope->set_adc_active_mode(false); // no need to call adc->start_conversion() for the scope
-		this->scope->enable(); //reset the scope such that it records a full period
+		while (not this->scope->enable())  //reset the scope such that it records a full dither period
+			HAL_Delay(10);
 		for (int i = 0; i < 10000; i++) {
 			// Measuring elapsed time per work loop
 			t = loop_timer->get_counter() - t;
@@ -132,7 +133,8 @@ public:
 		loop_timer->reset_counter();
 		uint32_t i = 0;
 		this->scope->set_adc_active_mode(false); // no need to call adc->start_conversion() for the scope
-		this->scope->enable(); //reset the scope such that it records a full dither period
+		while (not this->scope->enable())  //reset the scope such that it records a full dither period
+			HAL_Delay(10);
 		while (i < NBR_DITHER_STEPS) {
 			// Measuring elapsed time per work loop
 			t = loop_timer->get_counter() - t;
@@ -176,7 +178,8 @@ public:
 		loop_timer->reset_counter();
 		uint32_t i = 0;
 		this->scope->set_adc_active_mode(false); // no need to call adc->start_conversion() for the scope
-		this->scope->enable(); //reset the scope such that it records a full dither period
+		while (not this->scope->enable())  //reset the scope such that it records a full dither period
+			HAL_Delay(10);
 		while (i < NBR_DITHER_STEPS) {
 			// Measuring elapsed time per work loop
 			t = loop_timer->get_counter() - t;
@@ -219,7 +222,8 @@ public:
 		loop_timer->reset_counter();
 		uint32_t i = 0;
 		this->scope->set_adc_active_mode(true); //the scope has to call adc->start_conversion() since no pid is running
-		this->scope->enable(); //reset the scope such that it records a full dither period
+		while (not this->scope->enable())  //reset the scope such that it records a full dither period
+			HAL_Delay(10);
 		while (i < NBR_DITHER_STEPS) {
 			// Measuring elapsed time per work loop
 			t_since_last_dither_step += (loop_timer->get_counter() - t);

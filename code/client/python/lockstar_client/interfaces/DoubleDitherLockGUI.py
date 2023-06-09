@@ -19,10 +19,10 @@ from lockstar_client.DoubleDitherLockClient import DoubleDitherLockClient
 class ScopeCanvas(FigureCanvas):
 
     def __init__(self, parent=None, width=5, height=4, dpi=100):
-        fig, (self.ax_in, self.ax_out) = plt.subplots(nrows=2, sharex=True, figsize=(width, height), dpi=dpi)
+        self.fig, (self.ax_in, self.ax_out) = plt.subplots(nrows=2, sharex=True, figsize=(width, height), dpi=dpi)
         # fig = Figure(figsize=(width, height), dpi=dpi)
         # self.axes = fig.add_subplot(111)
-        super(ScopeCanvas, self).__init__(fig)
+        super(ScopeCanvas, self).__init__(self.fig)
 
 
 class DoubleDitherLockGUI(QtWidgets.QMainWindow):
@@ -36,6 +36,14 @@ class DoubleDitherLockGUI(QtWidgets.QMainWindow):
         self.scope_sampling_rate = scope_sampling_rate
         
         self.time_axis = np.arange(scope_buffer_size)/scope_sampling_rate
+
+        self.t_last_draw = 0
+        self.t_last_fail = 0
+
+        self.line_ch_in_one = None
+        self.line_ch_in_two = None
+        self.line_ch_out_one = None
+        self.line_ch_out_two = None
 
         #=== members
         self.p_one = self.i_one = self.d_one = self.setpoint_one = self.dither_amp_one = self.dither_offset_one = 0
@@ -236,28 +244,54 @@ class DoubleDitherLockGUI(QtWidgets.QMainWindow):
         # Drop off the first y element, append a new one.
         t1 = perf_counter()
         scope_data = asyncio.run(self.client.get_scope_data())
-        # print(f'request took: {perf_counter() - t1:.1f} seconds')
+        print(f'request took: {perf_counter() - t1:.5f} seconds')
         if type(scope_data) is dict:
-            self.scope_canvas.ax_in.cla()  # Clear the canvas.
-            self.scope_canvas.ax_out.cla()  # Clear the canvas.
+            t1 = perf_counter()
             for trace_name in scope_data.keys():
                 trace = np.array(scope_data[trace_name])
                 
                 if len(trace) > 0:
                     # print(f'{perf_counter() - self.last_successful_update:.1f}s')
                     self.last_successful_update = perf_counter()
-                    if trace_name in ['in_one', 'in_two']:
-                        self.scope_canvas.ax_in.plot(self.time_axis, trace, 'o', label=trace_name, ms=1)
-                    else:
-                        self.scope_canvas.ax_out.plot(self.time_axis, trace, 'o', label=trace_name, ms=1)
-            
+                    if trace_name == 'in_one':
+                        if self.line_ch_in_one is None:
+                            self.line_ch_in_one, = self.scope_canvas.ax_in.plot(self.time_axis, trace, 'o', label=trace_name, ms=1)
+                            self.scope_canvas.ax_in.legend()
+                        else:
+                            self.line_ch_in_one.set_ydata(trace)
+                    elif trace_name == 'in_two':
+                        if self.line_ch_in_two is None:
+                            self.line_ch_in_two, = self.scope_canvas.ax_in.plot(self.time_axis, trace, 'o', label=trace_name, ms=1)
+                            self.scope_canvas.ax_in.legend()
+                        else:
+                            self.line_ch_in_two.set_ydata(trace)
+                    elif trace_name == 'out_one':
+                        if self.line_ch_out_one is None:
+                            self.line_ch_out_one, = self.scope_canvas.ax_out.plot(self.time_axis, trace, 'o', label=trace_name, ms=1)
+                            self.scope_canvas.ax_out.legend()
+                        else:
+                            self.line_ch_out_one.set_ydata(trace)
+                        
+                    elif trace_name == 'out_two':
+                        if self.line_ch_out_two is None:
+                            self.line_ch_out_two, = self.scope_canvas.ax_out.plot(self.time_axis, trace, 'o', label=trace_name, ms=1)
+                            self.scope_canvas.ax_out.legend()
+                        else:
+                            self.line_ch_out_two.set_ydata(trace)
+                    
+                    self.scope_canvas.fig.canvas.draw()
+                    self.scope_canvas.fig.canvas.flush_events()
+                    
+            print(f'drawing took: {perf_counter() - t1:.5f} seconds')
+            print(f'fps: {1/(perf_counter() - self.t_last_draw)}')
+            self.t_last_draw = perf_counter()
             # self.scope_canvas.ax_in.legend()
             # self.scope_canvas.ax_out.legend()
         else:
-            
-            print(scope_data)
+            print(f'fails per second: {1/(perf_counter() - self.t_last_fail)}')
+            self.t_last_fail = perf_counter()
         # Trigger the canvas to update and redraw.
-        self.scope_canvas.draw()
+        
 
 if __name__ == "__main__":
     client = DoubleDitherLockClient('192.168.88.25', 10780, 1234)
@@ -265,23 +299,23 @@ if __name__ == "__main__":
     # scope_sampling_rate = 800
     # scope_buffer_length = 400
     scope_buffer_length = 200
-    update_rate = 4
+    update_rate = 10
     print(asyncio.run(client.setup_scope(
         sampling_rate=scope_sampling_rate,
         nbr_samples_in_one=scope_buffer_length,
         nbr_samples_in_two=scope_buffer_length,
         nbr_samples_out_one=scope_buffer_length,
         nbr_samples_out_two=scope_buffer_length,
-        adc_active_mode=True,
+        adc_active_mode=False,
         double_buffer_mode=True
     )))
     print(asyncio.run(client.enable_scope()))
     print(asyncio.run(client.set_scope_sampling_rate(scope_sampling_rate)))
-    print(asyncio.run(client.set_dither_frq(1)))
+    print(asyncio.run(client.set_dither_frq(update_rate)))
     # asyncio.run(client.set_ch_one_output_limits(-10, 10))
     # asyncio.run(client.set_ch_two_output_limits(-10, 10))
 
-    # app = QtWidgets.QApplication(sys.argv)
-    # w = DoubleDitherLockGUI(client, update_rate, scope_buffer_length, scope_sampling_rate)
-    # app.exec_()
+    app = QtWidgets.QApplication(sys.argv)
+    w = DoubleDitherLockGUI(client, update_rate, scope_buffer_length, scope_sampling_rate)
+    app.exec_()
 
