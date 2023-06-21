@@ -106,8 +106,8 @@ def scope_test(client):
 if __name__ == "__main__":
     from os.path import join, dirname
     from time import sleep
-    import numpy as np
-    import matplotlib.pyplot as plt
+    #import numpy as np
+    #import matplotlib.pyplot as plt
     # logging.basicConfig(
     #     level=logging.DEBUG,
     #     format="%(asctime)s [%(levelname)s] %(message)s",
@@ -116,8 +116,8 @@ if __name__ == "__main__":
     #         logging.StreamHandler()
     #     ]
     # )
-    client = SinglePIDClient('192.168.88.220', 10780, 1234)
-    print(asyncio.run(client.initialize(0.01,100000,0,0,10,True, 0, 0, 0.005, True)))
+    client = SinglePIDClient('192.168.88.200', 10780, 1234)
+    #print(asyncio.run(client.initialize(0.01,100000,0,0,10,True, 0, 0, 0.005, True)))
 
     asyncio.run(client.register_client_id())
 
@@ -125,7 +125,7 @@ if __name__ == "__main__":
     linearization_file = join(dirname(__file__), 'test_linearization.json')
     linearization_file = 'test_linearization.json'
     linearization_length = 2000
-    # print(asyncio.run(client.set_ch_one_output_limits(0, 10)))
+    print(asyncio.run(client.set_ch_one_output_limits(0, 10)))
     # print(asyncio.run(client.set_linearization_length_one(linearization_length)))
     # print(asyncio.run(client.set_linearization_one_from_file(linearization_file)))
     

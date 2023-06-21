@@ -43,14 +43,15 @@ if __name__ == "__main__":
     #         logging.StreamHandler()
     #     ]
     # )
-    client = AnalogOutputClient('192.168.88.13', 10780, 1234)
+    client = AnalogOutputClient('192.168.88.200', 10780, 1234)
     asyncio.run(client.register_client_id())
     
     print(asyncio.run(client.output_on()))
-    asyncio.run(client.disable_linearization_one())
-    asyncio.run(client.disable_linearization_two())
-    asyncio.run(client.set_ch_one_output(-10))
-    asyncio.run(client.set_ch_two_output(-10))
+    #asyncio.run(client.disable_linearization_one())
+    #asyncio.run(client.disable_linearization_two())
+    print(asyncio.run(client.set_ch_one_output_limits(-10, 10)))
+    print(asyncio.run(client.set_ch_one_output(10)))
+    #asyncio.run(client.set_ch_two_output(-10))
     # asyncio.run(client.output_off())
     # Scope Test
     # print(asyncio.run(client.disable_scope()))
