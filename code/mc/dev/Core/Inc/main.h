@@ -60,8 +60,46 @@ void start(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define LED6_Pin GPIO_PIN_9
-#define LED6_GPIO_Port GPIOA
+#define DAC_2_Sync_Pin GPIO_PIN_6
+#define DAC_2_Sync_GPIO_Port GPIOF
+#define CLR5_Pin GPIO_PIN_10
+#define CLR5_GPIO_Port GPIOF
+#define DAC_1_Sync_Pin GPIO_PIN_0
+#define DAC_1_Sync_GPIO_Port GPIOA
+#define Pi_Int_Pin GPIO_PIN_1
+#define Pi_Int_GPIO_Port GPIOA
+#define ADC_CNV_Pin GPIO_PIN_4
+#define ADC_CNV_GPIO_Port GPIOA
+#define DigitalOut_Pin GPIO_PIN_4
+#define DigitalOut_GPIO_Port GPIOC
+#define DigitalIn_Pin GPIO_PIN_5
+#define DigitalIn_GPIO_Port GPIOC
+#define LED6_Pin GPIO_PIN_8
+#define LED6_GPIO_Port GPIOD
+#define LED5_Pin GPIO_PIN_9
+#define LED5_GPIO_Port GPIOD
+#define J14_3_Pin GPIO_PIN_11
+#define J14_3_GPIO_Port GPIOD
+#define J14_2_Pin GPIO_PIN_12
+#define J14_2_GPIO_Port GPIOD
+#define J14_1_Pin GPIO_PIN_13
+#define J14_1_GPIO_Port GPIOD
+#define J14_4_Pin GPIO_PIN_14
+#define J14_4_GPIO_Port GPIOD
+#define J14_5_Pin GPIO_PIN_15
+#define J14_5_GPIO_Port GPIOD
+#define J14_6_Pin GPIO_PIN_6
+#define J14_6_GPIO_Port GPIOG
+#define LED1_Pin GPIO_PIN_9
+#define LED1_GPIO_Port GPIOA
+#define LED2_Pin GPIO_PIN_10
+#define LED2_GPIO_Port GPIOA
+#define LED3_Pin GPIO_PIN_11
+#define LED3_GPIO_Port GPIOA
+#define LED4_Pin GPIO_PIN_12
+#define LED4_GPIO_Port GPIOA
+#define CLR6_Pin GPIO_PIN_0
+#define CLR6_GPIO_Port GPIOE
 
 /* USER CODE BEGIN Private defines */
 

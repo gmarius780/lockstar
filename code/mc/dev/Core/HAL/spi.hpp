@@ -28,7 +28,9 @@ public:
     int8_t read8bitData() { return (int8_t)SPI_regs->RXDR; };
     void writeData(int16_t d);
     volatile uint32_t* getDRAddress() { return &SPI_regs->RXDR; };
-    bool isBusy() { return (bool)(SPI_regs->SR & SPI_SR_BSY); };
+    bool isTxBusy() { return (bool)!(SPI_regs->SR & (SPI_SR_TXP)); }; //there is not enough space to locate next data packet at TxFIFO
+    bool isRxBusy() { return (bool)!(SPI_regs->SR & (SPI_SR_RXP)); }; //RxFIFO is empty or a not complete data packet is received
+    bool isBusy() { return isRxBusy() || isTxBusy(); };
     
 
     /* Enables/Disables */

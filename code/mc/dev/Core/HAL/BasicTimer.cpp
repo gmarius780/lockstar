@@ -9,15 +9,15 @@
 
 BasicTimer::BasicTimer(uint8_t timer_x, uint32_t auto_reload, uint32_t prescaler) {
 	switch(timer_x) {
-		case 2: tim_regs = TIM2; APBxENR_bit = RCC_APB1ENR_TIM2EN; break;
-		case 3: tim_regs = TIM3; APBxENR_bit = RCC_APB1ENR_TIM3EN; break;
-		case 4: tim_regs = TIM4; APBxENR_bit = RCC_APB1ENR_TIM4EN; break;
-		case 5: tim_regs = TIM5; APBxENR_bit = RCC_APB1ENR_TIM5EN; break;
-		case 7: tim_regs = TIM7; APBxENR_bit = RCC_APB1ENR_TIM7EN; break;
+		case 2: tim_regs = TIM2; APBxLENR_bit = RCC_APB1LENR_TIM2EN; break;
+		case 3: tim_regs = TIM3; APBxLENR_bit = RCC_APB1LENR_TIM3EN; break;
+		case 4: tim_regs = TIM4; APBxLENR_bit = RCC_APB1LENR_TIM4EN; break;
+		case 5: tim_regs = TIM5; APBxLENR_bit = RCC_APB1LENR_TIM5EN; break;
+		case 7: tim_regs = TIM7; APBxLENR_bit = RCC_APB1LENR_TIM7EN; break;
 		default: tim_regs = 0;
 	}
 
-	RCC->APB1ENR |= (1<<APBxENR_bit);
+	RCC->APB1LENR |= (1<<APBxLENR_bit);
 
 
 	//ARPE: Auto-reload preload enable - enable chaning of sampling rate on the fly

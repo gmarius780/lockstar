@@ -40,9 +40,9 @@ ADC_Device::ADC_Device(uint8_t SPILane, uint8_t DMAStreamIn, uint8_t DMAChannelI
     dma_in_config.priority = DMAprio;
     dma_in_config.CR = 0;
     // reset 3 bits that define channel
-    dma_in_config.CR &= ~(DMA_SxCR_CHSEL);
+    dma_in_config.CR &= ~(DMA_SxCR_PL);
     // set channel via 3 control bits
-    dma_in_config.CR |= DMAChannelIn * DMA_SxCR_CHSEL_0; 
+    dma_in_config.CR |= DMAChannelIn * DMA_SxCR_PL; 
     // set stream priority from very low (00) to very high (11)
     dma_in_config.CR &= ~(DMA_SxCR_PL); 
     // reset 2 bits that define priority
@@ -69,8 +69,8 @@ ADC_Device::ADC_Device(uint8_t SPILane, uint8_t DMAStreamIn, uint8_t DMAChannelI
 
     dma_out_config.priority = DMAprio;
     dma_out_config.CR = 0;
-    dma_out_config.CR &= ~(DMA_SxCR_CHSEL); // reset 3 bits that define channel
-    dma_out_config.CR |= DMAChannelOut * DMA_SxCR_CHSEL_0; // set channel via 3 control bits
+    dma_out_config.CR &= ~(DMA_SxCR_PL); // reset 3 bits that define channel
+    dma_out_config.CR |= DMAChannelOut * DMA_SxCR_PL; // set channel via 3 control bits
     // set stream priority from very low (00) to very high (11)
     dma_out_config.CR &= ~(DMA_SxCR_PL); // reset 2 bits that define priority
     dma_out_config.CR |= DMAprio * DMA_SxCR_PL_0; // set priority via 2 control bits

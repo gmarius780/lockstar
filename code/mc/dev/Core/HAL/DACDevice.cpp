@@ -33,9 +33,9 @@ DAC_Device::DAC_Device(uint8_t spi_lane, uint8_t dma_stream_out, uint8_t dma_cha
     dma_config.priority = dma_prio;
     dma_config.CR = 0;
     // reset 3 bits that define channel
-    dma_config.CR &= ~(DMA_SxCR_CHSEL);
+    dma_config.CR &= ~(DMA_SxCR_PL);
     // set channel via 3 control bits
-    dma_config.CR |= dma_channel_out * DMA_SxCR_CHSEL_0;
+    dma_config.CR |= dma_channel_out * DMA_SxCR_PL;
     // set stream priority from very low (00) to very high (11)
     dma_config.CR &= ~(DMA_SxCR_PL); 
     // reset 2 bits that define priority
@@ -122,7 +122,7 @@ void DAC_Device::config_output(ADC_HandleTypeDef* hadc, uint32_t ADC_SENL, uint3
     ADC_ChannelConfTypeDef adc_config   = {0};
     adc_config.Channel                  = ADC_SENL;
     adc_config.Rank                     = 1;
-    adc_config.SamplingTime             = ADC_SAMPLETIME_3CYCLES;
+    adc_config.SamplingTime             = ADC_SAMPLETIME_1CYCLE_5;
 
     HAL_ADC_ConfigChannel(hadc, &adc_config);
     HAL_ADC_Start(hadc);

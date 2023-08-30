@@ -37,9 +37,9 @@ RPI::RPI() {
 	//important to explicitly disable otherwise the DMA constructor will enable it
 	dma_in_config.CR &= ~DMA_SxCR_EN;
 	// reset 3 bits that define channel
-	dma_in_config.CR &= ~(DMA_SxCR_CHSEL);
+	dma_in_config.CR &= ~(DMA_SxCR_PL);
 	// set channel via 3 control bits
-	dma_in_config.CR |= dma_in_config.channel * DMA_SxCR_CHSEL_0;
+	dma_in_config.CR |= dma_in_config.channel * DMA_SxCR_PL;
 	// set stream priority from very low (00) to very high (11)
 	dma_in_config.CR &= ~(DMA_SxCR_PL);
 	// reset 2 bits that define priority
@@ -85,8 +85,8 @@ RPI::RPI() {
 
 	//important to explicitly disable otherwise the DMA constructor will enable it
 	dma_out_config.CR &= ~DMA_SxCR_EN;
-	dma_out_config.CR &= ~(DMA_SxCR_CHSEL); // reset 3 bits that define channel
-	dma_out_config.CR |= dma_out_config.channel * DMA_SxCR_CHSEL_0; // set channel via 3 control bits
+	dma_out_config.CR &= ~(DMA_SxCR_PL); // reset 3 bits that define channel
+	dma_out_config.CR |= dma_out_config.channel * DMA_SxCR_PL; // set channel via 3 control bits
 	// set stream priority from very low (00) to very high (11)
 	dma_out_config.CR &= ~(DMA_SxCR_PL); // reset 2 bits that define priority
 	dma_out_config.CR |= dma_out_config.priority * DMA_SxCR_PL_0; // set priority via 2 control bits
