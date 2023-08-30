@@ -203,3 +203,5 @@ web/api/__pycache__/*
 
 # Netlist
 *.net
+
+.vscode
