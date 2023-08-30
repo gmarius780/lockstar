@@ -112,7 +112,7 @@ void SPI_DMA_Handler::Config(uint8_t SPI, uint8_t DMA_Stream_In, uint8_t DMA_Cha
 __attribute__((section("sram_func")))
 void SPI_DMA_Handler::Transfer(uint8_t *ReadBuffer, uint8_t *WriteBuffer, uint16_t BufferSize)
 {
-	uint32_t ActivateSPI = 0;
+	uint32_t ActivateDMAStream = 0;
 	if(DMA_Out!=NULL)
 	{
 		// The memory address is iterated with each transfered byte while the number of items left is decremented. Therefore, both numbers have to be reset with each transfer block
@@ -123,7 +123,7 @@ void SPI_DMA_Handler::Transfer(uint8_t *ReadBuffer, uint8_t *WriteBuffer, uint16
 		// activate stream
 		DMA_Out->CR |= DMA_SxCR_EN;
 		// make Tx enabled
-		ActivateSPI |= SPI_CR2_TXDMAEN;
+		ActivateDMAStream |= SPI_CFG1_TXDMAEN;
 	}
 	if(DMA_In!=NULL)
 	{
@@ -135,18 +135,19 @@ void SPI_DMA_Handler::Transfer(uint8_t *ReadBuffer, uint8_t *WriteBuffer, uint16
 		// activate stream
 		DMA_In->CR |= DMA_SxCR_EN;
 		// make Rx enabled
-		ActivateSPI |= SPI_CR2_RXDMAEN;
+		ActivateDMAStream |= SPI_CFG1_RXDMAEN;
 	}
-
+	// Tx/Rx DMA is activated
+	SPI->CFG1 |=  ActivateDMAStream;
 	// start SPI transfer
-	SPI->CR2 |=  ActivateSPI;
+	SPI->CR1 |= SPI_CR1_CSTART;
 }
 
 __attribute__((section("sram_func")))
 void SPI_DMA_Handler::Callback()
 {
 	// wait while SPI is busy
-	while(SPI->SR & SPI_SR_BSY);
+	while(!(SPI->SR & SPI_SR_DXP));
 
 	if(DMA_In!=NULL)
 	{
@@ -155,7 +156,7 @@ void SPI_DMA_Handler::Callback()
 		// deactivate DMA - maybe not necessary?
 		DMA_In->CR &= ~DMA_SxCR_EN;
 		// deactivate SPI Rx DMA
-		SPI->CR2 &= ~SPI_CR2_RXDMAEN;
+		SPI->CFG1 &= ~SPI_CFG1_RXDMAEN;
 	}
 
 	if(DMA_Out!=NULL)
@@ -165,7 +166,7 @@ void SPI_DMA_Handler::Callback()
 		// deactivate DMA - maybe not necessary?
 		DMA_Out->CR &= ~DMA_SxCR_EN;
 		// deactivate SPI Tx DMA
-		SPI->CR2 &= ~SPI_CR2_TXDMAEN;
+		SPI->CFG1 &= ~SPI_CFG1_TXDMAEN;
 	}
 }
 
