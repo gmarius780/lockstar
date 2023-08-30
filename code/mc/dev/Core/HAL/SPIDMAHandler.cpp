@@ -63,7 +63,7 @@ void SPI_DMA_Handler::Config(uint8_t SPI, uint8_t DMA_Stream_In, uint8_t DMA_Cha
 		DMA_In->CR &= ~(DMA_SxCR_PL_0); // reset 3 bits that define channel
 		DMA_In->CR |= DMA_Channel_In * DMA_SxCR_PL_0; // set channel via 3 control bits
 		// set the peripheral address to the SPI data register
-		DMA_In->PAR = (uint32_t)&(this->SPI->DR);
+		DMA_In->PAR = (uint32_t)&(this->SPI->RXDR);
 		// set stream priority from very low (00) to very high (11)
 		DMA_In->CR &= ~(DMA_SxCR_PL); // reset 2 bits that define priority
 		DMA_In->CR |= priority * DMA_SxCR_PL_0; // set priority via 2 control bits
@@ -88,7 +88,7 @@ void SPI_DMA_Handler::Config(uint8_t SPI, uint8_t DMA_Stream_In, uint8_t DMA_Cha
 		DMA_Out->CR &= ~(DMA_SxCR_PL_0); // reset 3 bits that define channel
 		DMA_Out->CR |= DMA_Channel_Out * DMA_SxCR_PL_0; // set channel via 3 control bits
 		// set the peripheral address to the SPI data register
-		DMA_Out->PAR = (uint32_t)&(this->SPI->DR);
+		DMA_Out->PAR = (uint32_t)&(this->SPI->TXDR);
 		// set stream priority from very low (00) to very high (11)
 		DMA_Out->CR &= ~(DMA_SxCR_PL); // reset 2 bits that define priority
 		DMA_Out->CR |= priority * DMA_SxCR_PL_0; // set priority via 2 control bits
