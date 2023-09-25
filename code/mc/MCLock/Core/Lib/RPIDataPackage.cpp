@@ -15,7 +15,7 @@ RPIDataPackage::RPIDataPackage() {
 }
 
 RPIDataPackage::~RPIDataPackage() {
-	// TODO Auto-generated destructor stub
+
 }
 
 

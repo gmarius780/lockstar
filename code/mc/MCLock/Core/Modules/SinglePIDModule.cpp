@@ -2,8 +2,8 @@
  * SinglePIDModule.cpp
  *
  *  Implements a PID controller with
- *  Setpoint: INPUT 1
- *  Errorsignal: INPUT 2
+ *  Setpoint: INPUT 2
+ *  Errorsignal: INPUT 1
  *  Control-output: OUTPUT 1
  *
  *  Created on: Aug 18, 2022

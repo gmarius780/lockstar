@@ -62,7 +62,7 @@ class LockstarClient():
         with open(local_file, 'r') as f:
             lin_dict = json.load(f)
 
-        return self.set_linearization_two(linearization=lin_dict['linearization'], 
+        return await self.set_linearization_two(linearization=lin_dict['linearization'], 
                                     min_output_voltage=lin_dict['min_output_voltage'],
                                     max_output_voltage=lin_dict['max_output_voltage'])
 

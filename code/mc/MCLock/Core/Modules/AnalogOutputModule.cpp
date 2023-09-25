@@ -41,8 +41,7 @@ public:
 
 		/*** work loop ***/
 		while(true) {
-			//HAL_Delay(50);
-			//this->dac_1->write(this->pid->calculate_output(adc->channel1->get_result(), adc->channel2->get_result(), dt));
+			HAL_Delay(50);
 		}
 	}
 

@@ -8,6 +8,7 @@ from lockstar_rpi.BackendSettings import BackendSettings
 from lockstar_rpi.Helpers.SamplingRate import SamplingRate
 
 from math import floor, ceil
+from time import perf_counter
 
 
 class ScopeModule_(IOModule_):
@@ -16,22 +17,27 @@ class ScopeModule_(IOModule_):
     """
 
     def __init__(self) -> None:
+        self.scope_max_buffer_length_nbr_of_floats = None
         super().__init__()
 
-        self.scope_buffer_length = 0
-        self.scope_sample_in_one = False
-        self.scope_sample_in_two = False
-        self.scope_sample_out_one = False
-        self.scope_sample_out_two = False
+        self.scope_nbr_samples_in_one = 0
+        self.scope_nbr_samples_in_two = 0
+        self.scope_nbr_samples_out_one = 0
+        self.scope_nbr_samples_out_two = 0
         self.scope_adc_active_mode = False
+        self.scope_double_buffer_mode = False
         self.scope_sampling_rate = 0
         self.scope_setup = False
         self.scope_enabled = False
 
+        if self.scope_max_buffer_length_nbr_of_floats is None:
+            logging.error(f'scope_max_buffer_length_nbr_of_floats not specified in constructor of RPI-Module. Each module must specify this and it must \
+                          correspond to the value set in the compiler directive SCOPE_BUFFER_LENGTH on the microcontroller')
+
     
      # ==== START: client methods 
-    async def setup_scope(self, sampling_rate: int, sample_in_one: bool, sample_in_two: bool, \
-        sample_out_one: bool, sample_out_two: bool, buffer_length: int, adc_active_mode: bool, writer, respond=True):
+    async def setup_scope(self, sampling_rate: int, nbr_samples_in_one: int, nbr_samples_in_two: int, \
+        nbr_samples_out_one: int, nbr_samples_out_two: int, adc_active_mode: bool, double_buffer_mode: bool, writer, respond=True):
         """Sets up the scope such that recorded data can be querried by calling scope_get_data. Data can be recorded from
         all analog inputs and outputs by putting the appropriate sample_<in/out>_<one_two> to true. The number of samples
         per channel can be set by <buffer_length> and the sampling rate by <sampling_rate>. If adc_active_mode==True, the scope
@@ -40,17 +46,21 @@ class ScopeModule_(IOModule_):
 
         Args:
             sampling_rate (int): scope sampling rate (positive integer (Hz))
-            sample_in_one (bool): whether or not to record the corresponding channel
-            sample_in_two (bool): whether or not to record the corresponding channel
-            sample_out_one (bool): whether or not to record the corresponding channel
-            sample_out_two (bool): whether or not to record the corresponding channel
-            buffer_length (int): number of floats per activated channel to be recorded
+            nbr_samples_in_one (int): nbr of samples to record for input one
+            nbr_samples_in_two (int): nbr of samples to record for input two
+            nbr_samples_out_one (int): nbr of samples to record for output one
+            nbr_samples_out_two (int): nbr of samples to record for output two
             adc_active_mode (bool): whether or not the scope should call adc->start_conversion itself
+            double_buffer_mode (bool): two buffers will be created such that one can be read out while the other is being written to
         """
+
         logging.debug('ScopeModule_: setup_scope')
-        if sampling_rate <= 0 or buffer_length <= 0 or buffer_length > BackendSettings.scope_max_buffer_length_nbr_of_floats or \
-            (not sample_in_one and not sample_in_two and not sample_out_one and not sample_out_two) or \
-                sampling_rate > BackendSettings.scope_max_sampling_rate:
+        total_nbr_samples = nbr_samples_in_one + nbr_samples_in_two + nbr_samples_out_one + nbr_samples_out_two
+        sub_zero_samples = nbr_samples_in_one < 0 or nbr_samples_in_two < 0 or nbr_samples_out_one < 0 or nbr_samples_out_two < 0
+        
+        if self.scope_max_buffer_length_nbr_of_floats is None or sampling_rate <= 0 or sub_zero_samples or \
+            total_nbr_samples > self.scope_max_buffer_length_nbr_of_floats or \
+            total_nbr_samples <= 0 or sampling_rate > BackendSettings.scope_max_sampling_rate:
             logging.error('ScopeModule_ - setup_scope: invalid parameters')
             if writer is not None and respond:
                 writer.write(BackendResponse.NACK().to_bytes())
@@ -65,24 +75,24 @@ class ScopeModule_(IOModule_):
             mc_data_package.push_to_buffer('uint32_t', prescaler)
             mc_data_package.push_to_buffer('uint32_t', counter_max)
 
-            mc_data_package.push_to_buffer('bool', sample_in_one)
-            mc_data_package.push_to_buffer('bool', sample_in_two)
-            mc_data_package.push_to_buffer('bool', sample_out_one)
-            mc_data_package.push_to_buffer('bool', sample_out_two)
+            mc_data_package.push_to_buffer('uint32_t', nbr_samples_in_one)
+            mc_data_package.push_to_buffer('uint32_t', nbr_samples_in_two)
+            mc_data_package.push_to_buffer('uint32_t', nbr_samples_out_one)
+            mc_data_package.push_to_buffer('uint32_t', nbr_samples_out_two)
 
-            mc_data_package.push_to_buffer('uint32_t', buffer_length)
             mc_data_package.push_to_buffer('bool', adc_active_mode)
+            mc_data_package.push_to_buffer('bool', double_buffer_mode)
 
             await MC.I().write_mc_data_package(mc_data_package)
             result = await self.check_for_ack(writer=(writer if respond else None))
             if result:
                 self.scope_sampling_rate = sampling_rate
-                self.scope_sample_in_one = sample_in_one
-                self.scope_sample_in_two = sample_in_two
-                self.scope_sample_out_one = sample_out_one
-                self.scope_sample_out_two = sample_out_two
-                self.scope_buffer_length = buffer_length
+                self.scope_nbr_samples_in_one = nbr_samples_in_one
+                self.scope_nbr_samples_in_two = nbr_samples_in_two
+                self.scope_nbr_samples_out_one = nbr_samples_out_one
+                self.scope_nbr_samples_out_two = nbr_samples_out_two
                 self.scope_adc_active_mode = adc_active_mode
+                self.scope_double_buffer_mode = double_buffer_mode
                 self.scope_setup = True
             return result
 
@@ -160,29 +170,24 @@ class ScopeModule_(IOModule_):
         METHOD_IDENTIFIER = 103
         logging.debug('ScopeModule_: get_scope_data')
         if self.scope_setup and writer is not None:
-            
-            nbr_of_recorded_channels = 0
-            if self.scope_sample_in_one: nbr_of_recorded_channels += 1
-            if self.scope_sample_in_two: nbr_of_recorded_channels += 1
-            if self.scope_sample_out_one: nbr_of_recorded_channels += 1
-            if self.scope_sample_out_two: nbr_of_recorded_channels += 1
+            t_start = perf_counter()
+
 
             #prepare output dict
-            sample_bools = [self.scope_sample_in_one, self.scope_sample_in_two, self.scope_sample_out_one, self.scope_sample_out_two]
+            nbr_of_samples_per_channel = [self.scope_nbr_samples_in_one, self.scope_nbr_samples_in_two, 
+                                          self.scope_nbr_samples_out_one, self.scope_nbr_samples_out_two]
+            
+            total_nbr_samples = sum(nbr_of_samples_per_channel)
+
             sample_dict_keys = ['in_one', 'in_two', 'out_one', 'out_two']
 
-            scope_traces = {}
+            buffer = [0]*total_nbr_samples
 
-            for sample_bool, sample_dict_key in zip(sample_bools, sample_dict_keys):
-                if sample_bool:
-                    scope_traces[sample_dict_key] = [0]*self.scope_buffer_length
-                else:
-                    scope_traces[sample_dict_key] = []
 
-            # max nbr of samples PER CHANNEL that can be downloaded from the MC per request
-            max_package_size = floor(floor((MCDataPackage.MAX_NBR_BYTES_FROM_MC - 100)/4)/nbr_of_recorded_channels)
-            nbr_of_packages = ceil(self.scope_buffer_length / max_package_size)
-            nbr_of_full_packages = self.scope_buffer_length // max_package_size
+            # max nbr of samples that can be downloaded from the MC per request
+            max_package_size = floor((MCDataPackage.MAX_NBR_BYTES_FROM_MC - 100)/4)
+            nbr_of_packages = ceil(total_nbr_samples / max_package_size)
+            nbr_of_full_packages = total_nbr_samples // max_package_size
 
             buffer_offset = 0
             logging.debug(f'get_scope_data: expecting {nbr_of_packages} packages.')
@@ -193,10 +198,10 @@ class ScopeModule_(IOModule_):
                 mc_data_package.push_to_buffer('uint32_t',max_package_size)
                 await MC.I().write_mc_data_package(mc_data_package)
                 
-                datatype_list = ['float']*max_package_size*nbr_of_recorded_channels
+                datatype_list = ['float']*max_package_size
                 response = await MC.I().read_mc_data_package(datatype_list)
                 if response == False:
-                    logging.error(f'ScopeModule.get_scope_data - read package of length: {max_package_size} failed!')
+                    logging.error(f'ScopeModule.get_scope_data - read package nbr{package_number} of length: {max_package_size} failed!')
                     if writer is not None and respond:
                         writer.write(BackendResponse.NACK().to_bytes())
                         await writer.drain()
@@ -206,21 +211,15 @@ class ScopeModule_(IOModule_):
                     
                     i_start_trace = package_number*max_package_size
                     i_end_trace = i_start_trace + max_package_size
-                    i_start_package = 0
-                    i_end_package = max_package_size
 
                     #store results in corresponding dict entry
-                    for sample_bool, sample_dict_key in zip(sample_bools, sample_dict_keys):
-                        if sample_bool:
-                            scope_traces[sample_dict_key][i_start_trace:i_end_trace] = response_list[i_start_package:i_end_package]
-                            i_start_package += max_package_size
-                            i_end_package += max_package_size
+                    buffer[i_start_trace:i_end_trace] = response_list[0:max_package_size]
         
                     buffer_offset += max_package_size
                     logging.debug(f"get_scope_data: received package number {package_number+1}.")
 
             if nbr_of_full_packages < nbr_of_packages:
-                remaining_package_size = self.scope_buffer_length%max_package_size
+                remaining_package_size = total_nbr_samples%max_package_size
 
                 mc_data_package = MCDataPackage()
                 mc_data_package.push_to_buffer('uint32_t',METHOD_IDENTIFIER)
@@ -228,11 +227,11 @@ class ScopeModule_(IOModule_):
                 mc_data_package.push_to_buffer('uint32_t',remaining_package_size)
                 await MC.I().write_mc_data_package(mc_data_package)
 
-                datatype_list = ['float']*remaining_package_size*nbr_of_recorded_channels
+                datatype_list = ['float']*remaining_package_size
 
                 response = await MC.I().read_mc_data_package(datatype_list)
                 if response == False:
-                    logging.error(f'ScopeModule.get_scope_data - read package of length: {remaining_package_size} failed!')
+                    logging.error(f'ScopeModule.get_scope_data - read LAST package of length: {remaining_package_size} failed!')
                     if writer is not None and respond:
                         writer.write(BackendResponse.NACK().to_bytes())
                         await writer.drain()
@@ -240,18 +239,24 @@ class ScopeModule_(IOModule_):
                 else: 
                     response_length, response_list = response
 
-                    i_start_package = 0
-                    i_end_package = remaining_package_size
-                    #store results in corresponding dict entry
-                    for sample_bool, sample_dict_key in zip(sample_bools, sample_dict_keys):
-                        if sample_bool:
-                            scope_traces[sample_dict_key][-remaining_package_size:] = response_list[i_start_package:i_end_package]
-                            i_start_package += remaining_package_size
-                            i_end_package += remaining_package_size
+                    buffer[-remaining_package_size:] = response_list[0:remaining_package_size]
             
+            #Write traces
+            scope_traces = {}
+            i_buffer = 0
+            for nbr_samples, sample_dict_key in zip(nbr_of_samples_per_channel, sample_dict_keys):
+                if nbr_samples > 0:
+                    scope_traces[sample_dict_key] = buffer[i_buffer:i_buffer+nbr_samples]
+                    i_buffer += nbr_samples
+                else:
+                    scope_traces[sample_dict_key] = []
+
+            logging.debug(f'MC-communication time: {perf_counter() - t_start:.1f}s')
+            t_start = perf_counter()
             br = BackendResponse(scope_traces)
             writer.write(br.to_bytes())
             await writer.drain()
+            logging.debug(f'client communication time: {perf_counter() - t_start:.1f}s')
             logging.debug('ScopeModule: got scope successful!')
             return True
 
@@ -278,14 +283,14 @@ class ScopeModule_(IOModule_):
             #setup scope if neccessary
             if 'scope_setup' in config_dict.keys() and config_dict['scope_setup'] == True:
                 
-                if 'scope_buffer_length' in config_dict.keys() and 'scope_sample_in_one' in config_dict.keys() and \
-                    'scope_sample_in_two' in config_dict.keys() and 'scope_sample_out_one' in config_dict.keys() and 'scope_sample_out_two' in config_dict.keys() and \
+                if 'scope_nbr_samples_in_one' in config_dict.keys() and \
+                    'scope_nbr_samples_in_two' in config_dict.keys() and 'scope_nbr_samples_out_one' in config_dict.keys() and 'scope_nbr_samples_out_two' in config_dict.keys() and \
                         'scope_adc_active_mode' in config_dict.keys() and 'scope_sampling_rate' in config_dict.keys() and 'scope_enabled' in config_dict.keys():
                     retry_counter = 10
                     success = False
                     while retry_counter > 0 and not success:
-                        success = await self.setup_scope(config_dict['scope_sampling_rate'], config_dict['scope_sample_in_one'], config_dict['scope_sample_in_two'], config_dict['scope_sample_out_one'],
-                                                        config_dict['scope_sample_out_two'], config_dict['scope_buffer_length'], config_dict['scope_adc_active_mode'], None, respond=False)
+                        success = await self.setup_scope(config_dict['scope_sampling_rate'], config_dict['scope_nbr_samples_in_one'], config_dict['scope_nbr_samples_in_two'], config_dict['scope_nbr_samples_out_one'],
+                                                        config_dict['scope_nbr_samples_out_two'], config_dict['scope_adc_active_mode'], config_dict['double_buffer_mode'], None, respond=False)
                         retry_counter -= 1
                     if not success:
                         raise Exception('ScopeModule_ - canot launch from config_dict: cannot setup scope')
