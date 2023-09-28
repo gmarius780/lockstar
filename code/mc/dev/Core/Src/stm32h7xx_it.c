@@ -314,34 +314,6 @@ void DMA1_Stream6_IRQHandler(void)
 }
 
 /**
-  * @brief This function handles SPI1 global interrupt.
-  */
-void SPI1_IRQHandler(void)
-{
-  /* USER CODE BEGIN SPI1_IRQn 0 */
-
-  /* USER CODE END SPI1_IRQn 0 */
-  HAL_SPI_IRQHandler(&hspi1);
-  /* USER CODE BEGIN SPI1_IRQn 1 */
-
-  /* USER CODE END SPI1_IRQn 1 */
-}
-
-/**
-  * @brief This function handles SPI2 global interrupt.
-  */
-void SPI2_IRQHandler(void)
-{
-  /* USER CODE BEGIN SPI2_IRQn 0 */
-
-  /* USER CODE END SPI2_IRQn 0 */
-  HAL_SPI_IRQHandler(&hspi2);
-  /* USER CODE BEGIN SPI2_IRQn 1 */
-
-  /* USER CODE END SPI2_IRQn 1 */
-}
-
-/**
   * @brief This function handles DMA1 stream7 global interrupt.
   */
 void DMA1_Stream7_IRQHandler(void)
@@ -353,90 +325,6 @@ void DMA1_Stream7_IRQHandler(void)
   /* USER CODE BEGIN DMA1_Stream7_IRQn 1 */
 
   /* USER CODE END DMA1_Stream7_IRQn 1 */
-}
-
-/**
-  * @brief This function handles SPI3 global interrupt.
-  */
-void SPI3_IRQHandler(void)
-{
-  /* USER CODE BEGIN SPI3_IRQn 0 */
-
-  /* USER CODE END SPI3_IRQn 0 */
-  HAL_SPI_IRQHandler(&hspi3);
-  /* USER CODE BEGIN SPI3_IRQn 1 */
-
-  /* USER CODE END SPI3_IRQn 1 */
-}
-
-/**
-  * @brief This function handles DMA2 stream0 global interrupt.
-  */
-void DMA2_Stream0_IRQHandler(void)
-{
-  /* USER CODE BEGIN DMA2_Stream0_IRQn 0 */
-
-  /* USER CODE END DMA2_Stream0_IRQn 0 */
-  HAL_DMA_IRQHandler(&hdma_spi1_rx);
-  /* USER CODE BEGIN DMA2_Stream0_IRQn 1 */
-
-  /* USER CODE END DMA2_Stream0_IRQn 1 */
-}
-
-/**
-  * @brief This function handles DMA2 stream1 global interrupt.
-  */
-void DMA2_Stream1_IRQHandler(void)
-{
-  /* USER CODE BEGIN DMA2_Stream1_IRQn 0 */
-
-  /* USER CODE END DMA2_Stream1_IRQn 0 */
-  HAL_DMA_IRQHandler(&hdma_spi5_tx);
-  /* USER CODE BEGIN DMA2_Stream1_IRQn 1 */
-
-  /* USER CODE END DMA2_Stream1_IRQn 1 */
-}
-
-/**
-  * @brief This function handles SPI4 global interrupt.
-  */
-void SPI4_IRQHandler(void)
-{
-  /* USER CODE BEGIN SPI4_IRQn 0 */
-
-  /* USER CODE END SPI4_IRQn 0 */
-  HAL_SPI_IRQHandler(&hspi4);
-  /* USER CODE BEGIN SPI4_IRQn 1 */
-
-  /* USER CODE END SPI4_IRQn 1 */
-}
-
-/**
-  * @brief This function handles SPI5 global interrupt.
-  */
-void SPI5_IRQHandler(void)
-{
-  /* USER CODE BEGIN SPI5_IRQn 0 */
-
-  /* USER CODE END SPI5_IRQn 0 */
-  HAL_SPI_IRQHandler(&hspi5);
-  /* USER CODE BEGIN SPI5_IRQn 1 */
-
-  /* USER CODE END SPI5_IRQn 1 */
-}
-
-/**
-  * @brief This function handles SPI6 global interrupt.
-  */
-void SPI6_IRQHandler(void)
-{
-  /* USER CODE BEGIN SPI6_IRQn 0 */
-
-  /* USER CODE END SPI6_IRQn 0 */
-  HAL_SPI_IRQHandler(&hspi6);
-  /* USER CODE BEGIN SPI6_IRQn 1 */
-
-  /* USER CODE END SPI6_IRQn 1 */
 }
 
 /**
