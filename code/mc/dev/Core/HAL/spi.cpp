@@ -13,6 +13,8 @@
 SPI::SPI(uint8_t spi_number) {
     switch(spi_number) {
         case 1: this->SPI_regs = SPI1; break;
+		case 2: this->SPI_regs = SPI2; break;
+		case 3: this->SPI_regs = SPI3; break;
         case 4: this->SPI_regs = SPI4; break;
         case 5: this->SPI_regs = SPI5; break;
         case 6: this->SPI_regs = SPI6; break;
