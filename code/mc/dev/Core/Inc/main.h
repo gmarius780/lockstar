@@ -138,7 +138,9 @@ void start(void);
 //#define AWG_MODULE
 //#define SINGLE_PID_MODULE
 //#define LINEARIZATION_MODULE
-#define ANALOG_OUTPUT_MODULE
+//#define ANALOG_OUTPUT_MODULE
+//#define TEST_MODULE
+#define LED_MODULE
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
