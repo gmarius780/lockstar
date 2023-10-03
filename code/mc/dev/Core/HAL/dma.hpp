@@ -9,6 +9,7 @@
 #define HAL_DMA_HPP_
 
 #include "stm32h725xx.h"
+#include "stm32h7xx_hal.h"
 
 typedef struct DMA_config_struct {
     __IO uint32_t CR;     /*!< DMA stream x configuration register      */
@@ -27,10 +28,10 @@ typedef struct DMA_config_struct {
 
 class DMA {
 public:
-	DMA(DMA_config_t config);
+	DMA(DMA_HandleTypeDef* hdmaSPI, DMA_config_t config);
 
 	/* Configurations */
-	uint32_t getControlReg() { return DMA_regs->CR; };
+	uint32_t getControlReg();
 	void resetTransferCompleteInterruptFlag();
 	bool transfer_complete();
 	/* NOTE: DMA has to be disabled before using following methods! */
@@ -51,12 +52,17 @@ public:
     void disable_tc_irq();
 
 private:
+    DMA_HandleTypeDef* hdmaSPI;
+    uint32_t hdma;
     DMA_Stream_TypeDef* DMA_regs;
+    BDMA_Channel_TypeDef* BDMA_regs;
     uint32_t TCIFBit;
     volatile uint32_t *IFCRreg;
     volatile uint32_t *interrupt_status_reg;
     uint32_t transfer_complete_bit;
     bool enabled;
+    uint32_t tc_flag;
+    bool is_dma_instance;
 };
 
 #endif /* HAL_DMA_HPP_ */

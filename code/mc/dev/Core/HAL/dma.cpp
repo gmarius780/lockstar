@@ -8,27 +8,14 @@
 #include <stddef.h>
 #include "dma.hpp"
 
-DMA::DMA(DMA_config_t config) {
+DMA::DMA(DMA_HandleTypeDef *hdmaSPI, DMA_config_t config) {
 	
-	if (config.stream >= 0 && config.stream <= 3) {
-		IFCRreg = &(DMA2->LIFCR);
-		interrupt_status_reg = &(DMA2->LISR);
-	} else {
-		IFCRreg = &(DMA2->HIFCR);
-		interrupt_status_reg = &(DMA2->HISR);
-	}
+	tc_flag = __HAL_DMA_GET_TC_FLAG_INDEX(hdmaSPI);
+	is_dma_instance = IS_DMA_STREAM_INSTANCE(hdmaSPI->Instance);
+	hdma = (uint32_t)hdmaSPI;
 
-    switch(config.stream) {
-    case 0: DMA_regs = DMA2_Stream0; transfer_complete_bit = DMA_LISR_TCIF0; TCIFBit = DMA_LIFCR_CTCIF0; break;
-    case 1: DMA_regs = DMA2_Stream1; transfer_complete_bit = DMA_LISR_TCIF1; TCIFBit = DMA_LIFCR_CTCIF1; break;
-    case 2: DMA_regs = DMA2_Stream2; transfer_complete_bit = DMA_LISR_TCIF2; TCIFBit = DMA_LIFCR_CTCIF2; break;
-    case 3: DMA_regs = DMA2_Stream3; transfer_complete_bit = DMA_LISR_TCIF3; TCIFBit = DMA_LIFCR_CTCIF3; break;
-    case 4: DMA_regs = DMA2_Stream4; transfer_complete_bit = DMA_HISR_TCIF4; TCIFBit = DMA_HIFCR_CTCIF4; break;
-    case 5: DMA_regs = DMA2_Stream5; transfer_complete_bit = DMA_HISR_TCIF5; TCIFBit = DMA_HIFCR_CTCIF5; break;
-    case 6: DMA_regs = DMA2_Stream6; transfer_complete_bit = DMA_HISR_TCIF6; TCIFBit = DMA_HIFCR_CTCIF6; break;
-    case 7: DMA_regs = DMA2_Stream7; transfer_complete_bit = DMA_HISR_TCIF7; TCIFBit = DMA_HIFCR_CTCIF7; break;
-    default: DMA_regs = NULL;
-    }
+	DMA_Stream_TypeDef *DMA_regs = (DMA_Stream_TypeDef   *)hdmaSPI->Instance;
+	BDMA_Channel_TypeDef *BDMA_regs = (BDMA_Channel_TypeDef   *)hdmaSPI->Instance;
 
     enabled = false;
     disableDMA();
@@ -47,37 +34,37 @@ DMA::DMA(DMA_config_t config) {
     DMA_regs->M1AR = config.M1AR;
 }
 
-__attribute__((section("sram_func")))
+// __attribute__((section("sram_func")))
 void DMA::setMemory0Address(volatile uint8_t* addr) {
 	DMA_regs->M0AR = (uint32_t) addr;
 }
 
-__attribute__((section("sram_func")))
+// __attribute__((section("sram_func")))
 void DMA::setMemory1Address(volatile uint8_t* addr) {
 	DMA_regs->M1AR = (uint32_t) addr;
 }
 
-__attribute__((section("sram_func")))
+// __attribute__((section("sram_func")))
 void DMA::setPeripheralAddress(volatile uint32_t* addr) {
 	DMA_regs->PAR = (uint32_t) addr;
 }
 
-__attribute__((section("sram_func")))
+// __attribute__((section("sram_func")))
 void DMA::setNumberOfData(uint32_t n) {
 	DMA_regs->NDTR = n;
 }
 
-__attribute__((section("sram_func")))
+// __attribute__((section("sram_func")))
 uint32_t DMA::getNumberOfData() {
 	return DMA_regs->NDTR;
 }
 
 void DMA::resetTransferCompleteInterruptFlag() {
-	*(this->IFCRreg) |= this->TCIFBit;
+	__HAL_DMA_CLEAR_FLAG(hdmaSPI, tc_flag);
 }
 
 bool DMA::transfer_complete() {
-	return *(interrupt_status_reg) & transfer_complete_bit;
+	return __HAL_DMA_GET_FLAG(hdmaSPI, tc_flag);
 }
 
 void DMA::enableCircMode() {
@@ -88,7 +75,7 @@ void DMA::disableCircMode() {
 	DMA_regs->CR &= ~DMA_SxCR_CIRC;
 }
 
-__attribute__((section("sram_func")))
+// __attribute__((section("sram_func")))
 void DMA::enableDMA() {
 	DMA_regs->CR |= DMA_SxCR_EN;
 	//wait for dma to be disabled
@@ -96,7 +83,7 @@ void DMA::enableDMA() {
 	enabled = true;
 }
 
-__attribute__((section("sram_func")))
+// __attribute__((section("sram_func")))
 void DMA::disableDMA() {
 	DMA_regs->CR &= ~DMA_SxCR_EN;
 	//wait for dma to be enabled otherwise this can lead to errors
@@ -110,4 +97,8 @@ void DMA::disable_tc_irq() {
 
 void DMA::enable_tc_irq() {
 	DMA_regs->CR  |= DMA_SxCR_TCIE;
+}
+
+uint32_t DMA::getControlReg() {
+	return DMA_regs->CR;
 }
