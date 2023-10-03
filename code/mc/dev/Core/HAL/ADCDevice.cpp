@@ -39,10 +39,7 @@ ADC_Device::ADC_Device(uint8_t SPILane, uint8_t DMAStreamIn, uint8_t DMAChannelI
     uint8_t DMAprio = 2;
     dma_in_config.priority = DMAprio;
     dma_in_config.CR = 0;
-    // reset 3 bits that define channel
-    dma_in_config.CR &= ~(DMA_SxCR_PL);
-    // set channel via 3 control bits
-    dma_in_config.CR |= DMAChannelIn * DMA_SxCR_PL; 
+
     // set stream priority from very low (00) to very high (11)
     dma_in_config.CR &= ~(DMA_SxCR_PL); 
     // reset 2 bits that define priority
@@ -56,21 +53,20 @@ ADC_Device::ADC_Device(uint8_t SPILane, uint8_t DMAStreamIn, uint8_t DMAChannelI
     // Clear DBM bit
     dma_in_config.CR &= (uint32_t)(~DMA_SxCR_DBM);
     // Program transmission-complete interrupt
-    dma_in_config.CR  |= DMA_SxCR_TCIE;
+    dma_in_config.CR |= DMA_SxCR_TCIE;
 
     dma_in_config.stream      = DMAStreamIn;
     dma_in_config.channel     = DMAChannelIn;
     dma_in_config.PAR         = (uint32_t)spi_handler->getDRAddress();
     dma_in_config.M0AR        = (uint32_t)dma_buffer;
-    dma_in_config.M1AR		= 0;
+    dma_in_config.M1AR		  = 0;
     dma_in_config.NDTR        = 0;
 
-    dma_input_handler         = new DMA(dma_in_config);
+    dma_input_handler         = new DMA(&hdma_spi3_rx ,dma_in_config);
 
     dma_out_config.priority = DMAprio;
     dma_out_config.CR = 0;
-    dma_out_config.CR &= ~(DMA_SxCR_PL); // reset 3 bits that define channel
-    dma_out_config.CR |= DMAChannelOut * DMA_SxCR_PL; // set channel via 3 control bits
+
     // set stream priority from very low (00) to very high (11)
     dma_out_config.CR &= ~(DMA_SxCR_PL); // reset 2 bits that define priority
     dma_out_config.CR |= DMAprio * DMA_SxCR_PL_0; // set priority via 2 control bits
@@ -90,10 +86,10 @@ ADC_Device::ADC_Device(uint8_t SPILane, uint8_t DMAStreamIn, uint8_t DMAChannelI
     dma_out_config.channel    = DMAChannelOut;
     dma_out_config.PAR        = (uint32_t)spi_handler->getDRAddress();
     dma_out_config.M0AR       = (uint32_t)dma_buffer;
-    dma_out_config.M1AR		= 0;
+    dma_out_config.M1AR		  = 0;
     dma_out_config.NDTR       = 0;
 
-    dma_output_handler        = new DMA(dma_out_config);
+    dma_output_handler        = new DMA(&hdma_spi3_tx, dma_in_config);
 
     spi_handler->enableSPI();
 }

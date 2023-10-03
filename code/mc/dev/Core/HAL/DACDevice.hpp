@@ -8,12 +8,16 @@
 #ifndef HAL_DACDEVICE_HPP_
 #define HAL_DACDEVICE_HPP_
 
+
 #include "stm32h7xx_hal.h"
+#include "dma.hpp"
 #include "spi.hpp"
+
 #include <algorithm>
 
-#include "dma.hpp"
 #include "SPIDMAHandler.hpp"
+
+extern DMA_HandleTypeDef hdma_spi6_tx, hdma_spi6_rx;
 
 class DAC_Device {
 public:

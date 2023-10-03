@@ -12,7 +12,9 @@
 #include "../Lib/RPIDataPackage.h"
 #include "../HAL/BasicTimer.hpp"
 #include "dma.hpp"
+#include "stm32h7xx_hal.h"
 
+extern DMA_HandleTypeDef hdma_spi1_tx, hdma_spi1_rx;
 
 class RPI {
 public:

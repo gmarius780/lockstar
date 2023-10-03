@@ -68,7 +68,7 @@ RPI::RPI() {
 	dma_in_config.CR  &= ~DMA_SxCR_HTIE;
 	dma_in_config.CR  |= DMA_SxCR_TEIE;
 
-	dma_in = new DMA(dma_in_config);
+	dma_in = new DMA(&hdma_spi1_rx, dma_in_config);
 //	dma_in->disableCircMode();
 
 
@@ -105,7 +105,7 @@ RPI::RPI() {
 	//disable peripheral flow control -> the MC knows how many bytes to expect (the rpi tells it via spi)
 	dma_out_config.CR &= ~DMA_SxCR_PFCTRL;
 
-	dma_out = new DMA(dma_out_config);
+	dma_out = new DMA(&hdma_spi1_tx, dma_out_config);
 
 	this->read_package = new RPIDataPackage();
 	this->write_package = new RPIDataPackage();

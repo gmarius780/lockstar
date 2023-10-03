@@ -62,6 +62,15 @@ bool Module::handle_rpi_base_methods() {
 	return true;
 }
 
+/* 
+SPI1 --> RPI
+SPI2 --> J9
+SPI3 --> ADC
+SPI4 --> J12
+SPI5 --> DAC2
+SPI6 --> DAC1
+ */
+
 void Module::initialize_adc_dac(uint8_t ch1_config, uint8_t ch2_config) {
 	adc = new ADC_Device(	/* SPI number */ 				1,
 							/* DMA Stream In */ 			2,

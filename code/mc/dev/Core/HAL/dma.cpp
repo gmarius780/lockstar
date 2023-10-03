@@ -14,8 +14,8 @@ DMA::DMA(DMA_HandleTypeDef *hdmaSPI, DMA_config_t config) {
 	is_dma_instance = IS_DMA_STREAM_INSTANCE(hdmaSPI->Instance);
 	hdma = (uint32_t)hdmaSPI;
 
-	DMA_Stream_TypeDef *DMA_regs = (DMA_Stream_TypeDef   *)hdmaSPI->Instance;
-	BDMA_Channel_TypeDef *BDMA_regs = (BDMA_Channel_TypeDef   *)hdmaSPI->Instance;
+	this->DMA_regs = (DMA_Stream_TypeDef   *)hdmaSPI->Instance;
+	this->BDMA_regs = (BDMA_Channel_TypeDef   *)hdmaSPI->Instance;
 
     enabled = false;
     disableDMA();

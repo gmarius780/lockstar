@@ -7,6 +7,7 @@
 
 #include "DACDevice.hpp"
 
+
 DAC_Device::DAC_Device(uint8_t spi_lane, uint8_t dma_stream_out, uint8_t dma_channel_out, GPIO_TypeDef* sync_port, uint16_t sync_pin, GPIO_TypeDef* clear_port, uint16_t clear_pin) {
     
     inv_step_size 	= 0;
@@ -32,10 +33,13 @@ DAC_Device::DAC_Device(uint8_t spi_lane, uint8_t dma_stream_out, uint8_t dma_cha
     uint8_t dma_prio = 2;
     dma_config.priority = dma_prio;
     dma_config.CR = 0;
-    // reset 3 bits that define channel
-    dma_config.CR &= ~(DMA_SxCR_PL);
-    // set channel via 3 control bits
-    dma_config.CR |= dma_channel_out * DMA_SxCR_PL;
+
+	DMAMUX_Channel_TypeDef *DMAMUX_OUT = (DMAMUX_Channel_TypeDef *)((uint32_t)(((uint32_t)DMAMUX1_Channel0) + (dma_channel_out * 4U)));
+
+    //set the DMA request ID to the SPI RX request
+    DMAMUX_OUT->CCR &= ~DMAMUX_CxCR_DMAREQ_ID;
+    DMAMUX_OUT->CCR |= dma_channel_out << DMAMUX_CxCR_DMAREQ_ID_Pos;
+
     // set stream priority from very low (00) to very high (11)
     dma_config.CR &= ~(DMA_SxCR_PL); 
     // reset 2 bits that define priority
@@ -58,7 +62,7 @@ DAC_Device::DAC_Device(uint8_t spi_lane, uint8_t dma_stream_out, uint8_t dma_cha
     dma_config.M0AR        = (uint32_t)dma_buffer;
     dma_config.M1AR        = 0;
     dma_config.NDTR        = 0;
-    dma_output_handler     = new DMA(dma_config);
+    dma_output_handler     = new DMA(&hdma_spi6_tx, dma_config);
 
     old_dma = new SPI_DMA_Handler(spi_lane, NONE, NONE, dma_stream_out, dma_channel_out, 2);
 

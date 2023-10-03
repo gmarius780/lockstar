@@ -21,6 +21,8 @@
 
 #define DATAWIDTH           6
 
+extern DMA_HandleTypeDef hdma_spi3_tx, hdma_spi3_rx;
+
 class ADC_Device;
 
 class ADC_Device_Channel {

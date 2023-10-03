@@ -54,8 +54,8 @@ public:
 private:
     DMA_HandleTypeDef* hdmaSPI;
     uint32_t hdma;
-    DMA_Stream_TypeDef* DMA_regs;
-    BDMA_Channel_TypeDef* BDMA_regs;
+    DMA_Stream_TypeDef *DMA_regs;
+    BDMA_Channel_TypeDef *BDMA_regs;
     uint32_t TCIFBit;
     volatile uint32_t *IFCRreg;
     volatile uint32_t *interrupt_status_reg;
