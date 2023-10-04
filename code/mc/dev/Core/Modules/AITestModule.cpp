@@ -56,13 +56,17 @@ AITestModule *module;
  *******************************/
 
 
-__attribute__((section("sram_func")))
-void DMA2_Stream2_IRQHandler(void)
+//__attribute__((section("sram_func")))
+void DMA1_Stream3_IRQHandler(void)
 {
 	// SPI 1 rx
 	module->ADC_Dev->dma_transmission_callback();
 }
 
+void DMA1_Stream4_IRQHandler(void)
+{
+    // SPI 1 tx
+}
 
 /******************************
  *       MAIN FUNCTION        *
