@@ -27,21 +27,26 @@ public:
         // TXbuffer[0] = 0x0F;
         // TXbuffer[4] = 0xFF;
         timeout = 0xFFF;
-
         SPI_Dev = new SPI(spi_number);
 
         // LL_SPI_SetNSSMode(SPI4, LL_SPI_NSS_HARD_OUTPUT);
+        
         LL_SPI_EnableGPIOControl(SPI4);
         LL_SPI_SetTransferSize(SPI4, SPIx_NbDataToTransmit);
 
+
+        LL_SPI_Enable(SPI4);
+
+        while (!LL_SPI_IsEnabled(SPI4))
+        {
+        }
+        LL_SPI_SetNSSMode(SPI4, LL_SPI_NSS_SOFT);
         LL_SPI_EnableIT_TXP(SPI4);
         LL_SPI_EnableIT_RXP(SPI4);
         LL_SPI_EnableIT_CRCERR(SPI4);
         LL_SPI_EnableIT_UDR(SPI4);
         LL_SPI_EnableIT_OVR(SPI4);
         LL_SPI_EnableIT_EOT(SPI4);
-
-        LL_SPI_Enable(SPI4);
 
         LL_SPI_StartMasterTransfer(SPI4);
         /* 2 - Wait end of transfer *************************************************/
@@ -109,6 +114,7 @@ public:
         /* Write character in Data register.
          * TXP flag is cleared by filling data into TXDR register */
         LL_SPI_TransmitData8(SPI4, SPIx_TxBuffer[SPI4_TransmitIndex++]);
+        //SPIx_RxBuffer[SPI4_ReceiveIndex++] = LL_SPI_ReceiveData8(SPI4);
     }
 
     void SPI4_Rx_Callback(void)
@@ -138,11 +144,10 @@ public:
     uint8_t spi_number;
     uint32_t SPI4_TransmitIndex = 0;
     uint32_t SPI4_ReceiveIndex = 0;
-    // uint8_t RXbuffer = new uint8_t[6]();
     uint32_t timeout = 0;
     uint8_t SPIx_TxBuffer[24] = "**** SPI_OneBoard_IT **";
+    uint32_t SPIx_NbDataToTransmit = 23;
     uint8_t SPIx_RxBuffer[sizeof(SPIx_TxBuffer)] = {0};
-    uint32_t SPIx_NbDataToTransmit = ((sizeof(SPIx_TxBuffer) / sizeof(*SPIx_TxBuffer)) - 1);
 };
 
 SPITestModule *module;
