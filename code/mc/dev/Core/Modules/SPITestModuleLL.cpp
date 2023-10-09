@@ -164,19 +164,20 @@ public:
     {
         LL_SPI_EnableGPIOControl(SPIx);
         LL_SPI_SetTransferSize(SPIx, SPIx_NbDataToTransmit);
+        LL_SPI_SetTransferDirection(SPIx, SPIx_DIRECTION);
+
+        LL_SPI_SetBaudRatePrescaler(SPIx, BAUDRATE_PRESCALER);
+        LL_SPI_SetNSSMode(SPIx, NSS_MODE);
 
         if (isSlave)
         {
             LL_SPI_SetMode(SPIx, LL_SPI_MODE_SLAVE);
             LL_SPI_DisableNSSPulseMgt(SPIx);
         }
-        else
+        else{
             LL_SPI_SetMode(SPIx, LL_SPI_MODE_MASTER);
-
-        LL_SPI_SetTransferDirection(SPIx, SPIx_DIRECTION);
-        LL_SPI_SetBaudRatePrescaler(SPIx, BAUDRATE_PRESCALER);
-
-        LL_SPI_SetNSSMode(SPIx, NSS_MODE);
+            LL_SPI_EnableNSSPulseMgt(SPIx);
+        }
         // enable SPI
         LL_SPI_Enable(SPIx);
         // Wait for SPI activation flag
