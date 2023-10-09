@@ -15,9 +15,9 @@
 
 #define SPI_MASTER SPI4 // SPI2, SPI4
 // #define SPI_SLAVE SPI2                                   // SPI2, SPI4
-#define LOOPBACK_MODE 0                                   // 0: no loopback, 1: loopback
+#define LOOPBACK_MODE 1                                   // 0: no loopback, 1: loopback
 #define BAUDRATE_PRESCALER LL_SPI_BAUDRATEPRESCALER_DIV64 // DIV2, DIV4, DIV8, DIV16, DIV32, DIV64, DIV128, DIV256
-#define SPI_MASTER_DIRECTION LL_SPI_SIMPLEX_TX            // FULL_DUPLEX, HALF_DUPLEX_TX, HALF_DUPLEX_RX, SIMPLEX_TX, SIMPLEX_RX
+#define SPI_MASTER_DIRECTION LL_SPI_FULL_DUPLEX            // FULL_DUPLEX, HALF_DUPLEX_TX, HALF_DUPLEX_RX, SIMPLEX_TX, SIMPLEX_RX
 #define SPI_SLAVE_DIRECTION LL_SPI_SIMPLEX_RX             // FULL_DUPLEX, HALF_DUPLEX_TX, HALF_DUPLEX_RX, SIMPLEX_TX, SIMPLEX_RX
 #define TIMEOUT 0xFFF
 #define NSS_MODE_MASTER LL_SPI_NSS_HARD_OUTPUT // LL_SPI_NSS_SOFT, LL_SPI_NSS_HARD_INPUT, LL_SPI_NSS_HARD_OUTPUT
@@ -33,94 +33,12 @@ public:
 
     void run()
     {
+        SPI_config(SPI_MASTER, SPI_MASTER_DIRECTION, NSS_MODE_MASTER, 0);
+        #ifdef SPI_SLAVE
+            SPI_config(SPI_SLAVE, SPI_SLAVE_DIRECTION, NSS_MODE_SLAVE, 1);
+        #endif
+
         timeout = TIMEOUT;
-
-        LL_SPI_EnableGPIOControl(SPI_MASTER);
-        LL_SPI_SetTransferSize(SPI_MASTER, SPIx_NbDataToTransmit);
-
-        LL_SPI_SetTransferDirection(SPI_MASTER, SPI_MASTER_DIRECTION);
-        LL_SPI_SetBaudRatePrescaler(SPI_MASTER, BAUDRATE_PRESCALER);
-
-        // enable SPI
-        LL_SPI_Enable(SPI_MASTER);
-        // Wait for SPI activation flag
-        while (!LL_SPI_IsEnabled(SPI_MASTER))
-        {
-        }
-
-        LL_SPI_SetNSSMode(SPI_MASTER, NSS_MODE_MASTER);
-
-        switch (SPI_MASTER_DIRECTION)
-        {
-            case LL_SPI_FULL_DUPLEX:
-                LL_SPI_EnableIT_TXP(SPI_MASTER);
-                LL_SPI_EnableIT_RXP(SPI_MASTER);
-                break;
-            case LL_SPI_SIMPLEX_RX:
-                LL_SPI_EnableIT_RXP(SPI_MASTER);
-                break;
-            case LL_SPI_SIMPLEX_TX:
-                LL_SPI_EnableIT_TXP(SPI_MASTER);
-                break;
-        
-        default:
-                LL_SPI_EnableIT_TXP(SPI_MASTER);
-                LL_SPI_EnableIT_RXP(SPI_MASTER);
-            break;
-        }
-
-        
-        LL_SPI_EnableIT_CRCERR(SPI_MASTER);
-        LL_SPI_EnableIT_UDR(SPI_MASTER);
-        LL_SPI_EnableIT_OVR(SPI_MASTER);
-        LL_SPI_EnableIT_EOT(SPI_MASTER);
-
-        // if (SPI_MASTER_DIRECTION == LL_SPI_SIMPLEX_RX)
-        // {
-        //     LL_SPI_EnableIT_RXP(SPI_MASTER);
-        // }
-        // else if (SPI_MASTER_DIRECTION == LL_SPI_SIMPLEX_TX)
-        // {
-        //     LL_SPI_EnableIT_TXP(SPI_MASTER);
-        // }
-        // else if (SPI_MASTER_DIRECTION == LL_SPI_FULL_DUPLEX)
-        // {
-        //     LL_SPI_EnableIT_TXP(SPI_MASTER);
-        //     LL_SPI_EnableIT_RXP(SPI_MASTER);
-        // }
-
-#ifdef SPI_SLAVE
-        LL_SPI_EnableGPIOControl(SPI_SLAVE);
-
-        LL_SPI_SetMode(SPI_SLAVE, LL_SPI_MODE_SLAVE);
-        LL_SPI_SetTransferDirection(SPI_SLAVE, SPI_SLAVE_DIRECTION);
-        // LL_SPI_SetBaudRatePrescaler(SPI_MASTER, BAUDRATE_PRESCALER);
-
-        LL_SPI_Enable(SPI_SLAVE);
-        // Wait for SPI activation flag
-        while (!LL_SPI_IsEnabled(SPI_SLAVE))
-        {
-        }
-        LL_SPI_SetNSSMode(SPI_SLAVE, NSS_MODE_SLAVE);
-
-        switch (SPI_SLAVE_DIRECTION)
-        {
-            case LL_SPI_FULL_DUPLEX:
-                LL_SPI_EnableIT_TXP(SPI_SLAVE);
-                LL_SPI_EnableIT_RXP(SPI_SLAVE);
-                break;
-            case LL_SPI_SIMPLEX_RX:
-                LL_SPI_EnableIT_RXP(SPI_SLAVE);
-                break;
-            case LL_SPI_SIMPLEX_TX:
-                LL_SPI_EnableIT_TXP(SPI_SLAVE);
-                break;
-        default:
-                LL_SPI_EnableIT_TXP(SPI_SLAVE);
-                LL_SPI_EnableIT_RXP(SPI_SLAVE);
-            break;
-        }
-#endif
 
         // Start Master transfer
         LL_SPI_StartMasterTransfer(SPI_MASTER);
@@ -136,7 +54,7 @@ public:
                 }
             }
 
-            if (BufferCmp(SPIx_TxBuffer, SPIx_RxBuffer, SPIx_NbDataToTransmit))
+            if (BufferCmp(SPI_MASTER_TxBuffer, SPI_SLAVE_RxBuffer, SPIx_NbDataToTransmit))
             {
                 /* Turn the LED 3 on if result wrong */
                 turn_LED3_on();
@@ -181,11 +99,11 @@ public:
         /* Write character in Data register.
          * TXP flag is cleared by filling data into TXDR register */
         if(SPI_MASTER_DIRECTION == LL_SPI_FULL_DUPLEX || SPI_MASTER_DIRECTION == LL_SPI_SIMPLEX_TX)
-            LL_SPI_TransmitData8(SPI_MASTER, SPIx_TxBuffer[SPI_TransmitIndex++]);
+            LL_SPI_TransmitData8(SPI_MASTER, SPI_MASTER_TxBuffer[SPI_TransmitIndex++]);
         
         #ifdef SPI_SLAVE
             if(SPI_SLAVE_DIRECTION == LL_SPI_FULL_DUPLEX || SPI_SLAVE_DIRECTION == LL_SPI_SIMPLEX_TX)
-                LL_SPI_TransmitData8(SPI_SLAVE, SPIx_TxBuffer[SPI_TransmitIndex++]);
+                LL_SPI_TransmitData8(SPI_SLAVE, SPI_SLAVE_TxBuffer[SPI_TransmitIndex++]);
         #endif
     }
 
@@ -194,11 +112,11 @@ public:
         /* Read character in Data register.
          * RXP flag is cleared by reading data in RXDR register */
         if(SPI_MASTER_DIRECTION == LL_SPI_FULL_DUPLEX || SPI_MASTER_DIRECTION == LL_SPI_SIMPLEX_RX)
-            SPIx_RxBuffer[SPI_ReceiveIndex++] = LL_SPI_ReceiveData8(SPI_MASTER);
+            SPI_MASTER_RxBuffer[SPI_ReceiveIndex++] = LL_SPI_ReceiveData8(SPI_MASTER);
 
         #ifdef SPI_SLAVE
             if(SPI_SLAVE_DIRECTION == LL_SPI_FULL_DUPLEX || SPI_SLAVE_DIRECTION == LL_SPI_SIMPLEX_RX)
-                SPIx_RxBuffer[SPI_ReceiveIndex++] = LL_SPI_ReceiveData8(SPI_SLAVE);
+                SPI_SLAVE_RxBuffer[SPI_ReceiveIndex++] = LL_SPI_ReceiveData8(SPI_SLAVE);
         #endif
     }
 
@@ -222,13 +140,62 @@ public:
         LL_SPI_Disable(SPI_MASTER);
     }
 
+    void SPI_config(SPI_TypeDef *SPIx, uint32_t SPIx_DIRECTION, uint32_t NSS_MODE, bool isSlave){
+        LL_SPI_EnableGPIOControl(SPIx);
+        LL_SPI_SetTransferSize(SPIx, SPIx_NbDataToTransmit);
+
+        if(isSlave)
+            LL_SPI_SetMode(SPIx, LL_SPI_MODE_SLAVE);
+        else
+            LL_SPI_SetMode(SPIx, LL_SPI_MODE_MASTER);
+
+        LL_SPI_SetTransferDirection(SPIx, SPIx_DIRECTION);
+        LL_SPI_SetBaudRatePrescaler(SPIx, BAUDRATE_PRESCALER);
+
+        // enable SPI
+        LL_SPI_Enable(SPIx);
+        // Wait for SPI activation flag
+        while (!LL_SPI_IsEnabled(SPIx))
+        {
+        }
+
+        LL_SPI_SetNSSMode(SPIx, NSS_MODE);
+
+        switch (SPIx_DIRECTION)
+        {
+            case LL_SPI_FULL_DUPLEX:
+                LL_SPI_EnableIT_TXP(SPIx);
+                LL_SPI_EnableIT_RXP(SPIx);
+                break;
+            case LL_SPI_SIMPLEX_RX:
+                LL_SPI_EnableIT_RXP(SPIx);
+                break;
+            case LL_SPI_SIMPLEX_TX:
+                LL_SPI_EnableIT_TXP(SPIx);
+                break;
+
+        default:
+                LL_SPI_EnableIT_TXP(SPIx);
+                LL_SPI_EnableIT_RXP(SPIx);
+            break;
+        }
+
+
+        LL_SPI_EnableIT_CRCERR(SPIx);
+        LL_SPI_EnableIT_UDR(SPIx);
+        LL_SPI_EnableIT_OVR(SPIx);
+        LL_SPI_EnableIT_EOT(SPIx);
+    }
+
 public:
     uint32_t SPI_TransmitIndex = 0;
     uint32_t SPI_ReceiveIndex = 0;
     uint32_t timeout = 0;
-    uint8_t SPIx_TxBuffer[BUFFER_SIZE] = "**** SPI_OneBoard_IT **";
+    uint8_t SPI_MASTER_TxBuffer[BUFFER_SIZE] = "** SPI_M_OneBoard_IT **";
+    uint8_t SPI_MASTER_RxBuffer[BUFFER_SIZE] = {0};
+    uint8_t SPI_SLAVE_TxBuffer[BUFFER_SIZE] = "** SPI_S_OneBoard_IT **";
+    uint8_t SPI_SLAVE_RxBuffer[BUFFER_SIZE] = {0};
     uint32_t SPIx_NbDataToTransmit = BUFFER_SIZE;
-    uint8_t SPIx_RxBuffer[BUFFER_SIZE] = {0};
 };
 
 SPITestModule *module;
