@@ -19,7 +19,7 @@
 // #define LOOPBACK_MODE         // enable loopback mode
 #define MASTERTX_SLAVERX_TEST // enable Master Tx Slave Rx test
 
-#define BAUDRATE_PRESCALER LL_SPI_BAUDRATEPRESCALER_DIV64 // DIV2, DIV4, DIV8, DIV16, DIV32, DIV64, DIV128, DIV256
+#define BAUDRATE_PRESCALER LL_SPI_BAUDRATEPRESCALER_DIV32 // DIV2, DIV4, DIV8, DIV16, DIV32, DIV64, DIV128, DIV256
 #define SPI_MASTER_DIRECTION LL_SPI_SIMPLEX_TX            // FULL_DUPLEX, HALF_DUPLEX_TX, HALF_DUPLEX_RX, SIMPLEX_TX, SIMPLEX_RX
 #define SPI_SLAVE_DIRECTION LL_SPI_SIMPLEX_RX             // FULL_DUPLEX, HALF_DUPLEX_TX, HALF_DUPLEX_RX, SIMPLEX_TX, SIMPLEX_RX
 
@@ -38,13 +38,14 @@ public:
     void run()
     {
 
-        init_buffer(SPI_MASTER_TxBuffer);
-        init_buffer(SPI_SLAVE_TxBuffer);
-
-        SPI_config(SPI_MASTER, SPI_MASTER_DIRECTION, NSS_MODE_MASTER, 0);
+        init_buffer(SPI_MASTER_TxBuffer, SEED);
+        init_buffer(SPI_SLAVE_TxBuffer, SEED+1);
+        
 #ifdef SPI_SLAVE
         SPI_config(SPI_SLAVE, SPI_SLAVE_DIRECTION, NSS_MODE_SLAVE, 1);
 #endif
+
+        SPI_config(SPI_MASTER, SPI_MASTER_DIRECTION, NSS_MODE_MASTER, 0);
         // Start Master transfer
         LL_SPI_StartMasterTransfer(SPI_MASTER);
 
@@ -73,7 +74,7 @@ public:
     {
         // Check result when in loopback mode
 #ifdef LOOPBACK_MODE
-        if (BufferCmp(SPI_MASTER_TxBuffer, SPI_MASTER_RxBuffer, SPIx_NbDataToTransmit))
+        if (BufferCmp(SPI_MASTER_TxBuffer, SPI_MASTER_RxBuffer, BUFFER_SIZE))
         {
             /* Turn the LED 3 on if result wrong */
             turn_LED3_on();
@@ -85,7 +86,7 @@ public:
         }
 #endif
 #ifdef MASTERTX_SLAVERX_TEST
-        if (BufferCmp(SPI_MASTER_TxBuffer, SPI_SLAVE_RxBuffer, SPIx_NbDataToTransmit))
+        if (BufferCmp(SPI_MASTER_TxBuffer, SPI_SLAVE_RxBuffer, BUFFER_SIZE))
         {
             /* Turn the LED 3 on if result wrong */
             turn_LED3_on();
@@ -96,6 +97,7 @@ public:
             turn_LED2_on();
         }
 #endif
+        return;
     }
 
     void SPI_EOT_Callback(SPI_TypeDef *SPIx)
@@ -163,7 +165,7 @@ public:
     void SPI_config(SPI_TypeDef *SPIx, uint32_t SPIx_DIRECTION, uint32_t NSS_MODE, bool isSlave)
     {
         LL_SPI_EnableGPIOControl(SPIx);
-        LL_SPI_SetTransferSize(SPIx, SPIx_NbDataToTransmit);
+        LL_SPI_SetTransferSize(SPIx, BUFFER_SIZE);
         LL_SPI_SetTransferDirection(SPIx, SPIx_DIRECTION);
 
         LL_SPI_SetBaudRatePrescaler(SPIx, BAUDRATE_PRESCALER);
@@ -210,10 +212,10 @@ public:
         LL_SPI_EnableIT_EOT(SPIx);
     }
 
-    void init_buffer(uint8_t *buffer)
+    void init_buffer(uint8_t *buffer, uint32_t seed)
     {
 
-        srand(SEED);
+        srand(seed);
 
         for (int i = 0; i < BUFFER_SIZE-1; ++i)
         {
@@ -233,7 +235,6 @@ public:
     uint8_t SPI_MASTER_RxBuffer[BUFFER_SIZE] = {0};
     uint8_t SPI_SLAVE_TxBuffer[BUFFER_SIZE] = {0};
     uint8_t SPI_SLAVE_RxBuffer[BUFFER_SIZE] = {0};
-    uint32_t SPIx_NbDataToTransmit = BUFFER_SIZE;
 };
 
 SPITestModule *module;
