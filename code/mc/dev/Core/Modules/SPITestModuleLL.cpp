@@ -13,12 +13,15 @@
 #ifdef SPI_TEST_MODULE
 #pragma message("Compiling SPI Test Module LL")
 
-#define SPI SPI4                                           // SPI1, SPI2, SPI3, SPI4, SPI5, SPI6
-#define LOOPBACK_MODE 1                                    // 0: no loopback, 1: loopback
+#define SPI_MASTER SPI4 // SPI2, SPI4
+// #define SPI_SLAVE SPI2                                   // SPI2, SPI4
+#define LOOPBACK_MODE 0                                   // 0: no loopback, 1: loopback
 #define BAUDRATE_PRESCALER LL_SPI_BAUDRATEPRESCALER_DIV64 // DIV2, DIV4, DIV8, DIV16, DIV32, DIV64, DIV128, DIV256
-#define DIRECTION LL_SPI_FULL_DUPLEX                        // FULL_DUPLEX, HALF_DUPLEX_TX, HALF_DUPLEX_RX, SIMPLEX_TX, SIMPLEX_RX
+#define SPI_MASTER_DIRECTION LL_SPI_SIMPLEX_TX            // FULL_DUPLEX, HALF_DUPLEX_TX, HALF_DUPLEX_RX, SIMPLEX_TX, SIMPLEX_RX
+#define SPI_SLAVE_DIRECTION LL_SPI_SIMPLEX_RX             // FULL_DUPLEX, HALF_DUPLEX_TX, HALF_DUPLEX_RX, SIMPLEX_TX, SIMPLEX_RX
 #define TIMEOUT 0xFFF
-#define NSS_MODE LL_SPI_NSS_SOFT                           // LL_SPI_NSS_SOFT, LL_SPI_NSS_HARD_INPUT, LL_SPI_NSS_HARD_OUTPUT
+#define NSS_MODE_MASTER LL_SPI_NSS_HARD_OUTPUT // LL_SPI_NSS_SOFT, LL_SPI_NSS_HARD_INPUT, LL_SPI_NSS_HARD_OUTPUT
+#define NSS_MODE_SLAVE LL_SPI_NSS_HARD_INPUT   // LL_SPI_NSS_SOFT, LL_SPI_NSS_HARD_INPUT, LL_SPI_NSS_HARD_OUTPUT
 #define BUFFER_SIZE 24
 
 class SPITestModule
@@ -32,39 +35,95 @@ public:
     {
         timeout = TIMEOUT;
 
-        LL_SPI_EnableGPIOControl(SPI);
-        LL_SPI_SetTransferSize(SPI, SPIx_NbDataToTransmit);
+        LL_SPI_EnableGPIOControl(SPI_MASTER);
+        LL_SPI_SetTransferSize(SPI_MASTER, SPIx_NbDataToTransmit);
 
-        LL_SPI_SetTransferDirection(SPI, DIRECTION);
-        LL_SPI_SetBaudRatePrescaler(SPI, BAUDRATE_PRESCALER);
+        LL_SPI_SetTransferDirection(SPI_MASTER, SPI_MASTER_DIRECTION);
+        LL_SPI_SetBaudRatePrescaler(SPI_MASTER, BAUDRATE_PRESCALER);
 
         // enable SPI
-        LL_SPI_Enable(SPI);
-
+        LL_SPI_Enable(SPI_MASTER);
         // Wait for SPI activation flag
-        while (!LL_SPI_IsEnabled(SPI))
+        while (!LL_SPI_IsEnabled(SPI_MASTER))
         {
         }
 
-        LL_SPI_SetNSSMode(SPI, NSS_MODE);
-        if(DIRECTION == LL_SPI_SIMPLEX_RX) {
-            LL_SPI_EnableIT_RXP(SPI);
-        }
-        else if(DIRECTION == LL_SPI_SIMPLEX_TX) {
-            LL_SPI_EnableIT_TXP(SPI);
-        }
-        else if(DIRECTION == LL_SPI_FULL_DUPLEX) {
-            LL_SPI_EnableIT_TXP(SPI);
-            LL_SPI_EnableIT_RXP(SPI);
+        LL_SPI_SetNSSMode(SPI_MASTER, NSS_MODE_MASTER);
+
+        switch (SPI_MASTER_DIRECTION)
+        {
+            case LL_SPI_FULL_DUPLEX:
+                LL_SPI_EnableIT_TXP(SPI_MASTER);
+                LL_SPI_EnableIT_RXP(SPI_MASTER);
+                break;
+            case LL_SPI_SIMPLEX_RX:
+                LL_SPI_EnableIT_RXP(SPI_MASTER);
+                break;
+            case LL_SPI_SIMPLEX_TX:
+                LL_SPI_EnableIT_TXP(SPI_MASTER);
+                break;
+        
+        default:
+                LL_SPI_EnableIT_TXP(SPI_MASTER);
+                LL_SPI_EnableIT_RXP(SPI_MASTER);
+            break;
         }
 
-        LL_SPI_EnableIT_CRCERR(SPI);
-        LL_SPI_EnableIT_UDR(SPI);
-        LL_SPI_EnableIT_OVR(SPI);
-        LL_SPI_EnableIT_EOT(SPI);
         
+        LL_SPI_EnableIT_CRCERR(SPI_MASTER);
+        LL_SPI_EnableIT_UDR(SPI_MASTER);
+        LL_SPI_EnableIT_OVR(SPI_MASTER);
+        LL_SPI_EnableIT_EOT(SPI_MASTER);
+
+        // if (SPI_MASTER_DIRECTION == LL_SPI_SIMPLEX_RX)
+        // {
+        //     LL_SPI_EnableIT_RXP(SPI_MASTER);
+        // }
+        // else if (SPI_MASTER_DIRECTION == LL_SPI_SIMPLEX_TX)
+        // {
+        //     LL_SPI_EnableIT_TXP(SPI_MASTER);
+        // }
+        // else if (SPI_MASTER_DIRECTION == LL_SPI_FULL_DUPLEX)
+        // {
+        //     LL_SPI_EnableIT_TXP(SPI_MASTER);
+        //     LL_SPI_EnableIT_RXP(SPI_MASTER);
+        // }
+
+#ifdef SPI_SLAVE
+        LL_SPI_EnableGPIOControl(SPI_SLAVE);
+
+        LL_SPI_SetMode(SPI_SLAVE, LL_SPI_MODE_SLAVE);
+        LL_SPI_SetTransferDirection(SPI_SLAVE, SPI_SLAVE_DIRECTION);
+        // LL_SPI_SetBaudRatePrescaler(SPI_MASTER, BAUDRATE_PRESCALER);
+
+        LL_SPI_Enable(SPI_SLAVE);
+        // Wait for SPI activation flag
+        while (!LL_SPI_IsEnabled(SPI_SLAVE))
+        {
+        }
+        LL_SPI_SetNSSMode(SPI_SLAVE, NSS_MODE_SLAVE);
+
+        switch (SPI_SLAVE_DIRECTION)
+        {
+            case LL_SPI_FULL_DUPLEX:
+                LL_SPI_EnableIT_TXP(SPI_SLAVE);
+                LL_SPI_EnableIT_RXP(SPI_SLAVE);
+                break;
+            case LL_SPI_SIMPLEX_RX:
+                LL_SPI_EnableIT_RXP(SPI_SLAVE);
+                break;
+            case LL_SPI_SIMPLEX_TX:
+                LL_SPI_EnableIT_TXP(SPI_SLAVE);
+                break;
+        default:
+                LL_SPI_EnableIT_TXP(SPI_SLAVE);
+                LL_SPI_EnableIT_RXP(SPI_SLAVE);
+            break;
+        }
+#endif
+
         // Start Master transfer
-        LL_SPI_StartMasterTransfer(SPI);
+        LL_SPI_StartMasterTransfer(SPI_MASTER);
         // Check result when in loopback mode
         if (LOOPBACK_MODE)
         {
@@ -108,52 +167,59 @@ public:
     }
     void SPI_EOT_Callback(void)
     {
-        LL_SPI_Disable(SPI);
-        if (DIRECTION == LL_SPI_FULL_DUPLEX)
-        {
-            LL_SPI_DisableIT_TXP(SPI);
-            LL_SPI_DisableIT_RXP(SPI);
-        }
-        if (DIRECTION == LL_SPI_SIMPLEX_TX)
-        {
-            LL_SPI_DisableIT_TXP(SPI);
-        }
-        if (DIRECTION == LL_SPI_SIMPLEX_RX)
-        {
-            LL_SPI_DisableIT_RXP(SPI);
-        }
-        LL_SPI_DisableIT_CRCERR(SPI);
-        LL_SPI_DisableIT_OVR(SPI);
-        LL_SPI_DisableIT_UDR(SPI);
-        LL_SPI_DisableIT_EOT(SPI);
+        LL_SPI_Disable(SPI_MASTER);
+
+        LL_SPI_DisableIT_TXP(SPI_MASTER);
+        LL_SPI_DisableIT_RXP(SPI_MASTER);
+        LL_SPI_DisableIT_CRCERR(SPI_MASTER);
+        LL_SPI_DisableIT_OVR(SPI_MASTER);
+        LL_SPI_DisableIT_UDR(SPI_MASTER);
+        LL_SPI_DisableIT_EOT(SPI_MASTER);
     }
-    void SPI_Tx_Callback(void)
+    void SPI_TX_Callback(void)
     {
         /* Write character in Data register.
          * TXP flag is cleared by filling data into TXDR register */
-        LL_SPI_TransmitData8(SPI, SPIx_TxBuffer[SPI_TransmitIndex++]);
-        // SPIx_RxBuffer[SPI_ReceiveIndex++] = LL_SPI_ReceiveData8(SPI);
+        if(SPI_MASTER_DIRECTION == LL_SPI_FULL_DUPLEX || SPI_MASTER_DIRECTION == LL_SPI_SIMPLEX_TX)
+            LL_SPI_TransmitData8(SPI_MASTER, SPIx_TxBuffer[SPI_TransmitIndex++]);
+        
+        #ifdef SPI_SLAVE
+            if(SPI_SLAVE_DIRECTION == LL_SPI_FULL_DUPLEX || SPI_SLAVE_DIRECTION == LL_SPI_SIMPLEX_TX)
+                LL_SPI_TransmitData8(SPI_SLAVE, SPIx_TxBuffer[SPI_TransmitIndex++]);
+        #endif
     }
 
-    void SPI_Rx_Callback(void)
+    void SPI_RX_Callback(void)
     {
         /* Read character in Data register.
          * RXP flag is cleared by reading data in RXDR register */
-        SPIx_RxBuffer[SPI_ReceiveIndex++] = LL_SPI_ReceiveData8(SPI);
+        if(SPI_MASTER_DIRECTION == LL_SPI_FULL_DUPLEX || SPI_MASTER_DIRECTION == LL_SPI_SIMPLEX_RX)
+            SPIx_RxBuffer[SPI_ReceiveIndex++] = LL_SPI_ReceiveData8(SPI_MASTER);
+
+        #ifdef SPI_SLAVE
+            if(SPI_SLAVE_DIRECTION == LL_SPI_FULL_DUPLEX || SPI_SLAVE_DIRECTION == LL_SPI_SIMPLEX_RX)
+                SPIx_RxBuffer[SPI_ReceiveIndex++] = LL_SPI_ReceiveData8(SPI_SLAVE);
+        #endif
     }
 
     void SPI_TransferError_Callback(void)
     {
         /* Disable ALL Interrupts */
-        LL_SPI_DisableIT_TXP(SPI);
-        LL_SPI_DisableIT_RXP(SPI);
-        LL_SPI_DisableIT_CRCERR(SPI);
-        LL_SPI_DisableIT_OVR(SPI);
-        LL_SPI_DisableIT_UDR(SPI);
-        LL_SPI_DisableIT_EOT(SPI);
+        LL_SPI_DisableIT_TXP(SPI_MASTER);
+        if(SPI_MASTER_DIRECTION == LL_SPI_FULL_DUPLEX)
+        {
+            LL_SPI_DisableIT_RXP(SPI_MASTER);
+        }
+        #ifdef SPI_SLAVE
+            LL_SPI_DisableIT_RXP(SPI_SLAVE);
+        #endif
+        LL_SPI_DisableIT_CRCERR(SPI_MASTER);
+        LL_SPI_DisableIT_OVR(SPI_MASTER);
+        LL_SPI_DisableIT_UDR(SPI_MASTER);
+        LL_SPI_DisableIT_EOT(SPI_MASTER);
 
         /* Disable SPI */
-        LL_SPI_Disable(SPI);
+        LL_SPI_Disable(SPI_MASTER);
     }
 
 public:
@@ -170,35 +236,67 @@ SPITestModule *module;
 /******************************
  *         INTERRUPTS          *
  *******************************/
+
 void SPI4_IRQHandler(void)
 {
     /* Check OVR/UDR flag value in ISR register */
-    if (LL_SPI_IsActiveFlag_OVR(SPI) || LL_SPI_IsActiveFlag_UDR(SPI))
+    if (LL_SPI_IsActiveFlag_OVR(SPI4) || LL_SPI_IsActiveFlag_UDR(SPI4))
     {
         /* Call Error function */
         module->SPI_TransferError_Callback();
     }
     /* Check EOT flag value in ISR register */
-    if (LL_SPI_IsActiveFlag_EOT(SPI) && LL_SPI_IsEnabledIT_EOT(SPI))
+    if (LL_SPI_IsActiveFlag_EOT(SPI4) && LL_SPI_IsEnabledIT_EOT(SPI4))
     {
         /* Call function Reception Callback */
         module->SPI_EOT_Callback();
         return;
     }
     /* Check TXP flag value in ISR register */
-    if ((LL_SPI_IsActiveFlag_TXP(SPI) && LL_SPI_IsEnabledIT_TXP(SPI)))
+    if ((LL_SPI_IsActiveFlag_TXP(SPI4) && LL_SPI_IsEnabledIT_TXP(SPI4)))
     {
         /* Call function Reception Callback */
-        module->SPI_Tx_Callback();
+        module->SPI_TX_Callback();
         return;
     }
-    if (LL_SPI_IsActiveFlag_RXP(SPI) && LL_SPI_IsEnabledIT_RXP(SPI))
+    if (LL_SPI_IsActiveFlag_RXP(SPI4) && LL_SPI_IsEnabledIT_RXP(SPI4))
     {
         /* Call function Reception Callback */
-        module->SPI_Rx_Callback();
+        module->SPI_RX_Callback();
         return;
     }
 }
+
+void SPI2_IRQHandler(void)
+{
+    /* Check OVR/UDR flag value in ISR register */
+    if (LL_SPI_IsActiveFlag_OVR(SPI2) || LL_SPI_IsActiveFlag_UDR(SPI2))
+    {
+        /* Call Error function */
+        module->SPI_TransferError_Callback();
+    }
+    /* Check EOT flag value in ISR register */
+    if (LL_SPI_IsActiveFlag_EOT(SPI2) && LL_SPI_IsEnabledIT_EOT(SPI2))
+    {
+        /* Call function Reception Callback */
+        module->SPI_EOT_Callback();
+        return;
+    }
+    /* Check TXP flag value in ISR register */
+    if ((LL_SPI_IsActiveFlag_TXP(SPI2) && LL_SPI_IsEnabledIT_TXP(SPI2)))
+    {
+        /* Call function Reception Callback */
+        module->SPI_TX_Callback();
+        return;
+    }
+    if (LL_SPI_IsActiveFlag_RXP(SPI2) && LL_SPI_IsEnabledIT_RXP(SPI2))
+    {
+        /* Call function Reception Callback */
+        module->SPI_RX_Callback();
+        return;
+    }
+}
+
 /******************************
  *       MAIN FUNCTION        *
  ******************************/
