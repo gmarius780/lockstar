@@ -22,10 +22,11 @@
 #define BAUDRATE_PRESCALER LL_SPI_BAUDRATEPRESCALER_DIV64 // DIV2, DIV4, DIV8, DIV16, DIV32, DIV64, DIV128, DIV256
 #define SPI_MASTER_DIRECTION LL_SPI_SIMPLEX_TX            // FULL_DUPLEX, HALF_DUPLEX_TX, HALF_DUPLEX_RX, SIMPLEX_TX, SIMPLEX_RX
 #define SPI_SLAVE_DIRECTION LL_SPI_SIMPLEX_RX             // FULL_DUPLEX, HALF_DUPLEX_TX, HALF_DUPLEX_RX, SIMPLEX_TX, SIMPLEX_RX
-#define TIMEOUT 0xFFF
+
 #define NSS_MODE_MASTER LL_SPI_NSS_HARD_OUTPUT // LL_SPI_NSS_SOFT, LL_SPI_NSS_HARD_INPUT, LL_SPI_NSS_HARD_OUTPUT
 #define NSS_MODE_SLAVE LL_SPI_NSS_HARD_INPUT   // LL_SPI_NSS_SOFT, LL_SPI_NSS_HARD_INPUT, LL_SPI_NSS_HARD_OUTPUT
-#define BUFFER_SIZE 24
+#define BUFFER_SIZE 128
+#define SEED 20
 
 class SPITestModule
 {
@@ -36,30 +37,41 @@ public:
 
     void run()
     {
+
+        init_buffer(SPI_MASTER_TxBuffer);
+        init_buffer(SPI_SLAVE_TxBuffer);
+
         SPI_config(SPI_MASTER, SPI_MASTER_DIRECTION, NSS_MODE_MASTER, 0);
 #ifdef SPI_SLAVE
         SPI_config(SPI_SLAVE, SPI_SLAVE_DIRECTION, NSS_MODE_SLAVE, 1);
 #endif
-
-        timeout = TIMEOUT;
-
         // Start Master transfer
         LL_SPI_StartMasterTransfer(SPI_MASTER);
 
-        // Wait for end of transfer
-        while (!eot)
+        turn_LED1_on();
+        while (true)
         {
         }
-        
+    }
 
-        // while ((timeout != 0))
-        // {
-        //     if (SysTick->CTRL & SysTick_CTRL_COUNTFLAG_Msk)
-        //     {
-        //         timeout--;
-        //     }
-        // }
-// Check result when in loopback mode
+    static uint16_t BufferCmp(uint8_t *pBuffer1, uint8_t *pBuffer2, uint16_t BufferLength)
+    {
+        while (BufferLength--)
+        {
+            if ((*pBuffer1) != *pBuffer2)
+            {
+                return BufferLength;
+            }
+            pBuffer1++;
+            pBuffer2++;
+        }
+
+        return 0;
+    }
+
+    void check_result()
+    {
+        // Check result when in loopback mode
 #ifdef LOOPBACK_MODE
         if (BufferCmp(SPI_MASTER_TxBuffer, SPI_MASTER_RxBuffer, SPIx_NbDataToTransmit))
         {
@@ -84,25 +96,8 @@ public:
             turn_LED2_on();
         }
 #endif
-        turn_LED1_on();
-        while (true)
-        {
-        }
     }
-    static uint16_t BufferCmp(uint8_t *pBuffer1, uint8_t *pBuffer2, uint16_t BufferLength)
-    {
-        while (BufferLength--)
-        {
-            if ((*pBuffer1) != *pBuffer2)
-            {
-                return BufferLength;
-            }
-            pBuffer1++;
-            pBuffer2++;
-        }
 
-        return 0;
-    }
     void SPI_EOT_Callback(SPI_TypeDef *SPIx)
     {
         LL_SPI_Disable(SPIx);
@@ -112,7 +107,7 @@ public:
         LL_SPI_DisableIT_OVR(SPIx);
         LL_SPI_DisableIT_UDR(SPIx);
         LL_SPI_DisableIT_EOT(SPIx);
-        eot = true;
+        check_result();
     }
 
     void SPI_TX_Callback(SPI_TypeDef *SPIx)
@@ -214,17 +209,28 @@ public:
         LL_SPI_EnableIT_EOT(SPIx);
     }
 
+    void init_buffer(uint8_t *buffer)
+    {
+
+        srand(SEED);
+
+        for (int i = 0; i < BUFFER_SIZE-1; ++i)
+        {
+            // Generate a random character between 'A' (65) and 'Z' (90)
+            buffer[i] = (char)(rand() % 26 + 65);
+        }
+        buffer[BUFFER_SIZE-1] = '\0';
+    }
+
 public:
     uint32_t SPI_MASTER_TXIDX = 0;
     uint32_t SPI_MASTER_RXIDX = 0;
     uint32_t SPI_SLAVE_TXIDX = 0;
     uint32_t SPI_SLAVE_RXIDX = 0;
 
-    bool eot = false;
-    uint32_t timeout = 0;
-    uint8_t SPI_MASTER_TxBuffer[BUFFER_SIZE] = "** SPI_M_OneBoard_IT **";
+    uint8_t SPI_MASTER_TxBuffer[BUFFER_SIZE] = {0};
     uint8_t SPI_MASTER_RxBuffer[BUFFER_SIZE] = {0};
-    uint8_t SPI_SLAVE_TxBuffer[BUFFER_SIZE] = "** SPI_S_OneBoard_IT **";
+    uint8_t SPI_SLAVE_TxBuffer[BUFFER_SIZE] = {0};
     uint8_t SPI_SLAVE_RxBuffer[BUFFER_SIZE] = {0};
     uint32_t SPIx_NbDataToTransmit = BUFFER_SIZE;
 };
