@@ -25,13 +25,14 @@ public:
     {
 
         init_buffer(SPI_MASTER_TxBuffer, SEED);
-        init_buffer(SPI_SLAVE_TxBuffer, SEED+1);
-        
+        init_buffer(SPI_SLAVE_TxBuffer, SEED + 1);
+
 #ifdef SPI_SLAVE
         SPI_config(SPI_SLAVE, SPI_SLAVE_DIRECTION, NSS_MODE_SLAVE, 1);
 #endif
 
         SPI_config(SPI_MASTER, SPI_MASTER_DIRECTION, NSS_MODE_MASTER, 0);
+
         // Start Master transfer
         LL_SPI_StartMasterTransfer(SPI_MASTER);
 
@@ -151,7 +152,9 @@ public:
     void SPI_config(SPI_TypeDef *SPIx, uint32_t SPIx_DIRECTION, uint32_t NSS_MODE, bool isSlave)
     {
         LL_SPI_EnableGPIOControl(SPIx);
+#ifdef PACKET_MODE
         LL_SPI_SetTransferSize(SPIx, BUFFER_SIZE);
+#endif
         LL_SPI_SetTransferDirection(SPIx, SPIx_DIRECTION);
 
         LL_SPI_SetBaudRatePrescaler(SPIx, BAUDRATE_PRESCALER);
@@ -162,17 +165,23 @@ public:
             LL_SPI_SetMode(SPIx, LL_SPI_MODE_SLAVE);
             LL_SPI_DisableNSSPulseMgt(SPIx);
         }
-        else{
+        else
+        {
             LL_SPI_SetMode(SPIx, LL_SPI_MODE_MASTER);
             LL_SPI_EnableNSSPulseMgt(SPIx);
         }
+        LL_DMA_ConfigAddresses(SPI_MASTER_TXDMA, SPI_MASTER_TXDMA_STREAM, (uint32_t)&SPI_MASTER_TxBuffer, LL_SPI_DMA_GetTxRegAddr(SPI_MASTER), LL_DMA_DIRECTION_MEMORY_TO_PERIPH);
+        LL_DMA_SetDataLength(SPI_MASTER_TXDMA, SPI_MASTER_TXDMA_STREAM, BUFFER_SIZE);
+        
         // enable SPI
         LL_SPI_Enable(SPIx);
         // Wait for SPI activation flag
         while (!LL_SPI_IsEnabled(SPIx))
         {
         }
-
+        LL_DMA_EnableStream(SPI_MASTER_TXDMA, SPI_MASTER_TXDMA_STREAM);
+        LL_SPI_EnableDMAReq_TX(SPI_MASTER);
+#ifdef PACKET_MODE
         switch (SPIx_DIRECTION)
         {
         case LL_SPI_FULL_DUPLEX:
@@ -196,6 +205,7 @@ public:
         LL_SPI_EnableIT_UDR(SPIx);
         LL_SPI_EnableIT_OVR(SPIx);
         LL_SPI_EnableIT_EOT(SPIx);
+#endif
     }
 
     void init_buffer(uint8_t *buffer, uint32_t seed)
@@ -203,12 +213,12 @@ public:
 
         srand(seed);
 
-        for (int i = 0; i < BUFFER_SIZE-1; ++i)
+        for (int i = 0; i < BUFFER_SIZE - 1; ++i)
         {
             // Generate a random character between 'A' (65) and 'Z' (90)
             buffer[i] = (char)(rand() % 26 + 65);
         }
-        buffer[BUFFER_SIZE-1] = '\0';
+        buffer[BUFFER_SIZE - 1] = '\0';
     }
 
 public:
