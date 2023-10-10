@@ -205,3 +205,5 @@ web/api/__pycache__/*
 *.net
 
 .vscode
+hardware/simulations/Draft1.asc
+code/mc/dev/Core/Modules/config.h
