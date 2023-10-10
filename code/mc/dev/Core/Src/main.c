@@ -45,15 +45,12 @@ ADC_HandleTypeDef hadc3;
 SPI_HandleTypeDef hspi1;
 SPI_HandleTypeDef hspi3;
 SPI_HandleTypeDef hspi5;
-SPI_HandleTypeDef hspi6;
 DMA_HandleTypeDef hdma_spi1_rx;
 DMA_HandleTypeDef hdma_spi1_tx;
 DMA_HandleTypeDef hdma_spi3_rx;
 DMA_HandleTypeDef hdma_spi3_tx;
 DMA_HandleTypeDef hdma_spi5_rx;
 DMA_HandleTypeDef hdma_spi5_tx;
-DMA_HandleTypeDef hdma_spi6_rx;
-DMA_HandleTypeDef hdma_spi6_tx;
 
 TIM_HandleTypeDef htim1;
 
@@ -80,7 +77,12 @@ static void MX_TIM1_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+int __io_putchar(int ch)
+{
+ // Write character to ITM ch.0
+ ITM_SendChar(ch);
+ return(ch);
+}
 /* USER CODE END 0 */
 
 /**
@@ -369,7 +371,7 @@ static void MX_SPI2_Init(void)
   */
   GPIO_InitStruct.Pin = LL_GPIO_PIN_12|LL_GPIO_PIN_13|LL_GPIO_PIN_14|LL_GPIO_PIN_15;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
-  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
+  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_VERY_HIGH;
   GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
   GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
   GPIO_InitStruct.Alternate = LL_GPIO_AF_5;
@@ -395,6 +397,25 @@ static void MX_SPI2_Init(void)
   LL_DMA_SetMemorySize(DMA1, LL_DMA_STREAM_0, LL_DMA_MDATAALIGN_BYTE);
 
   LL_DMA_DisableFifoMode(DMA1, LL_DMA_STREAM_0);
+
+  /* SPI2_TX Init */
+  LL_DMA_SetPeriphRequest(DMA1, LL_DMA_STREAM_1, LL_DMAMUX1_REQ_SPI2_TX);
+
+  LL_DMA_SetDataTransferDirection(DMA1, LL_DMA_STREAM_1, LL_DMA_DIRECTION_MEMORY_TO_PERIPH);
+
+  LL_DMA_SetStreamPriorityLevel(DMA1, LL_DMA_STREAM_1, LL_DMA_PRIORITY_LOW);
+
+  LL_DMA_SetMode(DMA1, LL_DMA_STREAM_1, LL_DMA_MODE_NORMAL);
+
+  LL_DMA_SetPeriphIncMode(DMA1, LL_DMA_STREAM_1, LL_DMA_PERIPH_NOINCREMENT);
+
+  LL_DMA_SetMemoryIncMode(DMA1, LL_DMA_STREAM_1, LL_DMA_MEMORY_INCREMENT);
+
+  LL_DMA_SetPeriphSize(DMA1, LL_DMA_STREAM_1, LL_DMA_PDATAALIGN_BYTE);
+
+  LL_DMA_SetMemorySize(DMA1, LL_DMA_STREAM_1, LL_DMA_MDATAALIGN_BYTE);
+
+  LL_DMA_DisableFifoMode(DMA1, LL_DMA_STREAM_1);
 
   /* SPI2 interrupt Init */
   NVIC_SetPriority(SPI2_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),0, 0));
@@ -498,7 +519,7 @@ static void MX_SPI4_Init(void)
   */
   GPIO_InitStruct.Pin = LL_GPIO_PIN_2|LL_GPIO_PIN_4|LL_GPIO_PIN_5|LL_GPIO_PIN_6;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
-  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
+  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_VERY_HIGH;
   GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
   GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
   GPIO_InitStruct.Alternate = LL_GPIO_AF_5;
@@ -631,36 +652,103 @@ static void MX_SPI6_Init(void)
 
   /* USER CODE END SPI6_Init 0 */
 
+  LL_SPI_InitTypeDef SPI_InitStruct = {0};
+
+  LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
+  RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
+
+  /** Initializes the peripherals clock
+  */
+  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SPI6;
+  PeriphClkInitStruct.Spi6ClockSelection = RCC_SPI6CLKSOURCE_D3PCLK1;
+  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /* Peripheral clock enable */
+  LL_APB4_GRP1_EnableClock(LL_APB4_GRP1_PERIPH_SPI6);
+
+  LL_AHB4_GRP1_EnableClock(LL_AHB4_GRP1_PERIPH_GPIOC);
+  LL_AHB4_GRP1_EnableClock(LL_AHB4_GRP1_PERIPH_GPIOG);
+  /**SPI6 GPIO Configuration
+  PC12   ------> SPI6_SCK
+  PG12   ------> SPI6_MISO
+  PG14   ------> SPI6_MOSI
+  */
+  GPIO_InitStruct.Pin = LL_GPIO_PIN_12;
+  GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
+  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
+  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
+  GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
+  GPIO_InitStruct.Alternate = LL_GPIO_AF_5;
+  LL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+  GPIO_InitStruct.Pin = LL_GPIO_PIN_12|LL_GPIO_PIN_14;
+  GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
+  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
+  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
+  GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
+  GPIO_InitStruct.Alternate = LL_GPIO_AF_5;
+  LL_GPIO_Init(GPIOG, &GPIO_InitStruct);
+
+  /* SPI6 DMA Init */
+
+  /* SPI6_RX Init */
+  LL_BDMA_SetPeriphRequest(BDMA, LL_BDMA_CHANNEL_0, LL_DMAMUX2_REQ_SPI6_RX);
+
+  LL_BDMA_SetDataTransferDirection(BDMA, LL_BDMA_CHANNEL_0, LL_BDMA_DIRECTION_PERIPH_TO_MEMORY);
+
+  LL_BDMA_SetChannelPriorityLevel(BDMA, LL_BDMA_CHANNEL_0, LL_BDMA_PRIORITY_LOW);
+
+  LL_BDMA_SetMode(BDMA, LL_BDMA_CHANNEL_0, LL_BDMA_MODE_NORMAL);
+
+  LL_BDMA_SetPeriphIncMode(BDMA, LL_BDMA_CHANNEL_0, LL_BDMA_PERIPH_NOINCREMENT);
+
+  LL_BDMA_SetMemoryIncMode(BDMA, LL_BDMA_CHANNEL_0, LL_BDMA_MEMORY_INCREMENT);
+
+  LL_BDMA_SetPeriphSize(BDMA, LL_BDMA_CHANNEL_0, LL_BDMA_PDATAALIGN_BYTE);
+
+  LL_BDMA_SetMemorySize(BDMA, LL_BDMA_CHANNEL_0, LL_BDMA_MDATAALIGN_BYTE);
+
+  /* SPI6_TX Init */
+  LL_BDMA_SetPeriphRequest(BDMA, LL_BDMA_CHANNEL_1, LL_DMAMUX2_REQ_SPI6_TX);
+
+  LL_BDMA_SetDataTransferDirection(BDMA, LL_BDMA_CHANNEL_1, LL_BDMA_DIRECTION_MEMORY_TO_PERIPH);
+
+  LL_BDMA_SetChannelPriorityLevel(BDMA, LL_BDMA_CHANNEL_1, LL_BDMA_PRIORITY_LOW);
+
+  LL_BDMA_SetMode(BDMA, LL_BDMA_CHANNEL_1, LL_BDMA_MODE_NORMAL);
+
+  LL_BDMA_SetPeriphIncMode(BDMA, LL_BDMA_CHANNEL_1, LL_BDMA_PERIPH_NOINCREMENT);
+
+  LL_BDMA_SetMemoryIncMode(BDMA, LL_BDMA_CHANNEL_1, LL_BDMA_MEMORY_INCREMENT);
+
+  LL_BDMA_SetPeriphSize(BDMA, LL_BDMA_CHANNEL_1, LL_BDMA_PDATAALIGN_BYTE);
+
+  LL_BDMA_SetMemorySize(BDMA, LL_BDMA_CHANNEL_1, LL_BDMA_MDATAALIGN_BYTE);
+
+  /* SPI6 interrupt Init */
+  NVIC_SetPriority(SPI6_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),0, 0));
+  NVIC_EnableIRQ(SPI6_IRQn);
+
   /* USER CODE BEGIN SPI6_Init 1 */
 
   /* USER CODE END SPI6_Init 1 */
   /* SPI6 parameter configuration*/
-  hspi6.Instance = SPI6;
-  hspi6.Init.Mode = SPI_MODE_MASTER;
-  hspi6.Init.Direction = SPI_DIRECTION_2LINES;
-  hspi6.Init.DataSize = SPI_DATASIZE_8BIT;
-  hspi6.Init.CLKPolarity = SPI_POLARITY_LOW;
-  hspi6.Init.CLKPhase = SPI_PHASE_2EDGE;
-  hspi6.Init.NSS = SPI_NSS_SOFT;
-  hspi6.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
-  hspi6.Init.FirstBit = SPI_FIRSTBIT_MSB;
-  hspi6.Init.TIMode = SPI_TIMODE_DISABLE;
-  hspi6.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
-  hspi6.Init.CRCPolynomial = 0x0;
-  hspi6.Init.NSSPMode = SPI_NSS_PULSE_ENABLE;
-  hspi6.Init.NSSPolarity = SPI_NSS_POLARITY_LOW;
-  hspi6.Init.FifoThreshold = SPI_FIFO_THRESHOLD_01DATA;
-  hspi6.Init.TxCRCInitializationPattern = SPI_CRC_INITIALIZATION_ALL_ZERO_PATTERN;
-  hspi6.Init.RxCRCInitializationPattern = SPI_CRC_INITIALIZATION_ALL_ZERO_PATTERN;
-  hspi6.Init.MasterSSIdleness = SPI_MASTER_SS_IDLENESS_00CYCLE;
-  hspi6.Init.MasterInterDataIdleness = SPI_MASTER_INTERDATA_IDLENESS_00CYCLE;
-  hspi6.Init.MasterReceiverAutoSusp = SPI_MASTER_RX_AUTOSUSP_DISABLE;
-  hspi6.Init.MasterKeepIOState = SPI_MASTER_KEEP_IO_STATE_DISABLE;
-  hspi6.Init.IOSwap = SPI_IO_SWAP_DISABLE;
-  if (HAL_SPI_Init(&hspi6) != HAL_OK)
-  {
-    Error_Handler();
-  }
+  SPI_InitStruct.TransferDirection = LL_SPI_FULL_DUPLEX;
+  SPI_InitStruct.Mode = LL_SPI_MODE_MASTER;
+  SPI_InitStruct.DataWidth = LL_SPI_DATAWIDTH_8BIT;
+  SPI_InitStruct.ClockPolarity = LL_SPI_POLARITY_LOW;
+  SPI_InitStruct.ClockPhase = LL_SPI_PHASE_2EDGE;
+  SPI_InitStruct.NSS = LL_SPI_NSS_SOFT;
+  SPI_InitStruct.BaudRate = LL_SPI_BAUDRATEPRESCALER_DIV2;
+  SPI_InitStruct.BitOrder = LL_SPI_MSB_FIRST;
+  SPI_InitStruct.CRCCalculation = LL_SPI_CRCCALCULATION_DISABLE;
+  SPI_InitStruct.CRCPoly = 0x0;
+  LL_SPI_Init(SPI6, &SPI_InitStruct);
+  LL_SPI_SetStandard(SPI6, LL_SPI_PROTOCOL_MOTOROLA);
+  LL_SPI_EnableNSSPulseMgt(SPI6);
   /* USER CODE BEGIN SPI6_Init 2 */
 
   /* USER CODE END SPI6_Init 2 */
@@ -728,11 +816,11 @@ static void MX_BDMA_Init(void)
 
   /* DMA interrupt init */
   /* BDMA_Channel0_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(BDMA_Channel0_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(BDMA_Channel0_IRQn);
+  NVIC_SetPriority(BDMA_Channel0_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),0, 0));
+  NVIC_EnableIRQ(BDMA_Channel0_IRQn);
   /* BDMA_Channel1_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(BDMA_Channel1_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(BDMA_Channel1_IRQn);
+  NVIC_SetPriority(BDMA_Channel1_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),0, 0));
+  NVIC_EnableIRQ(BDMA_Channel1_IRQn);
 
 }
 
@@ -750,6 +838,9 @@ static void MX_DMA_Init(void)
   /* DMA1_Stream0_IRQn interrupt configuration */
   NVIC_SetPriority(DMA1_Stream0_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),0, 0));
   NVIC_EnableIRQ(DMA1_Stream0_IRQn);
+  /* DMA1_Stream1_IRQn interrupt configuration */
+  NVIC_SetPriority(DMA1_Stream1_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),0, 0));
+  NVIC_EnableIRQ(DMA1_Stream1_IRQn);
   /* DMA1_Stream2_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Stream2_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(DMA1_Stream2_IRQn);
