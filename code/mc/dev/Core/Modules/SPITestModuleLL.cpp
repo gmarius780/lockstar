@@ -170,17 +170,25 @@ public:
             LL_SPI_SetMode(SPIx, LL_SPI_MODE_MASTER);
             LL_SPI_EnableNSSPulseMgt(SPIx);
         }
-        LL_DMA_ConfigAddresses(SPI_MASTER_TXDMA, SPI_MASTER_TXDMA_STREAM, (uint32_t)&SPI_MASTER_TxBuffer, LL_SPI_DMA_GetTxRegAddr(SPI_MASTER), LL_DMA_DIRECTION_MEMORY_TO_PERIPH);
-        LL_DMA_SetDataLength(SPI_MASTER_TXDMA, SPI_MASTER_TXDMA_STREAM, BUFFER_SIZE);
+
         
+        LL_DMA_ConfigAddresses(SPI_MASTER_TXDMA, SPI_MASTER_TXDMA_STREAM, (uint32_t)SPI_MASTER_TxBuffer, LL_SPI_DMA_GetTxRegAddr(SPI_MASTER), LL_DMA_DIRECTION_MEMORY_TO_PERIPH);
+        LL_DMA_SetDataLength(SPI_MASTER_TXDMA, SPI_MASTER_TXDMA_STREAM, BUFFER_SIZE);
+        LL_DMA_ConfigAddresses(SPI_MASTER_RXDMA, SPI_MASTER_RXDMA_STREAM, LL_SPI_DMA_GetRxRegAddr(SPI_MASTER), (uint32_t)SPI_MASTER_RxBuffer, LL_DMA_DIRECTION_PERIPH_TO_MEMORY);
+        LL_DMA_SetDataLength(SPI_MASTER_RXDMA, SPI_MASTER_RXDMA_STREAM, BUFFER_SIZE);
+        
+        LL_SPI_EnableDMAReq_RX(SPI_MASTER);
+        LL_SPI_EnableDMAReq_TX(SPI_MASTER);
         // enable SPI
         LL_SPI_Enable(SPIx);
         // Wait for SPI activation flag
         while (!LL_SPI_IsEnabled(SPIx))
         {
         }
+        
         LL_DMA_EnableStream(SPI_MASTER_TXDMA, SPI_MASTER_TXDMA_STREAM);
-        LL_SPI_EnableDMAReq_TX(SPI_MASTER);
+        LL_DMA_EnableStream(SPI_MASTER_RXDMA, SPI_MASTER_RXDMA_STREAM);
+        // LL_SPI_EnableDMAReq_TX(SPI_MASTER);
 #ifdef PACKET_MODE
         switch (SPIx_DIRECTION)
         {
@@ -208,7 +216,7 @@ public:
 #endif
     }
 
-    void init_buffer(uint8_t *buffer, uint32_t seed)
+    void init_buffer(volatile uint8_t *buffer, uint32_t seed)
     {
 
         srand(seed);
@@ -227,10 +235,10 @@ public:
     uint32_t SPI_SLAVE_TXIDX = 0;
     uint32_t SPI_SLAVE_RXIDX = 0;
 
-    uint8_t SPI_MASTER_TxBuffer[BUFFER_SIZE] = {0};
-    uint8_t SPI_MASTER_RxBuffer[BUFFER_SIZE] = {0};
-    uint8_t SPI_SLAVE_TxBuffer[BUFFER_SIZE] = {0};
-    uint8_t SPI_SLAVE_RxBuffer[BUFFER_SIZE] = {0};
+    volatile uint8_t SPI_MASTER_TxBuffer[BUFFER_SIZE] = {0};
+    volatile uint8_t SPI_MASTER_RxBuffer[BUFFER_SIZE] = {0};
+    volatile uint8_t SPI_SLAVE_TxBuffer[BUFFER_SIZE] = {0};
+    volatile uint8_t SPI_SLAVE_RxBuffer[BUFFER_SIZE] = {0};
 };
 
 SPITestModule *module;
