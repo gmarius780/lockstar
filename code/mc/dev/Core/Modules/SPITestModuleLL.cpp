@@ -24,8 +24,8 @@ public:
     void run()
     {
 
-        init_buffer(SPI_MASTER_TxBuffer, SEED);
-        init_buffer(SPI_SLAVE_TxBuffer, SEED + 1);
+        init_buffer((uint8_t *)SPI_MASTER_TxBuffer, SEED);
+        init_buffer((uint8_t *)SPI_SLAVE_TxBuffer, SEED + 1);
 
 #ifdef SPI_SLAVE
         SPI_config(SPI_SLAVE, SPI_SLAVE_DIRECTION, NSS_MODE_SLAVE, 1);
@@ -35,20 +35,23 @@ public:
 
         // Start Master transfer
         LL_SPI_StartMasterTransfer(SPI_MASTER);
-
+        while (!LL_DMA_IsActiveFlag_TC1(SPI_MASTER_TXDMA) || !LL_DMA_IsActiveFlag_TC0(SPI_MASTER_RXDMA))
+        {
+        }
         turn_LED1_on();
+        check_result();
         while (true)
         {
         }
     }
 
-    static uint16_t BufferCmp(uint8_t *pBuffer1, uint8_t *pBuffer2, uint16_t BufferLength)
+    static uint16_t BufferCmp(uint8_t *pBuffer1, uint8_t *pBuffer2, uint32_t BufferLength)
     {
-        while (BufferLength--)
+        for (uint16_t i = BufferLength; i > 0; i--)
         {
             if ((*pBuffer1) != *pBuffer2)
             {
-                return BufferLength;
+                return i;
             }
             pBuffer1++;
             pBuffer2++;
@@ -61,7 +64,7 @@ public:
     {
         // Check result when in loopback mode
 #ifdef LOOPBACK_MODE
-        if (BufferCmp(SPI_MASTER_TxBuffer, SPI_MASTER_RxBuffer, BUFFER_SIZE))
+        if (BufferCmp((uint8_t *)SPI_MASTER_TxBuffer, (uint8_t *)SPI_MASTER_RxBuffer, BUFFER_SIZE))
         {
             /* Turn the LED 3 on if result wrong */
             turn_LED3_on();
@@ -149,6 +152,10 @@ public:
         LL_SPI_Disable(SPI_MASTER);
     }
 
+    void SPI_DMA_EOT_Callback(SPI_TypeDef *SPIx)
+    {
+    }
+
     void SPI_config(SPI_TypeDef *SPIx, uint32_t SPIx_DIRECTION, uint32_t NSS_MODE, bool isSlave)
     {
         LL_SPI_EnableGPIOControl(SPIx);
@@ -182,7 +189,9 @@ public:
 
 #ifdef USE_FIFOS
         // FIFO mode
+        LL_DMA_EnableFifoMode(SPI_MASTER_TXDMA, SPI_MASTER_TXDMA_STREAM);
         LL_DMA_EnableFifoMode(SPI_MASTER_RXDMA, SPI_MASTER_RXDMA_STREAM);
+        LL_DMA_SetFIFOThreshold(SPI_MASTER_TXDMA, SPI_MASTER_TXDMA_STREAM, LL_DMA_FIFOTHRESHOLD_FULL);
         LL_DMA_SetFIFOThreshold(SPI_MASTER_RXDMA, SPI_MASTER_RXDMA_STREAM, LL_DMA_FIFOTHRESHOLD_FULL);
         LL_SPI_SetFIFOThreshold(SPIx, LL_SPI_FIFO_TH_08DATA);
 #endif
@@ -226,7 +235,7 @@ public:
 #endif
     }
 
-    void init_buffer(volatile uint8_t *buffer, uint32_t seed)
+    void init_buffer(uint8_t *buffer, uint32_t seed)
     {
 
         srand(seed);
@@ -245,10 +254,10 @@ public:
     uint32_t SPI_SLAVE_TXIDX = 0;
     uint32_t SPI_SLAVE_RXIDX = 0;
 
-    volatile uint8_t SPI_MASTER_TxBuffer[BUFFER_SIZE] = {0};
-    volatile uint8_t SPI_MASTER_RxBuffer[BUFFER_SIZE] = {0};
-    volatile uint8_t SPI_SLAVE_TxBuffer[BUFFER_SIZE] = {0};
-    volatile uint8_t SPI_SLAVE_RxBuffer[BUFFER_SIZE] = {0};
+    uint8_t SPI_MASTER_TxBuffer[BUFFER_SIZE] = {0};
+    uint8_t SPI_MASTER_RxBuffer[BUFFER_SIZE] = {0};
+    uint8_t SPI_SLAVE_TxBuffer[BUFFER_SIZE] = {0};
+    uint8_t SPI_SLAVE_RxBuffer[BUFFER_SIZE] = {0};
 };
 
 SPITestModule *module;
