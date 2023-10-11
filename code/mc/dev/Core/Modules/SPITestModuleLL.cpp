@@ -186,20 +186,18 @@ public:
         LL_DMA_SetFIFOThreshold(SPI_MASTER_RXDMA, SPI_MASTER_RXDMA_STREAM, LL_DMA_FIFOTHRESHOLD_FULL);
         LL_SPI_SetFIFOThreshold(SPIx, LL_SPI_FIFO_TH_08DATA);
 #endif
-
         LL_SPI_EnableDMAReq_RX(SPI_MASTER);
+        LL_DMA_EnableStream(SPI_MASTER_TXDMA, SPI_MASTER_TXDMA_STREAM);
+        LL_DMA_EnableStream(SPI_MASTER_RXDMA, SPI_MASTER_RXDMA_STREAM);
         LL_SPI_EnableDMAReq_TX(SPI_MASTER);
 #endif
+
         // enable SPI
         LL_SPI_Enable(SPIx);
         // Wait for SPI activation flag
         while (!LL_SPI_IsEnabled(SPIx))
         {
         }
-#ifdef DMA_MODE
-        LL_DMA_EnableStream(SPI_MASTER_TXDMA, SPI_MASTER_TXDMA_STREAM);
-        LL_DMA_EnableStream(SPI_MASTER_RXDMA, SPI_MASTER_RXDMA_STREAM);
-#endif
 
 #ifdef PACKET_MODE
         switch (SPIx_DIRECTION)
