@@ -152,9 +152,7 @@ public:
     void SPI_config(SPI_TypeDef *SPIx, uint32_t SPIx_DIRECTION, uint32_t NSS_MODE, bool isSlave)
     {
         LL_SPI_EnableGPIOControl(SPIx);
-#ifdef PACKET_MODE
-        LL_SPI_SetTransferSize(SPIx, BUFFER_SIZE);
-#endif
+
         LL_SPI_SetTransferDirection(SPIx, SPIx_DIRECTION);
 
         LL_SPI_SetBaudRatePrescaler(SPIx, BAUDRATE_PRESCALER);
@@ -170,33 +168,39 @@ public:
             LL_SPI_SetMode(SPIx, LL_SPI_MODE_MASTER);
             LL_SPI_EnableNSSPulseMgt(SPIx);
         }
-
-        
+#ifdef PACKET_MODE
+        LL_SPI_SetTransferSize(SPIx, BUFFER_SIZE);
+#endif
+#ifdef DMA_MODE
         LL_DMA_ConfigAddresses(SPI_MASTER_TXDMA, SPI_MASTER_TXDMA_STREAM, (uint32_t)SPI_MASTER_TxBuffer, LL_SPI_DMA_GetTxRegAddr(SPI_MASTER), LL_DMA_DIRECTION_MEMORY_TO_PERIPH);
         LL_DMA_SetDataLength(SPI_MASTER_TXDMA, SPI_MASTER_TXDMA_STREAM, BUFFER_SIZE);
         LL_DMA_ConfigAddresses(SPI_MASTER_RXDMA, SPI_MASTER_RXDMA_STREAM, LL_SPI_DMA_GetRxRegAddr(SPI_MASTER), (uint32_t)SPI_MASTER_RxBuffer, LL_DMA_DIRECTION_PERIPH_TO_MEMORY);
         LL_DMA_SetDataLength(SPI_MASTER_RXDMA, SPI_MASTER_RXDMA_STREAM, BUFFER_SIZE);
 
-        // LL_DMA_SetStreamPriorityLevel(SPI_MASTER_TXDMA, SPI_MASTER_TXDMA_STREAM, LL_DMA_PRIORITY_HIGH);
-        // LL_DMA_SetStreamPriorityLevel(SPI_MASTER_RXDMA, SPI_MASTER_RXDMA_STREAM, LL_DMA_PRIORITY_MEDIUM);
-        
+        LL_DMA_SetStreamPriorityLevel(SPI_MASTER_TXDMA, SPI_MASTER_TXDMA_STREAM, LL_DMA_PRIORITY_LOW);
+        LL_DMA_SetStreamPriorityLevel(SPI_MASTER_RXDMA, SPI_MASTER_RXDMA_STREAM, LL_DMA_PRIORITY_LOW);
+
+#ifdef USE_FIFOS
         // FIFO mode
-        // LL_DMA_EnableFifoMode(SPI_MASTER_RXDMA, SPI_MASTER_RXDMA_STREAM);
-        // LL_DMA_SetFIFOThreshold(SPI_MASTER_RXDMA, SPI_MASTER_RXDMA_STREAM, LL_DMA_FIFOTHRESHOLD_FULL);
-        // LL_SPI_SetFIFOThreshold(SPIx, LL_SPI_FIFO_TH_08DATA);
+        LL_DMA_EnableFifoMode(SPI_MASTER_RXDMA, SPI_MASTER_RXDMA_STREAM);
+        LL_DMA_SetFIFOThreshold(SPI_MASTER_RXDMA, SPI_MASTER_RXDMA_STREAM, LL_DMA_FIFOTHRESHOLD_FULL);
+        LL_SPI_SetFIFOThreshold(SPIx, LL_SPI_FIFO_TH_08DATA);
+#endif
 
         LL_SPI_EnableDMAReq_RX(SPI_MASTER);
         LL_SPI_EnableDMAReq_TX(SPI_MASTER);
+#endif
         // enable SPI
         LL_SPI_Enable(SPIx);
         // Wait for SPI activation flag
         while (!LL_SPI_IsEnabled(SPIx))
         {
         }
-        
+#ifdef DMA_MODE
         LL_DMA_EnableStream(SPI_MASTER_TXDMA, SPI_MASTER_TXDMA_STREAM);
         LL_DMA_EnableStream(SPI_MASTER_RXDMA, SPI_MASTER_RXDMA_STREAM);
-        // LL_SPI_EnableDMAReq_TX(SPI_MASTER);
+#endif
+
 #ifdef PACKET_MODE
         switch (SPIx_DIRECTION)
         {
