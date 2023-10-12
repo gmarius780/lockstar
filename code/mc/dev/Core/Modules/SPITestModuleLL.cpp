@@ -13,6 +13,7 @@
 #ifdef SPI_TEST_MODULE
 #pragma message("Compiling SPI Test Module LL")
 #include "config.h"
+#include "stdio.h"
 
 class SPITestModule
 {
@@ -68,11 +69,13 @@ public:
         {
             /* Turn the LED 3 on if result wrong */
             turn_LED3_on();
+            printf("SPI Master Tx and Rx buffer are different\n");
         }
         else
         {
             /* Turn the LED 2 on if result is correct */
             turn_LED2_on();
+            printf("SPI Master Tx and Rx buffer are the same\n");
         }
 #endif
 #ifdef MASTERTX_SLAVERX_TEST
@@ -154,6 +157,23 @@ public:
 
     void SPI_DMA_EOT_Callback(SPI_TypeDef *SPIx)
     {
+        //1. Disable TX Stream
+        while(!LL_SPI_IsActiveFlag_TXC(SPIx)){
+        }
+        LL_DMA_DisableStream(SPI_MASTER_TXDMA, SPI_MASTER_TXDMA_STREAM);
+        while(LL_SPI_IsActiveFlag_RXWNE(SPIx) || LL_SPI_GetRxFIFOPackingLevel(SPIx)){
+        }
+        //2. Poll if RX FIFO empty
+        LL_DMA_DisableStream(SPI_MASTER_RXDMA, SPI_MASTER_RXDMA_STREAM);
+        while(LL_DMA_IsEnabledStream(SPI_MASTER_TXDMA, SPI_MASTER_TXDMA_STREAM) || LL_DMA_IsEnabledStream(SPI_MASTER_RXDMA, SPI_MASTER_RXDMA_STREAM)){
+        }
+        LL_DMA_DisableIT_TC(SPI_MASTER_TXDMA, SPI_MASTER_TXDMA_STREAM);
+        LL_SPI_Disable(SPIx);
+        while (LL_SPI_IsEnabled(SPIx))
+        {
+        }  
+        LL_SPI_DisableDMAReq_TX(SPIx);
+        LL_SPI_DisableDMAReq_RX(SPIx);
     }
 
     void SPI_config(SPI_TypeDef *SPIx, uint32_t SPIx_DIRECTION, uint32_t NSS_MODE, bool isSlave)
@@ -195,6 +215,8 @@ public:
         LL_DMA_SetFIFOThreshold(SPI_MASTER_RXDMA, SPI_MASTER_RXDMA_STREAM, LL_DMA_FIFOTHRESHOLD_FULL);
         LL_SPI_SetFIFOThreshold(SPIx, LL_SPI_FIFO_TH_08DATA);
 #endif
+
+        LL_DMA_EnableIT_TC(SPI_MASTER_TXDMA, SPI_MASTER_TXDMA_STREAM);
         LL_SPI_EnableDMAReq_RX(SPI_MASTER);
         LL_DMA_EnableStream(SPI_MASTER_TXDMA, SPI_MASTER_TXDMA_STREAM);
         LL_DMA_EnableStream(SPI_MASTER_RXDMA, SPI_MASTER_RXDMA_STREAM);
@@ -325,6 +347,15 @@ void SPI2_IRQHandler(void)
         return;
     }
 }
+
+// void DMA1_Stream0_IRQHandler(void){
+
+// }
+void DMA1_Stream1_IRQHandler(void){
+    module->SPI_DMA_EOT_Callback(SPI2);
+    return;
+}
+
 
 /******************************
  *       MAIN FUNCTION        *
