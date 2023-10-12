@@ -36,11 +36,7 @@ public:
 
         // Start Master transfer
         LL_SPI_StartMasterTransfer(SPI_MASTER);
-        while (!LL_DMA_IsActiveFlag_TC3(SPI_MASTER_TXDMA) || !LL_DMA_IsActiveFlag_TC2(SPI_MASTER_RXDMA))
-        {
-        }
-        turn_LED1_on();
-        check_result();
+
         while (true)
         {
         }
@@ -157,23 +153,28 @@ public:
 
     void SPI_DMA_EOT_Callback(SPI_TypeDef *SPIx)
     {
-        //1. Disable TX Stream
-        while(!LL_SPI_IsActiveFlag_TXC(SPIx)){
+        // 1. Disable TX Stream
+        while (!LL_SPI_IsActiveFlag_TXC(SPIx))
+        {
         }
         LL_DMA_DisableStream(SPI_MASTER_TXDMA, SPI_MASTER_TXDMA_STREAM);
-        while(LL_SPI_IsActiveFlag_RXWNE(SPIx) || LL_SPI_GetRxFIFOPackingLevel(SPIx)){
+        while (LL_SPI_IsActiveFlag_RXWNE(SPIx) || LL_SPI_GetRxFIFOPackingLevel(SPIx))
+        {
         }
-        //2. Poll if RX FIFO empty
+        // 2. Poll if RX FIFO empty
         LL_DMA_DisableStream(SPI_MASTER_RXDMA, SPI_MASTER_RXDMA_STREAM);
-        while(LL_DMA_IsEnabledStream(SPI_MASTER_TXDMA, SPI_MASTER_TXDMA_STREAM) || LL_DMA_IsEnabledStream(SPI_MASTER_RXDMA, SPI_MASTER_RXDMA_STREAM)){
+        while (LL_DMA_IsEnabledStream(SPI_MASTER_TXDMA, SPI_MASTER_TXDMA_STREAM) || LL_DMA_IsEnabledStream(SPI_MASTER_RXDMA, SPI_MASTER_RXDMA_STREAM))
+        {
         }
         LL_DMA_DisableIT_TC(SPI_MASTER_TXDMA, SPI_MASTER_TXDMA_STREAM);
         LL_SPI_Disable(SPIx);
         while (LL_SPI_IsEnabled(SPIx))
         {
-        }  
+        }
         LL_SPI_DisableDMAReq_TX(SPIx);
         LL_SPI_DisableDMAReq_RX(SPIx);
+        turn_LED1_on();
+        check_result();
     }
 
     void SPI_config(SPI_TypeDef *SPIx, uint32_t SPIx_DIRECTION, uint32_t NSS_MODE, bool isSlave)
@@ -351,12 +352,14 @@ void SPI2_IRQHandler(void)
 // void DMA1_Stream0_IRQHandler(void){
 
 // }
-void DMA2_Stream1_IRQHandler(void){
+void DMA2_Stream1_IRQHandler(void)
+{
     module->SPI_DMA_EOT_Callback(SPI2);
     return;
 }
 
-void DMA1_Stream3_IRQHandler(void){
+void DMA1_Stream3_IRQHandler(void)
+{
     module->SPI_DMA_EOT_Callback(SPI2);
     return;
 }
