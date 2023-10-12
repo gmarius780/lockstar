@@ -158,14 +158,17 @@ public:
         {
         }
         LL_DMA_DisableStream(SPI_MASTER_TXDMA, SPI_MASTER_TXDMA_STREAM);
-        while (LL_SPI_IsActiveFlag_RXWNE(SPIx) || LL_SPI_GetRxFIFOPackingLevel(SPIx))
+        
+        // 2. Poll if RX FIFO empty
+        while (LL_DMA_GetDataLength(SPI_MASTER_RXDMA, SPI_MASTER_RXDMA_STREAM) != 0 || LL_SPI_IsActiveFlag_RXWNE(SPIx) || LL_SPI_GetRxFIFOPackingLevel(SPIx))
         {
         }
-        // 2. Poll if RX FIFO empty
         LL_DMA_DisableStream(SPI_MASTER_RXDMA, SPI_MASTER_RXDMA_STREAM);
+        
         while (LL_DMA_IsEnabledStream(SPI_MASTER_TXDMA, SPI_MASTER_TXDMA_STREAM) || LL_DMA_IsEnabledStream(SPI_MASTER_RXDMA, SPI_MASTER_RXDMA_STREAM))
         {
         }
+
         LL_DMA_DisableIT_TC(SPI_MASTER_TXDMA, SPI_MASTER_TXDMA_STREAM);
         LL_SPI_Disable(SPIx);
         while (LL_SPI_IsEnabled(SPIx))
