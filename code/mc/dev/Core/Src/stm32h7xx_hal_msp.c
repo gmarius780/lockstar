@@ -212,7 +212,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
 
     /* SPI1 DMA Init */
     /* SPI1_RX Init */
-    hdma_spi1_rx.Instance = DMA2_Stream0;
+    hdma_spi1_rx.Instance = DMA1_Stream0;
     hdma_spi1_rx.Init.Request = DMA_REQUEST_SPI1_RX;
     hdma_spi1_rx.Init.Direction = DMA_PERIPH_TO_MEMORY;
     hdma_spi1_rx.Init.PeriphInc = DMA_PINC_DISABLE;
@@ -230,7 +230,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
     __HAL_LINKDMA(hspi,hdmarx,hdma_spi1_rx);
 
     /* SPI1_TX Init */
-    hdma_spi1_tx.Instance = DMA1_Stream2;
+    hdma_spi1_tx.Instance = DMA1_Stream1;
     hdma_spi1_tx.Init.Request = DMA_REQUEST_SPI1_TX;
     hdma_spi1_tx.Init.Direction = DMA_MEMORY_TO_PERIPH;
     hdma_spi1_tx.Init.PeriphInc = DMA_PINC_DISABLE;
@@ -285,7 +285,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
 
     /* SPI3 DMA Init */
     /* SPI3_RX Init */
-    hdma_spi3_rx.Instance = DMA1_Stream3;
+    hdma_spi3_rx.Instance = DMA1_Stream4;
     hdma_spi3_rx.Init.Request = DMA_REQUEST_SPI3_RX;
     hdma_spi3_rx.Init.Direction = DMA_PERIPH_TO_MEMORY;
     hdma_spi3_rx.Init.PeriphInc = DMA_PINC_DISABLE;
@@ -303,7 +303,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
     __HAL_LINKDMA(hspi,hdmarx,hdma_spi3_rx);
 
     /* SPI3_TX Init */
-    hdma_spi3_tx.Instance = DMA1_Stream4;
+    hdma_spi3_tx.Instance = DMA1_Stream5;
     hdma_spi3_tx.Init.Request = DMA_REQUEST_SPI3_TX;
     hdma_spi3_tx.Init.Direction = DMA_MEMORY_TO_PERIPH;
     hdma_spi3_tx.Init.PeriphInc = DMA_PINC_DISABLE;
@@ -350,7 +350,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
 
     /* SPI5 DMA Init */
     /* SPI5_RX Init */
-    hdma_spi5_rx.Instance = DMA1_Stream7;
+    hdma_spi5_rx.Instance = DMA2_Stream2;
     hdma_spi5_rx.Init.Request = DMA_REQUEST_SPI5_RX;
     hdma_spi5_rx.Init.Direction = DMA_PERIPH_TO_MEMORY;
     hdma_spi5_rx.Init.PeriphInc = DMA_PINC_DISABLE;
@@ -368,7 +368,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
     __HAL_LINKDMA(hspi,hdmarx,hdma_spi5_rx);
 
     /* SPI5_TX Init */
-    hdma_spi5_tx.Instance = DMA2_Stream1;
+    hdma_spi5_tx.Instance = DMA2_Stream3;
     hdma_spi5_tx.Init.Request = DMA_REQUEST_SPI5_TX;
     hdma_spi5_tx.Init.Direction = DMA_MEMORY_TO_PERIPH;
     hdma_spi5_tx.Init.PeriphInc = DMA_PINC_DISABLE;

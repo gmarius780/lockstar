@@ -36,7 +36,7 @@ public:
 
         // Start Master transfer
         LL_SPI_StartMasterTransfer(SPI_MASTER);
-        while (!LL_DMA_IsActiveFlag_TC1(SPI_MASTER_TXDMA) || !LL_DMA_IsActiveFlag_TC0(SPI_MASTER_RXDMA))
+        while (!LL_DMA_IsActiveFlag_TC3(SPI_MASTER_TXDMA) || !LL_DMA_IsActiveFlag_TC2(SPI_MASTER_RXDMA))
         {
         }
         turn_LED1_on();
@@ -351,11 +351,15 @@ void SPI2_IRQHandler(void)
 // void DMA1_Stream0_IRQHandler(void){
 
 // }
-void DMA1_Stream1_IRQHandler(void){
+void DMA2_Stream1_IRQHandler(void){
     module->SPI_DMA_EOT_Callback(SPI2);
     return;
 }
 
+void DMA1_Stream3_IRQHandler(void){
+    module->SPI_DMA_EOT_Callback(SPI2);
+    return;
+}
 
 /******************************
  *       MAIN FUNCTION        *
