@@ -77,8 +77,8 @@ ADC_Device::ADC_Device(uint8_t SPILane, uint8_t DMAStreamIn, uint8_t DMAChannelI
     dma_input_handler = new DMA(DMA1, LL_DMA_STREAM_4, &DMA_RX_InitStruct);
     dma_output_handler = new DMA(DMA1, LL_DMA_STREAM_5, &DMA_TX_InitStruct);
 
-    dma_output_handler->enable_tc_irq();
-
+    dma_input_handler->enable_tc_irq();
+    
     LL_SPI_EnableDMAReq_RX(SPI3);
     LL_DMA_EnableStream(DMA1, LL_DMA_STREAM_5);
     LL_DMA_EnableStream(DMA1, LL_DMA_STREAM_4);
@@ -145,12 +145,14 @@ __attribute__((section("sram_func"))) void ADC_Device::start_conversion()
 
     cnv_port->BSRR = cnv_pin;
     volatile uint8_t delay = 0;
-    while (delay--)
-        ;
+    while (delay--){
+
+    }
     cnv_port->BSRR = (uint32_t)cnv_pin << 16U;
     delay = 5;
-    while (delay--)
-        ;
+    while (delay--){
+
+    }
 
     arm_dma();
 }
@@ -188,7 +190,7 @@ void ADC_Device::SPI_DMA_EOT_Callback(SPI_TypeDef *SPIx)
     {
     }
 
-    LL_DMA_DisableIT_TC(DMA1, LL_DMA_STREAM_5);
+    LL_DMA_DisableIT_TC(DMA1, LL_DMA_STREAM_4);
     LL_SPI_Disable(SPIx);
     while (LL_SPI_IsEnabled(SPIx))
     {

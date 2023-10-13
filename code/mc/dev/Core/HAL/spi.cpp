@@ -13,6 +13,10 @@
 SPI::SPI(SPI_TypeDef *SPIx)
 {
 	SPI_regs = SPIx;
+	// LL_SPI_EnableGPIOControl(SPIx);
+	// LL_SPI_SetMode(SPIx, LL_SPI_MODE_MASTER);
+    // LL_SPI_DisableNSSPulseMgt(SPIx);
+	// LL_SPI_SetNSSMode(SPIx, LL_SPI_NSS_SOFT);
 }
 
 void SPI::writeData(uint8_t data)
@@ -73,6 +77,9 @@ void SPI::disable_spi_tx_dma()
 void SPI::enableSPI()
 {
 	SPI_regs->CR1 |= SPI_CR1_SPE;
+	while (!LL_SPI_IsEnabled(SPI_regs))
+	{
+	}
 }
 
 void SPI::disableSPI()
