@@ -34,6 +34,13 @@ DMA::DMA(DMA_HandleTypeDef *hdmaSPI, DMA_config_t config) {
     DMA_regs->M1AR = config.M1AR;
 }
 
+DMA::DMA(DMA_TypeDef *DMAx, uint32_t Stream, LL_DMA_InitTypeDef* configuration){
+	LL_DMA_Init(DMAx, Stream, configuration);
+	uint32_t dma_base_addr = (uint32_t)DMAx;
+	this->DMA_regs = ((DMA_Stream_TypeDef *)(dma_base_addr + LL_DMA_STR_OFFSET_TAB[Stream]));
+}
+
+
 // __attribute__((section("sram_func")))
 void DMA::setMemory0Address(volatile uint8_t* addr) {
 	DMA_regs->M0AR = (uint32_t) addr;

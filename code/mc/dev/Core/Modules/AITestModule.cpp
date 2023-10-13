@@ -55,15 +55,15 @@ AITestModule *module;
  *         INTERRUPTS          *
  *******************************/
 
-
+//RX DMA Handler
 //__attribute__((section("sram_func")))
-void DMA1_Stream3_IRQHandler(void)
+void DMA1_Stream4_IRQHandler(void)
 {
 	// SPI 1 rx
 	module->ADC_Dev->dma_transmission_callback();
 }
-
-void DMA1_Stream4_IRQHandler(void)
+//TX DMA Handler
+void DMA1_Stream5_IRQHandler(void)
 {
     // SPI 1 tx
 }
