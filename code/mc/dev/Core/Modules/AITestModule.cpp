@@ -28,10 +28,10 @@ public:
 								 /* DMA Channel In */ 3,
 								 /* DMA Stream Out */ 3,
 								 /* DMA Channel Out */ 3,
-								 /* conversion pin port */ SPI2_NSS_GPIO_Port,
-								 /* conversion pin number */ SPI2_NSS_Pin,
-								// ADC_CNV_GPIO_Port,
-								// ADC_CNV_Pin,
+								//  /* conversion pin port */ SPI2_NSS_GPIO_Port,
+								//  /* conversion pin number */ SPI2_NSS_Pin,
+								ADC_CNV_GPIO_Port,
+								ADC_CNV_Pin,
 								 /* Channel 1 config */ ADC_BIPOLAR_5V,
 								 /* Channel 2 config */ ADC_BIPOLAR_5V);
 
@@ -39,9 +39,11 @@ public:
 
 		turn_LED2_on();
 		turn_LED3_on();
+
+		ADC_Dev->start_conversion();
 		while (true)
 		{
-			ADC_Dev->start_conversion();
+			// ADC_Dev->start_conversion();
 			// m1 = ADC_Dev->channel1->get_result();
 			// m2 = ADC_Dev->channel2->get_result();
 			// printf("Channel 1: %f\n", m1);
