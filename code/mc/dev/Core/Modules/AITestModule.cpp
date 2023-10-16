@@ -28,22 +28,24 @@ public:
 								 /* DMA Channel In */ 3,
 								 /* DMA Stream Out */ 3,
 								 /* DMA Channel Out */ 3,
-								 /* conversion pin port */ ADC_CNV_GPIO_Port,
-								 /* conversion pin number */ ADC_CNV_Pin,
-								 /* Channel 1 config */ ADC_UNIPOLAR_5V,
-								 /* Channel 2 config */ ADC_UNIPOLAR_5V);
+								 /* conversion pin port */ SPI2_NSS_GPIO_Port,
+								 /* conversion pin number */ SPI2_NSS_Pin,
+								// ADC_CNV_GPIO_Port,
+								// ADC_CNV_Pin,
+								 /* Channel 1 config */ ADC_BIPOLAR_5V,
+								 /* Channel 2 config */ ADC_BIPOLAR_5V);
 
 
-		ADC_Dev->start_conversion();
-		m1 = ADC_Dev->channel1->get_result();
-		m2 = ADC_Dev->channel2->get_result();
+
 		turn_LED2_on();
 		turn_LED3_on();
 		while (true)
 		{
-
-			//printf("Channel 1: %f\n", m1);
-			//printf("Channel 2: %f\n", m2);
+			ADC_Dev->start_conversion();
+			// m1 = ADC_Dev->channel1->get_result();
+			// m2 = ADC_Dev->channel2->get_result();
+			// printf("Channel 1: %f\n", m1);
+			// printf("Channel 2: %f\n", m2);
 		}
 	}
 
@@ -61,11 +63,17 @@ AITestModule *module;
 
 // RX DMA Handler
 //__attribute__((section("sram_func")))
+void DMA1_Stream2_IRQHandler(void)
+{
+	module->ADC_Dev->dma_transmission_callback();
+	// SPI 1 rx
+}
 void DMA1_Stream4_IRQHandler(void)
 {
 	module->ADC_Dev->dma_transmission_callback();
 	// SPI 1 rx
 }
+
 // TX DMA Handler
 void DMA1_Stream5_IRQHandler(void)
 {

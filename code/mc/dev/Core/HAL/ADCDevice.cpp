@@ -11,8 +11,6 @@
 
 ADC_Device::ADC_Device(uint8_t SPILane, uint8_t DMAStreamIn, uint8_t DMAChannelIn, uint8_t DMAStreamOut, uint8_t DMAChannelOut, GPIO_TypeDef *CNVPort, uint16_t CNVPin, uint8_t channel1Config, uint8_t channel2Config)
 {
-
-    dma_buffer = new uint8_t[DATAWIDTH]();
     this->cnv_port = CNVPort;
     this->cnv_pin = CNVPin;
 
@@ -37,7 +35,7 @@ ADC_Device::ADC_Device(uint8_t SPILane, uint8_t DMAStreamIn, uint8_t DMAChannelI
     adc_config_buffer[0] = code;
 
     // Setup perhipherals
-    spi_handler = new SPI(SPI3);
+    spi_handler = new SPI(SPI2);
 
     LL_DMA_InitTypeDef DMA_RX_InitStruct = {0};
     LL_DMA_InitTypeDef DMA_TX_InitStruct = {0};
@@ -51,8 +49,8 @@ ADC_Device::ADC_Device(uint8_t SPILane, uint8_t DMAStreamIn, uint8_t DMAChannelI
     DMA_RX_InitStruct.PeriphOrM2MSrcDataSize = LL_DMA_PDATAALIGN_BYTE;
     DMA_RX_InitStruct.MemoryOrM2MDstDataSize = LL_DMA_MDATAALIGN_BYTE;
     DMA_RX_InitStruct.NbData = DATAWIDTH;
-    DMA_RX_InitStruct.PeriphRequest = LL_DMAMUX1_REQ_SPI3_RX;
-    DMA_RX_InitStruct.Priority = LL_DMA_PRIORITY_HIGH;
+    DMA_RX_InitStruct.PeriphRequest = LL_DMAMUX1_REQ_SPI2_RX;
+    DMA_RX_InitStruct.Priority = LL_DMA_PRIORITY_MEDIUM;
     DMA_RX_InitStruct.FIFOMode = LL_DMA_FIFOMODE_ENABLE;
     DMA_RX_InitStruct.FIFOThreshold = LL_DMA_FIFOTHRESHOLD_FULL;
     DMA_RX_InitStruct.MemBurst = LL_DMA_MBURST_SINGLE;
@@ -67,24 +65,24 @@ ADC_Device::ADC_Device(uint8_t SPILane, uint8_t DMAStreamIn, uint8_t DMAChannelI
     DMA_TX_InitStruct.PeriphOrM2MSrcDataSize = LL_DMA_PDATAALIGN_BYTE;
     DMA_TX_InitStruct.MemoryOrM2MDstDataSize = LL_DMA_MDATAALIGN_BYTE;
     DMA_TX_InitStruct.NbData = DATAWIDTH;
-    DMA_TX_InitStruct.PeriphRequest = LL_DMAMUX1_REQ_SPI3_TX;
+    DMA_TX_InitStruct.PeriphRequest = LL_DMAMUX1_REQ_SPI2_TX;
     DMA_TX_InitStruct.Priority = LL_DMA_PRIORITY_HIGH;
     DMA_TX_InitStruct.FIFOMode = LL_DMA_FIFOMODE_ENABLE;
     DMA_TX_InitStruct.FIFOThreshold = LL_DMA_FIFOTHRESHOLD_FULL;
     DMA_TX_InitStruct.MemBurst = LL_DMA_MBURST_SINGLE;
     DMA_TX_InitStruct.PeriphBurst = LL_DMA_PBURST_SINGLE;
 
-    dma_input_handler = new DMA(DMA1, LL_DMA_STREAM_4, &DMA_RX_InitStruct);
-    dma_output_handler = new DMA(DMA1, LL_DMA_STREAM_5, &DMA_TX_InitStruct);
+    dma_input_handler = new DMA(DMA1, LL_DMA_STREAM_2, &DMA_RX_InitStruct);
+    dma_output_handler = new DMA(DMA1, LL_DMA_STREAM_3, &DMA_TX_InitStruct);
 
     dma_input_handler->enable_tc_irq();
     
-    LL_SPI_EnableDMAReq_RX(SPI3);
-    LL_DMA_EnableStream(DMA1, LL_DMA_STREAM_5);
-    LL_DMA_EnableStream(DMA1, LL_DMA_STREAM_4);
-    LL_SPI_EnableDMAReq_TX(SPI3);
+    // LL_SPI_EnableDMAReq_RX(SPI2);
+    // LL_DMA_EnableStream(DMA1, LL_DMA_STREAM_3);
+    // LL_DMA_EnableStream(DMA1, LL_DMA_STREAM_2);
+    // LL_SPI_EnableDMAReq_TX(SPI2);
 
-    spi_handler->enableSPI();
+    // spi_handler->enableSPI();
 }
 
 ADC_Device_Channel::ADC_Device_Channel(ADC_Device *parentDevice, uint16_t channelID, uint8_t config)
@@ -130,46 +128,55 @@ ADC_Device_Channel::ADC_Device_Channel(ADC_Device *parentDevice, uint16_t channe
     }
 }
 
-__attribute__((section("sram_func"))) void ADC_Device_Channel::update_result(int16_t result)
+void ADC_Device_Channel::update_result(int16_t result)
 {
     this->result = two_comp ? (step_size * result) : (step_size * (uint16_t)result);
 }
 
-__attribute__((section("sram_func"))) void ADC_Device::start_conversion()
+void ADC_Device::start_conversion()
 {
     if (busy)
         return;
+
+    LL_SPI_EnableDMAReq_RX(SPI2);
+    LL_DMA_EnableStream(DMA1, LL_DMA_STREAM_3);
+    LL_DMA_EnableStream(DMA1, LL_DMA_STREAM_2);
+    LL_SPI_EnableDMAReq_TX(SPI2);
+
+    spi_handler->enableSPI();
 
     // busy flag gets reset when DMA transfer is finished
     busy = true;
 
     cnv_port->BSRR = cnv_pin;
-    volatile uint8_t delay = 0;
-    while (delay--){
+    
+    // volatile uint8_t delay = 0;
+    // while (delay--){
 
-    }
+    // }
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
+    __NOP();
     cnv_port->BSRR = (uint32_t)cnv_pin << 16U;
-    delay = 5;
-    while (delay--){
+    // delay = 20;
+    // while (delay--){
 
-    }
+    // }
 
-    arm_dma();
+    LL_SPI_StartMasterTransfer(SPI2);
 }
 
 __attribute__((section("sram_func"))) void ADC_Device::arm_dma()
 {
-    LL_SPI_StartMasterTransfer(SPI3);
+    
 }
 
 __attribute__((section("sram_func"))) void ADC_Device::dma_transmission_callback()
 {
 
-    SPI_DMA_EOT_Callback(SPI3);
-    channel2->update_result(((int16_t)(dma_buffer[0] << 8)) + ((int16_t)dma_buffer[1]));
-    channel1->update_result(((int16_t)(dma_buffer[3] << 8)) + ((int16_t)dma_buffer[4]));
-
-    busy = false;
+    SPI_DMA_EOT_Callback(SPI2);
 }
 
 void ADC_Device::SPI_DMA_EOT_Callback(SPI_TypeDef *SPIx)
@@ -178,24 +185,27 @@ void ADC_Device::SPI_DMA_EOT_Callback(SPI_TypeDef *SPIx)
     while (!LL_SPI_IsActiveFlag_TXC(SPIx))
     {
     }
-    LL_DMA_DisableStream(DMA1, LL_DMA_STREAM_5);
+    LL_DMA_DisableStream(DMA1, LL_DMA_STREAM_3);
 
     // 2. Poll if RX FIFO empty
-    while (LL_DMA_GetDataLength(DMA1, LL_DMA_STREAM_4) != 0 || LL_SPI_IsActiveFlag_RXWNE(SPIx) || LL_SPI_GetRxFIFOPackingLevel(SPIx))
+    while (LL_DMA_GetDataLength(DMA1, LL_DMA_STREAM_2) != 0 || LL_SPI_IsActiveFlag_RXWNE(SPIx) || LL_SPI_GetRxFIFOPackingLevel(SPIx))
     {
     }
-    LL_DMA_DisableStream(DMA1, LL_DMA_STREAM_4);
+    LL_DMA_DisableStream(DMA1, LL_DMA_STREAM_2);
 
-    while (LL_DMA_IsEnabledStream(DMA1, LL_DMA_STREAM_5) || LL_DMA_IsEnabledStream(DMA1, LL_DMA_STREAM_4))
+    while (LL_DMA_IsEnabledStream(DMA1, LL_DMA_STREAM_3) || LL_DMA_IsEnabledStream(DMA1, LL_DMA_STREAM_2))
     {
     }
 
-    LL_DMA_DisableIT_TC(DMA1, LL_DMA_STREAM_4);
+    LL_DMA_DisableIT_TC(DMA1, LL_DMA_STREAM_2);
     LL_SPI_Disable(SPIx);
     while (LL_SPI_IsEnabled(SPIx))
     {
     }
     LL_SPI_DisableDMAReq_TX(SPIx);
     LL_SPI_DisableDMAReq_RX(SPIx);
+    channel2->update_result(((int16_t)(dma_buffer[0] << 8)) + ((int16_t)dma_buffer[1]));
+    channel1->update_result(((int16_t)(dma_buffer[3] << 8)) + ((int16_t)dma_buffer[4]));
+    busy = false;
     turn_LED1_on();
 }

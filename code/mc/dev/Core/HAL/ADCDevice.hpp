@@ -66,7 +66,7 @@ private:
     void arm_dma();
     void disarm_dma();
 
-    volatile uint8_t* dma_buffer;
+    volatile uint8_t dma_buffer[DATAWIDTH] = {0};
     volatile uint8_t* adc_config_buffer;
 
     uint16_t cnv_pin;
