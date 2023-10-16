@@ -85,6 +85,8 @@ void start(void);
 #define DigitalOut_GPIO_Port GPIOC
 #define DigitalIn_Pin GPIO_PIN_5
 #define DigitalIn_GPIO_Port GPIOC
+#define SPI2_NSS_Pin GPIO_PIN_12
+#define SPI2_NSS_GPIO_Port GPIOB
 #define LED6_Pin GPIO_PIN_8
 #define LED6_GPIO_Port GPIOD
 #define LED5_Pin GPIO_PIN_9
@@ -150,8 +152,8 @@ void start(void);
 //#define SINGLE_PID_MODULE
 //#define LINEARIZATION_MODULE
 // #define ANALOG_OUTPUT_MODULE
-// #define AI_TEST_MODULE
-#define SPI_TEST_MODULE
+#define AI_TEST_MODULE
+// #define SPI_TEST_MODULE
 // #define SPI_TEST_MODULE_HAL
 //#define TEST_MODULE
 // #define LED_MODULE
