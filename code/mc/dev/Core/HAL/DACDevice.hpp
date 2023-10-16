@@ -17,7 +17,7 @@
 
 #include "SPIDMAHandler.hpp"
 
-extern DMA_HandleTypeDef hdma_spi6_tx, hdma_spi6_rx;
+extern DMA_HandleTypeDef hdma_spi1tx, hdma_spi1_rx;
 
 class DAC_Device {
 public:

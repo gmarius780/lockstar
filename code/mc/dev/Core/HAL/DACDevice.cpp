@@ -62,7 +62,7 @@ DAC_Device::DAC_Device(uint8_t spi_lane, uint8_t dma_stream_out, uint8_t dma_cha
     dma_config.M0AR        = (uint32_t)dma_buffer;
     dma_config.M1AR        = 0;
     dma_config.NDTR        = 0;
-    dma_output_handler     = new DMA(&hdma_spi6_tx, dma_config);
+    dma_output_handler     = new DMA(&hdma_spi1_rx, dma_config);
 
     old_dma = new SPI_DMA_Handler(spi_lane, NONE, NONE, dma_stream_out, dma_channel_out, 2);
 
