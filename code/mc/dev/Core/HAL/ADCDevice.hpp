@@ -13,6 +13,7 @@
 #include "dma.hpp"
 #include "spi.hpp"
 #include "../HAL/leds.hpp"
+#include "../Modules/adc_config.h"
 
 #define ADC_BIPOLAR_10V     (uint8_t)0b111
 #define ADC_BIPOLAR_5V      (uint8_t)0b011
@@ -60,7 +61,7 @@ public:
     void start_conversion();
     void dma_transmission_callback();
     void dma_receive_callback();
-    void SPI_DMA_EOT_Callback(SPI_TypeDef *SPIx);
+    void SPI_DMA_EOT_Callback();
     bool is_busy() { return busy; };
     SPI *spi_handler;
 private:
