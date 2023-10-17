@@ -80,13 +80,6 @@ ADC_Device::ADC_Device(uint8_t SPILane, uint8_t DMAStreamIn, uint8_t DMAChannelI
 
     dma_input_handler->enable_tc_irq();
     dma_output_handler->enable_tc_irq();
-    
-    // LL_SPI_EnableDMAReq_RX(SPI3);
-    // LL_DMA_EnableStream(DMA1, LL_DMA_STREAM_5);
-    // LL_DMA_EnableStream(DMA1, LL_DMA_STREAM_4);
-    // LL_SPI_EnableDMAReq_TX(SPI3);
-
-    // spi_handler->enableSPI();
 }
 
 ADC_Device_Channel::ADC_Device_Channel(ADC_Device *parentDevice, uint16_t channelID, uint8_t config)
@@ -151,20 +144,7 @@ void ADC_Device::start_conversion()
 
     spi_handler->enableSPI();
 
-    // busy flag gets reset when DMA transfer is finished
     busy = true;
-
-    // cnv_port->BSRR = cnv_pin;
-    
-    // volatile uint8_t delay = 0;
-    // while (delay--){
-
-    // }
-    // cnv_port->BSRR = (uint32_t)cnv_pin << 16U;
-    // delay = 20;
-    // while (delay--){
-
-    // }
 
     LL_SPI_StartMasterTransfer(SPI3);
 }
@@ -190,7 +170,6 @@ __attribute__((section("sram_func"))) void ADC_Device::dma_transmission_callback
 void ADC_Device::SPI_DMA_EOT_Callback(SPI_TypeDef *SPIx)
 {
 
-    // 2. Poll if RX FIFO empty
     while (LL_SPI_IsActiveFlag_RXWNE(SPIx) || LL_SPI_GetRxFIFOPackingLevel(SPIx))
     {
     }
@@ -200,7 +179,6 @@ void ADC_Device::SPI_DMA_EOT_Callback(SPI_TypeDef *SPIx)
     {
     }
 
-    // LL_DMA_DisableIT_TC(DMA1, LL_DMA_STREAM_4);
     LL_SPI_Disable(SPIx);
     while (LL_SPI_IsEnabled(SPIx))
     {
