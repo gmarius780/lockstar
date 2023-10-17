@@ -42,7 +42,6 @@ ADC_Device::ADC_Device(uint8_t SPILane, uint8_t DMAStreamIn, uint8_t DMAChannelI
     // LL_SPI_EnableIT_EOT(ADC_SPI);
     // LL_SPI_SetInterDataIdleness(ADC_SPI, LL_SPI_ID_IDLENESS_10CYCLE);
 
-
     LL_DMA_InitTypeDef DMA_RX_InitStruct = {0};
     LL_DMA_InitTypeDef DMA_TX_InitStruct = {0};
 
@@ -161,9 +160,7 @@ __attribute__((section("sram_func"))) void ADC_Device::dma_transmission_callback
 {
 
     LL_DMA_DisableStream(DMA1, ADC_DMA_TX_STREAM);
-    
 }
-
 
 void ADC_Device::SPI_DMA_EOT_Callback()
 {

@@ -15,21 +15,22 @@
 #include "../HAL/leds.hpp"
 #include "../Modules/adc_config.h"
 
-#define ADC_BIPOLAR_10V     (uint8_t)0b111
-#define ADC_BIPOLAR_5V      (uint8_t)0b011
-#define ADC_UNIPOLAR_10V    (uint8_t)0b101
-#define ADC_UNIPOLAR_5V     (uint8_t)0b001
-#define ADC_OFF             (uint8_t)0b000
+#define ADC_BIPOLAR_10V (uint8_t)0b111
+#define ADC_BIPOLAR_5V (uint8_t)0b011
+#define ADC_UNIPOLAR_10V (uint8_t)0b101
+#define ADC_UNIPOLAR_5V (uint8_t)0b001
+#define ADC_OFF (uint8_t)0b000
 
-#define DATAWIDTH           6
+#define DATAWIDTH 6
 
 extern DMA_HandleTypeDef hdma_spi3_tx, hdma_spi3_rx;
 
 class ADC_Device;
 
-class ADC_Device_Channel {
+class ADC_Device_Channel
+{
 public:
-    ADC_Device_Channel(ADC_Device* parent_device, uint16_t channel_id, uint8_t setup);
+    ADC_Device_Channel(ADC_Device *parent_device, uint16_t channel_id, uint8_t setup);
     float get_result() { return result; }
     uint8_t get_channel_code() { return channel_code; }
 
@@ -45,17 +46,18 @@ private:
     uint8_t channel_id, channel_code;
 };
 
-class ADC_Device {
+class ADC_Device
+{
 public:
-    ADC_Device(uint8_t spi_lane, 
-                uint8_t dma_stream_in,
-                uint8_t dma_channel_in,
-                uint8_t dma_stream_out,
-                uint8_t dma_channel_out,
-                GPIO_TypeDef* cnv_port,
-                uint16_t cnv_pin,
-                uint8_t channel1_config,
-                uint8_t channel2_config);
+    ADC_Device(uint8_t spi_lane,
+               uint8_t dma_stream_in,
+               uint8_t dma_channel_in,
+               uint8_t dma_stream_out,
+               uint8_t dma_channel_out,
+               GPIO_TypeDef *cnv_port,
+               uint16_t cnv_pin,
+               uint8_t channel1_config,
+               uint8_t channel2_config);
 
     ADC_Device_Channel *channel1, *channel2;
     void start_conversion();
@@ -64,22 +66,20 @@ public:
     void SPI_DMA_EOT_Callback();
     bool is_busy() { return busy; };
     SPI *spi_handler;
-private:
 
+private:
     volatile uint8_t dma_buffer[DATAWIDTH] = {0};
-    volatile uint8_t* adc_config_buffer;
+    volatile uint8_t *adc_config_buffer;
 
     uint16_t cnv_pin;
-    GPIO_TypeDef* cnv_port;
+    GPIO_TypeDef *cnv_port;
 
     bool single_channel_mode;
     bool busy;
 
     DMA *dma_input_handler, *dma_output_handler;
-    //SPI *spi_handler;
+    // SPI *spi_handler;
     DMA_config_t dma_in_config, dma_out_config;
 };
-
-
 
 #endif /* HAL_ADCDEVICE_HPP_ */

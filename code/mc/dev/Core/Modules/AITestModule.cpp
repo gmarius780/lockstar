@@ -28,14 +28,12 @@ public:
 								 /* DMA Channel In */ 3,
 								 /* DMA Stream Out */ 3,
 								 /* DMA Channel Out */ 3,
-								//  /* conversion pin port */ SPI2_NSS_GPIO_Port,
-								//  /* conversion pin number */ SPI2_NSS_Pin,
-								ADC_CNV_GPIO_Port,
-								ADC_CNV_Pin,
+								 //  /* conversion pin port */ SPI2_NSS_GPIO_Port,
+								 //  /* conversion pin number */ SPI2_NSS_Pin,
+								 ADC_CNV_GPIO_Port,
+								 ADC_CNV_Pin,
 								 /* Channel 1 config */ ADC_BIPOLAR_5V,
 								 /* Channel 2 config */ ADC_BIPOLAR_5V);
-
-
 
 		turn_LED2_on();
 		turn_LED3_on();
@@ -63,18 +61,19 @@ AITestModule *module;
  *         INTERRUPTS          *
  *******************************/
 
-
 void DMA1_Stream2_IRQHandler(void)
 {
-	if(LL_DMA_IsActiveFlag_TC2(DMA1))
+	if (LL_DMA_IsActiveFlag_TC2(DMA1))
 	{
 		LL_DMA_ClearFlag_TC2(DMA1);
 		module->ADC_Dev->dma_receive_callback();
 	}
 }
 
-void DMA1_Stream3_IRQHandler(void){
-	if(LL_DMA_IsActiveFlag_TC3(DMA1)){
+void DMA1_Stream3_IRQHandler(void)
+{
+	if (LL_DMA_IsActiveFlag_TC3(DMA1))
+	{
 		LL_DMA_ClearFlag_TC3(DMA1);
 		module->ADC_Dev->dma_transmission_callback();
 	}
@@ -82,7 +81,7 @@ void DMA1_Stream3_IRQHandler(void){
 
 void DMA1_Stream4_IRQHandler(void)
 {
-	if(LL_DMA_IsActiveFlag_TC4(DMA1))
+	if (LL_DMA_IsActiveFlag_TC4(DMA1))
 	{
 		LL_DMA_ClearFlag_TC4(DMA1);
 		module->ADC_Dev->dma_receive_callback();
@@ -91,7 +90,7 @@ void DMA1_Stream4_IRQHandler(void)
 
 void DMA1_Stream5_IRQHandler(void)
 {
-	if(LL_DMA_IsActiveFlag_TC5(DMA1))
+	if (LL_DMA_IsActiveFlag_TC5(DMA1))
 	{
 		LL_DMA_ClearFlag_TC5(DMA1);
 		module->ADC_Dev->dma_transmission_callback();
@@ -101,13 +100,13 @@ void DMA1_Stream5_IRQHandler(void)
 void SPI2_IRQHandler(void)
 {
 
-    /* Check EOT flag value in ISR register */
-    if (LL_SPI_IsActiveFlag_EOT(SPI2))
-    {
-        LL_SPI_SetReloadSize(SPI2, DATAWIDTH);
+	/* Check EOT flag value in ISR register */
+	if (LL_SPI_IsActiveFlag_EOT(SPI2))
+	{
+		LL_SPI_SetReloadSize(SPI2, DATAWIDTH);
 		LL_SPI_ClearFlag_EOT(SPI2);
 		LL_SPI_StartMasterTransfer(SPI2);
-    }
+	}
 }
 
 /******************************
