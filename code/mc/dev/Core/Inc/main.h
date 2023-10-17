@@ -79,6 +79,8 @@ void start(void);
 #define DAC_1_Sync_GPIO_Port GPIOA
 #define Pi_Int_Pin GPIO_PIN_1
 #define Pi_Int_GPIO_Port GPIOA
+#define ADC_CNV_Pin GPIO_PIN_4
+#define ADC_CNV_GPIO_Port GPIOA
 #define DigitalOut_Pin GPIO_PIN_4
 #define DigitalOut_GPIO_Port GPIOC
 #define DigitalIn_Pin GPIO_PIN_5
@@ -114,8 +116,6 @@ void start(void);
 
 /* USER CODE BEGIN Private defines */
 
-#define ADC_CNV_Pin GPIO_PIN_4
-#define ADC_CNV_GPIO_Port GPIOA
 
 #define _20BIT_MIN					0xfff80000
 #define _20BIT_MAX					0x0007ffff
