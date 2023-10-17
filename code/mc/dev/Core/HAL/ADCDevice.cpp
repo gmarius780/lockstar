@@ -36,11 +36,10 @@ ADC_Device::ADC_Device(uint8_t SPILane, uint8_t DMAStreamIn, uint8_t DMAChannelI
 
     // Setup perhipherals
     spi_handler = new SPI(ADC_SPI);
+    // LL_SPI_SetFIFOThreshold(ADC_SPI, LL_SPI_FIFO_TH_03DATA);
     // LL_SPI_SetTransferSize(ADC_SPI, DATAWIDTH);
-    // LL_SPI_SetReloadSize(ADC_SPI, DATAWIDTH);
     LL_SPI_SetMasterSSIdleness(ADC_SPI, LL_SPI_SS_IDLENESS_10CYCLE);
     // LL_SPI_EnableIT_EOT(ADC_SPI);
-    // LL_SPI_SetInterDataIdleness(ADC_SPI, LL_SPI_ID_IDLENESS_10CYCLE);
 
     LL_DMA_InitTypeDef DMA_RX_InitStruct = {0};
     LL_DMA_InitTypeDef DMA_TX_InitStruct = {0};
@@ -48,7 +47,7 @@ ADC_Device::ADC_Device(uint8_t SPILane, uint8_t DMAStreamIn, uint8_t DMAChannelI
     DMA_RX_InitStruct.PeriphOrM2MSrcAddress = (uint32_t)spi_handler->getRXDRAddress();
     DMA_RX_InitStruct.MemoryOrM2MDstAddress = (uint32_t)dma_buffer;
     DMA_RX_InitStruct.Direction = LL_DMA_DIRECTION_PERIPH_TO_MEMORY;
-    DMA_RX_InitStruct.Mode = LL_DMA_MODE_NORMAL;
+    DMA_RX_InitStruct.Mode = ADC_DMA_MODE;
     DMA_RX_InitStruct.PeriphOrM2MSrcIncMode = LL_DMA_PERIPH_NOINCREMENT;
     DMA_RX_InitStruct.MemoryOrM2MDstIncMode = LL_DMA_MEMORY_INCREMENT;
     DMA_RX_InitStruct.PeriphOrM2MSrcDataSize = LL_DMA_PDATAALIGN_BYTE;
@@ -56,7 +55,7 @@ ADC_Device::ADC_Device(uint8_t SPILane, uint8_t DMAStreamIn, uint8_t DMAChannelI
     DMA_RX_InitStruct.NbData = DATAWIDTH;
     DMA_RX_InitStruct.PeriphRequest = LL_DMAMUX1_REQ_ADC_SPI_RX;
     DMA_RX_InitStruct.Priority = LL_DMA_PRIORITY_MEDIUM;
-    DMA_RX_InitStruct.FIFOMode = LL_DMA_FIFOMODE_ENABLE;
+    DMA_RX_InitStruct.FIFOMode = LL_DMA_FIFOMODE_DISABLE;
     DMA_RX_InitStruct.FIFOThreshold = LL_DMA_FIFOTHRESHOLD_FULL;
     DMA_RX_InitStruct.MemBurst = LL_DMA_MBURST_SINGLE;
     DMA_RX_InitStruct.PeriphBurst = LL_DMA_PBURST_SINGLE;
@@ -64,7 +63,7 @@ ADC_Device::ADC_Device(uint8_t SPILane, uint8_t DMAStreamIn, uint8_t DMAChannelI
     DMA_TX_InitStruct.PeriphOrM2MSrcAddress = (uint32_t)spi_handler->getTXDRAddress();
     DMA_TX_InitStruct.MemoryOrM2MDstAddress = (uint32_t)adc_config_buffer;
     DMA_TX_InitStruct.Direction = LL_DMA_DIRECTION_MEMORY_TO_PERIPH;
-    DMA_TX_InitStruct.Mode = LL_DMA_MODE_NORMAL;
+    DMA_TX_InitStruct.Mode = ADC_DMA_MODE;
     DMA_TX_InitStruct.PeriphOrM2MSrcIncMode = LL_DMA_PERIPH_NOINCREMENT;
     DMA_TX_InitStruct.MemoryOrM2MDstIncMode = LL_DMA_MEMORY_INCREMENT;
     DMA_TX_InitStruct.PeriphOrM2MSrcDataSize = LL_DMA_PDATAALIGN_BYTE;
@@ -72,7 +71,7 @@ ADC_Device::ADC_Device(uint8_t SPILane, uint8_t DMAStreamIn, uint8_t DMAChannelI
     DMA_TX_InitStruct.NbData = DATAWIDTH;
     DMA_TX_InitStruct.PeriphRequest = LL_DMAMUX1_REQ_ADC_SPI_TX;
     DMA_TX_InitStruct.Priority = LL_DMA_PRIORITY_HIGH;
-    DMA_TX_InitStruct.FIFOMode = LL_DMA_FIFOMODE_ENABLE;
+    DMA_TX_InitStruct.FIFOMode = LL_DMA_FIFOMODE_DISABLE;
     DMA_TX_InitStruct.FIFOThreshold = LL_DMA_FIFOTHRESHOLD_FULL;
     DMA_TX_InitStruct.MemBurst = LL_DMA_MBURST_SINGLE;
     DMA_TX_InitStruct.PeriphBurst = LL_DMA_PBURST_SINGLE;
@@ -80,8 +79,15 @@ ADC_Device::ADC_Device(uint8_t SPILane, uint8_t DMAStreamIn, uint8_t DMAChannelI
     dma_input_handler = new DMA(DMA1, ADC_DMA_RX_STREAM, &DMA_RX_InitStruct);
     dma_output_handler = new DMA(DMA1, ADC_DMA_TX_STREAM, &DMA_TX_InitStruct);
 
+#ifdef DOUBLE_BUFFER
+    LL_DMA_SetMemory1Address(DMA1, ADC_DMA_RX_STREAM, (uint32_t)dma_buffer2);
+    LL_DMA_EnableDoubleBufferMode(DMA1, ADC_DMA_RX_STREAM);
+#endif
+
+#ifndef DOUBLE_BUFFER
     dma_input_handler->enable_tc_irq();
     dma_output_handler->enable_tc_irq();
+#endif
 }
 
 ADC_Device_Channel::ADC_Device_Channel(ADC_Device *parentDevice, uint16_t channelID, uint8_t config)
@@ -151,37 +157,46 @@ void ADC_Device::start_conversion()
     LL_SPI_StartMasterTransfer(ADC_SPI);
 }
 
-__attribute__((section("sram_func"))) void ADC_Device::dma_receive_callback()
+void ADC_Device::spi_transmision_callback()
 {
-    SPI_DMA_EOT_Callback();
 }
 
-__attribute__((section("sram_func"))) void ADC_Device::dma_transmission_callback()
+void ADC_Device::dma_transmission_callback()
 {
-
     LL_DMA_DisableStream(DMA1, ADC_DMA_TX_STREAM);
 }
 
-void ADC_Device::SPI_DMA_EOT_Callback()
+void ADC_Device::dma_receive_callback()
 {
-
+#ifdef NORMAL_MODE
     while (LL_SPI_IsActiveFlag_RXWNE(ADC_SPI) || LL_SPI_GetRxFIFOPackingLevel(ADC_SPI))
     {
     }
     LL_DMA_DisableStream(DMA1, ADC_DMA_RX_STREAM);
-
     while (LL_DMA_IsEnabledStream(DMA1, ADC_DMA_TX_STREAM) || LL_DMA_IsEnabledStream(DMA1, ADC_DMA_RX_STREAM))
     {
     }
-
     LL_SPI_Disable(ADC_SPI);
     while (LL_SPI_IsEnabled(ADC_SPI))
     {
     }
-    LL_SPI_DisableDMAReq_TX(ADC_SPI);
-    LL_SPI_DisableDMAReq_RX(ADC_SPI);
     channel2->update_result(((int16_t)(dma_buffer[0] << 8)) + ((int16_t)dma_buffer[1]));
     channel1->update_result(((int16_t)(dma_buffer[3] << 8)) + ((int16_t)dma_buffer[4]));
+#endif
+#ifdef DOUBLE_BUFFER
+    int16_t *buffer;
+
+    if (LL_DMA_GetCurrentTargetMem(DMA1, ADC_DMA_RX_STREAM) == LL_DMA_CURRENTTARGETMEM0)
+    {
+        buffer = (int16_t *)dma_buffer;
+    }
+    else
+    {
+        buffer = (int16_t *)dma_buffer2;
+    }
+    channel2->update_result(((int16_t)(buffer[0] << 8)) + ((int16_t)buffer[1]));
+    channel1->update_result(((int16_t)(buffer[3] << 8)) + ((int16_t)buffer[4]));
+#endif
     busy = false;
-    turn_LED1_on();
+    // turn_LED1_on();
 }

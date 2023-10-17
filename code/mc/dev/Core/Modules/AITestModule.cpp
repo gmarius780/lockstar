@@ -38,10 +38,10 @@ public:
 		turn_LED2_on();
 		turn_LED3_on();
 
-		ADC_Dev->start_conversion();
+		// ADC_Dev->start_conversion();
 		while (true)
 		{
-			// ADC_Dev->start_conversion();
+			ADC_Dev->start_conversion();
 			// m1 = ADC_Dev->channel1->get_result();
 			// m2 = ADC_Dev->channel2->get_result();
 			// printf("Channel 1: %f\n", m1);
@@ -99,13 +99,11 @@ void DMA1_Stream5_IRQHandler(void)
 
 void SPI2_IRQHandler(void)
 {
-
 	/* Check EOT flag value in ISR register */
 	if (LL_SPI_IsActiveFlag_EOT(SPI2))
 	{
-		LL_SPI_SetReloadSize(SPI2, DATAWIDTH);
 		LL_SPI_ClearFlag_EOT(SPI2);
-		LL_SPI_StartMasterTransfer(SPI2);
+		module->ADC_Dev->spi_transmision_callback();
 	}
 }
 

@@ -63,12 +63,13 @@ public:
     void start_conversion();
     void dma_transmission_callback();
     void dma_receive_callback();
-    void SPI_DMA_EOT_Callback();
+    void spi_transmision_callback();
     bool is_busy() { return busy; };
     SPI *spi_handler;
 
 private:
     volatile uint8_t dma_buffer[DATAWIDTH] = {0};
+    volatile uint8_t dma_buffer2[DATAWIDTH] = {0};
     volatile uint8_t *adc_config_buffer;
 
     uint16_t cnv_pin;
