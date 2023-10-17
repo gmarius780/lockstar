@@ -30,18 +30,18 @@ public:
 								 /* DMA Channel Out */ 3,
 								 //  /* conversion pin port */ SPI2_NSS_GPIO_Port,
 								 //  /* conversion pin number */ SPI2_NSS_Pin,
-								 ADC_CNV2_GPIO_Port,
-								 ADC_CNV2_Pin,
+								 ADC_CNV_GPIO_Port,
+								 ADC_CNV_Pin,
 								 /* Channel 1 config */ ADC_BIPOLAR_5V,
 								 /* Channel 2 config */ ADC_BIPOLAR_5V);
 
 		turn_LED2_on();
 		turn_LED3_on();
 
-		// ADC_Dev->start_conversion();
+		ADC_Dev->start_conversion();
 		while (true)
 		{
-			ADC_Dev->start_conversion();
+			// ADC_Dev->start_conversion();
 			// m1 = ADC_Dev->channel1->get_result();
 			// m2 = ADC_Dev->channel2->get_result();
 			// printf("Channel 1: %f\n", m1);
@@ -63,38 +63,28 @@ AITestModule *module;
 
 void DMA1_Stream2_IRQHandler(void)
 {
-	if (LL_DMA_IsActiveFlag_TC2(DMA1))
-	{
-		LL_DMA_ClearFlag_TC2(DMA1);
-		module->ADC_Dev->dma_receive_callback();
-	}
+	LL_DMA_ClearFlag_TC2(DMA1);
+	module->ADC_Dev->dma_receive_callback();
 }
 
 void DMA1_Stream3_IRQHandler(void)
 {
-	if (LL_DMA_IsActiveFlag_TC3(DMA1))
-	{
-		LL_DMA_ClearFlag_TC3(DMA1);
-		module->ADC_Dev->dma_transmission_callback();
-	}
+	LL_DMA_ClearFlag_TC3(DMA1);
+	ADC_CNV2_GPIO_Port->BSRR = ADC_CNV2_Pin;
+	ADC_CNV2_GPIO_Port->BSRR = ADC_CNV2_Pin << 16;
 }
 
 void DMA1_Stream4_IRQHandler(void)
 {
-	if (LL_DMA_IsActiveFlag_TC4(DMA1))
-	{
-		LL_DMA_ClearFlag_TC4(DMA1);
-		module->ADC_Dev->dma_receive_callback();
-	}
+	LL_DMA_ClearFlag_TC4(DMA1);
+	module->ADC_Dev->dma_receive_callback();
 }
 
 void DMA1_Stream5_IRQHandler(void)
 {
-	if (LL_DMA_IsActiveFlag_TC5(DMA1))
-	{
-		LL_DMA_ClearFlag_TC5(DMA1);
-		module->ADC_Dev->dma_transmission_callback();
-	}
+	LL_DMA_ClearFlag_TC5(DMA1);
+	ADC_CNV2_GPIO_Port->BSRR = ADC_CNV2_Pin;
+	ADC_CNV2_GPIO_Port->BSRR = ADC_CNV2_Pin << 16;
 }
 
 void SPI2_IRQHandler(void)
