@@ -36,7 +36,10 @@ ADC_Device::ADC_Device(uint8_t SPILane, uint8_t DMAStreamIn, uint8_t DMAChannelI
 
     // Setup perhipherals
     spi_handler = new SPI(ADC_SPI);
+    // LL_SPI_SetTransferSize(ADC_SPI, DATAWIDTH);
+    // LL_SPI_SetReloadSize(ADC_SPI, DATAWIDTH);
     LL_SPI_SetMasterSSIdleness(ADC_SPI, LL_SPI_SS_IDLENESS_10CYCLE);
+    // LL_SPI_EnableIT_EOT(ADC_SPI);
     // LL_SPI_SetInterDataIdleness(ADC_SPI, LL_SPI_ID_IDLENESS_10CYCLE);
 
 
@@ -46,7 +49,7 @@ ADC_Device::ADC_Device(uint8_t SPILane, uint8_t DMAStreamIn, uint8_t DMAChannelI
     DMA_RX_InitStruct.PeriphOrM2MSrcAddress = (uint32_t)spi_handler->getRXDRAddress();
     DMA_RX_InitStruct.MemoryOrM2MDstAddress = (uint32_t)dma_buffer;
     DMA_RX_InitStruct.Direction = LL_DMA_DIRECTION_PERIPH_TO_MEMORY;
-    DMA_RX_InitStruct.Mode = LL_DMA_MODE_NORMAL;
+    DMA_RX_InitStruct.Mode = LL_DMA_MODE_CIRCULAR;
     DMA_RX_InitStruct.PeriphOrM2MSrcIncMode = LL_DMA_PERIPH_NOINCREMENT;
     DMA_RX_InitStruct.MemoryOrM2MDstIncMode = LL_DMA_MEMORY_INCREMENT;
     DMA_RX_InitStruct.PeriphOrM2MSrcDataSize = LL_DMA_PDATAALIGN_BYTE;
@@ -62,7 +65,7 @@ ADC_Device::ADC_Device(uint8_t SPILane, uint8_t DMAStreamIn, uint8_t DMAChannelI
     DMA_TX_InitStruct.PeriphOrM2MSrcAddress = (uint32_t)spi_handler->getTXDRAddress();
     DMA_TX_InitStruct.MemoryOrM2MDstAddress = (uint32_t)adc_config_buffer;
     DMA_TX_InitStruct.Direction = LL_DMA_DIRECTION_MEMORY_TO_PERIPH;
-    DMA_TX_InitStruct.Mode = LL_DMA_MODE_NORMAL;
+    DMA_TX_InitStruct.Mode = LL_DMA_MODE_CIRCULAR;
     DMA_TX_InitStruct.PeriphOrM2MSrcIncMode = LL_DMA_PERIPH_NOINCREMENT;
     DMA_TX_InitStruct.MemoryOrM2MDstIncMode = LL_DMA_MEMORY_INCREMENT;
     DMA_TX_InitStruct.PeriphOrM2MSrcDataSize = LL_DMA_PDATAALIGN_BYTE;
@@ -78,8 +81,8 @@ ADC_Device::ADC_Device(uint8_t SPILane, uint8_t DMAStreamIn, uint8_t DMAChannelI
     dma_input_handler = new DMA(DMA1, ADC_DMA_RX_STREAM, &DMA_RX_InitStruct);
     dma_output_handler = new DMA(DMA1, ADC_DMA_TX_STREAM, &DMA_TX_InitStruct);
 
-    dma_input_handler->enable_tc_irq();
-    dma_output_handler->enable_tc_irq();
+    // dma_input_handler->enable_tc_irq();
+    // dma_output_handler->enable_tc_irq();
 }
 
 ADC_Device_Channel::ADC_Device_Channel(ADC_Device *parentDevice, uint16_t channelID, uint8_t config)
