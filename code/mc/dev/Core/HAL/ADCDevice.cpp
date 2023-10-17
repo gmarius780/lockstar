@@ -79,6 +79,7 @@ ADC_Device::ADC_Device(uint8_t SPILane, uint8_t DMAStreamIn, uint8_t DMAChannelI
     dma_output_handler = new DMA(DMA1, LL_DMA_STREAM_3, &DMA_TX_InitStruct);
 
     dma_input_handler->enable_tc_irq();
+    dma_output_handler->enable_tc_irq();
     
     // LL_SPI_EnableDMAReq_RX(SPI2);
     // LL_DMA_EnableStream(DMA1, LL_DMA_STREAM_3);
@@ -180,10 +181,7 @@ __attribute__((section("sram_func"))) void ADC_Device::dma_receive_callback()
 
 __attribute__((section("sram_func"))) void ADC_Device::dma_transmission_callback()
 {
-        // 1. Disable TX Stream
-    while (!LL_SPI_IsActiveFlag_TXC(SPIx))
-    {
-    }
+
     LL_DMA_DisableStream(DMA1, LL_DMA_STREAM_3);
     
 }
