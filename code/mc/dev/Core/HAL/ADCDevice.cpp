@@ -38,7 +38,7 @@ ADC_Device::ADC_Device(uint8_t SPILane, uint8_t DMAStreamIn, uint8_t DMAChannelI
     spi_handler = new SPI(ADC_SPI);
     // LL_SPI_SetFIFOThreshold(ADC_SPI, LL_SPI_FIFO_TH_03DATA);
     // LL_SPI_SetTransferSize(ADC_SPI, DATAWIDTH);
-    LL_SPI_SetMasterSSIdleness(ADC_SPI, LL_SPI_SS_IDLENESS_10CYCLE);
+    // LL_SPI_SetMasterSSIdleness(ADC_SPI, LL_SPI_SS_IDLENESS_10CYCLE);
     // LL_SPI_EnableIT_EOT(ADC_SPI);
 
     LL_DMA_InitTypeDef DMA_RX_InitStruct = {0};
@@ -153,7 +153,8 @@ void ADC_Device::start_conversion()
     spi_handler->enableSPI();
 
     busy = true;
-
+    cnv_port->BSRR = cnv_pin;
+    cnv_port->BSRR = cnv_pin << 16;
     LL_SPI_StartMasterTransfer(ADC_SPI);
 }
 

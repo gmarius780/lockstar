@@ -30,8 +30,8 @@ public:
 								 /* DMA Channel Out */ 3,
 								 //  /* conversion pin port */ SPI2_NSS_GPIO_Port,
 								 //  /* conversion pin number */ SPI2_NSS_Pin,
-								 ADC_CNV_GPIO_Port,
-								 ADC_CNV_Pin,
+								 ADC_CNV2_GPIO_Port,
+								 ADC_CNV2_Pin,
 								 /* Channel 1 config */ ADC_BIPOLAR_5V,
 								 /* Channel 2 config */ ADC_BIPOLAR_5V);
 
