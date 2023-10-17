@@ -35,9 +35,9 @@ ADC_Device::ADC_Device(uint8_t SPILane, uint8_t DMAStreamIn, uint8_t DMAChannelI
     adc_config_buffer[0] = code;
 
     // Setup perhipherals
-    spi_handler = new SPI(SPI2);
-    LL_SPI_SetMasterSSIdleness(SPI2, LL_SPI_SS_IDLENESS_10CYCLE);
-    // LL_SPI_SetInterDataIdleness(SPI2, LL_SPI_ID_IDLENESS_10CYCLE);
+    spi_handler = new SPI(SPI3);
+    LL_SPI_SetMasterSSIdleness(SPI3, LL_SPI_SS_IDLENESS_10CYCLE);
+    // LL_SPI_SetInterDataIdleness(SPI3, LL_SPI_ID_IDLENESS_10CYCLE);
 
 
     LL_DMA_InitTypeDef DMA_RX_InitStruct = {0};
@@ -52,7 +52,7 @@ ADC_Device::ADC_Device(uint8_t SPILane, uint8_t DMAStreamIn, uint8_t DMAChannelI
     DMA_RX_InitStruct.PeriphOrM2MSrcDataSize = LL_DMA_PDATAALIGN_BYTE;
     DMA_RX_InitStruct.MemoryOrM2MDstDataSize = LL_DMA_MDATAALIGN_BYTE;
     DMA_RX_InitStruct.NbData = DATAWIDTH;
-    DMA_RX_InitStruct.PeriphRequest = LL_DMAMUX1_REQ_SPI2_RX;
+    DMA_RX_InitStruct.PeriphRequest = LL_DMAMUX1_REQ_SPI3_RX;
     DMA_RX_InitStruct.Priority = LL_DMA_PRIORITY_MEDIUM;
     DMA_RX_InitStruct.FIFOMode = LL_DMA_FIFOMODE_ENABLE;
     DMA_RX_InitStruct.FIFOThreshold = LL_DMA_FIFOTHRESHOLD_FULL;
@@ -68,23 +68,23 @@ ADC_Device::ADC_Device(uint8_t SPILane, uint8_t DMAStreamIn, uint8_t DMAChannelI
     DMA_TX_InitStruct.PeriphOrM2MSrcDataSize = LL_DMA_PDATAALIGN_BYTE;
     DMA_TX_InitStruct.MemoryOrM2MDstDataSize = LL_DMA_MDATAALIGN_BYTE;
     DMA_TX_InitStruct.NbData = DATAWIDTH;
-    DMA_TX_InitStruct.PeriphRequest = LL_DMAMUX1_REQ_SPI2_TX;
+    DMA_TX_InitStruct.PeriphRequest = LL_DMAMUX1_REQ_SPI3_TX;
     DMA_TX_InitStruct.Priority = LL_DMA_PRIORITY_HIGH;
     DMA_TX_InitStruct.FIFOMode = LL_DMA_FIFOMODE_ENABLE;
     DMA_TX_InitStruct.FIFOThreshold = LL_DMA_FIFOTHRESHOLD_FULL;
     DMA_TX_InitStruct.MemBurst = LL_DMA_MBURST_SINGLE;
     DMA_TX_InitStruct.PeriphBurst = LL_DMA_PBURST_SINGLE;
 
-    dma_input_handler = new DMA(DMA1, LL_DMA_STREAM_2, &DMA_RX_InitStruct);
-    dma_output_handler = new DMA(DMA1, LL_DMA_STREAM_3, &DMA_TX_InitStruct);
+    dma_input_handler = new DMA(DMA1, LL_DMA_STREAM_4, &DMA_RX_InitStruct);
+    dma_output_handler = new DMA(DMA1, LL_DMA_STREAM_5, &DMA_TX_InitStruct);
 
     dma_input_handler->enable_tc_irq();
     dma_output_handler->enable_tc_irq();
     
-    // LL_SPI_EnableDMAReq_RX(SPI2);
-    // LL_DMA_EnableStream(DMA1, LL_DMA_STREAM_3);
-    // LL_DMA_EnableStream(DMA1, LL_DMA_STREAM_2);
-    // LL_SPI_EnableDMAReq_TX(SPI2);
+    // LL_SPI_EnableDMAReq_RX(SPI3);
+    // LL_DMA_EnableStream(DMA1, LL_DMA_STREAM_5);
+    // LL_DMA_EnableStream(DMA1, LL_DMA_STREAM_4);
+    // LL_SPI_EnableDMAReq_TX(SPI3);
 
     // spi_handler->enableSPI();
 }
@@ -142,12 +142,12 @@ void ADC_Device::start_conversion()
     if (busy)
         return;
 
-    LL_DMA_SetDataLength(DMA1, LL_DMA_STREAM_3, DATAWIDTH);
-    LL_DMA_SetDataLength(DMA1, LL_DMA_STREAM_2, DATAWIDTH);
-    LL_SPI_EnableDMAReq_RX(SPI2);
-    LL_DMA_EnableStream(DMA1, LL_DMA_STREAM_3);
-    LL_DMA_EnableStream(DMA1, LL_DMA_STREAM_2);
-    LL_SPI_EnableDMAReq_TX(SPI2);
+    LL_DMA_SetDataLength(DMA1, LL_DMA_STREAM_5, DATAWIDTH);
+    LL_DMA_SetDataLength(DMA1, LL_DMA_STREAM_4, DATAWIDTH);
+    LL_SPI_EnableDMAReq_RX(SPI3);
+    LL_DMA_EnableStream(DMA1, LL_DMA_STREAM_5);
+    LL_DMA_EnableStream(DMA1, LL_DMA_STREAM_4);
+    LL_SPI_EnableDMAReq_TX(SPI3);
 
     spi_handler->enableSPI();
 
@@ -166,7 +166,7 @@ void ADC_Device::start_conversion()
 
     // }
 
-    LL_SPI_StartMasterTransfer(SPI2);
+    LL_SPI_StartMasterTransfer(SPI3);
 }
 
 __attribute__((section("sram_func"))) void ADC_Device::arm_dma()
@@ -176,13 +176,13 @@ __attribute__((section("sram_func"))) void ADC_Device::arm_dma()
 
 __attribute__((section("sram_func"))) void ADC_Device::dma_receive_callback()
 {
-    SPI_DMA_EOT_Callback(SPI2);
+    SPI_DMA_EOT_Callback(SPI3);
 }
 
 __attribute__((section("sram_func"))) void ADC_Device::dma_transmission_callback()
 {
 
-    LL_DMA_DisableStream(DMA1, LL_DMA_STREAM_3);
+    LL_DMA_DisableStream(DMA1, LL_DMA_STREAM_5);
     
 }
 
@@ -194,13 +194,13 @@ void ADC_Device::SPI_DMA_EOT_Callback(SPI_TypeDef *SPIx)
     while (LL_SPI_IsActiveFlag_RXWNE(SPIx) || LL_SPI_GetRxFIFOPackingLevel(SPIx))
     {
     }
-    LL_DMA_DisableStream(DMA1, LL_DMA_STREAM_2);
+    LL_DMA_DisableStream(DMA1, LL_DMA_STREAM_4);
 
-    while (LL_DMA_IsEnabledStream(DMA1, LL_DMA_STREAM_3) || LL_DMA_IsEnabledStream(DMA1, LL_DMA_STREAM_2))
+    while (LL_DMA_IsEnabledStream(DMA1, LL_DMA_STREAM_5) || LL_DMA_IsEnabledStream(DMA1, LL_DMA_STREAM_4))
     {
     }
 
-    // LL_DMA_DisableIT_TC(DMA1, LL_DMA_STREAM_2);
+    // LL_DMA_DisableIT_TC(DMA1, LL_DMA_STREAM_4);
     LL_SPI_Disable(SPIx);
     while (LL_SPI_IsEnabled(SPIx))
     {
