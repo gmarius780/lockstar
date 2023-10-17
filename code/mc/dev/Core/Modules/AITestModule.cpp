@@ -40,10 +40,10 @@ public:
 		turn_LED2_on();
 		turn_LED3_on();
 
-		ADC_Dev->start_conversion();
+		// ADC_Dev->start_conversion();
 		while (true)
 		{
-			// ADC_Dev->start_conversion();
+			ADC_Dev->start_conversion();
 			// m1 = ADC_Dev->channel1->get_result();
 			// m2 = ADC_Dev->channel2->get_result();
 			// printf("Channel 1: %f\n", m1);
@@ -63,11 +63,24 @@ AITestModule *module;
  *         INTERRUPTS          *
  *******************************/
 
+
+void DMA1_Stream3_IRQHandler(void){
+	if(LL_DMA_IsActiveFlag_TC3(DMA1)){
+		LL_DMA_ClearFlag_TC3(DMA1);
+		module->ADC_Dev->dma_transmission_callback();
+	}
+	// SPI 3 rx
+}
 // RX DMA Handler
 //__attribute__((section("sram_func")))
 void DMA1_Stream2_IRQHandler(void)
 {
-	module->ADC_Dev->dma_transmission_callback();
+	if(LL_DMA_IsActiveFlag_TC2(DMA1))
+	{
+		LL_DMA_ClearFlag_TC2(DMA1);
+		module->ADC_Dev->dma_receive_callback();
+	}
+	// module->ADC_Dev->dma_transmission_callback();
 	// SPI 1 rx
 }
 void DMA1_Stream4_IRQHandler(void)

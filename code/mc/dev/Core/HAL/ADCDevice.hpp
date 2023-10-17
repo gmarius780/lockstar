@@ -59,6 +59,7 @@ public:
     ADC_Device_Channel *channel1, *channel2;
     void start_conversion();
     void dma_transmission_callback();
+    void dma_receive_callback();
     void SPI_DMA_EOT_Callback(SPI_TypeDef *SPIx);
     bool is_busy() { return busy; };
     SPI *spi_handler;

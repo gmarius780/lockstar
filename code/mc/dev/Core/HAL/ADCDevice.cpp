@@ -36,6 +36,9 @@ ADC_Device::ADC_Device(uint8_t SPILane, uint8_t DMAStreamIn, uint8_t DMAChannelI
 
     // Setup perhipherals
     spi_handler = new SPI(SPI2);
+    LL_SPI_SetMasterSSIdleness(SPI2, LL_SPI_SS_IDLENESS_10CYCLE);
+    // LL_SPI_SetInterDataIdleness(SPI2, LL_SPI_ID_IDLENESS_10CYCLE);
+
 
     LL_DMA_InitTypeDef DMA_RX_InitStruct = {0};
     LL_DMA_InitTypeDef DMA_TX_InitStruct = {0};
@@ -138,6 +141,8 @@ void ADC_Device::start_conversion()
     if (busy)
         return;
 
+    LL_DMA_SetDataLength(DMA1, LL_DMA_STREAM_3, DATAWIDTH);
+    LL_DMA_SetDataLength(DMA1, LL_DMA_STREAM_2, DATAWIDTH);
     LL_SPI_EnableDMAReq_RX(SPI2);
     LL_DMA_EnableStream(DMA1, LL_DMA_STREAM_3);
     LL_DMA_EnableStream(DMA1, LL_DMA_STREAM_2);
@@ -148,18 +153,13 @@ void ADC_Device::start_conversion()
     // busy flag gets reset when DMA transfer is finished
     busy = true;
 
-    cnv_port->BSRR = cnv_pin;
+    // cnv_port->BSRR = cnv_pin;
     
     // volatile uint8_t delay = 0;
     // while (delay--){
 
     // }
-    __NOP();
-    __NOP();
-    __NOP();
-    __NOP();
-    __NOP();
-    cnv_port->BSRR = (uint32_t)cnv_pin << 16U;
+    // cnv_port->BSRR = (uint32_t)cnv_pin << 16U;
     // delay = 20;
     // while (delay--){
 
@@ -173,22 +173,27 @@ __attribute__((section("sram_func"))) void ADC_Device::arm_dma()
     
 }
 
-__attribute__((section("sram_func"))) void ADC_Device::dma_transmission_callback()
+__attribute__((section("sram_func"))) void ADC_Device::dma_receive_callback()
 {
-
     SPI_DMA_EOT_Callback(SPI2);
 }
 
-void ADC_Device::SPI_DMA_EOT_Callback(SPI_TypeDef *SPIx)
+__attribute__((section("sram_func"))) void ADC_Device::dma_transmission_callback()
 {
-    // 1. Disable TX Stream
+        // 1. Disable TX Stream
     while (!LL_SPI_IsActiveFlag_TXC(SPIx))
     {
     }
     LL_DMA_DisableStream(DMA1, LL_DMA_STREAM_3);
+    
+}
+
+
+void ADC_Device::SPI_DMA_EOT_Callback(SPI_TypeDef *SPIx)
+{
 
     // 2. Poll if RX FIFO empty
-    while (LL_DMA_GetDataLength(DMA1, LL_DMA_STREAM_2) != 0 || LL_SPI_IsActiveFlag_RXWNE(SPIx) || LL_SPI_GetRxFIFOPackingLevel(SPIx))
+    while (LL_SPI_IsActiveFlag_RXWNE(SPIx) || LL_SPI_GetRxFIFOPackingLevel(SPIx))
     {
     }
     LL_DMA_DisableStream(DMA1, LL_DMA_STREAM_2);
@@ -197,7 +202,7 @@ void ADC_Device::SPI_DMA_EOT_Callback(SPI_TypeDef *SPIx)
     {
     }
 
-    LL_DMA_DisableIT_TC(DMA1, LL_DMA_STREAM_2);
+    // LL_DMA_DisableIT_TC(DMA1, LL_DMA_STREAM_2);
     LL_SPI_Disable(SPIx);
     while (LL_SPI_IsEnabled(SPIx))
     {
