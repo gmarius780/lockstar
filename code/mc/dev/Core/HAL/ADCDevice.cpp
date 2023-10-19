@@ -5,8 +5,8 @@
  *      Author: Samuel
  */
 
-// DMA1_Stream2 RX
-// DMA1_Stream5 TX
+// ADC_RX_DMA_STREAM RX
+// ADC_TX_DMA_STREAM TX
 #include "ADCDevice.hpp"
 
 ADC_Device::ADC_Device(uint8_t SPILane, uint8_t DMAStreamIn, uint8_t DMAChannelIn, uint8_t DMAStreamOut, uint8_t DMAChannelOut, GPIO_TypeDef *CNVPort, uint16_t CNVPin, uint8_t channel1Config, uint8_t channel2Config)
@@ -165,7 +165,7 @@ void ADC_Device::spi_transmision_callback()
 void ADC_Device::dma_transmission_callback(void)
 {
     LL_DMA_ClearFlag_TC3(DMA1);
-    ATOMIC_MODIFY_REG(DMA1_Stream3->NDTR, DMA_SxNDT, DATAWIDTH);
+    ATOMIC_MODIFY_REG(ADC_TX_DMA_STREAM->NDTR, DMA_SxNDT, DATAWIDTH);
     //LL_DMA_DisableStream(DMA1, ADC_DMA_TX_STREAM);
 }
 
@@ -179,9 +179,9 @@ void ADC_Device::dma_receive_callback(void)
 
     ATOMIC_CLEAR_BIT(ADC_SPI->CR1, SPI_CR1_SPE);
 
-    ATOMIC_MODIFY_REG(DMA1_Stream2->NDTR, DMA_SxNDT, DATAWIDTH);
-    ATOMIC_SET_BIT(DMA1_Stream3->CR, DMA_SxCR_EN);
-    ATOMIC_SET_BIT(DMA1_Stream2->CR, DMA_SxCR_EN);
+    ATOMIC_MODIFY_REG(ADC_RX_DMA_STREAM->NDTR, DMA_SxNDT, DATAWIDTH);
+    ATOMIC_SET_BIT(ADC_TX_DMA_STREAM->CR, DMA_SxCR_EN);
+    ATOMIC_SET_BIT(ADC_RX_DMA_STREAM->CR, DMA_SxCR_EN);
     ATOMIC_SET_BIT(ADC_SPI->CR1, SPI_CR1_SPE);
     
     SET_BIT(ADC_SPI->CR1, SPI_CR1_CSTART);

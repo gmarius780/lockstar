@@ -70,18 +70,16 @@ void DMA1_Stream3_IRQHandler(void)
 {
 	module->ADC_Dev->dma_transmission_callback();
 }
+
 __attribute__((section("sram_func")))
 void DMA1_Stream4_IRQHandler(void)
 {
-	LL_DMA_ClearFlag_TC4(DMA1);
-	// module->ADC_Dev->dma_receive_callback();
+	module->ADC_Dev->dma_receive_callback();
 }
 
 void DMA1_Stream5_IRQHandler(void)
 {
-	LL_DMA_ClearFlag_TC5(DMA1);
-	ADC_CNV2_GPIO_Port->BSRR = ADC_CNV2_Pin;
-	ADC_CNV2_GPIO_Port->BSRR = ADC_CNV2_Pin << 16;
+	module->ADC_Dev->dma_transmission_callback();
 }
 
 __attribute__((section("sram_func")))
