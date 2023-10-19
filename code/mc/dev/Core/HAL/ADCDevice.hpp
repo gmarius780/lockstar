@@ -14,6 +14,7 @@
 #include "spi.hpp"
 #include "../HAL/leds.hpp"
 #include "../Modules/adc_config.h"
+#include "stm32h7xx_it.h"
 
 #define ADC_BIPOLAR_10V (uint8_t)0b111
 #define ADC_BIPOLAR_5V (uint8_t)0b011

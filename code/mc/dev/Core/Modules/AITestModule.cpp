@@ -60,23 +60,21 @@ AITestModule *module;
 /******************************
  *         INTERRUPTS          *
  *******************************/
-// __attribute__((section("sram_func")))
+__attribute__((section("sram_func")))
 void DMA1_Stream2_IRQHandler(void)
 {
-	LL_DMA_ClearFlag_TC2(DMA1);
 	module->ADC_Dev->dma_receive_callback();
 }
 
 void DMA1_Stream3_IRQHandler(void)
 {
-	LL_DMA_ClearFlag_TC3(DMA1);
-	// ATOMIC_MODIFY_REG(DMA1_Stream3->NDTR, DMA_SxNDT, DATAWIDTH);
+	module->ADC_Dev->dma_transmission_callback();
 }
 __attribute__((section("sram_func")))
 void DMA1_Stream4_IRQHandler(void)
 {
 	LL_DMA_ClearFlag_TC4(DMA1);
-	module->ADC_Dev->dma_receive_callback();
+	// module->ADC_Dev->dma_receive_callback();
 }
 
 void DMA1_Stream5_IRQHandler(void)
