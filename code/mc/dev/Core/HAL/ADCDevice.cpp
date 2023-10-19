@@ -168,14 +168,14 @@ void ADC_Device::spi_transmision_callback()
 
 void ADC_Device::dma_transmission_callback(void)
 {
-    LL_DMA_ClearFlag_TC3(DMA1);
+    TX_DMA_ClearFlag(DMA1);
     ATOMIC_MODIFY_REG(ADC_TX_DMA_STREAM->NDTR, DMA_SxNDT, DATAWIDTH);
     //LL_DMA_DisableStream(DMA1, ADC_DMA_TX_STREAM);
 }
 
 void ADC_Device::dma_receive_callback(void)
 {
-    LL_DMA_ClearFlag_TC2(DMA1);
+    RX_DMA_ClearFlag(DMA1);
 #ifdef NORMAL_MODE
     while (LL_SPI_IsActiveFlag_RXWNE(ADC_SPI) || LL_SPI_GetRxFIFOPackingLevel(ADC_SPI))
     {
