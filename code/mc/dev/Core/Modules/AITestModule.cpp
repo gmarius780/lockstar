@@ -70,8 +70,7 @@ void DMA1_Stream2_IRQHandler(void)
 void DMA1_Stream3_IRQHandler(void)
 {
 	LL_DMA_ClearFlag_TC3(DMA1);
-	// ADC_CNV2_GPIO_Port->BSRR = ADC_CNV2_Pin;
-	// ADC_CNV2_GPIO_Port->BSRR = ADC_CNV2_Pin << 16;
+	// ATOMIC_MODIFY_REG(DMA1_Stream3->NDTR, DMA_SxNDT, DATAWIDTH);
 }
 __attribute__((section("sram_func")))
 void DMA1_Stream4_IRQHandler(void)
