@@ -155,6 +155,10 @@ void ADC_Device::start_conversion()
     }
 
     ATOMIC_SET_BIT(ADC_SPI->CR1, SPI_CR1_SPE);
+
+    NSS_PORT->BSRR = NSS_PIN;
+    NSS_PORT->BSRR = NSS_PIN << 16U;
+    
     SET_BIT(ADC_SPI->CR1, SPI_CR1_CSTART);
 }
 
@@ -173,20 +177,26 @@ void ADC_Device::dma_receive_callback(void)
 {
     LL_DMA_ClearFlag_TC2(DMA1);
 #ifdef NORMAL_MODE
-    // while (LL_SPI_IsActiveFlag_RXWNE(ADC_SPI) || LL_SPI_GetRxFIFOPackingLevel(ADC_SPI))
-    // {
-    // }
+    while (LL_SPI_IsActiveFlag_RXWNE(ADC_SPI) || LL_SPI_GetRxFIFOPackingLevel(ADC_SPI))
+    {
+    }
 
     ATOMIC_CLEAR_BIT(ADC_SPI->CR1, SPI_CR1_SPE);
 
     ATOMIC_MODIFY_REG(ADC_RX_DMA_STREAM->NDTR, DMA_SxNDT, DATAWIDTH);
+
+    NSS_PORT->BSRR = NSS_PIN;
+    NSS_PORT->BSRR = NSS_PIN << 16U;
+
     ATOMIC_SET_BIT(ADC_TX_DMA_STREAM->CR, DMA_SxCR_EN);
     ATOMIC_SET_BIT(ADC_RX_DMA_STREAM->CR, DMA_SxCR_EN);
     ATOMIC_SET_BIT(ADC_SPI->CR1, SPI_CR1_SPE);
-    
-    SET_BIT(ADC_SPI->CR1, SPI_CR1_CSTART);
+
     channel2->update_result(((int16_t)(dma_buffer[0] << 8)) + ((int16_t)dma_buffer[1]));
     channel1->update_result(((int16_t)(dma_buffer[3] << 8)) + ((int16_t)dma_buffer[4]));
+    
+    SET_BIT(ADC_SPI->CR1, SPI_CR1_CSTART);
+
 #endif
 #ifdef DOUBLE_BUFFER
     int16_t *buffer;

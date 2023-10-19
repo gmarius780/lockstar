@@ -8,6 +8,8 @@
 #ifndef HAL_ADCDEVICE_HPP_
 #define HAL_ADCDEVICE_HPP_
 
+
+#include "main.h"
 #include "stm32h7xx_hal.h"
 
 #include "dma.hpp"

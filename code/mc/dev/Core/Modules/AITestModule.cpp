@@ -30,8 +30,8 @@ public:
 								 /* DMA Channel Out */ 3,
 								 //  /* conversion pin port */ SPI2_NSS_GPIO_Port,
 								 //  /* conversion pin number */ SPI2_NSS_Pin,
-								 ADC_CNV_GPIO_Port,
-								 ADC_CNV_Pin,
+								 SPI2_NSS_GPIO_Port,
+								 SPI2_NSS_Pin,
 								 /* Channel 1 config */ ADC_BIPOLAR_5V,
 								 /* Channel 2 config */ ADC_BIPOLAR_5V);
 
@@ -60,7 +60,6 @@ AITestModule *module;
 /******************************
  *         INTERRUPTS          *
  *******************************/
-__attribute__((section("sram_func")))
 void DMA1_Stream2_IRQHandler(void)
 {
 	module->ADC_Dev->dma_receive_callback();
@@ -71,7 +70,6 @@ void DMA1_Stream3_IRQHandler(void)
 	module->ADC_Dev->dma_transmission_callback();
 }
 
-__attribute__((section("sram_func")))
 void DMA1_Stream4_IRQHandler(void)
 {
 	module->ADC_Dev->dma_receive_callback();
@@ -82,7 +80,6 @@ void DMA1_Stream5_IRQHandler(void)
 	module->ADC_Dev->dma_transmission_callback();
 }
 
-__attribute__((section("sram_func")))
 void SPI2_IRQHandler(void)
 {
 	LL_SPI_ClearFlag_EOT(SPI2);
