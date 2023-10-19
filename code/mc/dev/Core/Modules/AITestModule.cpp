@@ -60,7 +60,7 @@ AITestModule *module;
 /******************************
  *         INTERRUPTS          *
  *******************************/
-
+// __attribute__((section("sram_func")))
 void DMA1_Stream2_IRQHandler(void)
 {
 	LL_DMA_ClearFlag_TC2(DMA1);
@@ -70,10 +70,10 @@ void DMA1_Stream2_IRQHandler(void)
 void DMA1_Stream3_IRQHandler(void)
 {
 	LL_DMA_ClearFlag_TC3(DMA1);
-	ADC_CNV2_GPIO_Port->BSRR = ADC_CNV2_Pin;
-	ADC_CNV2_GPIO_Port->BSRR = ADC_CNV2_Pin << 16;
+	// ADC_CNV2_GPIO_Port->BSRR = ADC_CNV2_Pin;
+	// ADC_CNV2_GPIO_Port->BSRR = ADC_CNV2_Pin << 16;
 }
-
+__attribute__((section("sram_func")))
 void DMA1_Stream4_IRQHandler(void)
 {
 	LL_DMA_ClearFlag_TC4(DMA1);
@@ -87,14 +87,12 @@ void DMA1_Stream5_IRQHandler(void)
 	ADC_CNV2_GPIO_Port->BSRR = ADC_CNV2_Pin << 16;
 }
 
+__attribute__((section("sram_func")))
 void SPI2_IRQHandler(void)
 {
-	/* Check EOT flag value in ISR register */
-	if (LL_SPI_IsActiveFlag_EOT(SPI2))
-	{
-		LL_SPI_ClearFlag_EOT(SPI2);
-		module->ADC_Dev->spi_transmision_callback();
-	}
+	LL_SPI_ClearFlag_EOT(SPI2);
+	// LL_SPI_SetReloadSize(SPI2, DATAWIDTH);
+	LL_SPI_StartMasterTransfer(SPI2);
 }
 
 /******************************
