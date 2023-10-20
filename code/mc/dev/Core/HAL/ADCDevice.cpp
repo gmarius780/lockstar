@@ -82,6 +82,10 @@ ADC_Device::ADC_Device(uint8_t SPILane, uint8_t DMAStreamIn, uint8_t DMAChannelI
     dma_input_handler = new DMA(DMA1, ADC_DMA_RX_STREAM, &DMA_RX_InitStruct);
     dma_output_handler = new DMA(DMA1, ADC_DMA_TX_STREAM, &DMA_TX_InitStruct);
 
+    // LL_DMA_SetM2MSrcAddress(DMA2, LL_DMA_STREAM_7, (uint32_t)dma_buffer);
+    // LL_DMA_SetM2MDstAddress
+    // LL_DMA_EnableStream(DMA2, LL_DMA_STREAM_7);
+
 #ifdef DOUBLE_BUFFER
     LL_DMA_SetMemory1Address(DMA1, ADC_DMA_RX_STREAM, (uint32_t)dma_buffer2);
     LL_DMA_EnableDoubleBufferMode(DMA1, ADC_DMA_RX_STREAM);
@@ -158,7 +162,7 @@ void ADC_Device::start_conversion()
 
     NSS_PORT->BSRR = NSS_PIN;
     NSS_PORT->BSRR = NSS_PIN << 16U;
-    
+
     SET_BIT(ADC_SPI->CR1, SPI_CR1_CSTART);
 }
 
@@ -170,12 +174,17 @@ void ADC_Device::dma_transmission_callback(void)
 {
     TX_DMA_ClearFlag(DMA1);
     ATOMIC_MODIFY_REG(ADC_TX_DMA_STREAM->NDTR, DMA_SxNDT, DATAWIDTH);
-    //LL_DMA_DisableStream(DMA1, ADC_DMA_TX_STREAM);
+    // LL_DMA_DisableStream(DMA1, ADC_DMA_TX_STREAM);
 }
 
 void ADC_Device::dma_receive_callback(void)
 {
     RX_DMA_ClearFlag(DMA1);
+    if (sample++ == SAMPLES)
+    {
+        ATOMIC_CLEAR_BIT(ADC_SPI->CR1, SPI_CR1_SPE);
+        return;
+    }
 #ifdef NORMAL_MODE
     while (LL_SPI_IsActiveFlag_RXWNE(ADC_SPI) || LL_SPI_GetRxFIFOPackingLevel(ADC_SPI))
     {
@@ -192,9 +201,12 @@ void ADC_Device::dma_receive_callback(void)
     ATOMIC_SET_BIT(ADC_RX_DMA_STREAM->CR, DMA_SxCR_EN);
     ATOMIC_SET_BIT(ADC_SPI->CR1, SPI_CR1_SPE);
 
-    channel2->update_result(((int16_t)(dma_buffer[0] << 8)) + ((int16_t)dma_buffer[1]));
-    channel1->update_result(((int16_t)(dma_buffer[3] << 8)) + ((int16_t)dma_buffer[4]));
-    
+    int16_t tempCH2 = bytes_to_u16(dma_buffer[0], dma_buffer[1]);
+    int16_t tempCH1 = bytes_to_u16(dma_buffer[3], dma_buffer[4]);
+
+    // channel2->update_result(tempCH2);
+    // channel1->update_result(tempCH1);
+
     SET_BIT(ADC_SPI->CR1, SPI_CR1_CSTART);
 
 #endif

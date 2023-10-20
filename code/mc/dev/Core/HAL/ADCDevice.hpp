@@ -8,7 +8,6 @@
 #ifndef HAL_ADCDEVICE_HPP_
 #define HAL_ADCDEVICE_HPP_
 
-
 #include "main.h"
 #include "stm32h7xx_hal.h"
 
@@ -25,6 +24,8 @@
 #define ADC_OFF (uint8_t)0b000
 
 #define DATAWIDTH 6
+
+#define bytes_to_u16(MSB, LSB) (((int16_t)((uint8_t)MSB)) & 0xFF) << 8 | (((uint8_t)LSB) & 0xFF)
 
 extern DMA_HandleTypeDef hdma_spi3_tx, hdma_spi3_rx;
 
@@ -84,6 +85,7 @@ private:
     DMA *dma_input_handler, *dma_output_handler;
     // SPI *spi_handler;
     DMA_config_t dma_in_config, dma_out_config;
+    uint16_t sample = 1;
 };
 
 #endif /* HAL_ADCDEVICE_HPP_ */
