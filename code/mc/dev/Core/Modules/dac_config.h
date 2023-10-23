@@ -6,7 +6,8 @@ extern "C" {
 #endif
 
 #define DAC1_SPI SPI5
-
+#define DAC1_DMA DMA2
+#define DAC1_DMA_STREAM LL_DMA_STREAM_3
 
 
 

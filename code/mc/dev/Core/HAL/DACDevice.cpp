@@ -28,10 +28,12 @@ DAC_Device::DAC_Device(uint8_t spi_lane, uint8_t dma_stream_out, uint8_t dma_cha
     this->clear_port 	= clear_port;
     this->clear_pin 	= clear_pin;
 
+    LL_DMA_InitTypeDef DMA_TX_InitStruct = {0};
+
     spi_handler = new SPI(DAC1_SPI);
 
     DMA_TX_InitStruct.PeriphOrM2MSrcAddress = (uint32_t)spi_handler->getTXDRAddress();
-    DMA_TX_InitStruct.MemoryOrM2MDstAddress = (uint32_t)adc_config_buffer;
+    DMA_TX_InitStruct.MemoryOrM2MDstAddress = (uint32_t)dma_buffer;
     DMA_TX_InitStruct.Direction = LL_DMA_DIRECTION_MEMORY_TO_PERIPH;
     DMA_TX_InitStruct.Mode = LL_DMA_MODE_NORMAL;
     DMA_TX_InitStruct.PeriphOrM2MSrcIncMode = LL_DMA_PERIPH_NOINCREMENT;
@@ -46,17 +48,7 @@ DAC_Device::DAC_Device(uint8_t spi_lane, uint8_t dma_stream_out, uint8_t dma_cha
     DMA_TX_InitStruct.MemBurst = LL_DMA_MBURST_SINGLE;
     DMA_TX_InitStruct.PeriphBurst = LL_DMA_PBURST_SINGLE;
 
-    dma_config.stream      = dma_stream_out;
-    dma_config.channel     = dma_channel_out;
-    dma_config.PAR         = (uint32_t)spi_handler->getDRAddress();
-    dma_config.M0AR        = (uint32_t)dma_buffer;
-    dma_config.M1AR        = 0;
-    dma_config.NDTR        = 0;
-    dma_output_handler     = new DMA(&hdma_spi1_rx, dma_config);
-
-    old_dma = new SPI_DMA_Handler(spi_lane, NONE, NONE, dma_stream_out, dma_channel_out, 2);
-
-    spi_handler->enableSPI();
+    dma_output_handler = new DMA(DMA1, DAC1_DMA_STREAM, &DMA_TX_InitStruct);
 
     // Disable Clear-bit from start
 	HAL_GPIO_WritePin(clear_port, clear_pin, GPIO_PIN_SET);
