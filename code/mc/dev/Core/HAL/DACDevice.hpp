@@ -12,12 +12,14 @@
 #include "stm32h7xx_hal.h"
 #include "dma.hpp"
 #include "spi.hpp"
+#include "../Modules/dac_config.h"
 
 #include <algorithm>
 
 #include "SPIDMAHandler.hpp"
 
 extern DMA_HandleTypeDef hdma_spi1tx, hdma_spi1_rx;
+#define DATAWIDTH 3
 
 class DAC_Device {
 public:

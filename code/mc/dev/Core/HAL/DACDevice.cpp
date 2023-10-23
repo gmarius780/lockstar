@@ -28,33 +28,23 @@ DAC_Device::DAC_Device(uint8_t spi_lane, uint8_t dma_stream_out, uint8_t dma_cha
     this->clear_port 	= clear_port;
     this->clear_pin 	= clear_pin;
 
-    spi_handler = new SPI(spi_lane);
+    spi_handler = new SPI(DAC1_SPI);
 
-    uint8_t dma_prio = 2;
-    dma_config.priority = dma_prio;
-    dma_config.CR = 0;
-
-	DMAMUX_Channel_TypeDef *DMAMUX_OUT = (DMAMUX_Channel_TypeDef *)((uint32_t)(((uint32_t)DMAMUX1_Channel0) + (dma_channel_out * 4U)));
-
-    //set the DMA request ID to the SPI RX request
-    DMAMUX_OUT->CCR &= ~DMAMUX_CxCR_DMAREQ_ID;
-    DMAMUX_OUT->CCR |= dma_channel_out << DMAMUX_CxCR_DMAREQ_ID_Pos;
-
-    // set stream priority from very low (00) to very high (11)
-    dma_config.CR &= ~(DMA_SxCR_PL); 
-    // reset 2 bits that define priority
-    dma_config.CR |= dma_prio * DMA_SxCR_PL_0; // set priority via 2 control bits
-    // increment the memory address with each transfer
-    dma_config.CR |= DMA_SxCR_MINC;
-    // do not increment peripheral address
-    dma_config.CR &= ~DMA_SxCR_PINC;
-    // set direction of transfer to "memory to peripheral"
-    dma_config.CR &= ~DMA_SxCR_DIR_1;
-    dma_config.CR |= DMA_SxCR_DIR_0;
-    // Clear DBM bit
-    dma_config.CR &= (uint32_t)(~DMA_SxCR_DBM);
-    // Program transmission-complete interrupt
-    dma_config.CR  |= DMA_SxCR_TCIE;
+    DMA_TX_InitStruct.PeriphOrM2MSrcAddress = (uint32_t)spi_handler->getTXDRAddress();
+    DMA_TX_InitStruct.MemoryOrM2MDstAddress = (uint32_t)adc_config_buffer;
+    DMA_TX_InitStruct.Direction = LL_DMA_DIRECTION_MEMORY_TO_PERIPH;
+    DMA_TX_InitStruct.Mode = LL_DMA_MODE_NORMAL;
+    DMA_TX_InitStruct.PeriphOrM2MSrcIncMode = LL_DMA_PERIPH_NOINCREMENT;
+    DMA_TX_InitStruct.MemoryOrM2MDstIncMode = LL_DMA_MEMORY_INCREMENT;
+    DMA_TX_InitStruct.PeriphOrM2MSrcDataSize = LL_DMA_PDATAALIGN_BYTE;
+    DMA_TX_InitStruct.MemoryOrM2MDstDataSize = LL_DMA_MDATAALIGN_BYTE;
+    DMA_TX_InitStruct.NbData = DATAWIDTH;
+    DMA_TX_InitStruct.PeriphRequest = LL_DMAMUX1_REQ_SPI5_TX;
+    DMA_TX_InitStruct.Priority = LL_DMA_PRIORITY_MEDIUM;
+    DMA_TX_InitStruct.FIFOMode = LL_DMA_FIFOMODE_DISABLE;
+    DMA_TX_InitStruct.FIFOThreshold = LL_DMA_FIFOTHRESHOLD_FULL;
+    DMA_TX_InitStruct.MemBurst = LL_DMA_MBURST_SINGLE;
+    DMA_TX_InitStruct.PeriphBurst = LL_DMA_PBURST_SINGLE;
 
     dma_config.stream      = dma_stream_out;
     dma_config.channel     = dma_channel_out;
