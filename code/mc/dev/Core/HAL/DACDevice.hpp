@@ -8,8 +8,7 @@
 #ifndef HAL_DACDEVICE_HPP_
 #define HAL_DACDEVICE_HPP_
 
-
-#include "stm32h7xx_hal.h"
+#include "main.h"
 #include "dma.hpp"
 #include "spi.hpp"
 #include "../Modules/dac_config.h"

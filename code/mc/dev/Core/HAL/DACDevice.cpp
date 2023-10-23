@@ -106,9 +106,9 @@ void DAC_Device::config_output(ADC_HandleTypeDef* hadc, uint32_t ADC_SENL, uint3
 
     // read ADC value of lower voltage
     ADC_ChannelConfTypeDef adc_config   = {0};
-    adc_config.Channel                  = ADC_SENL;
+    adc_config.Channel                  = DAC1_SENL;
     adc_config.Rank                     = 1;
-    adc_config.SamplingTime             = ADC_SAMPLETIME_1CYCLE_5;
+    adc_config.SamplingTime             = ADC3_SAMPLETIME_2CYCLES_5;
 
     HAL_ADC_ConfigChannel(hadc, &adc_config);
     HAL_ADC_Start(hadc);
@@ -128,7 +128,7 @@ void DAC_Device::config_output(ADC_HandleTypeDef* hadc, uint32_t ADC_SENL, uint3
     	min_output = -10.0f;
     }
     // read ADC value of upper voltage
-    adc_config.Channel = ADC_SENH;
+    adc_config.Channel = DAC1_SENH;
     HAL_ADC_ConfigChannel(hadc, &adc_config);
     HAL_ADC_Start(hadc);
     HAL_ADC_PollForConversion(hadc, 1);
@@ -150,7 +150,7 @@ void DAC_Device::config_output(ADC_HandleTypeDef* hadc, uint32_t ADC_SENL, uint3
     inv_step_size       = 1 / step_size;
     invert              = false;
 
-    send_output_range();
+    // send_output_range();
 }
 
 __attribute__((optimize(0)))

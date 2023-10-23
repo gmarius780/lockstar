@@ -14,6 +14,8 @@
 
 #ifdef AO_TEST_MODULE
 
+extern ADC_HandleTypeDef hadc3;
+
 class AOTestModule
 {
 public:
@@ -33,7 +35,7 @@ public:
 
 		turn_LED2_on();
 		turn_LED3_on();
-
+        DAC_1->config_output(&hadc3, DAC1_SENL, DAC1_SENH);
 		while (true)
 		{
 			// ADC_Dev->start_conversion();
