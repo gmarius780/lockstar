@@ -40,7 +40,7 @@ DAC_Device::DAC_Device(uint8_t spi_lane, uint8_t dma_stream_out, uint8_t dma_cha
     DMA_TX_InitStruct.MemoryOrM2MDstIncMode = LL_DMA_MEMORY_INCREMENT;
     DMA_TX_InitStruct.PeriphOrM2MSrcDataSize = LL_DMA_PDATAALIGN_BYTE;
     DMA_TX_InitStruct.MemoryOrM2MDstDataSize = LL_DMA_MDATAALIGN_BYTE;
-    DMA_TX_InitStruct.NbData = DATAWIDTH;
+    DMA_TX_InitStruct.NbData = 3;
     DMA_TX_InitStruct.PeriphRequest = LL_DMAMUX1_REQ_SPI5_TX;
     DMA_TX_InitStruct.Priority = LL_DMA_PRIORITY_MEDIUM;
     DMA_TX_InitStruct.FIFOMode = LL_DMA_FIFOMODE_DISABLE;

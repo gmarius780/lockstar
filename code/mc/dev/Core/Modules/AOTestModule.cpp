@@ -34,7 +34,6 @@ public:
 		turn_LED2_on();
 		turn_LED3_on();
 
-		ADC_Dev->start_conversion();
 		while (true)
 		{
 			// ADC_Dev->start_conversion();
@@ -53,35 +52,35 @@ public:
 
 AOTestModule *module;
 
-/******************************
- *         INTERRUPTS          *
- *******************************/
-void DMA1_Stream2_IRQHandler(void)
-{
-	module->ADC_Dev->dma_receive_callback();
-}
+// /******************************
+//  *         INTERRUPTS          *
+//  *******************************/
+// void DMA1_Stream2_IRQHandler(void)
+// {
+// 	module->ADC_Dev->dma_receive_callback();
+// }
 
-void DMA1_Stream3_IRQHandler(void)
-{
-	module->ADC_Dev->dma_transmission_callback();
-}
+// void DMA1_Stream3_IRQHandler(void)
+// {
+// 	module->ADC_Dev->dma_transmission_callback();
+// }
 
-void DMA1_Stream4_IRQHandler(void)
-{
-	module->ADC_Dev->dma_receive_callback();
-}
+// void DMA1_Stream4_IRQHandler(void)
+// {
+// 	module->ADC_Dev->dma_receive_callback();
+// }
 
-void DMA1_Stream5_IRQHandler(void)
-{
-	module->ADC_Dev->dma_transmission_callback();
-}
+// void DMA1_Stream5_IRQHandler(void)
+// {
+// 	module->ADC_Dev->dma_transmission_callback();
+// }
 
-void SPI2_IRQHandler(void)
-{
-	LL_SPI_ClearFlag_EOT(SPI2);
-	// LL_SPI_SetReloadSize(SPI2, DATAWIDTH);
-	LL_SPI_StartMasterTransfer(SPI2);
-}
+// void SPI2_IRQHandler(void)
+// {
+// 	LL_SPI_ClearFlag_EOT(SPI2);
+// 	// LL_SPI_SetReloadSize(SPI2, DATAWIDTH);
+// 	LL_SPI_StartMasterTransfer(SPI2);
+// }
 
 /******************************
  *       MAIN FUNCTION        *

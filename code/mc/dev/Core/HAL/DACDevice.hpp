@@ -16,11 +16,6 @@
 
 #include <algorithm>
 
-#include "SPIDMAHandler.hpp"
-
-extern DMA_HandleTypeDef hdma_spi1tx, hdma_spi1_rx;
-#define DATAWIDTH 3
-
 class DAC_Device {
 public:
 	DAC_Device(uint8_t SPI, uint8_t dma_stream_out, uint8_t dma_channel_out, GPIO_TypeDef* sync_port, uint16_t sync_pin, GPIO_TypeDef* clear_port, uint16_t clear_pin);
@@ -57,7 +52,6 @@ private:
     void arm_dma();
     volatile uint8_t* dma_buffer;
     DMA* dma_output_handler;
-    SPI_DMA_Handler* old_dma;
     SPI* spi_handler;
     DMA_config_t dma_config;
 };
