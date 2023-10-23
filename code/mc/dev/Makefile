@@ -78,6 +78,7 @@ Core/Src/cppmain.cpp \
 Core/Src/lock.cpp \
 Core/Src/misc_func.cpp \
 Core/Modules/AITestModule.cpp \
+Core/Modules/AOTestModule.cpp \
 Core/Modules/AWGModule.cpp \
 Core/Modules/AWGPIDModule.cpp \
 Core/Modules/AnalogOutputModule.cpp \
