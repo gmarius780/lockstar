@@ -6,6 +6,7 @@
  */
 
 #include "DACDevice.hpp"
+#include "../Modules/dac_config.h"
 
 
 DAC_Device::DAC_Device(uint8_t spi_lane, uint8_t dma_stream_out, uint8_t dma_channel_out, GPIO_TypeDef* sync_port, uint16_t sync_pin, GPIO_TypeDef* clear_port, uint16_t clear_pin) {
@@ -48,7 +49,7 @@ DAC_Device::DAC_Device(uint8_t spi_lane, uint8_t dma_stream_out, uint8_t dma_cha
     DMA_TX_InitStruct.MemBurst = LL_DMA_MBURST_SINGLE;
     DMA_TX_InitStruct.PeriphBurst = LL_DMA_PBURST_SINGLE;
 
-    dma_output_handler = new DMA(DMA1, DAC2_DMA_STREAM, &DMA_TX_InitStruct);
+    dma_output_handler = new DMA(DAC2_DMA, DAC2_DMA_STREAM, &DMA_TX_InitStruct);
     dma_output_handler->enable_tc_irq();
 
     // Disable Clear-bit from start
@@ -86,11 +87,11 @@ void DAC_Device::write(float output) {
 __attribute__((section("sram_func")))
 void DAC_Device::dma_transmission_callback() {
 
-    TX_DMA_ClearFlag(DMA1);
-    ATOMIC_MODIFY_REG(ADC_TX_DMA_STREAM->NDTR, DMA_SxNDT, 3);
+    TX_DMA_ClearFlag(DAC2_DMA);
+    ATOMIC_MODIFY_REG(DAC2_TX_DMA_STREAM->NDTR, DMA_SxNDT, 3);
 
-    while(!LL_SPI_IsActiveFlag_TXC(DAC1_SPI));
-    ATOMIC_CLEAR_BIT(ADC_SPI->CR1, SPI_CR1_SPE);
+    while(!LL_SPI_IsActiveFlag_TXC(DAC2_SPI));
+    ATOMIC_CLEAR_BIT(DAC2_SPI->CR1, SPI_CR1_SPE);
      /*
      * bring SYNC line up to finish DA conversion
      * (The DA conversion is completed automatically with the 24th transmitted bit.
@@ -110,7 +111,7 @@ void DAC_Device::config_output(ADC_HandleTypeDef* hadc, uint32_t ADC_SENL, uint3
 
     // read ADC value of lower voltage
     ADC_ChannelConfTypeDef adc_config   = {0};
-    adc_config.Channel                  = DAC1_SENL;
+    adc_config.Channel                  = DAC2_SENL;
     adc_config.Rank                     = 1;
     adc_config.SamplingTime             = ADC3_SAMPLETIME_2CYCLES_5;
 
@@ -132,7 +133,7 @@ void DAC_Device::config_output(ADC_HandleTypeDef* hadc, uint32_t ADC_SENL, uint3
     	min_output = -10.0f;
     }
     // read ADC value of upper voltage
-    adc_config.Channel = DAC1_SENH;
+    adc_config.Channel = DAC2_SENH;
     HAL_ADC_ConfigChannel(hadc, &adc_config);
     HAL_ADC_Start(hadc);
     HAL_ADC_PollForConversion(hadc, 1);
@@ -157,7 +158,7 @@ void DAC_Device::config_output(ADC_HandleTypeDef* hadc, uint32_t ADC_SENL, uint3
     inv_step_size       = 1 / step_size;
     invert              = false;
 
-    // send_output_range();
+    send_output_range();
 }
 
 __attribute__((optimize(0)))
@@ -198,15 +199,12 @@ void DAC_Device::send_output_range() {
 }
 __attribute__((section("sram_func")))
 void DAC_Device::arm_dma() {
-    dma_output_handler->disableDMA();
-
-    // TODO: create an arm_dma method in the DMA class
-    dma_output_handler->setMemory0Address(dma_buffer);
-    dma_output_handler->setNumberOfData(3);
-
-    dma_output_handler->enableDMA();
-
-    spi_handler->enable_spi_tx_dma();
+    LL_DMA_EnableStream(DAC2_DMA, DAC2_DMA_STREAM);
+    LL_SPI_EnableDMAReq_TX(DAC2_SPI);
+    while (!LL_DMA_IsEnabledStream(DAC2_DMA, DAC2_DMA_STREAM))
+    {
+    }
+    ATOMIC_SET_BIT(DAC2_SPI->CR1, SPI_CR1_SPE);
 }
 
 

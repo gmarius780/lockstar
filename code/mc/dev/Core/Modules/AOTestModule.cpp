@@ -11,6 +11,7 @@
 #include "../HAL/DACDevice.hpp"
 #include "../HAL/leds.hpp"
 #include <stdio.h>
+#include "../Modules/dac_config.h"
 
 #ifdef AO_TEST_MODULE
 
@@ -42,7 +43,7 @@ public:
 
 		turn_LED2_on();
 		turn_LED3_on();
-        DAC_2->config_output(&hadc3, DAC1_SENL, DAC1_SENH);
+        DAC_2->config_output(&hadc3, DAC2_SENL, DAC2_SENH);
 		while (true)
 		{
 			// ADC_Dev->start_conversion();
