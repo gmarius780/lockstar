@@ -66,7 +66,7 @@ void DAC_Device::write(float output) {
     output = std::min(max_output, std::max(output, min_output));
     last_output = output;
 
-    int32_t int_output = (int32_t)((output-zero_voltage) * inv_step_size - 0.5f);
+    int32_t int_output = (int32_t)((output-zero_voltage) * inv_step_size);
     
     // Bring SYNC line low to prepare DAC
     sync_port->BSRR = (uint32_t)sync_pin << 16U;
@@ -77,8 +77,8 @@ void DAC_Device::write(float output) {
 
 
     // Doesn't check that value is 20bit, may get unexpected results
-    dma_buffer[0] = 0b00010000 + ((int_output>>16) & 0x0f);
-    dma_buffer[1] = (int_output>>8) & 0xff;
+    dma_buffer[0] = 0b00010000 + ((int_output>>14) & 0x0f);
+    dma_buffer[1] = (int_output>>6) & 0xff;
     dma_buffer[2] = int_output & 0xff;
 
     arm_dma();
