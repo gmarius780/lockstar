@@ -205,6 +205,7 @@ void DAC_Device::arm_dma() {
     {
     }
     ATOMIC_SET_BIT(DAC2_SPI->CR1, SPI_CR1_SPE);
+    SET_BIT(DAC2_SPI->CR1, SPI_CR1_CSTART);
 }
 
 
