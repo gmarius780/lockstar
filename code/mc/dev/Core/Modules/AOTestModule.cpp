@@ -28,10 +28,10 @@ public:
 		DAC_1 = new DAC_Device( /*SPI number*/              6,
 								/*DMA Stream Out*/          5,
 								/*DMA Channel Out*/         1,
-								/* sync pin port*/          DAC_1_Sync_GPIO_Port,
-								/* sync pin number*/        DAC_1_Sync_Pin,
-								/* clear pin port*/         CLR6_GPIO_Port,
-								/* clear pin number*/       CLR6_Pin);
+								/* sync pin port*/          DAC_2_Sync_GPIO_Port,
+								/* sync pin number*/        DAC_2_Sync_Pin,
+								/* clear pin port*/         CLR5_GPIO_Port,
+								/* clear pin number*/       CLR5_Pin);
 
 		turn_LED2_on();
 		turn_LED3_on();
