@@ -43,7 +43,10 @@ public:
 
 		turn_LED2_on();
 		turn_LED3_on();
+
+		float m1 = -10;
         DAC_2->config_output(&hadc3, DAC2_SENL, DAC2_SENH);
+		DAC_2->write(m1);
 		while (true)
 		{
 			// ADC_Dev->start_conversion();
@@ -70,10 +73,16 @@ AOTestModule *module;
 // 	module->ADC_Dev->dma_receive_callback();
 // }
 
-// void DMA1_Stream3_IRQHandler(void)
-// {
-// 	module->ADC_Dev->dma_transmission_callback();
-// }
+void DMA1_Stream3_IRQHandler(void)
+{
+	module->DAC_2->dma_transmission_callback();
+}
+
+void DMA2_Stream3_IRQHandler(void)
+{
+	module->DAC_2->dma_transmission_callback();
+}
+
 
 // void DMA1_Stream4_IRQHandler(void)
 // {
