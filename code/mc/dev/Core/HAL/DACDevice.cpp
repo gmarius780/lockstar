@@ -143,10 +143,13 @@ void DAC_Device::config_output(ADC_HandleTypeDef* hadc, uint32_t ADC_SENL, uint3
         max_hardware_output = 5.0f;
     	max_output = 5.0f;
     }
-
+    max_output = 10.0f;
+    min_output = -10.0f;
+    max_hardware_output = 10.0f;
+    min_hardware_output = -10.0f;
     full_range    		= max_output - min_output;
     zero_voltage        = (max_output + min_output)/2.0f;
-    step_size           = full_range / 0xfffff;   // full_range / (2^20-1)
+    step_size           = full_range / 0x3ffff;   // full_range / (2^20-1)
     inv_step_size       = 1 / step_size;
     invert              = false;
 
