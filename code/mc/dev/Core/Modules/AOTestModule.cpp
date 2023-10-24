@@ -25,13 +25,20 @@ public:
 
 	void run()
 	{
+		// DAC_2 = new DAC_Device( /*SPI number*/              6,
+		// 						/*DMA Stream Out*/          5,
+		// 						/*DMA Channel Out*/         1,
+		// 						/* sync pin port*/          DAC_2_Sync_GPIO_Port,
+		// 						/* sync pin number*/        DAC_2_Sync_Pin,
+		// 						/* clear pin port*/         DAC2_CLEAR_PORT,
+		// 						/* clear pin number*/       DAC2_CLEAR_PIN);
 		DAC_2 = new DAC_Device( /*SPI number*/              6,
 								/*DMA Stream Out*/          5,
 								/*DMA Channel Out*/         1,
-								/* sync pin port*/          DAC_2_Sync_GPIO_Port,
-								/* sync pin number*/        DAC_2_Sync_Pin,
+								/* sync pin port*/          DAC2_SYNC_PORT,
+								/* sync pin number*/        DAC2_SYNC_PIN,
 								/* clear pin port*/         DAC2_CLEAR_PORT,
-								/* clear pin number*/       DAC2_CLEAR_PIN);
+								/* clear pin number*/       DAC2_CLEAR_PIN);                                
 
 		turn_LED2_on();
 		turn_LED3_on();

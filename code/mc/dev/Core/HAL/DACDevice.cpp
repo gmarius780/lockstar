@@ -30,7 +30,7 @@ DAC_Device::DAC_Device(uint8_t spi_lane, uint8_t dma_stream_out, uint8_t dma_cha
 
     LL_DMA_InitTypeDef DMA_TX_InitStruct = {0};
 
-    spi_handler = new SPI(DAC1_SPI);
+    spi_handler = new SPI(DAC2_SPI);
 
     DMA_TX_InitStruct.PeriphOrM2MSrcAddress = (uint32_t)spi_handler->getTXDRAddress();
     DMA_TX_InitStruct.MemoryOrM2MDstAddress = (uint32_t)dma_buffer;
@@ -41,14 +41,15 @@ DAC_Device::DAC_Device(uint8_t spi_lane, uint8_t dma_stream_out, uint8_t dma_cha
     DMA_TX_InitStruct.PeriphOrM2MSrcDataSize = LL_DMA_PDATAALIGN_BYTE;
     DMA_TX_InitStruct.MemoryOrM2MDstDataSize = LL_DMA_MDATAALIGN_BYTE;
     DMA_TX_InitStruct.NbData = 3;
-    DMA_TX_InitStruct.PeriphRequest = LL_DMAMUX1_REQ_SPI5_TX;
+    DMA_TX_InitStruct.PeriphRequest = DMAMUX1_REQ_DAC_SPI_TX;
     DMA_TX_InitStruct.Priority = LL_DMA_PRIORITY_MEDIUM;
     DMA_TX_InitStruct.FIFOMode = LL_DMA_FIFOMODE_DISABLE;
     DMA_TX_InitStruct.FIFOThreshold = LL_DMA_FIFOTHRESHOLD_FULL;
     DMA_TX_InitStruct.MemBurst = LL_DMA_MBURST_SINGLE;
     DMA_TX_InitStruct.PeriphBurst = LL_DMA_PBURST_SINGLE;
 
-    dma_output_handler = new DMA(DMA1, DAC1_DMA_STREAM, &DMA_TX_InitStruct);
+    dma_output_handler = new DMA(DMA1, DAC2_DMA_STREAM, &DMA_TX_InitStruct);
+    dma_output_handler->enable_tc_irq();
 
     // Disable Clear-bit from start
 	HAL_GPIO_WritePin(clear_port, clear_pin, GPIO_PIN_SET);
@@ -81,12 +82,15 @@ void DAC_Device::write(float output) {
 
     arm_dma();
 }
+
 __attribute__((section("sram_func")))
 void DAC_Device::dma_transmission_callback() {
-    spi_handler->disable_spi_tx_dma();
 
-    dma_output_handler->resetTransferCompleteInterruptFlag();
+    TX_DMA_ClearFlag(DMA1);
+    ATOMIC_MODIFY_REG(ADC_TX_DMA_STREAM->NDTR, DMA_SxNDT, 3);
 
+    while(!LL_SPI_IsActiveFlag_TXC(DAC1_SPI));
+    ATOMIC_CLEAR_BIT(ADC_SPI->CR1, SPI_CR1_SPE);
      /*
      * bring SYNC line up to finish DA conversion
      * (The DA conversion is completed automatically with the 24th transmitted bit.
