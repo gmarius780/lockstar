@@ -25,17 +25,17 @@ public:
 
 	void run()
 	{
-		DAC_1 = new DAC_Device( /*SPI number*/              6,
+		DAC_2 = new DAC_Device( /*SPI number*/              6,
 								/*DMA Stream Out*/          5,
 								/*DMA Channel Out*/         1,
 								/* sync pin port*/          DAC_2_Sync_GPIO_Port,
 								/* sync pin number*/        DAC_2_Sync_Pin,
-								/* clear pin port*/         CLR5_GPIO_Port,
-								/* clear pin number*/       CLR5_Pin);
+								/* clear pin port*/         DAC2_CLEAR_PORT,
+								/* clear pin number*/       DAC2_CLEAR_PIN);
 
 		turn_LED2_on();
 		turn_LED3_on();
-        DAC_1->config_output(&hadc3, DAC1_SENL, DAC1_SENH);
+        DAC_2->config_output(&hadc3, DAC1_SENL, DAC1_SENH);
 		while (true)
 		{
 			// ADC_Dev->start_conversion();
@@ -47,7 +47,7 @@ public:
 	}
 
 public:
-	DAC_Device *DAC_1;
+	DAC_Device *DAC_2;
 	float m1 = 0;
 	float m2 = 0;
 };
