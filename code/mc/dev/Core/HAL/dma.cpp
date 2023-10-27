@@ -40,6 +40,11 @@ DMA::DMA(DMA_TypeDef *DMAx, uint32_t Stream, LL_DMA_InitTypeDef* configuration){
 	this->DMA_regs = ((DMA_Stream_TypeDef *)(dma_base_addr + LL_DMA_STR_OFFSET_TAB[Stream]));
 }
 
+DMA::DMA(BDMA_TypeDef *DMAx, uint32_t Channel, LL_BDMA_InitTypeDef* configuration){
+	LL_BDMA_Init(DMAx, Channel, configuration);
+	uint32_t dma_base_addr = (uint32_t)DMAx;
+	this->BDMA_regs = ((BDMA_Channel_TypeDef *)(dma_base_addr + LL_BDMA_CH_OFFSET_TAB[Channel]));
+}
 
 // __attribute__((section("sram_func")))
 void DMA::setMemory0Address(volatile uint8_t* addr) {

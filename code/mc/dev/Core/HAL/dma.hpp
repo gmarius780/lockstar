@@ -11,6 +11,7 @@
 #include "stm32h725xx.h"
 #include "stm32h7xx_hal.h"
 #include "stm32h7xx_ll_dma.h"
+#include "stm32h7xx_ll_bdma.h"
 
 typedef struct DMA_config_struct {
     __IO uint32_t CR;     /*!< DMA stream x configuration register      */
@@ -31,6 +32,7 @@ class DMA {
 public:
 	DMA(DMA_HandleTypeDef* hdmaSPI, DMA_config_t config);
     DMA(DMA_TypeDef *DMAx, uint32_t Stream, LL_DMA_InitTypeDef* configuration);
+    DMA(BDMA_TypeDef *DMAx, uint32_t Channel, LL_BDMA_InitTypeDef* configuration);
 
 	/* Configurations */
 	uint32_t getControlReg();
