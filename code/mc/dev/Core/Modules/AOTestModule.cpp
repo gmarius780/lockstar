@@ -44,7 +44,7 @@ public:
 		turn_LED2_on();
 		turn_LED3_on();
 
-		float m1 = -10;
+		float m1 = -5;
         DAC_2->config_output(&hadc3, DAC2_SENL, DAC2_SENH);
 		DAC_2->write(m1);
 		while (true)
