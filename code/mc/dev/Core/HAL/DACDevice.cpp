@@ -8,9 +8,10 @@
 #include "DACDevice.hpp"
 #include "../Modules/dac_config.h"
 
+// __attribute__((section(".BDMABlock"))) uint8_t dma_buffer[3] = {0};
 
 DAC_Device::DAC_Device(uint8_t spi_lane, uint8_t dma_stream_out, uint8_t dma_channel_out, GPIO_TypeDef* sync_port, uint16_t sync_pin, GPIO_TypeDef* clear_port, uint16_t clear_pin) {
-    
+#ifndef IS_BDMA 
     inv_step_size 	= 0;
     step_size 		= 0;
     zero_voltage 	= 0;
@@ -42,7 +43,7 @@ DAC_Device::DAC_Device(uint8_t spi_lane, uint8_t dma_stream_out, uint8_t dma_cha
     DMA_TX_InitStruct.PeriphOrM2MSrcDataSize = LL_DMA_PDATAALIGN_BYTE;
     DMA_TX_InitStruct.MemoryOrM2MDstDataSize = LL_DMA_MDATAALIGN_BYTE;
     DMA_TX_InitStruct.NbData = 3;
-    DMA_TX_InitStruct.PeriphRequest = DMAMUX1_REQ_DAC_SPI_TX;
+    DMA_TX_InitStruct.PeriphRequest = DMAMUX_REQ_DAC_SPI_TX;
     DMA_TX_InitStruct.Priority = LL_DMA_PRIORITY_MEDIUM;
     DMA_TX_InitStruct.FIFOMode = LL_DMA_FIFOMODE_DISABLE;
     DMA_TX_InitStruct.FIFOThreshold = LL_DMA_FIFOTHRESHOLD_FULL;
@@ -55,8 +56,56 @@ DAC_Device::DAC_Device(uint8_t spi_lane, uint8_t dma_stream_out, uint8_t dma_cha
     // Disable Clear-bit from start
 	HAL_GPIO_WritePin(clear_port, clear_pin, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(sync_port, sync_pin, GPIO_PIN_SET);
+#endif
 }
-__attribute__((section("sram_func")))
+
+DAC_Device::DAC_Device(GPIO_TypeDef* sync_port, uint16_t sync_pin, GPIO_TypeDef* clear_port, uint16_t clear_pin) {
+#ifdef IS_BDMA    
+    inv_step_size 	= 0;
+    step_size 		= 0;
+    zero_voltage 	= 0;
+    full_range 		= 0;
+
+    last_output = 0;
+
+    max_output 	= 0;
+    min_output 	= 0;
+    busy 		= false;
+    invert 		= false;
+    
+    // dma_buffer 	= ram_dma_buffer;
+
+    this->sync_port 	= sync_port;
+    this->sync_pin 		= sync_pin;
+    this->clear_port 	= clear_port;
+    this->clear_pin 	= clear_pin;
+
+    LL_BDMA_InitTypeDef DMA_TX_InitStruct = {0};
+
+    spi_handler = new SPI(DAC2_SPI);
+
+    DMA_TX_InitStruct.PeriphOrM2MSrcAddress = (uint32_t)spi_handler->getTXDRAddress();
+    DMA_TX_InitStruct.MemoryOrM2MDstAddress = (uint32_t)dma_buffer;
+    DMA_TX_InitStruct.Direction = LL_BDMA_DIRECTION_MEMORY_TO_PERIPH;
+    DMA_TX_InitStruct.Mode = LL_BDMA_MODE_NORMAL;
+    DMA_TX_InitStruct.PeriphOrM2MSrcIncMode = LL_BDMA_PERIPH_NOINCREMENT;
+    DMA_TX_InitStruct.MemoryOrM2MDstIncMode = LL_BDMA_MEMORY_INCREMENT;
+    DMA_TX_InitStruct.PeriphOrM2MSrcDataSize = LL_BDMA_PDATAALIGN_BYTE;
+    DMA_TX_InitStruct.MemoryOrM2MDstDataSize = LL_BDMA_MDATAALIGN_BYTE;
+    DMA_TX_InitStruct.NbData = 3;
+    DMA_TX_InitStruct.PeriphRequest = DMAMUX_REQ_DAC_SPI_TX;
+    DMA_TX_InitStruct.Priority = LL_BDMA_PRIORITY_HIGH;
+
+    dma_output_handler = new DMA(DAC2_DMA, DAC2_DMA_STREAM, &DMA_TX_InitStruct);
+    LL_BDMA_EnableIT_TC(DAC2_DMA, DAC2_DMA_STREAM);
+    LL_SPI_SetFIFOThreshold(DAC2_SPI, LL_SPI_FIFO_TH_03DATA);
+
+    // Disable Clear-bit from start
+	HAL_GPIO_WritePin(clear_port, clear_pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(sync_port, sync_pin, GPIO_PIN_SET);
+#endif
+}
+//__attribute__((section("sram_func")))
 void DAC_Device::write(float output) {
     if(busy)
         return;
@@ -84,12 +133,16 @@ void DAC_Device::write(float output) {
     arm_dma();
 }
 
-__attribute__((section("sram_func")))
+//__attribute__((section("sram_func")))
 void DAC_Device::dma_transmission_callback() {
 
     TX_DMA_ClearFlag(DAC2_DMA);
+#ifdef IS_BDMA
+    LL_BDMA_DisableChannel(DAC2_DMA, DAC2_DMA_STREAM);
+    ATOMIC_MODIFY_REG(DAC2_TX_DMA_STREAM->CNDTR, BDMA_CNDTR_NDT, 3 );
+#else
     ATOMIC_MODIFY_REG(DAC2_TX_DMA_STREAM->NDTR, DMA_SxNDT, 3);
-
+#endif
     while(!LL_SPI_IsActiveFlag_TXC(DAC2_SPI));
     ATOMIC_CLEAR_BIT(DAC2_SPI->CR1, SPI_CR1_SPE);
      /*
@@ -197,8 +250,17 @@ void DAC_Device::send_output_range() {
     // Wait till configuration is sent
     while(busy);
 }
-__attribute__((section("sram_func")))
+//__attribute__((section("sram_func")))
 void DAC_Device::arm_dma() {
+#ifdef IS_BDMA
+    LL_BDMA_EnableChannel(DAC2_DMA, DAC2_DMA_STREAM);
+    LL_SPI_EnableDMAReq_TX(DAC2_SPI);
+    while (!LL_BDMA_IsEnabledChannel(DAC2_DMA, DAC2_DMA_STREAM))
+    {
+    }
+    ATOMIC_SET_BIT(DAC2_SPI->CR1, SPI_CR1_SPE);
+    SET_BIT(DAC2_SPI->CR1, SPI_CR1_CSTART);
+#else
     LL_DMA_EnableStream(DAC2_DMA, DAC2_DMA_STREAM);
     LL_SPI_EnableDMAReq_TX(DAC2_SPI);
     while (!LL_DMA_IsEnabledStream(DAC2_DMA, DAC2_DMA_STREAM))
@@ -206,6 +268,7 @@ void DAC_Device::arm_dma() {
     }
     ATOMIC_SET_BIT(DAC2_SPI->CR1, SPI_CR1_SPE);
     SET_BIT(DAC2_SPI->CR1, SPI_CR1_CSTART);
+#endif
 }
 
 
