@@ -39,14 +39,21 @@ public:
 								/* sync pin port*/          DAC2_SYNC_PORT,
 								/* sync pin number*/        DAC2_SYNC_PIN,
 								/* clear pin port*/         DAC2_CLEAR_PORT,
-								/* clear pin number*/       DAC2_CLEAR_PIN);                                
+								/* clear pin number*/       DAC2_CLEAR_PIN);
+		DAC_1 = new DAC_Device( 
+						/* sync pin port*/          DAC2_SYNC_PORT,
+						/* sync pin number*/        DAC2_SYNC_PIN,
+						/* clear pin port*/         DAC1_CLEAR_PORT,
+						/* clear pin number*/       DAC1_CLEAR_PIN);                                
 
 		turn_LED2_on();
 		turn_LED3_on();
 
-		float m1 = -5;
+		float m1 = 1;
         DAC_2->config_output(&hadc3, DAC2_SENL, DAC2_SENH);
 		DAC_2->write(m1);
+		// DAC_1->config_output(&hadc3, DAC2_SENL, DAC2_SENH);
+		// DAC_1->write(m1);
 		while (true)
 		{
 			// ADC_Dev->start_conversion();
@@ -58,6 +65,7 @@ public:
 	}
 
 public:
+	DAC_Device *DAC_1;
 	DAC_Device *DAC_2;
 	float m1 = 0;
 	float m2 = 0;
@@ -81,6 +89,11 @@ void DMA1_Stream3_IRQHandler(void)
 void DMA2_Stream3_IRQHandler(void)
 {
 	module->DAC_2->dma_transmission_callback();
+}
+
+void BDMA_Channel1_IRQHandler(void)
+{
+	module->DAC_1->dma_transmission_callback();
 }
 
 
