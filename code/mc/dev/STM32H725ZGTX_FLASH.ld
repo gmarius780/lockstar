@@ -170,6 +170,11 @@ SECTIONS
     . = . + _Min_Stack_Size;
     . = ALIGN(8);
   } >RAM_D1
+  .BDMABlock : 
+  {
+    . = ALIGN(8);
+    *(.BDMA_Access)
+  } >RAM_D3 AT> FLASH
 
   /* Remove information from the standard libraries */
   /DISCARD/ :
