@@ -211,3 +211,5 @@ doc/STM32H725_DMA_Ref.pdf
 doc/STM32H725_SPI_Ref.pdf
 *.T3001OPEN
 code/mc/dev/Core/Modules/adc_config.h
+code/mc/dev/Core/Modules/rpi_config.h
+code/mc/dev/Core/Modules/dac_config.h
