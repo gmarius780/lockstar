@@ -49,7 +49,7 @@ private:
 
     void send_output_range();
     void arm_dma();
-    volatile uint8_t* dma_buffer;
+    // volatile uint8_t* dma_buffer;
     DMA* dma_output_handler;
     SPI* spi_handler;
     DMA_config_t dma_config;
