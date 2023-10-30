@@ -20,92 +20,46 @@ RPI::RPI() {
 	comm_reset_timer->disable_interrupt();
 	comm_reset_timer->reset_counter();
 
-	spi = new SPI(4);
+	spi = new SPI(SPI1);
 	spi->disableSPI();
 
-	/*Configure DMA IN */
-	dma_in_config.channel = 4;
-	dma_in_config.stream = 0;
-	dma_in_config.priority = 1;
-	dma_in_config.PAR = (uint32_t)spi->getDRAddress();
-	dma_in_config.M0AR = (uint32_t)read_buffer;
+	LL_DMA_InitTypeDef DMA_RX_InitStruct = {0};
+    LL_DMA_InitTypeDef DMA_TX_InitStruct = {0};
 
-	uint8_t DMAprio = 1;
-	dma_in_config.priority = DMAprio;
-	//initialize CR to be zero
-	dma_in_config.CR = 0;
-	//important to explicitly disable otherwise the DMA constructor will enable it
-	dma_in_config.CR &= ~DMA_SxCR_EN;
-	// reset 3 bits that define channel
-	dma_in_config.CR &= ~(DMA_SxCR_PL);
-	// set channel via 3 control bits
-	dma_in_config.CR |= dma_in_config.channel * DMA_SxCR_PL;
-	// set stream priority from very low (00) to very high (11)
-	dma_in_config.CR &= ~(DMA_SxCR_PL);
-	// reset 2 bits that define priority
-	dma_in_config.CR |= dma_in_config.priority * DMA_SxCR_PL_0; // set priority via 2 control bits
-	// increment the memory address with each transfer
-	dma_in_config.CR |= DMA_SxCR_MINC;
-	// do not increment peripheral address
-	dma_in_config.CR &= ~DMA_SxCR_PINC;
-	// set direction of transfer to "peripheral to memory"
-	dma_in_config.CR &= ~(DMA_SxCR_DIR_0 | DMA_SxCR_DIR_1);
-	// Clear DBM bit
-	dma_in_config.CR &= (uint32_t)(~DMA_SxCR_DBM);
+    DMA_RX_InitStruct.PeriphOrM2MSrcAddress = (uint32_t)spi->getRXDRAddress();
+    DMA_RX_InitStruct.MemoryOrM2MDstAddress = (uint32_t)read_buffer;
+    DMA_RX_InitStruct.Direction = LL_DMA_DIRECTION_PERIPH_TO_MEMORY;
+    DMA_RX_InitStruct.Mode = LL_DMA_MODE_NORMAL;
+    DMA_RX_InitStruct.PeriphOrM2MSrcIncMode = LL_DMA_PERIPH_NOINCREMENT;
+    DMA_RX_InitStruct.MemoryOrM2MDstIncMode = LL_DMA_MEMORY_INCREMENT;
+    DMA_RX_InitStruct.PeriphOrM2MSrcDataSize = LL_DMA_PDATAALIGN_BYTE;
+    DMA_RX_InitStruct.MemoryOrM2MDstDataSize = LL_DMA_MDATAALIGN_BYTE;
+    DMA_RX_InitStruct.NbData = 255*READ_NBR_BYTES_MULTIPLIER;
+    DMA_RX_InitStruct.PeriphRequest = LL_DMAMUX1_REQ_SPI1_RX;
+    DMA_RX_InitStruct.Priority = LL_DMA_PRIORITY_HIGH;
+    DMA_RX_InitStruct.FIFOMode = LL_DMA_FIFOMODE_DISABLE;
+    DMA_RX_InitStruct.FIFOThreshold = LL_DMA_FIFOTHRESHOLD_FULL;
+    DMA_RX_InitStruct.MemBurst = LL_DMA_MBURST_SINGLE;
+    DMA_RX_InitStruct.PeriphBurst = LL_DMA_PBURST_SINGLE;	
 
-	//disable peripheral flow control -> the MC knows how many bytes to expect (the rpi tells it via spi)
-	dma_in_config.CR &= ~DMA_SxCR_PFCTRL;
+    DMA_TX_InitStruct.PeriphOrM2MSrcAddress = (uint32_t)spi->getTXDRAddress();
+    DMA_TX_InitStruct.MemoryOrM2MDstAddress = (uint32_t)write_buffer;
+    DMA_TX_InitStruct.Direction = LL_DMA_DIRECTION_MEMORY_TO_PERIPH;
+    DMA_TX_InitStruct.Mode = LL_DMA_MODE_NORMAL;
+    DMA_TX_InitStruct.PeriphOrM2MSrcIncMode = LL_DMA_PERIPH_NOINCREMENT;
+    DMA_TX_InitStruct.MemoryOrM2MDstIncMode = LL_DMA_MEMORY_INCREMENT;
+    DMA_TX_InitStruct.PeriphOrM2MSrcDataSize = LL_DMA_PDATAALIGN_BYTE;
+    DMA_TX_InitStruct.MemoryOrM2MDstDataSize = LL_DMA_MDATAALIGN_BYTE;
+    DMA_TX_InitStruct.NbData = 4096;
+    DMA_TX_InitStruct.PeriphRequest = LL_DMAMUX1_REQ_SPI1_TX;
+    DMA_TX_InitStruct.Priority = LL_DMA_PRIORITY_MEDIUM;
+    DMA_TX_InitStruct.FIFOMode = LL_DMA_FIFOMODE_DISABLE;
+    DMA_TX_InitStruct.FIFOThreshold = LL_DMA_FIFOTHRESHOLD_FULL;
+    DMA_TX_InitStruct.MemBurst = LL_DMA_MBURST_SINGLE;
+    DMA_TX_InitStruct.PeriphBurst = LL_DMA_PBURST_SINGLE;
 
-	//set memory 'unit' to 8-bit
-	dma_in_config.CR &= ~DMA_SxCR_PSIZE_0;
-	dma_in_config.CR &= ~DMA_SxCR_PSIZE_1;
-	dma_in_config.CR &= ~DMA_SxCR_MSIZE_0;
-	dma_in_config.CR &= ~DMA_SxCR_MSIZE_1;
-
-
-	// disable transmission-complete / halftransmission; enable error interrupt
-	dma_in_config.CR  &= ~DMA_SxCR_TCIE;
-	dma_in_config.CR  &= ~DMA_SxCR_HTIE;
-	dma_in_config.CR  |= DMA_SxCR_TEIE;
-
-	dma_in = new DMA(&hdma_spi1_rx, dma_in_config);
-//	dma_in->disableCircMode();
-
-
-	/*configure DMA out*/
-	dma_out_config.stream     = 1;
-	dma_out_config.channel    = 4;
-	dma_out_config.PAR        = (uint32_t)spi->getDRAddress();
-	dma_out_config.M0AR       = (uint32_t)write_buffer;
-	dma_out_config.NDTR       = 0;
-	dma_out_config.priority = 1;
-
-	//initialize CR to be zero
-	dma_out_config.CR = 0;
-
-	//important to explicitly disable otherwise the DMA constructor will enable it
-	dma_out_config.CR &= ~DMA_SxCR_EN;
-	dma_out_config.CR &= ~(DMA_SxCR_PL); // reset 3 bits that define channel
-	dma_out_config.CR |= dma_out_config.channel * DMA_SxCR_PL; // set channel via 3 control bits
-	// set stream priority from very low (00) to very high (11)
-	dma_out_config.CR &= ~(DMA_SxCR_PL); // reset 2 bits that define priority
-	dma_out_config.CR |= dma_out_config.priority * DMA_SxCR_PL_0; // set priority via 2 control bits
-	// increment the memory address with each transfer
-	dma_out_config.CR |= DMA_SxCR_MINC;
-	// do not increment peripheral address
-	dma_out_config.CR &= ~DMA_SxCR_PINC;
-	// set direction of transfer to "memory to peripheral"
-	dma_out_config.CR &= ~DMA_SxCR_DIR_1;
-	dma_out_config.CR |= DMA_SxCR_DIR_0;
-	// Clear DBM bit
-	dma_out_config.CR &= (uint32_t)(~DMA_SxCR_DBM);
-	// Program transmission-complete interrupt
-	dma_out_config.CR  &= ~DMA_SxCR_TCIE;
-	dma_out_config.CR  &= ~DMA_SxCR_TEIE;
-	//disable peripheral flow control -> the MC knows how many bytes to expect (the rpi tells it via spi)
-	dma_out_config.CR &= ~DMA_SxCR_PFCTRL;
-
-	dma_out = new DMA(&hdma_spi1_tx, dma_out_config);
+	dma_in = new DMA(DMA1, LL_DMA_STREAM_0, &DMA_RX_InitStruct);
+	dma_out = new DMA(DMA1, LL_DMA_STREAM_1, &DMA_TX_InitStruct);
 
 	this->read_package = new RPIDataPackage();
 	this->write_package = new RPIDataPackage();
@@ -128,7 +82,7 @@ void RPI::spi_interrupt() {
 		//get new command from rpi
 		comm_reset_timer->enable_interrupt();
 		comm_reset_timer->enable();
-		current_nbr_of_bytes = READ_NBR_BYTES_MULTIPLIER * ((uint32_t)*(volatile uint8_t *)spi->getDRAddress());
+		current_nbr_of_bytes = READ_NBR_BYTES_MULTIPLIER * ((uint32_t)*(volatile uint8_t *)spi->getRXDRAddress());
 		if (current_nbr_of_bytes != 0) {
 			is_communicating = true;
 			this->start_dma_in_communication(this->current_nbr_of_bytes);
