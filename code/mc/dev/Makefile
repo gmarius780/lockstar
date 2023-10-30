@@ -98,6 +98,7 @@ Core/Modules/SPITestModuleLL.cpp \
 Core/Modules/ScopeModule.cpp \
 Core/Modules/SinglePIDModule.cpp \
 Core/Modules/TestModule.cpp \
+Core/Modules/RPITestModule.cpp \
 Core/Lib/LinearizableDAC.cpp \
 Core/Lib/RPIDataPackage.cpp \
 Core/Lib/Scope.cpp \
