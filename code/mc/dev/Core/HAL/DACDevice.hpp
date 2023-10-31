@@ -72,10 +72,9 @@ private:
     DMA *dma_output_handler;
     SPI *spi_handler;
     DMA_config_t dma_config;
-    void (*begin_dma_transfer)();
+    void begin_dma_transfer();
 };
 
-void arm_dma();
-void arm_bdma();
-
+// void arm_dma(DAC_Device_TypeDef *DAC_conf);
+// void arm_bdma(DAC_Device_TypeDef *DAC_conf);
 #endif /* HAL_DACDEVICE_HPP_ */

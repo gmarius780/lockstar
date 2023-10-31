@@ -74,7 +74,6 @@ DAC_Device::DAC_Device(uint8_t dac_id, GPIO_TypeDef *sync_port, uint16_t sync_pi
     min_output = 0;
     busy = false;
     invert = false;
-    begin_dma_transfer = arm_bdma;
 
     this->sync_port = sync_port;
     this->sync_pin = sync_pin;
@@ -110,7 +109,6 @@ DAC_Device::DAC_Device(DAC_Device_TypeDef *DAC_conf)
     min_output = 0;
     busy = false;
     invert = false;
-    begin_dma_transfer = arm_bdma;
 
     this->DAC_conf = DAC_conf;
 
@@ -285,28 +283,29 @@ __attribute__((optimize(0))) void DAC_Device::send_output_range()
     while (busy)
         ;
 }
-//__attribute__((section("sram_func")))
-void arm_dma()
+
+void DAC_Device::begin_dma_transfer()
 {
-    // LL_DMA_EnableStream(DAC2_DMA, DAC2_DMA_STREAM);
-    // LL_SPI_EnableDMAReq_TX(DAC2_SPI);
-    // while (!LL_DMA_IsEnabledStream(DAC2_DMA, DAC2_DMA_STREAM))
-    // {
-    // }
-    // ATOMIC_SET_BIT(DAC2_SPI->CR1, SPI_CR1_SPE);
-    // SET_BIT(DAC2_SPI->CR1, SPI_CR1_CSTART);
+    LL_BDMA_EnableChannel(DAC2_DMA, DAC2_DMA_STREAM);
+    LL_SPI_EnableDMAReq_TX(DAC2_SPI);
+    while (!LL_BDMA_IsEnabledChannel(DAC2_DMA, DAC2_DMA_STREAM))
+    {
+    }
+    ATOMIC_SET_BIT(DAC2_SPI->CR1, SPI_CR1_SPE);
+    SET_BIT(DAC2_SPI->CR1, SPI_CR1_CSTART);
 }
 
-void arm_bdma()
-{
-    // LL_BDMA_EnableChannel(DAC2_DMA, DAC2_DMA_STREAM);
-    // LL_SPI_EnableDMAReq_TX(DAC_conf->SPIx);
-    // while (!LL_BDMA_IsEnabledChannel(DAC2_DMA, DAC2_DMA_STREAM))
-    // {
-    // }
-    // ATOMIC_SET_BIT(this->DAC_conf->SPIx->CR1, SPI_CR1_SPE);
-    // SET_BIT(this->DAC_conf->SPIx->CR1, SPI_CR1_CSTART);
-}
+// //__attribute__((section("sram_func")))
+// void arm_dma(DAC_Device_TypeDef *DAC_conf)
+// {
+//     // LL_DMA_EnableStream(DAC2_DMA, DAC2_DMA_STREAM);
+//     // LL_SPI_EnableDMAReq_TX(DAC2_SPI);
+//     // while (!LL_DMA_IsEnabledStream(DAC2_DMA, DAC2_DMA_STREAM))
+//     // {
+//     // }
+//     // ATOMIC_SET_BIT(DAC2_SPI->CR1, SPI_CR1_SPE);
+//     // SET_BIT(DAC2_SPI->CR1, SPI_CR1_CSTART);
+// }
 
 bool DAC_Device::is_busy()
 {
