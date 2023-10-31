@@ -9,7 +9,13 @@
 #	2017-02-10 - Several enhancements + project update mode
 #   2015-07-22 - first version
 # ------------------------------------------------
-
+ifeq ($(OS),Windows_NT) 
+RM = del /Q /F
+CP = copy /Y
+else
+RM = rm -rf
+CP = cp -f
+endif
 ######################################
 # target
 ######################################
@@ -251,8 +257,8 @@ $(BUILD_DIR):
 # clean up
 #######################################
 clean:
-	-rm -fR $(BUILD_DIR)
-  
+	-$(RM) $(BUILD_DIR)
+
 #######################################
 # dependencies
 #######################################
