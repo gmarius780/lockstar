@@ -81,26 +81,13 @@ DAC_Device::DAC_Device(uint8_t dac_id, GPIO_TypeDef *sync_port, uint16_t sync_pi
     this->clear_port = clear_port;
     this->clear_pin = clear_pin;
 
-    // LL_BDMA_InitTypeDef DMA_TX_InitStruct = {0};
-
     spi_handler = new SPI(DAC2_SPI);
 
-    // DMA_TX_InitStruct.PeriphOrM2MSrcAddress = (uint32_t)spi_handler->getTXDRAddress();
-    // DMA_TX_InitStruct.MemoryOrM2MDstAddress = (uint32_t)dma_buffer;
-    // DMA_TX_InitStruct.Direction = LL_BDMA_DIRECTION_MEMORY_TO_PERIPH;
-    // DMA_TX_InitStruct.Mode = LL_BDMA_MODE_NORMAL;
-    // DMA_TX_InitStruct.PeriphOrM2MSrcIncMode = LL_BDMA_PERIPH_NOINCREMENT;
-    // DMA_TX_InitStruct.MemoryOrM2MDstIncMode = LL_BDMA_MEMORY_INCREMENT;
-    // DMA_TX_InitStruct.PeriphOrM2MSrcDataSize = LL_BDMA_PDATAALIGN_BYTE;
-    // DMA_TX_InitStruct.MemoryOrM2MDstDataSize = LL_BDMA_MDATAALIGN_BYTE;
-    // DMA_TX_InitStruct.NbData = 3;
-    // DMA_TX_InitStruct.PeriphRequest = DMAMUX_REQ_DAC_SPI_TX;
-    // DMA_TX_InitStruct.Priority = LL_BDMA_PRIORITY_HIGH;
-    DAC1_conf.BDMA_InitStruct.PeriphOrM2MSrcAddress = (uint32_t)spi_handler->getTXDRAddress();
-    DAC1_conf.BDMA_InitStruct.MemoryOrM2MDstAddress = (uint32_t)dma_buffer;
-    DAC1_conf.BDMA_InitStruct.NbData = 3;
+    // DAC1_conf.BDMA_InitStruct.PeriphOrM2MSrcAddress = (uint32_t)spi_handler->getTXDRAddress();
+    // DAC1_conf.BDMA_InitStruct.MemoryOrM2MDstAddress = (uint32_t)dma_buffer;
+    // DAC1_conf.BDMA_InitStruct.NbData = 3;
 
-    dma_output_handler = new DMA(DAC2_DMA, DAC2_DMA_STREAM, &DAC1_conf.BDMA_InitStruct);
+    dma_output_handler = new DMA(DAC2_DMA, DAC2_DMA_STREAM, DAC1_conf.BDMA_InitStruct);
     LL_BDMA_EnableIT_TC(DAC2_DMA, DAC2_DMA_STREAM);
     LL_SPI_SetFIFOThreshold(DAC2_SPI, LL_SPI_FIFO_TH_03DATA);
 
@@ -109,6 +96,45 @@ DAC_Device::DAC_Device(uint8_t dac_id, GPIO_TypeDef *sync_port, uint16_t sync_pi
     HAL_GPIO_WritePin(sync_port, sync_pin, GPIO_PIN_SET);
 #endif
 }
+
+DAC_Device::DAC_Device(DAC_Device_TypeDef *DAC_conf)
+{
+#ifdef IS_BDMA
+    inv_step_size = 0;
+    step_size = 0;
+    zero_voltage = 0;
+    full_range = 0;
+
+    last_output = 0;
+
+    max_output = 0;
+    min_output = 0;
+    busy = false;
+    invert = false;
+    begin_dma_transfer = arm_bdma;
+
+    this->DAC_conf = DAC_conf;
+    this->sync_port = DAC_conf->sync_port;
+    this->sync_pin = DAC_conf->sync_pin;
+    this->clear_port = DAC_conf->clear_port;
+    this->clear_pin = DAC_conf->clear_pin;
+
+    spi_handler = new SPI(DAC2_SPI);
+
+    DAC1_conf.BDMA_InitStruct->PeriphOrM2MSrcAddress = (uint32_t)spi_handler->getTXDRAddress();
+    DAC1_conf.BDMA_InitStruct->MemoryOrM2MDstAddress = (uint32_t)dma_buffer;
+    DAC1_conf.BDMA_InitStruct->NbData = 3;
+
+    dma_output_handler = new DMA(DAC2_DMA, DAC2_DMA_STREAM, DAC1_conf.BDMA_InitStruct);
+    LL_BDMA_EnableIT_TC(DAC2_DMA, DAC2_DMA_STREAM);
+    LL_SPI_SetFIFOThreshold(DAC2_SPI, LL_SPI_FIFO_TH_03DATA);
+
+    // Disable Clear-bit from start
+    HAL_GPIO_WritePin(clear_port, clear_pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(sync_port, sync_pin, GPIO_PIN_SET);
+#endif
+}
+
 //__attribute__((section("sram_func")))
 void DAC_Device::write(float output)
 {
