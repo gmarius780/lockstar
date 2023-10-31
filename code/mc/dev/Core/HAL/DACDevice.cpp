@@ -121,8 +121,8 @@ DAC_Device::DAC_Device(DAC_Device_TypeDef *DAC_conf)
     DAC_conf->BDMA_InitStruct->NbData = 3;
 
     dma_output_handler = new DMA(DAC2_DMA, DAC2_DMA_STREAM, DAC_conf->BDMA_InitStruct);
-    LL_BDMA_EnableIT_TC(DAC2_DMA, DAC2_DMA_STREAM);
-    LL_SPI_SetFIFOThreshold(DAC2_SPI, LL_SPI_FIFO_TH_03DATA);
+
+    BDMA_EnableIT_TC(DAC_conf->BDMA_Channelx);
 
     // Disable Clear-bit from start
     HAL_GPIO_WritePin(DAC_conf->clear_port, DAC_conf->clear_pin, GPIO_PIN_SET);
@@ -299,13 +299,13 @@ void arm_dma()
 
 void arm_bdma()
 {
-    LL_BDMA_EnableChannel(DAC2_DMA, DAC2_DMA_STREAM);
-    LL_SPI_EnableDMAReq_TX(DAC2_SPI);
-    while (!LL_BDMA_IsEnabledChannel(DAC2_DMA, DAC2_DMA_STREAM))
-    {
-    }
-    ATOMIC_SET_BIT(DAC2_SPI->CR1, SPI_CR1_SPE);
-    SET_BIT(DAC2_SPI->CR1, SPI_CR1_CSTART);
+    // LL_BDMA_EnableChannel(DAC2_DMA, DAC2_DMA_STREAM);
+    // LL_SPI_EnableDMAReq_TX(DAC_conf->SPIx);
+    // while (!LL_BDMA_IsEnabledChannel(DAC2_DMA, DAC2_DMA_STREAM))
+    // {
+    // }
+    // ATOMIC_SET_BIT(this->DAC_conf->SPIx->CR1, SPI_CR1_SPE);
+    // SET_BIT(this->DAC_conf->SPIx->CR1, SPI_CR1_CSTART);
 }
 
 bool DAC_Device::is_busy()

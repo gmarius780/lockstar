@@ -70,4 +70,18 @@ private:
     bool is_dma_instance;
 };
 
+
+__STATIC_INLINE void BDMA_EnableIT_TC(BDMA_Channel_TypeDef *BDMA_Channel)
+{
+
+  SET_BIT(BDMA_Channel->CCR, BDMA_CCR_TCIE);
+}
+
+__STATIC_INLINE void DMA_EnableIT_TC(DMA_Stream_TypeDef *DMA_Stream)
+{
+  SET_BIT(DMA_Stream->CR, DMA_SxCR_TCIE);
+}
+
+
+
 #endif /* HAL_DMA_HPP_ */
