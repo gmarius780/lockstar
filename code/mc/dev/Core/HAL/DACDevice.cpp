@@ -99,7 +99,6 @@ DAC_Device::DAC_Device(uint8_t dac_id, GPIO_TypeDef *sync_port, uint16_t sync_pi
 
 DAC_Device::DAC_Device(DAC_Device_TypeDef *DAC_conf)
 {
-#ifdef IS_BDMA
     inv_step_size = 0;
     step_size = 0;
     zero_voltage = 0;
@@ -114,25 +113,20 @@ DAC_Device::DAC_Device(DAC_Device_TypeDef *DAC_conf)
     begin_dma_transfer = arm_bdma;
 
     this->DAC_conf = DAC_conf;
-    this->sync_port = DAC_conf->sync_port;
-    this->sync_pin = DAC_conf->sync_pin;
-    this->clear_port = DAC_conf->clear_port;
-    this->clear_pin = DAC_conf->clear_pin;
 
     spi_handler = new SPI(DAC2_SPI);
 
-    DAC1_conf.BDMA_InitStruct->PeriphOrM2MSrcAddress = (uint32_t)spi_handler->getTXDRAddress();
-    DAC1_conf.BDMA_InitStruct->MemoryOrM2MDstAddress = (uint32_t)dma_buffer;
-    DAC1_conf.BDMA_InitStruct->NbData = 3;
+    DAC_conf->BDMA_InitStruct->PeriphOrM2MSrcAddress = (uint32_t) &(DAC_conf->SPIx->TXDR);
+    DAC_conf->BDMA_InitStruct->MemoryOrM2MDstAddress = (uint32_t)dma_buffer;
+    DAC_conf->BDMA_InitStruct->NbData = 3;
 
-    dma_output_handler = new DMA(DAC2_DMA, DAC2_DMA_STREAM, DAC1_conf.BDMA_InitStruct);
+    dma_output_handler = new DMA(DAC2_DMA, DAC2_DMA_STREAM, DAC_conf->BDMA_InitStruct);
     LL_BDMA_EnableIT_TC(DAC2_DMA, DAC2_DMA_STREAM);
     LL_SPI_SetFIFOThreshold(DAC2_SPI, LL_SPI_FIFO_TH_03DATA);
 
     // Disable Clear-bit from start
-    HAL_GPIO_WritePin(clear_port, clear_pin, GPIO_PIN_SET);
-    HAL_GPIO_WritePin(sync_port, sync_pin, GPIO_PIN_SET);
-#endif
+    HAL_GPIO_WritePin(DAC_conf->clear_port, DAC_conf->clear_pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(DAC_conf->sync_port, DAC_conf->sync_pin, GPIO_PIN_SET);
 }
 
 //__attribute__((section("sram_func")))
@@ -149,7 +143,7 @@ void DAC_Device::write(float output)
     int32_t int_output = (int32_t)((output - zero_voltage) * inv_step_size);
 
     // Bring SYNC line low to prepare DAC
-    sync_port->BSRR = (uint32_t)sync_pin << 16U;
+    DAC_conf->sync_port->BSRR = (uint32_t)sync_pin << 16U;
 
     if (invert)
         int_output = -int_output;
@@ -182,7 +176,7 @@ void DAC_Device::dma_transmission_callback()
      * The SYNC line has to go high at least 20ish ns before the next data package, so it
      * could also be done at a later point, if more convenient / faster.)
      */
-    sync_port->BSRR = (uint32_t)sync_pin;
+    DAC_conf->sync_port->BSRR = (uint32_t)DAC_conf->sync_pin;
 
     busy = false;
 }
@@ -259,7 +253,7 @@ __attribute__((optimize(0))) void DAC_Device::send_output_range()
     busy = true;
 
     // bring SYNC line low to prepare DAC
-    sync_port->BSRR = (uint32_t)sync_pin << 16U;
+    DAC_conf->sync_port->BSRR = (uint32_t)DAC_conf->sync_pin << 16U;
 
     // depending on the output range, the DAC applies a correction to improve linear behavior
     uint8_t comp = 0b0000;
