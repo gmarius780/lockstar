@@ -14,11 +14,24 @@
 
 #include <algorithm>
 
-class DAC_Device {
+typedef struct
+{
+    bool isBDMA;
+    SPI_TypeDef *SPIx;
+    BDMA_TypeDef *BDMAx;
+    BDMA_Channel_TypeDef *BDMA_Channelx;
+    LL_BDMA_InitTypeDef BDMA_InitStruct;
+    DMA_TypeDef *DMAx;
+    DMA_Stream_TypeDef *DMA_Streamx;
+    LL_DMA_InitTypeDef DMA_InitStruct;
+} DAC_Device_TypeDef;
+
+class DAC_Device
+{
 public:
-	DAC_Device(uint8_t SPI, uint8_t dma_stream_out, uint8_t dma_channel_out, GPIO_TypeDef* sync_port, uint16_t sync_pin, GPIO_TypeDef* clear_port, uint16_t clear_pin);
-    DAC_Device(GPIO_TypeDef* sync_port, uint16_t sync_pin, GPIO_TypeDef* clear_port, uint16_t clear_pin);
-    void config_output(ADC_HandleTypeDef* hadc, uint32_t ADC_SENL, uint32_t ADC_SENH);
+    DAC_Device(uint8_t SPI, uint8_t dma_stream_out, uint8_t dma_channel_out, GPIO_TypeDef *sync_port, uint16_t sync_pin, GPIO_TypeDef *clear_port, uint16_t clear_pin);
+    DAC_Device(uint8_t dac_id, GPIO_TypeDef *sync_port, uint16_t sync_pin, GPIO_TypeDef *clear_port, uint16_t clear_pin);
+    void config_output(ADC_HandleTypeDef *hadc, uint32_t ADC_SENL, uint32_t ADC_SENH);
 
     void write(float value);
     void dma_transmission_callback();
@@ -42,17 +55,20 @@ private:
 
     float last_output;
 
-    GPIO_TypeDef* sync_port;
-	uint16_t sync_pin;
-	GPIO_TypeDef* clear_port;
-	uint16_t clear_pin;
+    GPIO_TypeDef *sync_port;
+    uint16_t sync_pin;
+    GPIO_TypeDef *clear_port;
+    uint16_t clear_pin;
 
     void send_output_range();
-    void arm_dma();
     // volatile uint8_t* dma_buffer;
-    DMA* dma_output_handler;
-    SPI* spi_handler;
+    DMA *dma_output_handler;
+    SPI *spi_handler;
     DMA_config_t dma_config;
+    void (*begin_dma_transfer)();
 };
+
+void arm_dma();
+void arm_bdma();
 
 #endif /* HAL_DACDEVICE_HPP_ */
