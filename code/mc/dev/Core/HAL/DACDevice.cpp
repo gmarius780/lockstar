@@ -286,11 +286,14 @@ __attribute__((optimize(0))) void DAC_Device::send_output_range()
 
 void DAC_Device::begin_dma_transfer()
 {
-    LL_BDMA_EnableChannel(DAC2_DMA, DAC2_DMA_STREAM);
-    LL_SPI_EnableDMAReq_TX(DAC2_SPI);
-    while (!LL_BDMA_IsEnabledChannel(DAC2_DMA, DAC2_DMA_STREAM))
+    if (this->DAC_conf->isBDMA)
     {
+        BDMA_EnableChannel(this->DAC_conf->BDMA_Channelx);
+        while (!BDMA_IsEnabledChannel(this->DAC_conf->BDMA_Channelx))
+        {
+        }
     }
+    LL_SPI_EnableDMAReq_TX(DAC2_SPI);
     ATOMIC_SET_BIT(DAC2_SPI->CR1, SPI_CR1_SPE);
     SET_BIT(DAC2_SPI->CR1, SPI_CR1_CSTART);
 }

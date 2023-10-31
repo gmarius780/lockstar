@@ -82,6 +82,14 @@ __STATIC_INLINE void DMA_EnableIT_TC(DMA_Stream_TypeDef *DMA_Stream)
   SET_BIT(DMA_Stream->CR, DMA_SxCR_TCIE);
 }
 
+__STATIC_INLINE void BDMA_EnableChannel(BDMA_Channel_TypeDef *BDMA_Channel)
+{
+  SET_BIT(BDMA_Channel->CCR, BDMA_CCR_EN);
+}
+__STATIC_INLINE uint32_t BDMA_IsEnabledChannel(BDMA_Channel_TypeDef *BDMA_Channel)
+{
+  return ((READ_BIT(BDMA_Channel->CCR, BDMA_CCR_EN) == (BDMA_CCR_EN)) ? 1UL : 0UL);
+}
 
 
 #endif /* HAL_DMA_HPP_ */
