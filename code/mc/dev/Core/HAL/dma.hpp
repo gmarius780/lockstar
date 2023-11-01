@@ -101,5 +101,22 @@ __STATIC_INLINE uint32_t IsEnabledChannel(DMA_Stream_TypeDef *DMA_Stream)
   return ((READ_BIT(DMA_Stream->CR, DMA_SxCR_EN) == (DMA_SxCR_EN)) ? 1UL : 0UL);
 }
 
+__STATIC_INLINE void DisableChannel(BDMA_Channel_TypeDef *BDMA_Channel)
+{
+  CLEAR_BIT(BDMA_Channel->CCR, BDMA_CCR_EN);
+}
+__STATIC_INLINE void DisableChannel(DMA_Stream_TypeDef *DMA_Stream)
+{
+  CLEAR_BIT(DMA_Stream->CR, DMA_SxCR_EN);
+}
+
+__STATIC_INLINE void SetDataLength(BDMA_Channel_TypeDef *BDMA_Channel, uint32_t NbData)
+{
+  MODIFY_REG(BDMA_Channel->CNDTR, BDMA_CNDTR_NDT, NbData);
+}
+__STATIC_INLINE void SetDataLength(DMA_Stream_TypeDef *DMA_Stream, uint32_t NbData)
+{
+  MODIFY_REG(DMA_Stream->NDTR, DMA_SxNDT, NbData);
+}
 
 #endif /* HAL_DMA_HPP_ */

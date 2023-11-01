@@ -71,16 +71,11 @@ void DAC_Device::write(float output)
 //__attribute__((section("sram_func")))
 void DAC_Device::dma_transmission_callback()
 {
+    DAC_conf->bdma_clr_flag(DAC_conf->BDMAx);
+    DisableChannel(DAC_conf->BDMA_Channelx);
+    SetDataLength(DAC_conf->BDMA_Channelx, 3);
 
-    TX_DMA_ClearFlag(DAC2_DMA);
-#ifdef IS_BDMA
-    LL_BDMA_DisableChannel(DAC2_DMA, DAC2_DMA_STREAM);
-    ATOMIC_MODIFY_REG(DAC2_TX_DMA_STREAM->CNDTR, BDMA_CNDTR_NDT, 3);
-#else
-    ATOMIC_MODIFY_REG(DAC2_TX_DMA_STREAM->NDTR, DMA_SxNDT, 3);
-#endif
-    while (!LL_SPI_IsActiveFlag_TXC(DAC2_SPI))
-        ;
+    while (!LL_SPI_IsActiveFlag_TXC(DAC2_SPI));
     ATOMIC_CLEAR_BIT(DAC2_SPI->CR1, SPI_CR1_SPE);
     /*
      * bring SYNC line up to finish DA conversion
