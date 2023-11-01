@@ -26,34 +26,15 @@ public:
 
 	void run()
 	{
-		// DAC_2 = new DAC_Device( /*SPI number*/              6,
-		// 						/*DMA Stream Out*/          5,
-		// 						/*DMA Channel Out*/         1,
-		// 						/* sync pin port*/          DAC_2_Sync_GPIO_Port,
-		// 						/* sync pin number*/        DAC_2_Sync_Pin,
-		// 						/* clear pin port*/         DAC2_CLEAR_PORT,
-		// 						/* clear pin number*/       DAC2_CLEAR_PIN);
-		// DAC_2 = new DAC_Device( /*SPI number*/              6,
-		// 						/*DMA Stream Out*/          5,
-		// 						/*DMA Channel Out*/         1,
-		// 						/* sync pin port*/          DAC2_SYNC_PORT,
-		// 						/* sync pin number*/        DAC2_SYNC_PIN,
-		// 						/* clear pin port*/         DAC2_CLEAR_PORT,
-		// 						/* clear pin number*/       DAC2_CLEAR_PIN);
-		DAC_1 = new DAC_Device( 
-						/* sync pin port*/          DAC2_SYNC_PORT,
-						/* sync pin number*/        DAC2_SYNC_PIN,
-						/* clear pin port*/         DAC1_CLEAR_PORT,
-						/* clear pin number*/       DAC1_CLEAR_PIN);                                
+		DAC_1 = new DAC_Device(&DAC1_conf);                                
 
-		turn_LED2_on();
-		turn_LED3_on();
-
-		float m1 = 6;
+		float m1 = 1.5;
         // DAC_2->config_output(&hadc3, DAC2_SENL, DAC2_SENH);
 		// DAC_2->write(m1);
 		DAC_1->config_output(&hadc3, DAC2_SENL, DAC2_SENH);
 		DAC_1->write(m1);
+		turn_LED2_on();
+		turn_LED3_on();
 		while (true)
 		{
 			// ADC_Dev->start_conversion();
