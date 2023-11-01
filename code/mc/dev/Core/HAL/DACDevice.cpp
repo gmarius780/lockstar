@@ -8,7 +8,7 @@
 #include "DACDevice.hpp"
 #include "../Modules/dac_config.h"
 
-__attribute__((section(".DMA_D1"))) uint8_t dmaD1_buffer[3] = {0};
+__attribute__((section(".data"))) uint8_t dmaD1_buffer[3] = {0};
 __attribute__((section(".BDMABlock"))) uint8_t dmaD3_buffer[3] = {0};
 
 DAC_Device::DAC_Device(DAC_Device_TypeDef *DAC_conf)
@@ -35,7 +35,7 @@ DAC_Device::DAC_Device(DAC_Device_TypeDef *DAC_conf)
 
 DAC1_Device::DAC1_Device(DAC_Device_TypeDef *DAC_conf) : DAC_Device(DAC_conf)
 {
-    dma_buffer = &dmaD3_buffer[0];
+    dma_buffer = dmaD3_buffer;
     DAC_conf->BDMA_InitStruct->PeriphOrM2MSrcAddress = (uint32_t) & (DAC_conf->SPIx->TXDR);
     DAC_conf->BDMA_InitStruct->MemoryOrM2MDstAddress = (uint32_t)dma_buffer;
     DAC_conf->BDMA_InitStruct->NbData = 3;
@@ -44,7 +44,7 @@ DAC1_Device::DAC1_Device(DAC_Device_TypeDef *DAC_conf) : DAC_Device(DAC_conf)
 }
 DAC2_Device::DAC2_Device(DAC_Device_TypeDef *DAC_conf) : DAC_Device(DAC_conf)
 {
-    dma_buffer = &dmaD1_buffer[0];
+    dma_buffer = dmaD1_buffer;
     DAC_conf->DMA_InitStruct->PeriphOrM2MSrcAddress = (uint32_t) & (DAC_conf->SPIx->TXDR);
     DAC_conf->DMA_InitStruct->MemoryOrM2MDstAddress = (uint32_t)dma_buffer;
     DAC_conf->DMA_InitStruct->NbData = 3;

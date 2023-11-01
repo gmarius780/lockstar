@@ -70,7 +70,7 @@ protected:
 
     DAC_Device_TypeDef *DAC_conf;
     void prepare_buffer();
-    // volatile uint8_t *dma_buffer;
+    volatile uint8_t *dma_buffer;
     DMA *dma_output_handler;
     SPI *spi_handler;
     DMA_config_t dma_config;
