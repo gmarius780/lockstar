@@ -28,7 +28,7 @@ public:
 	{
 		DAC_1 = new DAC1_Device(&DAC1_conf);                                
 
-		float m1 = 1.5;
+		float m1 = 2.5;
         // DAC_2->config_output(&hadc3, DAC2_SENL, DAC2_SENH);
 		// DAC_2->write(m1);
 		DAC_1->config_output(&hadc3, DAC2_SENL, DAC2_SENH);
@@ -46,8 +46,8 @@ public:
 	}
 
 public:
-	DAC_Device *DAC_1;
-	DAC_Device *DAC_2;
+	DAC1_Device *DAC_1;
+	DAC2_Device *DAC_2;
 	float m1 = 0;
 	float m2 = 0;
 };

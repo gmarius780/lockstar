@@ -30,6 +30,7 @@ typedef struct
     GPIO_TypeDef *clear_port;
     uint16_t clear_pin;
     void (*bdma_clr_flag)(BDMA_TypeDef *BDMAx);
+    void (*dma_clr_flag)(DMA_TypeDef *DMAx);
 } DAC_Device_TypeDef;
 
 class DAC_Device
@@ -68,7 +69,7 @@ protected:
     uint16_t clear_pin;
 
     DAC_Device_TypeDef *DAC_conf;
-    void send_output_range();
+    void prepare_buffer();
     // volatile uint8_t* dma_buffer;
     DMA *dma_output_handler;
     SPI *spi_handler;
@@ -82,11 +83,25 @@ class DAC1_Device: public DAC_Device
 public:
     DAC1_Device(DAC_Device_TypeDef *DAC_conf);
     void dma_transmission_callback();
+    void write(float value);
+    void config_output(ADC_HandleTypeDef *hadc, uint32_t ADC_SENL, uint32_t ADC_SENH);
+
 
 private:
     void begin_dma_transfer();
 };
+class DAC2_Device: public DAC_Device
+{
+public:
+    DAC2_Device(DAC_Device_TypeDef *DAC_conf);
+    void dma_transmission_callback();
+    void write(float value);
+    void config_output(ADC_HandleTypeDef *hadc, uint32_t ADC_SENL, uint32_t ADC_SENH);
 
+
+private:
+    void begin_dma_transfer();
+};
 // void arm_dma(DAC_Device_TypeDef *DAC_conf);
 // void arm_bdma(DAC_Device_TypeDef *DAC_conf);
 #endif /* HAL_DACDEVICE_HPP_ */
