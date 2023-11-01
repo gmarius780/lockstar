@@ -22,15 +22,15 @@ typedef struct
     BDMA_TypeDef *BDMAx;
     BDMA_Channel_TypeDef *BDMA_Channelx;
     LL_BDMA_InitTypeDef *BDMA_InitStruct;
+    void (*bdma_clr_flag)(BDMA_TypeDef *BDMAx);
     DMA_TypeDef *DMAx;
     DMA_Stream_TypeDef *DMA_Streamx;
     LL_DMA_InitTypeDef *DMA_InitStruct;
+    void (*dma_clr_flag)(DMA_TypeDef *DMAx);
     GPIO_TypeDef *sync_port;
     uint16_t sync_pin;
     GPIO_TypeDef *clear_port;
     uint16_t clear_pin;
-    void (*bdma_clr_flag)(BDMA_TypeDef *BDMAx);
-    void (*dma_clr_flag)(DMA_TypeDef *DMAx);
 } DAC_Device_TypeDef;
 
 class DAC_Device
@@ -70,7 +70,7 @@ protected:
 
     DAC_Device_TypeDef *DAC_conf;
     void prepare_buffer();
-    // volatile uint8_t* dma_buffer;
+    // volatile uint8_t *dma_buffer;
     DMA *dma_output_handler;
     SPI *spi_handler;
     DMA_config_t dma_config;
