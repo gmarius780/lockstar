@@ -71,24 +71,34 @@ private:
 };
 
 
-__STATIC_INLINE void BDMA_EnableIT_TC(BDMA_Channel_TypeDef *BDMA_Channel)
+__STATIC_INLINE void EnableIT_TC(BDMA_Channel_TypeDef *BDMA_Channel)
 {
 
   SET_BIT(BDMA_Channel->CCR, BDMA_CCR_TCIE);
 }
 
-__STATIC_INLINE void DMA_EnableIT_TC(DMA_Stream_TypeDef *DMA_Stream)
+__STATIC_INLINE void EnableIT_TC(DMA_Stream_TypeDef *DMA_Stream)
 {
   SET_BIT(DMA_Stream->CR, DMA_SxCR_TCIE);
 }
 
-__STATIC_INLINE void BDMA_EnableChannel(BDMA_Channel_TypeDef *BDMA_Channel)
+__STATIC_INLINE void EnableChannel(BDMA_Channel_TypeDef *BDMA_Channel)
 {
   SET_BIT(BDMA_Channel->CCR, BDMA_CCR_EN);
 }
-__STATIC_INLINE uint32_t BDMA_IsEnabledChannel(BDMA_Channel_TypeDef *BDMA_Channel)
+
+__STATIC_INLINE uint32_t IsEnabledChannel(BDMA_Channel_TypeDef *BDMA_Channel)
 {
   return ((READ_BIT(BDMA_Channel->CCR, BDMA_CCR_EN) == (BDMA_CCR_EN)) ? 1UL : 0UL);
+}
+
+__STATIC_INLINE void EnableChannel(DMA_Stream_TypeDef *DMA_Stream)
+{
+  SET_BIT(DMA_Stream->CR, DMA_SxCR_EN);
+}
+__STATIC_INLINE uint32_t IsEnabledChannel(DMA_Stream_TypeDef *DMA_Stream)
+{
+  return ((READ_BIT(DMA_Stream->CR, DMA_SxCR_EN) == (DMA_SxCR_EN)) ? 1UL : 0UL);
 }
 
 
