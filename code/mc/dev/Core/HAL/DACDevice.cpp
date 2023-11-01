@@ -28,15 +28,18 @@ DAC_Device::DAC_Device(DAC_Device_TypeDef *DAC_conf)
 
     spi_handler = new SPI(DAC_conf->SPIx);
 
+    // Disable Clear-bit from start
+    HAL_GPIO_WritePin(DAC_conf->clear_port, DAC_conf->clear_pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(DAC_conf->sync_port, DAC_conf->sync_pin, GPIO_PIN_SET);
+}
+
+DAC1_Device::DAC1_Device(DAC_Device_TypeDef *DMA_conf):DAC_Device(DAC_conf)
+{
     DAC_conf->BDMA_InitStruct->PeriphOrM2MSrcAddress = (uint32_t) & (DAC_conf->SPIx->TXDR);
     DAC_conf->BDMA_InitStruct->MemoryOrM2MDstAddress = (uint32_t)dma_buffer;
     DAC_conf->BDMA_InitStruct->NbData = 3;
 
     EnableIT_TC(DAC_conf->BDMA_Channelx);
-
-    // Disable Clear-bit from start
-    HAL_GPIO_WritePin(DAC_conf->clear_port, DAC_conf->clear_pin, GPIO_PIN_SET);
-    HAL_GPIO_WritePin(DAC_conf->sync_port, DAC_conf->sync_pin, GPIO_PIN_SET);
 }
 
 //__attribute__((section("sram_func")))
@@ -193,6 +196,17 @@ __attribute__((optimize(0))) void DAC_Device::send_output_range()
 }
 
 void DAC_Device::begin_dma_transfer()
+{
+    EnableChannel(DAC_conf->DMA_Streamx);
+    LL_SPI_EnableDMAReq_TX(DAC_conf->SPIx);
+    while (!IsEnabledChannel(DAC_conf->DMA_Streamx))
+    {
+    }
+    ATOMIC_SET_BIT(DAC_conf->SPIx->CR1, SPI_CR1_SPE);
+    SET_BIT(DAC_conf->SPIx->CR1, SPI_CR1_CSTART);
+}
+
+void DAC1_Device::begin_dma_transfer()
 {
     EnableChannel(DAC_conf->BDMA_Channelx);
     LL_SPI_EnableDMAReq_TX(DAC_conf->SPIx);

@@ -50,7 +50,7 @@ public:
 
     float get_last_output();
 
-private:
+protected:
     float inv_step_size;
     float step_size;
     float zero_voltage;
@@ -73,6 +73,17 @@ private:
     DMA *dma_output_handler;
     SPI *spi_handler;
     DMA_config_t dma_config;
+    void begin_dma_transfer();
+};
+
+
+class DAC1_Device: public DAC_Device
+{
+public:
+    DAC1_Device(DAC_Device_TypeDef *DAC_conf);
+    void dma_transmission_callback();
+
+private:
     void begin_dma_transfer();
 };
 

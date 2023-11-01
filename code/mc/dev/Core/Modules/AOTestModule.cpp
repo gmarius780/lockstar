@@ -26,7 +26,7 @@ public:
 
 	void run()
 	{
-		DAC_1 = new DAC_Device(&DAC1_conf);                                
+		DAC_1 = new DAC1_Device(&DAC1_conf);                                
 
 		float m1 = 1.5;
         // DAC_2->config_output(&hadc3, DAC2_SENL, DAC2_SENH);
