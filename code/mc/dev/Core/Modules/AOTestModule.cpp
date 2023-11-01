@@ -9,9 +9,9 @@
 #include "stm32h725xx.h"
 #include "stm32h7xx_it.h"
 #include "../HAL/DACDevice.hpp"
+#include "dac_config.h"
 #include "../HAL/leds.hpp"
 #include <stdio.h>
-#include "dac_config.h"
 
 #ifdef AO_TEST_MODULE
 
@@ -31,10 +31,10 @@ public:
 
 		float m1 = 4;
 		float m2 = -4;
-		DAC_1->config_output(&hadc3, DAC2_SENL, DAC2_SENH);
+		DAC_1->config_output();
 		DAC_1->write(m1);
 		turn_LED2_on();
-		DAC_2->config_output(&hadc3, DAC2_SENL, DAC2_SENH);
+		DAC_2->config_output();
 		DAC_2->write(m2);
 		turn_LED3_on();
 

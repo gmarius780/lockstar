@@ -31,6 +31,9 @@ typedef struct
     uint16_t sync_pin;
     GPIO_TypeDef *clear_port;
     uint16_t clear_pin;
+    ADC_HandleTypeDef *STM_ADC;
+    uint32_t SENH;
+    uint32_t SENL;
 } DAC_Device_TypeDef;
 
 class DAC_Device
@@ -39,6 +42,7 @@ public:
     DAC_Device(uint8_t SPI, uint8_t dma_stream_out, uint8_t dma_channel_out, GPIO_TypeDef *sync_port, uint16_t sync_pin, GPIO_TypeDef *clear_port, uint16_t clear_pin);
     DAC_Device(uint8_t dac_id, GPIO_TypeDef *sync_port, uint16_t sync_pin, GPIO_TypeDef *clear_port, uint16_t clear_pin);
     DAC_Device(DAC_Device_TypeDef *DAC_conf);
+    void config_output();
     void config_output(ADC_HandleTypeDef *hadc, uint32_t ADC_SENL, uint32_t ADC_SENH);
 
     void write(float value);
@@ -84,7 +88,7 @@ public:
     DAC1_Device(DAC_Device_TypeDef *DAC_conf);
     void dma_transmission_callback();
     void write(float value);
-    void config_output(ADC_HandleTypeDef *hadc, uint32_t ADC_SENL, uint32_t ADC_SENH);
+    void config_output();
 
 
 private:
@@ -96,7 +100,7 @@ public:
     DAC2_Device(DAC_Device_TypeDef *DAC_conf);
     void dma_transmission_callback();
     void write(float value);
-    void config_output(ADC_HandleTypeDef *hadc, uint32_t ADC_SENL, uint32_t ADC_SENH);
+    void config_output();
 
 
 private:

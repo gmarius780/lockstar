@@ -12,7 +12,6 @@
 #include "stm32h7xx_hal.h"
 #include "stm32h7xx_ll_dma.h"
 #include "stm32h7xx_ll_bdma.h"
-#include "dma_config.h"
 
 typedef struct DMA_config_struct {
     __IO uint32_t CR;     /*!< DMA stream x configuration register      */

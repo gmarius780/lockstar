@@ -6,7 +6,6 @@
  */
 
 #include "DACDevice.hpp"
-#include "dac_config.h"
 
 __attribute__((section(".data"))) uint8_t dmaD1_buffer[3] = {0};
 __attribute__((section(".BDMABlock"))) uint8_t dmaD3_buffer[3] = {0};
@@ -126,7 +125,7 @@ void DAC2_Device::dma_transmission_callback()
     busy = false;
 }
 
-void DAC_Device::config_output(ADC_HandleTypeDef *hadc, uint32_t ADC_SENL, uint32_t ADC_SENH)
+void DAC_Device::config_output()
 {
     /*
      * The STM32 on-chip ADC (not the ADC_Device) is used to detect jumper configuration.
@@ -135,15 +134,15 @@ void DAC_Device::config_output(ADC_HandleTypeDef *hadc, uint32_t ADC_SENL, uint3
 
     // read ADC value of lower voltage
     ADC_ChannelConfTypeDef adc_config = {0};
-    adc_config.Channel = DAC2_SENL;
+    adc_config.Channel = DAC_conf->SENL;
     adc_config.Rank = 1;
     adc_config.SamplingTime = ADC3_SAMPLETIME_2CYCLES_5;
 
-    HAL_ADC_ConfigChannel(hadc, &adc_config);
-    HAL_ADC_Start(hadc);
-    HAL_ADC_PollForConversion(hadc, 1);
+    HAL_ADC_ConfigChannel(DAC_conf->STM_ADC, &adc_config);
+    HAL_ADC_Start(DAC_conf->STM_ADC);
+    HAL_ADC_PollForConversion(DAC_conf->STM_ADC, 1);
 
-    uint32_t adc_result = HAL_ADC_GetValue(hadc);
+    uint32_t adc_result = HAL_ADC_GetValue(DAC_conf->STM_ADC);
 
     float low = 3.3 * adc_result / 4096.0f;
     if (low >= 2.6)
@@ -162,12 +161,12 @@ void DAC_Device::config_output(ADC_HandleTypeDef *hadc, uint32_t ADC_SENL, uint3
         min_output = -10.0f;
     }
     // read ADC value of upper voltage
-    adc_config.Channel = DAC2_SENH;
-    HAL_ADC_ConfigChannel(hadc, &adc_config);
-    HAL_ADC_Start(hadc);
-    HAL_ADC_PollForConversion(hadc, 1);
+    adc_config.Channel = DAC_conf->SENH;
+    HAL_ADC_ConfigChannel(DAC_conf->STM_ADC, &adc_config);
+    HAL_ADC_Start(DAC_conf->STM_ADC);
+    HAL_ADC_PollForConversion(DAC_conf->STM_ADC, 1);
 
-    adc_result = HAL_ADC_GetValue(hadc);
+    adc_result = HAL_ADC_GetValue(DAC_conf->STM_ADC);
 
     float high = 3.3 * adc_result / 4096.0f;
     if (high >= 2.4)
@@ -191,9 +190,9 @@ void DAC_Device::config_output(ADC_HandleTypeDef *hadc, uint32_t ADC_SENL, uint3
     invert = false;
 }
 
-void DAC1_Device::config_output(ADC_HandleTypeDef *hadc, uint32_t ADC_SENL, uint32_t ADC_SENH)
+void DAC1_Device::config_output()
 {
-    DAC_Device::config_output(hadc, ADC_SENL, ADC_SENH);
+    DAC_Device::config_output();
     DAC_Device::prepare_buffer();
     begin_dma_transfer();
 
@@ -201,9 +200,9 @@ void DAC1_Device::config_output(ADC_HandleTypeDef *hadc, uint32_t ADC_SENL, uint
     while (busy)
         ;
 }
-void DAC2_Device::config_output(ADC_HandleTypeDef *hadc, uint32_t ADC_SENL, uint32_t ADC_SENH)
+void DAC2_Device::config_output()
 {
-    DAC_Device::config_output(hadc, ADC_SENL, ADC_SENH);
+    DAC_Device::config_output();
     DAC_Device::prepare_buffer();
     begin_dma_transfer();
 
