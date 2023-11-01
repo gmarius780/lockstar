@@ -6,7 +6,7 @@
  */
 
 #include "DACDevice.hpp"
-#include "../Modules/dac_config.h"
+#include "dac_config.h"
 
 __attribute__((section(".data"))) uint8_t dmaD1_buffer[3] = {0};
 __attribute__((section(".BDMABlock"))) uint8_t dmaD3_buffer[3] = {0};

@@ -11,7 +11,7 @@
 #include "../HAL/DACDevice.hpp"
 #include "../HAL/leds.hpp"
 #include <stdio.h>
-#include "../Modules/dac_config.h"
+#include "dac_config.h"
 
 #ifdef AO_TEST_MODULE
 
@@ -29,8 +29,8 @@ public:
 		DAC_1 = new DAC1_Device(&DAC1_conf);
 		DAC_2 = new DAC2_Device(&DAC2_conf);                                
 
-		float m1 = 2;
-		float m2 = -2;
+		float m1 = 4;
+		float m2 = -4;
 		DAC_1->config_output(&hadc3, DAC2_SENL, DAC2_SENH);
 		DAC_1->write(m1);
 		turn_LED2_on();
