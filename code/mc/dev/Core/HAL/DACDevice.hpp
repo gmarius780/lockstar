@@ -29,6 +29,7 @@ typedef struct
     uint16_t sync_pin;
     GPIO_TypeDef *clear_port;
     uint16_t clear_pin;
+    void (*bdma_clr_flag)(BDMA_TypeDef *BDMAx);
 } DAC_Device_TypeDef;
 
 class DAC_Device

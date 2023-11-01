@@ -26,13 +26,11 @@ DAC_Device::DAC_Device(DAC_Device_TypeDef *DAC_conf)
 
     this->DAC_conf = DAC_conf;
 
-    spi_handler = new SPI(DAC2_SPI);
+    spi_handler = new SPI(DAC_conf->SPIx);
 
     DAC_conf->BDMA_InitStruct->PeriphOrM2MSrcAddress = (uint32_t) & (DAC_conf->SPIx->TXDR);
     DAC_conf->BDMA_InitStruct->MemoryOrM2MDstAddress = (uint32_t)dma_buffer;
     DAC_conf->BDMA_InitStruct->NbData = 3;
-
-    dma_output_handler = new DMA(DAC2_DMA, DAC2_DMA_STREAM, DAC_conf->BDMA_InitStruct);
 
     EnableIT_TC(DAC_conf->BDMA_Channelx);
 
@@ -71,12 +69,13 @@ void DAC_Device::write(float output)
 //__attribute__((section("sram_func")))
 void DAC_Device::dma_transmission_callback()
 {
+
     DAC_conf->bdma_clr_flag(DAC_conf->BDMAx);
     DisableChannel(DAC_conf->BDMA_Channelx);
     SetDataLength(DAC_conf->BDMA_Channelx, 3);
 
-    while (!LL_SPI_IsActiveFlag_TXC(DAC2_SPI));
-    ATOMIC_CLEAR_BIT(DAC2_SPI->CR1, SPI_CR1_SPE);
+    while (!LL_SPI_IsActiveFlag_TXC(DAC_conf->SPIx));
+    ATOMIC_CLEAR_BIT(DAC_conf->SPIx->CR1, SPI_CR1_SPE);
     /*
      * bring SYNC line up to finish DA conversion
      * (The DA conversion is completed automatically with the 24th transmitted bit.
