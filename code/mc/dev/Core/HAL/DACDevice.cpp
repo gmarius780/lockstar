@@ -8,7 +8,8 @@
 #include "DACDevice.hpp"
 #include "../Modules/dac_config.h"
 
-__attribute__((section(".BDMABlock"))) uint8_t dma_buffer[3] = {0};
+__attribute__((section(".DMA_D1"))) uint8_t dmaD1_buffer[3] = {0};
+__attribute__((section(".BDMABlock"))) uint8_t dmaD3_buffer[3] = {0};
 
 DAC_Device::DAC_Device(DAC_Device_TypeDef *DAC_conf)
 {
@@ -25,7 +26,6 @@ DAC_Device::DAC_Device(DAC_Device_TypeDef *DAC_conf)
     invert = false;
 
     this->DAC_conf = DAC_conf;
-
     spi_handler = new SPI(DAC_conf->SPIx);
 
     // Disable Clear-bit from start
@@ -35,6 +35,7 @@ DAC_Device::DAC_Device(DAC_Device_TypeDef *DAC_conf)
 
 DAC1_Device::DAC1_Device(DAC_Device_TypeDef *DAC_conf) : DAC_Device(DAC_conf)
 {
+    dma_buffer = &dmaD3_buffer[0];
     DAC_conf->BDMA_InitStruct->PeriphOrM2MSrcAddress = (uint32_t) & (DAC_conf->SPIx->TXDR);
     DAC_conf->BDMA_InitStruct->MemoryOrM2MDstAddress = (uint32_t)dma_buffer;
     DAC_conf->BDMA_InitStruct->NbData = 3;
@@ -43,6 +44,7 @@ DAC1_Device::DAC1_Device(DAC_Device_TypeDef *DAC_conf) : DAC_Device(DAC_conf)
 }
 DAC2_Device::DAC2_Device(DAC_Device_TypeDef *DAC_conf) : DAC_Device(DAC_conf)
 {
+    dma_buffer = &dmaD1_buffer[0];
     DAC_conf->DMA_InitStruct->PeriphOrM2MSrcAddress = (uint32_t) & (DAC_conf->SPIx->TXDR);
     DAC_conf->DMA_InitStruct->MemoryOrM2MDstAddress = (uint32_t)dma_buffer;
     DAC_conf->DMA_InitStruct->NbData = 3;
@@ -109,7 +111,7 @@ void DAC1_Device::dma_transmission_callback()
 void DAC2_Device::dma_transmission_callback()
 {
     DAC_conf->dma_clr_flag(DAC_conf->DMAx);
-    DisableChannel(DAC_conf->DMA_Streamx);
+    // DisableChannel(DAC_conf->DMA_Streamx);
     SetDataLength(DAC_conf->DMA_Streamx, 3);
     while (!LL_SPI_IsActiveFlag_TXC(DAC_conf->SPIx));
     ATOMIC_CLEAR_BIT(DAC_conf->SPIx->CR1, SPI_CR1_SPE);
@@ -251,7 +253,7 @@ void DAC_Device::begin_dma_transfer()
     ATOMIC_SET_BIT(DAC_conf->SPIx->CR1, SPI_CR1_SPE);
     SET_BIT(DAC_conf->SPIx->CR1, SPI_CR1_CSTART);
 }
-
+// __attribute__((section("sram_func")))
 void DAC1_Device::begin_dma_transfer()
 {
     EnableChannel(DAC_conf->BDMA_Channelx);
@@ -262,7 +264,7 @@ void DAC1_Device::begin_dma_transfer()
     ATOMIC_SET_BIT(DAC_conf->SPIx->CR1, SPI_CR1_SPE);
     SET_BIT(DAC_conf->SPIx->CR1, SPI_CR1_CSTART);
 }
-
+// __attribute__((section("sram_func")))
 void DAC2_Device::begin_dma_transfer()
 {
     EnableChannel(DAC_conf->DMA_Streamx);
@@ -270,8 +272,9 @@ void DAC2_Device::begin_dma_transfer()
     while (!IsEnabledChannel(DAC_conf->DMA_Streamx))
     {
     }
-    ATOMIC_SET_BIT(DAC_conf->SPIx->CR1, SPI_CR1_SPE);
-    SET_BIT(DAC_conf->SPIx->CR1, SPI_CR1_CSTART);
+    DAC_conf->SPIx->CR1 |= SPI_CR1_SPE;
+    DAC_conf->SPIx->CR1 |= SPI_CR1_CSTART;
+    // SET_BIT(DAC_conf->SPIx->CR1, SPI_CR1_CSTART);
 }
 
 bool DAC_Device::is_busy()

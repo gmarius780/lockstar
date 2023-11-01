@@ -175,6 +175,11 @@ SECTIONS
     . = ALIGN(8);
     *(.BDMA_Access)
   } >RAM_D3 AT> FLASH
+  .DMA_D1 : 
+  {
+    . = ALIGN(8);
+    *(.DMA_Access)
+  } >RAM_D1 AT> FLASH
 
   /* Remove information from the standard libraries */
   /DISCARD/ :
