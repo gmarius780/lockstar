@@ -33,16 +33,16 @@ ADC_Device::ADC_Device(ADC_Device_TypeDef *ADC_conf)
     adc_config_buffer[0] = code;
 
     // Setup perhipherals
-    spi_handler = new SPI(ADC_SPI);
-    LL_SPI_SetMasterSSIdleness(ADC_SPI, LL_SPI_SS_IDLENESS_15CYCLE);
+    spi_handler = new SPI(ADC_conf->SPIx);
+    LL_SPI_SetMasterSSIdleness(ADC_conf->SPIx, LL_SPI_SS_IDLENESS_15CYCLE);
 
     ADC_conf->DMA_InitStructRx->PeriphOrM2MSrcAddress = (uint32_t) & (ADC_conf->SPIx->TXDR);
     ADC_conf->DMA_InitStructRx->MemoryOrM2MDstAddress = (uint32_t)dma_buffer;
-    ADC_conf->DMA_InitStructRx->NbData = 6;
+    ADC_conf->DMA_InitStructRx->NbData = DATAWIDTH;
 
     ADC_conf->DMA_InitStructTx->PeriphOrM2MSrcAddress = (uint32_t) & (ADC_conf->SPIx->TXDR);
     ADC_conf->DMA_InitStructTx->MemoryOrM2MDstAddress = (uint32_t)adc_config_buffer;
-    ADC_conf->DMA_InitStructTx->NbData = 6;
+    ADC_conf->DMA_InitStructTx->NbData = DATAWIDTH;
 
     LL_DMA_Init(ADC_conf->DMARx, __LL_DMA_GET_STREAM(ADC_conf->DMA_StreamRx), ADC_conf->DMA_InitStructRx);
     LL_DMA_Init(ADC_conf->DMATx, __LL_DMA_GET_STREAM(ADC_conf->DMA_StreamTx), ADC_conf->DMA_InitStructTx);
@@ -102,20 +102,19 @@ void ADC_Device_Channel::update_result(int16_t result)
 void ADC_Device::start_conversion()
 {
 
-    LL_SPI_EnableDMAReq_RX(ADC_SPI);
-    LL_DMA_EnableStream(DMA1, ADC_DMA_TX_STREAM);
-    LL_DMA_EnableStream(DMA1, ADC_DMA_RX_STREAM);
-    LL_SPI_EnableDMAReq_TX(ADC_SPI);
-    while (!LL_DMA_IsEnabledStream(DMA1, ADC_DMA_TX_STREAM) && !LL_DMA_IsEnabledStream(DMA1, ADC_DMA_RX_STREAM))
-    {
+    LL_SPI_EnableDMAReq_RX(ADC_conf->SPIx);
+    EnableChannel(ADC_conf->DMA_StreamTx);
+    EnableChannel(ADC_conf->DMA_StreamRx);
+    LL_SPI_EnableDMAReq_TX(ADC_conf->SPIx);
+    while (!IsEnabledChannel(ADC_conf->DMA_StreamTx) && !IsEnabledChannel(ADC_conf->DMA_StreamRx)){
     }
 
-    ATOMIC_SET_BIT(ADC_SPI->CR1, SPI_CR1_SPE);
+    ATOMIC_SET_BIT(ADC_conf->SPIx->CR1, SPI_CR1_SPE);
 
-    NSS_PORT->BSRR = NSS_PIN;
-    NSS_PORT->BSRR = NSS_PIN << 16U;
+    ADC_conf->cnv_port->BSRR = ADC_conf->cnv_pin;
+    ADC_conf->cnv_port->BSRR = ADC_conf->cnv_pin << 16U;
 
-    SET_BIT(ADC_SPI->CR1, SPI_CR1_CSTART);
+    SET_BIT(ADC_conf->SPIx->CR1, SPI_CR1_CSTART);
 }
 
 void ADC_Device::spi_transmision_callback()
@@ -124,46 +123,18 @@ void ADC_Device::spi_transmision_callback()
 
 void ADC_Device::dma_transmission_callback(void)
 {
-    TX_DMA_ClearFlag(DMA1);
-    ATOMIC_MODIFY_REG(ADC_TX_DMA_STREAM->NDTR, DMA_SxNDT, DATAWIDTH);
-    // LL_DMA_DisableStream(DMA1, ADC_DMA_TX_STREAM);
+    ADC_conf->dmaTx_clr_flag(ADC_conf->DMATx);
+    SetDataLength(ADC_conf->DMA_StreamRx, DATAWIDTH);
 }
 
 void ADC_Device::dma_receive_callback(void)
 {
-    RX_DMA_ClearFlag(DMA1);
-    // if (sample++ == SAMPLES)
-    // {
-    //     ATOMIC_CLEAR_BIT(ADC_SPI->CR1, SPI_CR1_SPE);
-    //     return;
-    // }
-#ifdef NORMAL_MODE
-    while (LL_SPI_IsActiveFlag_RXWNE(ADC_SPI) || LL_SPI_GetRxFIFOPackingLevel(ADC_SPI))
-    {
+    ADC_conf->dmaRx_clr_flag(ADC_conf->DMARx);
+    while (LL_SPI_IsActiveFlag_RXWNE(ADC_conf->SPIx) || LL_SPI_GetRxFIFOPackingLevel(ADC_conf->SPIx)){
     }
-
-    ATOMIC_CLEAR_BIT(ADC_SPI->CR1, SPI_CR1_SPE);
-
-    ATOMIC_MODIFY_REG(ADC_RX_DMA_STREAM->NDTR, DMA_SxNDT, DATAWIDTH);
+    ATOMIC_CLEAR_BIT(ADC_conf->SPIx->CR1, SPI_CR1_SPE);
+    SetDataLength(ADC_conf->DMA_StreamTx, DATAWIDTH);
 
     channel2->update_result(bytes_to_u16(dma_buffer[0], dma_buffer[1]));
     channel1->update_result(bytes_to_u16(dma_buffer[3], dma_buffer[4]));
-
-    // SET_BIT(ADC_SPI->CR1, SPI_CR1_CSTART);
-
-#endif
-#ifdef DOUBLE_BUFFER
-    int16_t *buffer;
-
-    if (LL_DMA_GetCurrentTargetMem(DMA1, ADC_DMA_RX_STREAM) == LL_DMA_CURRENTTARGETMEM0)
-    {
-        buffer = (int16_t *)dma_buffer;
-    }
-    else
-    {
-        buffer = (int16_t *)dma_buffer2;
-    }
-    channel2->update_result(((int16_t)(buffer[0] << 8)) + ((int16_t)buffer[1]));
-    channel1->update_result(((int16_t)(buffer[3] << 8)) + ((int16_t)buffer[4]));
-#endif
 }
