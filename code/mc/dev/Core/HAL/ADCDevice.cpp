@@ -180,11 +180,11 @@ void ADC_Device::dma_transmission_callback(void)
 void ADC_Device::dma_receive_callback(void)
 {
     RX_DMA_ClearFlag(DMA1);
-    if (sample++ == SAMPLES)
-    {
-        ATOMIC_CLEAR_BIT(ADC_SPI->CR1, SPI_CR1_SPE);
-        return;
-    }
+    // if (sample++ == SAMPLES)
+    // {
+    //     ATOMIC_CLEAR_BIT(ADC_SPI->CR1, SPI_CR1_SPE);
+    //     return;
+    // }
 #ifdef NORMAL_MODE
     while (LL_SPI_IsActiveFlag_RXWNE(ADC_SPI) || LL_SPI_GetRxFIFOPackingLevel(ADC_SPI))
     {
@@ -194,20 +194,10 @@ void ADC_Device::dma_receive_callback(void)
 
     ATOMIC_MODIFY_REG(ADC_RX_DMA_STREAM->NDTR, DMA_SxNDT, DATAWIDTH);
 
-    NSS_PORT->BSRR = NSS_PIN;
-    NSS_PORT->BSRR = NSS_PIN << 16U;
+    channel2->update_result(bytes_to_u16(dma_buffer[0], dma_buffer[1]));
+    channel1->update_result(bytes_to_u16(dma_buffer[3], dma_buffer[4]));
 
-    ATOMIC_SET_BIT(ADC_TX_DMA_STREAM->CR, DMA_SxCR_EN);
-    ATOMIC_SET_BIT(ADC_RX_DMA_STREAM->CR, DMA_SxCR_EN);
-    ATOMIC_SET_BIT(ADC_SPI->CR1, SPI_CR1_SPE);
-
-    // int16_t tempCH2 = bytes_to_u16(dma_buffer[0], dma_buffer[1]);
-    // int16_t tempCH1 = bytes_to_u16(dma_buffer[3], dma_buffer[4]);
-
-    // channel2->update_result(tempCH2);
-    // channel1->update_result(tempCH1);
-
-    SET_BIT(ADC_SPI->CR1, SPI_CR1_CSTART);
+    // SET_BIT(ADC_SPI->CR1, SPI_CR1_CSTART);
 
 #endif
 #ifdef DOUBLE_BUFFER
