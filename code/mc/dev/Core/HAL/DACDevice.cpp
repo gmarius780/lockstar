@@ -29,7 +29,7 @@ DAC_Device::DAC_Device(DAC_Device_TypeDef *DAC_conf)
 
     // Disable Clear-bit from start
     HAL_GPIO_WritePin(DAC_conf->clear_port, DAC_conf->clear_pin, GPIO_PIN_SET);
-    HAL_GPIO_WritePin(DAC_conf->sync_port, DAC_conf->sync_pin, GPIO_PIN_SET);
+    // HAL_GPIO_WritePin(DAC_conf->sync_port, DAC_conf->sync_pin, GPIO_PIN_SET);
 }
 
 DAC1_Device::DAC1_Device(DAC_Device_TypeDef *DAC_conf) : DAC_Device(DAC_conf)
@@ -65,7 +65,7 @@ void DAC_Device::write(float output)
     int32_t int_output = (int32_t)((output - zero_voltage) * inv_step_size);
 
     // Bring SYNC line low to prepare DAC
-    DAC_conf->sync_port->BSRR = (uint32_t)sync_pin << 16U;
+    //DAC_conf->sync_port->BSRR = (uint32_t)sync_pin << 16U;
 
     if (invert)
         int_output = -int_output;
@@ -102,7 +102,7 @@ void DAC1_Device::dma_transmission_callback()
      * The SYNC line has to go high at least 20ish ns before the next data package, so it
      * could also be done at a later point, if more convenient / faster.)
      */
-    DAC_conf->sync_port->BSRR = (uint32_t)DAC_conf->sync_pin;
+    //DAC_conf->sync_port->BSRR = (uint32_t)DAC_conf->sync_pin;
 
     busy = false;
 }
@@ -120,7 +120,7 @@ void DAC2_Device::dma_transmission_callback()
      * The SYNC line has to go high at least 20ish ns before the next data package, so it
      * could also be done at a later point, if more convenient / faster.)
      */
-    DAC_conf->sync_port->BSRR = (uint32_t)DAC_conf->sync_pin;
+    //DAC_conf->sync_port->BSRR = (uint32_t)DAC_conf->sync_pin;
 
     busy = false;
 }
@@ -215,7 +215,7 @@ void DAC_Device::prepare_buffer()
     busy = true;
 
     // bring SYNC line low to prepare DAC
-    DAC_conf->sync_port->BSRR = (uint32_t)DAC_conf->sync_pin << 16U;
+    //DAC_conf->sync_port->BSRR = (uint32_t)DAC_conf->sync_pin << 16U;
 
     // depending on the output range, the DAC applies a correction to improve linear behavior
     uint8_t comp = 0b0000;

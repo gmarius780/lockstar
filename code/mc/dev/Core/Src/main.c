@@ -608,7 +608,7 @@ static void MX_SPI5_Init(void)
   hspi5.Init.DataSize = SPI_DATASIZE_8BIT;
   hspi5.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi5.Init.CLKPhase = SPI_PHASE_2EDGE;
-  hspi5.Init.NSS = SPI_NSS_SOFT;
+  hspi5.Init.NSS = SPI_NSS_HARD_OUTPUT;
   hspi5.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
   hspi5.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi5.Init.TIMode = SPI_TIMODE_DISABLE;
@@ -653,13 +653,23 @@ static void MX_SPI6_Init(void)
   /* Peripheral clock enable */
   LL_APB4_GRP1_EnableClock(LL_APB4_GRP1_PERIPH_SPI6);
 
+  LL_AHB4_GRP1_EnableClock(LL_AHB4_GRP1_PERIPH_GPIOA);
   LL_AHB4_GRP1_EnableClock(LL_AHB4_GRP1_PERIPH_GPIOC);
   LL_AHB4_GRP1_EnableClock(LL_AHB4_GRP1_PERIPH_GPIOG);
   /**SPI6 GPIO Configuration
+  PA0   ------> SPI6_NSS
   PC12   ------> SPI6_SCK
   PG12   ------> SPI6_MISO
   PG14   ------> SPI6_MOSI
   */
+  GPIO_InitStruct.Pin = LL_GPIO_PIN_0;
+  GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
+  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
+  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
+  GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
+  GPIO_InitStruct.Alternate = LL_GPIO_AF_5;
+  LL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
   GPIO_InitStruct.Pin = LL_GPIO_PIN_12;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
   GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_VERY_HIGH;
@@ -708,7 +718,7 @@ static void MX_SPI6_Init(void)
   SPI_InitStruct.DataWidth = LL_SPI_DATAWIDTH_8BIT;
   SPI_InitStruct.ClockPolarity = LL_SPI_POLARITY_LOW;
   SPI_InitStruct.ClockPhase = LL_SPI_PHASE_2EDGE;
-  SPI_InitStruct.NSS = LL_SPI_NSS_SOFT;
+  SPI_InitStruct.NSS = LL_SPI_NSS_HARD_OUTPUT;
   SPI_InitStruct.BaudRate = LL_SPI_BAUDRATEPRESCALER_DIV4;
   SPI_InitStruct.BitOrder = LL_SPI_MSB_FIRST;
   SPI_InitStruct.CRCCalculation = LL_SPI_CRCCALCULATION_DISABLE;
@@ -869,12 +879,11 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOG_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOF, DAC_2_Sync_Pin|CLR5_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(CLR5_GPIO_Port, CLR5_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, DAC_1_Sync_Pin|Pi_Int_Pin|GPIO_PIN_2|GPIO_PIN_3
-                          |SPI3_NSS_Pin|LED1_Pin|LED2_Pin|LED3_Pin
-                          |LED4_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, Pi_Int_Pin|GPIO_PIN_2|GPIO_PIN_3|SPI3_NSS_Pin
+                          |LED1_Pin|LED2_Pin|LED3_Pin|LED4_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(DigitalOut_GPIO_Port, DigitalOut_Pin, GPIO_PIN_RESET);
@@ -892,17 +901,17 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(CLR6_GPIO_Port, CLR6_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : DAC_2_Sync_Pin CLR5_Pin */
-  GPIO_InitStruct.Pin = DAC_2_Sync_Pin|CLR5_Pin;
+  /*Configure GPIO pin : CLR5_Pin */
+  GPIO_InitStruct.Pin = CLR5_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
+  HAL_GPIO_Init(CLR5_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : DAC_1_Sync_Pin Pi_Int_Pin PA2 PA3
-                           LED1_Pin LED2_Pin LED3_Pin LED4_Pin */
-  GPIO_InitStruct.Pin = DAC_1_Sync_Pin|Pi_Int_Pin|GPIO_PIN_2|GPIO_PIN_3
-                          |LED1_Pin|LED2_Pin|LED3_Pin|LED4_Pin;
+  /*Configure GPIO pins : Pi_Int_Pin PA2 PA3 LED1_Pin
+                           LED2_Pin LED3_Pin LED4_Pin */
+  GPIO_InitStruct.Pin = Pi_Int_Pin|GPIO_PIN_2|GPIO_PIN_3|LED1_Pin
+                          |LED2_Pin|LED3_Pin|LED4_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
