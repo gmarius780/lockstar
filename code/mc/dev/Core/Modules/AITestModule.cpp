@@ -9,6 +9,7 @@
 #include "stm32h725xx.h"
 #include "stm32h7xx_it.h"
 #include "../HAL/ADCDevice.hpp"
+#include "adc_config.h"
 #include "../HAL/leds.hpp"
 #include <stdio.h>
 
@@ -23,25 +24,15 @@ public:
 
 	void run()
 	{
-		ADC_Dev = new ADC_Device(/* SPI number */ 3,
-								 /* DMA Stream In */ 2,
-								 /* DMA Channel In */ 3,
-								 /* DMA Stream Out */ 3,
-								 /* DMA Channel Out */ 3,
-								 //  /* conversion pin port */ SPI2_NSS_GPIO_Port,
-								 //  /* conversion pin number */ SPI2_NSS_Pin,
-								 SPI2_NSS_GPIO_Port,
-								 SPI2_NSS_Pin,
-								 /* Channel 1 config */ ADC_BIPOLAR_5V,
-								 /* Channel 2 config */ ADC_BIPOLAR_5V);
+		ADC_Dev = new ADC_Device(&ADC_conf);
 
 		turn_LED2_on();
 		turn_LED3_on();
 
-		ADC_Dev->start_conversion();
+		// ADC_Dev->start_conversion();
 		while (true)
 		{
-			// ADC_Dev->start_conversion();
+			ADC_Dev->start_conversion();
 			// m1 = ADC_Dev->channel1->get_result();
 			// m2 = ADC_Dev->channel2->get_result();
 			// printf("Channel 1: %f\n", m1);

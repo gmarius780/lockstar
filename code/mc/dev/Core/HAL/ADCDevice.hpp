@@ -14,7 +14,6 @@
 #include "dma.hpp"
 #include "spi.hpp"
 #include "../HAL/leds.hpp"
-#include "adc_config.h"
 #include "stm32h7xx_it.h"
 
 #define ADC_BIPOLAR_10V (uint8_t)0b111
@@ -27,7 +26,22 @@
 
 #define bytes_to_u16(MSB, LSB) (((int16_t)((uint8_t)MSB)) & 0xFF) << 8 | (((uint8_t)LSB) & 0xFF)
 
-extern DMA_HandleTypeDef hdma_spi3_tx, hdma_spi3_rx;
+typedef struct
+{
+    SPI_TypeDef *SPIx;
+    DMA_TypeDef *DMARx;
+    DMA_TypeDef *DMATx;
+    DMA_Stream_TypeDef *DMA_StreamRx;
+    DMA_Stream_TypeDef *DMA_StreamTx;
+    LL_DMA_InitTypeDef *DMA_InitStructRx;
+    LL_DMA_InitTypeDef *DMA_InitStructTx;
+    void (*dmaRx_clr_flag)(DMA_TypeDef *DMAx);
+    void (*dmaTx_clr_flag)(DMA_TypeDef *DMAx);
+    GPIO_TypeDef *cnv_port;
+    uint16_t cnv_pin;
+    uint8_t channel1_config;
+    uint8_t channel2_config;
+} ADC_Device_TypeDef;
 
 class ADC_Device;
 
@@ -62,6 +76,7 @@ public:
                uint16_t cnv_pin,
                uint8_t channel1_config,
                uint8_t channel2_config);
+    ADC_Device(ADC_Device_TypeDef *ADC_conf);
 
     ADC_Device_Channel *channel1, *channel2;
     void start_conversion();
@@ -86,6 +101,7 @@ private:
     // SPI *spi_handler;
     DMA_config_t dma_in_config, dma_out_config;
     uint16_t sample = 1;
+    ADC_Device_TypeDef *ADC_conf;
 };
 
 #endif /* HAL_ADCDEVICE_HPP_ */

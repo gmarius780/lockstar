@@ -8,20 +8,18 @@
 // ADC_RX_DMA_STREAM RX
 // ADC_TX_DMA_STREAM TX
 #include "ADCDevice.hpp"
-
-ADC_Device::ADC_Device(uint8_t SPILane, uint8_t DMAStreamIn, uint8_t DMAChannelIn, uint8_t DMAStreamOut, uint8_t DMAChannelOut, GPIO_TypeDef *CNVPort, uint16_t CNVPin, uint8_t channel1Config, uint8_t channel2Config)
+#include "adc_config.h"
+ADC_Device::ADC_Device(ADC_Device_TypeDef *ADC_conf)
 {
-    this->cnv_port = CNVPort;
-    this->cnv_pin = CNVPin;
-
+    this->ADC_conf = ADC_conf;
     single_channel_mode = false;
-    if (channel1Config == ADC_OFF || channel2Config == ADC_OFF)
+    if (ADC_conf->channel1_config == ADC_OFF || ADC_conf->channel2_config == ADC_OFF)
         single_channel_mode = true;
 
     adc_config_buffer = new uint8_t[DATAWIDTH]();
 
-    channel1 = new ADC_Device_Channel(this, 1, channel1Config);
-    channel2 = new ADC_Device_Channel(this, 2, channel2Config);
+    channel1 = new ADC_Device_Channel(this, 1, ADC_conf->channel1_config);
+    channel2 = new ADC_Device_Channel(this, 2, ADC_conf->channel2_config);
 
     busy = false;
 
@@ -35,68 +33,22 @@ ADC_Device::ADC_Device(uint8_t SPILane, uint8_t DMAStreamIn, uint8_t DMAChannelI
     adc_config_buffer[0] = code;
 
     // Setup perhipherals
-    // cnv_port->BSRR = cnv_pin << 16;
     spi_handler = new SPI(ADC_SPI);
-    // LL_SPI_SetFIFOThreshold(ADC_SPI, LL_SPI_FIFO_TH_03DATA);
-    // LL_SPI_SetTransferSize(ADC_SPI, DATAWIDTH);
-    // LL_SPI_SetReloadSize(ADC_SPI, DATAWIDTH);
     LL_SPI_SetMasterSSIdleness(ADC_SPI, LL_SPI_SS_IDLENESS_15CYCLE);
-    // LL_SPI_SetInterDataIdleness(ADC_SPI, LL_SPI_ID_IDLENESS_01CYCLE);
-    // LL_SPI_EnableIT_EOT(ADC_SPI);
 
-    LL_DMA_InitTypeDef DMA_RX_InitStruct = {0};
-    LL_DMA_InitTypeDef DMA_TX_InitStruct = {0};
+    ADC_conf->DMA_InitStructRx->PeriphOrM2MSrcAddress = (uint32_t) & (ADC_conf->SPIx->TXDR);
+    ADC_conf->DMA_InitStructRx->MemoryOrM2MDstAddress = (uint32_t)dma_buffer;
+    ADC_conf->DMA_InitStructRx->NbData = 6;
 
-    DMA_RX_InitStruct.PeriphOrM2MSrcAddress = (uint32_t)spi_handler->getRXDRAddress();
-    DMA_RX_InitStruct.MemoryOrM2MDstAddress = (uint32_t)dma_buffer;
-    DMA_RX_InitStruct.Direction = LL_DMA_DIRECTION_PERIPH_TO_MEMORY;
-    DMA_RX_InitStruct.Mode = ADC_DMA_MODE;
-    DMA_RX_InitStruct.PeriphOrM2MSrcIncMode = LL_DMA_PERIPH_NOINCREMENT;
-    DMA_RX_InitStruct.MemoryOrM2MDstIncMode = LL_DMA_MEMORY_INCREMENT;
-    DMA_RX_InitStruct.PeriphOrM2MSrcDataSize = LL_DMA_PDATAALIGN_BYTE;
-    DMA_RX_InitStruct.MemoryOrM2MDstDataSize = LL_DMA_MDATAALIGN_BYTE;
-    DMA_RX_InitStruct.NbData = DATAWIDTH;
-    DMA_RX_InitStruct.PeriphRequest = LL_DMAMUX1_REQ_ADC_SPI_RX;
-    DMA_RX_InitStruct.Priority = LL_DMA_PRIORITY_HIGH;
-    DMA_RX_InitStruct.FIFOMode = LL_DMA_FIFOMODE_DISABLE;
-    DMA_RX_InitStruct.FIFOThreshold = LL_DMA_FIFOTHRESHOLD_FULL;
-    DMA_RX_InitStruct.MemBurst = LL_DMA_MBURST_SINGLE;
-    DMA_RX_InitStruct.PeriphBurst = LL_DMA_PBURST_SINGLE;
+    ADC_conf->DMA_InitStructTx->PeriphOrM2MSrcAddress = (uint32_t) & (ADC_conf->SPIx->TXDR);
+    ADC_conf->DMA_InitStructTx->MemoryOrM2MDstAddress = (uint32_t)adc_config_buffer;
+    ADC_conf->DMA_InitStructTx->NbData = 6;
 
-    DMA_TX_InitStruct.PeriphOrM2MSrcAddress = (uint32_t)spi_handler->getTXDRAddress();
-    DMA_TX_InitStruct.MemoryOrM2MDstAddress = (uint32_t)adc_config_buffer;
-    DMA_TX_InitStruct.Direction = LL_DMA_DIRECTION_MEMORY_TO_PERIPH;
-    DMA_TX_InitStruct.Mode = ADC_DMA_MODE;
-    DMA_TX_InitStruct.PeriphOrM2MSrcIncMode = LL_DMA_PERIPH_NOINCREMENT;
-    DMA_TX_InitStruct.MemoryOrM2MDstIncMode = LL_DMA_MEMORY_INCREMENT;
-    DMA_TX_InitStruct.PeriphOrM2MSrcDataSize = LL_DMA_PDATAALIGN_BYTE;
-    DMA_TX_InitStruct.MemoryOrM2MDstDataSize = LL_DMA_MDATAALIGN_BYTE;
-    DMA_TX_InitStruct.NbData = DATAWIDTH;
-    DMA_TX_InitStruct.PeriphRequest = LL_DMAMUX1_REQ_ADC_SPI_TX;
-    DMA_TX_InitStruct.Priority = LL_DMA_PRIORITY_MEDIUM;
-    DMA_TX_InitStruct.FIFOMode = LL_DMA_FIFOMODE_DISABLE;
-    DMA_TX_InitStruct.FIFOThreshold = LL_DMA_FIFOTHRESHOLD_FULL;
-    DMA_TX_InitStruct.MemBurst = LL_DMA_MBURST_SINGLE;
-    DMA_TX_InitStruct.PeriphBurst = LL_DMA_PBURST_SINGLE;
+    LL_DMA_Init(ADC_conf->DMARx, __LL_DMA_GET_STREAM(ADC_conf->DMA_StreamRx), ADC_conf->DMA_InitStructRx);
+    LL_DMA_Init(ADC_conf->DMATx, __LL_DMA_GET_STREAM(ADC_conf->DMA_StreamTx), ADC_conf->DMA_InitStructTx);
 
-    dma_input_handler = new DMA(DMA1, ADC_DMA_RX_STREAM, &DMA_RX_InitStruct);
-    dma_output_handler = new DMA(DMA1, ADC_DMA_TX_STREAM, &DMA_TX_InitStruct);
-
-    // LL_DMA_SetM2MSrcAddress(DMA2, LL_DMA_STREAM_7, (uint32_t)dma_buffer);
-    // LL_DMA_SetM2MDstAddress
-    // LL_DMA_EnableStream(DMA2, LL_DMA_STREAM_7);
-
-#ifdef DOUBLE_BUFFER
-    LL_DMA_SetMemory1Address(DMA1, ADC_DMA_RX_STREAM, (uint32_t)dma_buffer2);
-    LL_DMA_EnableDoubleBufferMode(DMA1, ADC_DMA_RX_STREAM);
-    // dma_output_handler->enable_tc_irq();
-    // dma_input_handler->enable_tc_irq();
-#endif
-
-#ifndef DOUBLE_BUFFER
-    dma_input_handler->enable_tc_irq();
-    dma_output_handler->enable_tc_irq();
-#endif
+    EnableIT_TC(ADC_conf->DMA_StreamRx);
+    EnableIT_TC(ADC_conf->DMA_StreamTx);
 }
 
 ADC_Device_Channel::ADC_Device_Channel(ADC_Device *parentDevice, uint16_t channelID, uint8_t config)
