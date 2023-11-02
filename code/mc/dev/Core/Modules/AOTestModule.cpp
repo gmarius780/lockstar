@@ -15,6 +15,9 @@
 
 #ifdef AO_TEST_MODULE
 
+// #define CYCTEST
+// #define PROBE_SPI
+
 extern ADC_HandleTypeDef hadc3;
 
 class AOTestModule
@@ -27,30 +30,46 @@ public:
 	void run()
 	{
 		DAC_1 = new DAC1_Device(&DAC1_conf);
-		DAC_2 = new DAC2_Device(&DAC2_conf);                                
+		DAC_2 = new DAC2_Device(&DAC2_conf);
 
-		float m1 = 4;
-		float m2 = -4;
+		float m1 = 8;
+		float m2 = 8;
 		DAC_1->config_output();
 		DAC_1->write(m1);
 		turn_LED2_on();
 		DAC_2->config_output();
 		DAC_2->write(m2);
 		turn_LED3_on();
-
+#ifdef PROBE_SPI
+		DAC_3 = new DAC2_Device(&DAC3_conf);
+		DAC_3->config_output();
+		DAC_3->write(m2);
+#endif
 		while (true)
 		{
-			// ADC_Dev->start_conversion();
-			// m1 = ADC_Dev->channel1->get_result();
-			// m2 = ADC_Dev->channel2->get_result();
-			// printf("Channel 1: %f\n", m1);
-			// printf("Channel 2: %f\n", m2);
+#ifdef CYCTEST
+			if (m1 < 9)
+				m1 += 0.5;
+			else
+				m1 = 0;
+			if (m2 > -9)
+				m2 -= 0.5;
+			else
+				m2 = 0;
+			turn_LED4_on();
+			HAL_Delay(1000);
+			turn_LED4_off();
+			HAL_Delay(1000);
+			DAC_1->write(m1);
+			DAC_2->write(m2);
+#endif
 		}
 	}
 
 public:
 	DAC1_Device *DAC_1;
 	DAC2_Device *DAC_2;
+	DAC2_Device *DAC_3;
 	float m1 = 0;
 	float m2 = 0;
 };
@@ -60,15 +79,14 @@ AOTestModule *module;
 // /******************************
 //  *         INTERRUPTS          *
 //  *******************************/
-// void DMA1_Stream2_IRQHandler(void)
-// {
-// 	module->ADC_Dev->dma_receive_callback();
-// }
 
-// void DMA1_Stream3_IRQHandler(void)
-// {
-// 	module->DAC_2->dma_transmission_callback();
-// }
+
+#ifdef PROBE_SPI
+void DMA1_Stream3_IRQHandler(void)
+{
+	module->DAC_3->dma_transmission_callback();
+}
+#endif
 
 void DMA2_Stream3_IRQHandler(void)
 {
@@ -80,23 +98,6 @@ void BDMA_Channel1_IRQHandler(void)
 	module->DAC_1->dma_transmission_callback();
 }
 
-
-// void DMA1_Stream4_IRQHandler(void)
-// {
-// 	module->ADC_Dev->dma_receive_callback();
-// }
-
-// void DMA1_Stream5_IRQHandler(void)
-// {
-// 	module->ADC_Dev->dma_transmission_callback();
-// }
-
-// void SPI2_IRQHandler(void)
-// {
-// 	LL_SPI_ClearFlag_EOT(SPI2);
-// 	// LL_SPI_SetReloadSize(SPI2, DATAWIDTH);
-// 	LL_SPI_StartMasterTransfer(SPI2);
-// }
 
 /******************************
  *       MAIN FUNCTION        *
