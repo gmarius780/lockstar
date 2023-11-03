@@ -87,19 +87,12 @@ public:
     SPI *spi_handler;
 
 private:
-    volatile uint8_t dma_buffer[DATAWIDTH] = {0};
+    volatile uint8_t *dma_buffer;
     volatile uint8_t dma_buffer2[DATAWIDTH] = {0};
     volatile uint8_t *adc_config_buffer;
 
-    uint16_t cnv_pin;
-    GPIO_TypeDef *cnv_port;
-
     bool single_channel_mode;
     bool busy;
-
-    DMA *dma_input_handler, *dma_output_handler;
-    // SPI *spi_handler;
-    DMA_config_t dma_in_config, dma_out_config;
     uint16_t sample = 1;
     ADC_Device_TypeDef *ADC_conf;
 };
