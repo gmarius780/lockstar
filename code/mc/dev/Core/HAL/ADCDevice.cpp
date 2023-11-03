@@ -38,7 +38,7 @@ ADC_Device::ADC_Device(ADC_Device_TypeDef *ADC_conf)
 
     // Setup perhipherals
     spi_handler = new SPI(ADC_conf->SPIx);
-    LL_SPI_SetFIFOThreshold(ADC_conf->SPIx, LL_SPI_FIFO_TH_06DATA);
+    LL_SPI_SetFIFOThreshold(ADC_conf->SPIx, LL_SPI_FIFO_TH_03DATA);
     // LL_SPI_SetMasterSSIdleness(ADC_conf->SPIx, LL_SPI_SS_IDLENESS_15CYCLE);
 
     ADC_conf->DMA_InitStructRx->PeriphOrM2MSrcAddress = (uint32_t) & (ADC_conf->SPIx->RXDR);
@@ -106,14 +106,16 @@ void ADC_Device_Channel::update_result(int16_t result)
 
 void ADC_Device::start_conversion()
 {
+    // while (LL_DMA_IsActiveFlag_TC2(ADC_conf->DMARx))
+    // {
+    // }
 
     while(busy){
     }
 
     // busy flag gets reset when DMA transfer is finished
     busy = true;
-    CLEAR_BIT(ADC_conf->SPIx->CFG1, SPI_CFG1_TXDMAEN | SPI_CFG1_RXDMAEN);
-
+    
     ADC_conf->cnv_port->BSRR = ADC_conf->cnv_pin;
     ADC_conf->cnv_port->BSRR = ADC_conf->cnv_pin << 16U;
 
@@ -121,16 +123,22 @@ void ADC_Device::start_conversion()
     SetDataLength(ADC_conf->DMA_StreamTx, DATAWIDTH);
 
     EnableChannel(ADC_conf->DMA_StreamRx);
-    while (!IsEnabledChannel(ADC_conf->DMA_StreamRx))
-    {
-    }
+    // while (!IsEnabledChannel(ADC_conf->DMA_StreamRx))
+    // {
+    // }
     LL_SPI_EnableDMAReq_RX(ADC_conf->SPIx);
+    // while (!LL_SPI_IsEnabledDMAReq_RX(ADC_conf->SPIx))
+    // {
+    // }
 
     EnableChannel(ADC_conf->DMA_StreamTx);
-    while (!IsEnabledChannel(ADC_conf->DMA_StreamTx))
-    {
-    }
+    // while (!IsEnabledChannel(ADC_conf->DMA_StreamTx))
+    // {
+    // }
     LL_SPI_EnableDMAReq_TX(ADC_conf->SPIx);
+    // while (!LL_SPI_IsEnabledDMAReq_TX(ADC_conf->SPIx))
+    // {
+    // }
 
     ADC_conf->SPIx->IFCR |= SPI_IT_OVR | SPI_IT_UDR | SPI_IT_FRE | SPI_IT_MODF;
     ADC_conf->SPIx->CR1 |= SPI_CR1_SPE;
@@ -148,14 +156,18 @@ void ADC_Device::dma_transmission_callback(void)
 
 void ADC_Device::dma_receive_callback(void)
 {
-    ADC_conf->dmaRx_clr_flag(ADC_conf->DMARx);
-    ADC_conf->dmaTx_clr_flag(ADC_conf->DMATx);
-    while (LL_SPI_IsActiveFlag_RXWNE(ADC_conf->SPIx) || LL_SPI_GetRxFIFOPackingLevel(ADC_conf->SPIx))
-    {
-    }
-    ATOMIC_CLEAR_BIT(ADC_conf->SPIx->CR1, SPI_CR1_SPE);
+    // sample++;
+    // ADC_conf->dmaRx_clr_flag(ADC_conf->DMARx);
+    // ADC_conf->dmaTx_clr_flag(ADC_conf->DMATx);
+    LL_DMA_ClearFlag_TC2(ADC_conf->DMARx);
+    LL_DMA_ClearFlag_TC3(ADC_conf->DMATx);
+    // while (LL_SPI_IsActiveFlag_RXWNE(ADC_conf->SPIx))
+    // {
+    // }
+    CLEAR_BIT(ADC_conf->SPIx->CR1, SPI_CR1_SPE);
+    CLEAR_BIT(ADC_conf->SPIx->CFG1, SPI_CFG1_TXDMAEN | SPI_CFG1_RXDMAEN);
 
-    channel2->update_result(bytes_to_u16(ADCdma_buffer[0], ADCdma_buffer[1]));
-    channel1->update_result(bytes_to_u16(ADCdma_buffer[3], ADCdma_buffer[4]));
+    // channel2->update_result(bytes_to_u16(ADCdma_buffer[0], ADCdma_buffer[1]));
+    // channel1->update_result(bytes_to_u16(ADCdma_buffer[3], ADCdma_buffer[4]));
     busy = false;
 }
