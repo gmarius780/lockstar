@@ -87,7 +87,7 @@ public:
     SPI *spi_handler;
 
 private:
-    volatile uint8_t *dma_buffer;
+    volatile uint8_t *ADCdma_buffer;
     volatile uint8_t dma_buffer2[DATAWIDTH] = {0};
     volatile uint8_t *adc_config_buffer;
 
