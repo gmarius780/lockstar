@@ -20,7 +20,6 @@ ADC_Device::ADC_Device(ADC_Device_TypeDef *ADC_conf)
 
     adc_config_buffer = new uint8_t[DATAWIDTH]();
     ADCdma_buffer = dmaADC_buffer;
-    // ADCdma_buffer = new uint8_t[DATAWIDTH]();
 
     channel1 = new ADC_Device_Channel(this, 1, ADC_conf->channel1_config);
     channel2 = new ADC_Device_Channel(this, 2, ADC_conf->channel2_config);
@@ -39,21 +38,17 @@ ADC_Device::ADC_Device(ADC_Device_TypeDef *ADC_conf)
     // Setup perhipherals
     spi_handler = new SPI(ADC_conf->SPIx);
     LL_SPI_SetFIFOThreshold(ADC_conf->SPIx, LL_SPI_FIFO_TH_03DATA);
-    // LL_SPI_SetMasterSSIdleness(ADC_conf->SPIx, LL_SPI_SS_IDLENESS_15CYCLE);
 
     ADC_conf->DMA_InitStructRx->PeriphOrM2MSrcAddress = (uint32_t) & (ADC_conf->SPIx->RXDR);
     ADC_conf->DMA_InitStructRx->MemoryOrM2MDstAddress = (uint32_t)ADCdma_buffer;
-    // ADC_conf->DMA_InitStructRx->NbData = DATAWIDTH;
 
     ADC_conf->DMA_InitStructTx->PeriphOrM2MSrcAddress = (uint32_t) & (ADC_conf->SPIx->TXDR);
     ADC_conf->DMA_InitStructTx->MemoryOrM2MDstAddress = (uint32_t)adc_config_buffer;
-    // ADC_conf->DMA_InitStructTx->NbData = DATAWIDTH;
 
     LL_DMA_Init(ADC_conf->DMARx, __LL_DMA_GET_STREAM(ADC_conf->DMA_StreamRx), ADC_conf->DMA_InitStructRx);
     LL_DMA_Init(ADC_conf->DMATx, __LL_DMA_GET_STREAM(ADC_conf->DMA_StreamTx), ADC_conf->DMA_InitStructTx);
 
     EnableIT_TC(ADC_conf->DMA_StreamRx);
-    // EnableIT_TC(ADC_conf->DMA_StreamTx);
 }
 
 ADC_Device_Channel::ADC_Device_Channel(ADC_Device *parentDevice, uint16_t channelID, uint8_t config)
@@ -106,9 +101,6 @@ void ADC_Device_Channel::update_result(int16_t result)
 
 void ADC_Device::start_conversion()
 {
-    // while (LL_DMA_IsActiveFlag_TC2(ADC_conf->DMARx))
-    // {
-    // }
 
     while(busy){
     }
@@ -116,31 +108,16 @@ void ADC_Device::start_conversion()
     // busy flag gets reset when DMA transfer is finished
     busy = true;
     
-    ADC_conf->cnv_port->BSRR = ADC_conf->cnv_pin;
-    ADC_conf->cnv_port->BSRR = ADC_conf->cnv_pin << 16U;
 
     SetDataLength(ADC_conf->DMA_StreamRx, DATAWIDTH);
     SetDataLength(ADC_conf->DMA_StreamTx, DATAWIDTH);
 
     EnableChannel(ADC_conf->DMA_StreamRx);
-    // while (!IsEnabledChannel(ADC_conf->DMA_StreamRx))
-    // {
-    // }
     LL_SPI_EnableDMAReq_RX(ADC_conf->SPIx);
-    // while (!LL_SPI_IsEnabledDMAReq_RX(ADC_conf->SPIx))
-    // {
-    // }
 
     EnableChannel(ADC_conf->DMA_StreamTx);
-    // while (!IsEnabledChannel(ADC_conf->DMA_StreamTx))
-    // {
-    // }
     LL_SPI_EnableDMAReq_TX(ADC_conf->SPIx);
-    // while (!LL_SPI_IsEnabledDMAReq_TX(ADC_conf->SPIx))
-    // {
-    // }
 
-    ADC_conf->SPIx->IFCR |= SPI_IT_OVR | SPI_IT_UDR | SPI_IT_FRE | SPI_IT_MODF;
     ADC_conf->SPIx->CR1 |= SPI_CR1_SPE;
     ADC_conf->SPIx->CR1 |= SPI_CR1_CSTART;
 }
@@ -153,21 +130,19 @@ void ADC_Device::dma_transmission_callback(void)
 {
     ADC_conf->dmaTx_clr_flag(ADC_conf->DMATx);
 }
-
+__attribute__((section("sram_func")))
 void ADC_Device::dma_receive_callback(void)
 {
-    // sample++;
-    // ADC_conf->dmaRx_clr_flag(ADC_conf->DMARx);
-    // ADC_conf->dmaTx_clr_flag(ADC_conf->DMATx);
-    LL_DMA_ClearFlag_TC2(ADC_conf->DMARx);
-    LL_DMA_ClearFlag_TC3(ADC_conf->DMATx);
-    // while (LL_SPI_IsActiveFlag_RXWNE(ADC_conf->SPIx))
-    // {
-    // }
+
+    ADC_conf->dmaRx_clr_flag(ADC_conf->DMARx);
+    ADC_conf->dmaTx_clr_flag(ADC_conf->DMATx);
+
     CLEAR_BIT(ADC_conf->SPIx->CR1, SPI_CR1_SPE);
     CLEAR_BIT(ADC_conf->SPIx->CFG1, SPI_CFG1_TXDMAEN | SPI_CFG1_RXDMAEN);
 
-    // channel2->update_result(bytes_to_u16(ADCdma_buffer[0], ADCdma_buffer[1]));
-    // channel1->update_result(bytes_to_u16(ADCdma_buffer[3], ADCdma_buffer[4]));
+    ADC_conf->cnv_port->BSRR = ADC_conf->cnv_pin;
+    ADC_conf->cnv_port->BSRR = ADC_conf->cnv_pin << 16U;
+    channel2->update_result(bytes_to_u16(ADCdma_buffer[0], ADCdma_buffer[1]));
+    channel1->update_result(bytes_to_u16(ADCdma_buffer[3], ADCdma_buffer[4]));
     busy = false;
 }

@@ -33,8 +33,8 @@ public:
 		while (true)
 		{
 			ADC_Dev->start_conversion();
-			// m1 = ADC_Dev->channel1->get_result();
-			// m2 = ADC_Dev->channel2->get_result();
+			m1 = ADC_Dev->channel1->get_result();
+			m2 = ADC_Dev->channel2->get_result();
 			// printf("Channel 1: %f\n", m1);
 			// printf("Channel 2: %f\n", m2);
 		}
@@ -51,11 +51,12 @@ AITestModule *module;
 /******************************
  *         INTERRUPTS          *
  *******************************/
+__attribute__((section("sram_func")))
 void DMA1_Stream2_IRQHandler(void)
 {
 	module->ADC_Dev->dma_receive_callback();
 }
-
+__attribute__((section("sram_func")))
 void DMA1_Stream3_IRQHandler(void)
 {
 	module->ADC_Dev->dma_transmission_callback();
@@ -71,12 +72,10 @@ void DMA1_Stream5_IRQHandler(void)
 	module->ADC_Dev->dma_transmission_callback();
 }
 
-void SPI2_IRQHandler(void)
-{
-	LL_SPI_ClearFlag_EOT(SPI2);
-	// LL_SPI_SetReloadSize(SPI2, DATAWIDTH);
-	LL_SPI_StartMasterTransfer(SPI2);
-}
+// void SPI2_IRQHandler(void)
+// {
+// 	module->ADC_Dev->spi_transmision_callback();
+// }
 
 /******************************
  *       MAIN FUNCTION        *
