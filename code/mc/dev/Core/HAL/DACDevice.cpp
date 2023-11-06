@@ -26,6 +26,8 @@ DAC_Device::DAC_Device(DAC_Device_TypeDef *DAC_conf)
 
     this->DAC_conf = DAC_conf;
     spi_handler = new SPI(DAC_conf->SPIx);
+    LL_SPI_SetFIFOThreshold(DAC_conf->SPIx, LL_SPI_FIFO_TH_03DATA);
+    LL_SPI_SetTransferSize(DAC_conf->SPIx, 3);
 
     // Disable Clear-bit from start
     HAL_GPIO_WritePin(DAC_conf->clear_port, DAC_conf->clear_pin, GPIO_PIN_SET);
@@ -48,14 +50,16 @@ DAC2_Device::DAC2_Device(DAC_Device_TypeDef *DAC_conf) : DAC_Device(DAC_conf)
     DAC_conf->DMA_InitStruct->MemoryOrM2MDstAddress = (uint32_t)dma_buffer;
     DAC_conf->DMA_InitStruct->NbData = 3;
     LL_DMA_Init(DAC_conf->DMAx, __LL_DMA_GET_STREAM(DAC_conf->DMA_Streamx), DAC_conf->DMA_InitStruct);
-    EnableIT_TC(DAC_conf->DMA_Streamx);
+    // EnableIT_TC(DAC_conf->DMA_Streamx);
+    LL_SPI_EnableIT_EOT(DAC_conf->SPIx);
 }
 
 //__attribute__((section("sram_func")))
 void DAC_Device::write(float output)
 {
-    if (busy)
-        return;
+    while (busy)
+    {
+    }
 
     busy = true;
 
@@ -65,7 +69,7 @@ void DAC_Device::write(float output)
     int32_t int_output = (int32_t)((output - zero_voltage) * inv_step_size);
 
     // Bring SYNC line low to prepare DAC
-    //DAC_conf->sync_port->BSRR = (uint32_t)sync_pin << 16U;
+    // DAC_conf->sync_port->BSRR = (uint32_t)sync_pin << 16U;
 
     if (invert)
         int_output = -int_output;
@@ -94,7 +98,8 @@ void DAC1_Device::dma_transmission_callback()
     DisableChannel(DAC_conf->BDMA_Channelx);
     SetDataLength(DAC_conf->BDMA_Channelx, 3);
 
-    while (!LL_SPI_IsActiveFlag_TXC(DAC_conf->SPIx));
+    while (!LL_SPI_IsActiveFlag_TXC(DAC_conf->SPIx))
+        ;
     ATOMIC_CLEAR_BIT(DAC_conf->SPIx->CR1, SPI_CR1_SPE);
     /*
      * bring SYNC line up to finish DA conversion
@@ -102,25 +107,33 @@ void DAC1_Device::dma_transmission_callback()
      * The SYNC line has to go high at least 20ish ns before the next data package, so it
      * could also be done at a later point, if more convenient / faster.)
      */
-    //DAC_conf->sync_port->BSRR = (uint32_t)DAC_conf->sync_pin;
+    // DAC_conf->sync_port->BSRR = (uint32_t)DAC_conf->sync_pin;
 
     busy = false;
 }
 
 void DAC2_Device::dma_transmission_callback()
 {
-    DAC_conf->dma_clr_flag(DAC_conf->DMAx);
     // DisableChannel(DAC_conf->DMA_Streamx);
-    SetDataLength(DAC_conf->DMA_Streamx, 3);
-    while (!LL_SPI_IsActiveFlag_TXC(DAC_conf->SPIx));
-    ATOMIC_CLEAR_BIT(DAC_conf->SPIx->CR1, SPI_CR1_SPE);
+    // SetDataLength(DAC_conf->DMA_Streamx, 3);
+    while (!LL_SPI_IsActiveFlag_TXC(DAC_conf->SPIx))
+    {
+    }
+    DAC_conf->dma_clr_flag(DAC_conf->DMAx);
+    LL_SPI_ClearFlag_EOT(DAC_conf->SPIx);
+    CLEAR_BIT(DAC_conf->SPIx->CR1, SPI_CR1_SPE);
+    SET_BIT(DAC_conf->SPIx->IFCR, SPI_IFCR_TXTFC);
+    while (LL_SPI_IsEnabled(DAC_conf->SPIx))
+    {
+    }
+    CLEAR_BIT(DAC_conf->SPIx->CFG1, SPI_CFG1_TXDMAEN);
     /*
      * bring SYNC line up to finish DA conversion
      * (The DA conversion is completed automatically with the 24th transmitted bit.
      * The SYNC line has to go high at least 20ish ns before the next data package, so it
      * could also be done at a later point, if more convenient / faster.)
      */
-    //DAC_conf->sync_port->BSRR = (uint32_t)DAC_conf->sync_pin;
+    // DAC_conf->sync_port->BSRR = (uint32_t)DAC_conf->sync_pin;
 
     busy = false;
 }
@@ -215,7 +228,7 @@ void DAC_Device::prepare_buffer()
     busy = true;
 
     // bring SYNC line low to prepare DAC
-    //DAC_conf->sync_port->BSRR = (uint32_t)DAC_conf->sync_pin << 16U;
+    // DAC_conf->sync_port->BSRR = (uint32_t)DAC_conf->sync_pin << 16U;
 
     // depending on the output range, the DAC applies a correction to improve linear behavior
     uint8_t comp = 0b0000;
@@ -266,12 +279,18 @@ void DAC1_Device::begin_dma_transfer()
 // __attribute__((section("sram_func")))
 void DAC2_Device::begin_dma_transfer()
 {
+    LL_SPI_SetTransferSize(DAC_conf->SPIx, 3);
+    SetDataLength(DAC_conf->DMA_Streamx, 3);
     EnableChannel(DAC_conf->DMA_Streamx);
-    LL_SPI_EnableDMAReq_TX(DAC_conf->SPIx);
     while (!IsEnabledChannel(DAC_conf->DMA_Streamx))
     {
     }
+    LL_SPI_EnableDMAReq_TX(DAC_conf->SPIx);
+    while (!LL_SPI_IsEnabledDMAReq_TX(DAC_conf->SPIx))
+    {
+    }
     DAC_conf->SPIx->CR1 |= SPI_CR1_SPE;
+    while(!LL_SPI_IsEnabled(DAC_conf->SPIx)){}
     DAC_conf->SPIx->CR1 |= SPI_CR1_CSTART;
     // SET_BIT(DAC_conf->SPIx->CR1, SPI_CR1_CSTART);
 }
