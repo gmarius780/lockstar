@@ -84,8 +84,8 @@ public:
 	}
 
 public:
-	DAC1_Device *DAC_1;
-	DAC2_Device *DAC_2;
+	DAC_Device *DAC_1;
+	DAC_Device *DAC_2;
 	DAC2_Device *DAC_3;
 	float m1 = 0;
 	float m2 = 0;

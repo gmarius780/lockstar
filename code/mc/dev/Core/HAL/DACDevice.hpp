@@ -46,7 +46,7 @@ public:
     void config_output(ADC_HandleTypeDef *hadc, uint32_t ADC_SENL, uint32_t ADC_SENH);
 
     void write(float value);
-    void dma_transmission_callback();
+    virtual void dma_transmission_callback();
     bool is_busy();
     void set_min_output(float m); // can only set the minimum higher than set with jumpers
     void set_max_output(float m); // can only set the maximum lower than set with jumpers
@@ -78,7 +78,7 @@ protected:
     DMA *dma_output_handler;
     SPI *spi_handler;
     DMA_config_t dma_config;
-    void begin_dma_transfer();
+    virtual void begin_dma_transfer();
 };
 
 
@@ -87,7 +87,7 @@ class DAC1_Device: public DAC_Device
 public:
     DAC1_Device(DAC_Device_TypeDef *DAC_conf);
     void dma_transmission_callback();
-    void write(float value);
+    // void write(float value);
     void config_output();
 
 
@@ -99,7 +99,7 @@ class DAC2_Device: public DAC_Device
 public:
     DAC2_Device(DAC_Device_TypeDef *DAC_conf);
     void dma_transmission_callback();
-    void write(float value);
+    // void write(float value);
     void config_output();
 
 

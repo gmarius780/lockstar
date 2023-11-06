@@ -75,19 +75,11 @@ void DAC_Device::write(float output)
     dma_buffer[0] = 0b00010000 + ((int_output >> 14) & 0x0f);
     dma_buffer[1] = (int_output >> 6) & 0xff;
     dma_buffer[2] = int_output & 0xff;
+    begin_dma_transfer();
 }
 
-void DAC1_Device::write(float output)
-{
-    DAC_Device::write(output);
-    begin_dma_transfer();
+void DAC_Device::dma_transmission_callback(){
 }
-void DAC2_Device::write(float output)
-{
-    DAC_Device::write(output);
-    begin_dma_transfer();
-}
-//__attribute__((section("sram_func")))
 void DAC1_Device::dma_transmission_callback()
 {
     while (!LL_SPI_IsActiveFlag_TXC(DAC_conf->SPIx))
