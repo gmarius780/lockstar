@@ -15,7 +15,8 @@
 
 #ifdef AO_TEST_MODULE
 
-#define CYCTEST
+// #define CYCTEST
+#define SINWAVE
 #define PROBE_SPI
 #include "dac_config.h"
 extern ADC_HandleTypeDef hadc3;
@@ -36,24 +37,22 @@ public:
 		float m1 = 0;
 		float m2 = 8;
 		DAC_1->config_output();
-		// DAC_1->write(m1);
-		// turn_LED2_on();
 		DAC_2->config_output();
-		// DAC_2->write(m2);
-		// turn_LED3_on();
 #ifdef PROBE_SPI
 		DAC_3 = new DAC2_Device(&DAC3_conf);
-		// DAC_3->config_output();
+		DAC_3->config_output();
 		// DAC_3->write(m2);
 #endif
 		while (true)
 		{
-			// if(i < 1023)
-			// 	DAC_2->write(sin_wave[i++]);
-			// else{
-			// 	i = 0;
-			// 	DAC_2->write(sin_wave[i++]);
-			// }
+#ifdef SINWAVE			
+			if(i > 1023)
+				i = 0;
+			m1 = sin_wave[i++];
+			DAC_1->write(m1);
+			DAC_2->write(m1);
+			DAC_3->write(m1);
+#endif
 #ifdef CYCTEST
 			if (isCountingUp)
 			{
@@ -79,6 +78,7 @@ public:
 			}
 			DAC_1->write(m1);
 			DAC_2->write(m1);
+			DAC_3->write(m1);
 #endif
 		}
 	}
