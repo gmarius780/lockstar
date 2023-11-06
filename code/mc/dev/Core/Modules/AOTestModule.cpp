@@ -29,13 +29,13 @@ public:
 
 	void run()
 	{
-		// DAC_1 = new DAC1_Device(&DAC1_conf);
+		DAC_1 = new DAC1_Device(&DAC1_conf);
 		DAC_2 = new DAC2_Device(&DAC2_conf);
 		uint32_t i = 0;
 		bool isCountingUp = true;
 		float m1 = 0;
 		float m2 = 8;
-		// DAC_1->config_output();
+		DAC_1->config_output();
 		// DAC_1->write(m1);
 		// turn_LED2_on();
 		DAC_2->config_output();
@@ -43,7 +43,7 @@ public:
 		// turn_LED3_on();
 #ifdef PROBE_SPI
 		DAC_3 = new DAC2_Device(&DAC3_conf);
-		DAC_3->config_output();
+		// DAC_3->config_output();
 		// DAC_3->write(m2);
 #endif
 		while (true)
@@ -77,7 +77,7 @@ public:
 					isCountingUp = true;
 				}
 			}
-			DAC_3->write(m1);
+			DAC_1->write(m1);
 			DAC_2->write(m1);
 #endif
 		}
@@ -122,6 +122,10 @@ void BDMA_Channel1_IRQHandler(void)
 	module->DAC_1->dma_transmission_callback();
 }
 
+void SPI6_IRQHandler(void)
+{
+	module->DAC_1->dma_transmission_callback();
+}
 /******************************
  *       MAIN FUNCTION        *
  ******************************/
