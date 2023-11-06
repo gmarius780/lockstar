@@ -76,7 +76,7 @@ public:
                uint16_t cnv_pin,
                uint8_t channel1_config,
                uint8_t channel2_config);
-    ADC_Device(ADC_Device_TypeDef *ADC_conf);
+    ADC_Device(ADC_Device_TypeDef *ADC_conf, uint8_t ch1_config, uint8_t ch2_config);
 
     ADC_Device_Channel *channel1, *channel2;
     void start_conversion();

@@ -24,7 +24,7 @@ public:
 
 	void run()
 	{
-		ADC_Dev = new ADC_Device(&ADC_conf);
+		ADC_Dev = new ADC_Device(&ADC_conf, ADC_BIPOLAR_10V, ADC_BIPOLAR_10V);
 
 		turn_LED2_on();
 		turn_LED3_on();

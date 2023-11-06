@@ -11,18 +11,18 @@
 #include "adc_config.h"
 __attribute__((section(".data"))) uint8_t dmaADC_buffer[3] = {0};
 
-ADC_Device::ADC_Device(ADC_Device_TypeDef *ADC_conf)
+ADC_Device::ADC_Device(ADC_Device_TypeDef *ADC_conf, uint8_t ch1_config, uint8_t ch2_config)
 {
     this->ADC_conf = ADC_conf;
     single_channel_mode = false;
-    if (ADC_conf->channel1_config == ADC_OFF || ADC_conf->channel2_config == ADC_OFF)
+    if (ch1_config == ADC_OFF || ch2_config == ADC_OFF)
         single_channel_mode = true;
 
     adc_config_buffer = new uint8_t[DATAWIDTH]();
     ADCdma_buffer = dmaADC_buffer;
 
-    channel1 = new ADC_Device_Channel(this, 1, ADC_conf->channel1_config);
-    channel2 = new ADC_Device_Channel(this, 2, ADC_conf->channel2_config);
+    channel1 = new ADC_Device_Channel(this, 1, ch1_config);
+    channel2 = new ADC_Device_Channel(this, 2, ch2_config);
 
     busy = false;
 
