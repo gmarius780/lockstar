@@ -189,7 +189,7 @@ CFLAGS += $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction
 CPPFLAGS = $(CPP_INCLUDES) -std=gnu++14 -fno-exceptions -fno-rtti -fno-use-cxa-atexit
 
 ifeq ($(DEBUG), 1)
-CFLAGS += -g3 -gdwarf-2
+CFLAGS += -gdwarf-2
 endif
 
 
