@@ -1,5 +1,5 @@
-#ifndef ADC_CONFIG_H
-#define ADC_CONFIG_H
+#ifndef SINWAVE_CONFIG_H
+#define SINWAVE_CONFIG_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -277,4 +277,4 @@ __attribute__((section(".data"))) float sin_wave[1024] = {
 }
 #endif
 
-#endif /* ADC_CONFIG_H */
+#endif /* SINWAVE_CONFIG_H */

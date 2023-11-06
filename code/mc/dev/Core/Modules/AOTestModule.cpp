@@ -12,7 +12,7 @@
 #include "../HAL/leds.hpp"
 #include <stdio.h>
 #include "sin_wave.h"
-
+#include "gauss.h"
 #ifdef AO_TEST_MODULE
 
 // #define CYCTEST
