@@ -27,9 +27,6 @@ void SPI::writeData(uint8_t data)
 //__attribute__((section("sram_func")))
 void SPI::enableSPI_DMA()
 {
-	while ((SPI_regs->SR & SPI_SR_EOT))
-	{
-	}
 	SPI_regs->CFG1 |= (SPI_CFG1_TXDMAEN | SPI_CFG1_RXDMAEN);
 }
 void SPI::enableMasterTransmit()
