@@ -154,12 +154,12 @@ void start(void);
 //#define AWG_MODULE
 //#define SINGLE_PID_MODULE
 //#define LINEARIZATION_MODULE
-// #define ANALOG_OUTPUT_MODULE
+#define ANALOG_OUTPUT_MODULE
 // #define AI_TEST_MODULE
 // #define AO_TEST_MODULE
 // #define SPI_TEST_MODULE
 // #define SPI_TEST_MODULE_HAL
-#define RPI_TEST_MODULE
+// #define RPI_TEST_MODULE
 // #define LED_MODULE
 /* USER CODE END Private defines */
 

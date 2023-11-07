@@ -16,6 +16,21 @@
 
 extern DMA_HandleTypeDef hdma_spi1_tx, hdma_spi1_rx;
 
+typedef struct
+{
+    SPI_TypeDef *SPIx;
+    DMA_TypeDef *DMARx;
+    DMA_TypeDef *DMATx;
+    DMA_Stream_TypeDef *DMA_StreamRx;
+    DMA_Stream_TypeDef *DMA_StreamTx;
+    LL_DMA_InitTypeDef *DMA_InitStructRx;
+    LL_DMA_InitTypeDef *DMA_InitStructTx;
+    void (*dmaRx_clr_flag)(DMA_TypeDef *DMAx);
+    void (*dmaTx_clr_flag)(DMA_TypeDef *DMAx);
+} RPI_TypeDef;
+
+
+
 class RPI {
 public:
 	RPI();
@@ -39,7 +54,7 @@ public:
 	static const uint16_t READ_NBR_BYTES_MULTIPLIER = 100;
 private:
 
-
+	RPI_TypeDef *RPI_conf;
 	SPI *spi;
 	DMA *dma_in;
 	DMA *dma_out;
