@@ -40,8 +40,6 @@ RPI::RPI()
 	current_nbr_of_bytes = 0;
 
 	spi->enableRxIRQ();
-	spi->disableTxIRQ();
-	spi->enableSPI();
 }
 
 RPI::~RPI()
@@ -70,30 +68,16 @@ bool RPI::dma_in_interrupt()
 	this->comm_reset_timer->disable();
 	this->comm_reset_timer->disable_interrupt();
 	this->comm_reset_timer->reset_counter();
-	if (dma_in->transfer_complete())
-	{
 
-		if (dma_in->getNumberOfData() <= 0)
-		{
-			while (spi->isBusy())
-				;
-			spi->disableSPI_DMA();
-			dma_in->disableDMA();
-			dma_in->resetTransferCompleteInterruptFlag();
-			is_communicating = false;
-			spi->enableRxIRQ();
-			return true;
-		}
-		else
-		{
-			return false;
-		}
-	}
-	else
-	{
-		dma_in_error_interrupt();
-		return false;
-	}
+	RPI_conf->dmaRx_clr_flag(RPI_conf->DMARx);
+
+    CLEAR_BIT(RPI_conf->SPIx->CR1, SPI_CR1_SPE);
+    CLEAR_BIT(RPI_conf->SPIx->CFG1, SPI_CFG1_TXDMAEN);
+
+	is_communicating = false;
+	spi->enableRxIRQ();
+	return true;
+
 }
 
 void RPI::comm_reset_timer_interrupt()
@@ -122,19 +106,11 @@ void RPI::dma_in_error_interrupt()
 
 void RPI::dma_out_interrupt()
 {
-	if (dma_out->transfer_complete())
-	{
-		while (spi->isBusy())
-			;
-		spi->disableSPI_DMA();
-		dma_out->disableDMA();
-		dma_out->resetTransferCompleteInterruptFlag();
-		this->dma_out_ready_pin_low();
-	}
-	else
-	{
-		dma_out_error_interrupt();
-	}
+	RPI_conf->dmaTx_clr_flag(RPI_conf->DMATx);
+
+	CLEAR_BIT(RPI_conf->SPIx->CR1, SPI_CR1_SPE);
+    CLEAR_BIT(RPI_conf->SPIx->CFG1, SPI_CFG1_TXDMAEN | SPI_CFG1_RXDMAEN);
+	this->dma_out_ready_pin_low();
 }
 
 void RPI::dma_out_error_interrupt()
@@ -144,21 +120,27 @@ void RPI::dma_out_error_interrupt()
 void RPI::start_dma_in_communication(uint32_t nbr_of_bytes)
 {
 	spi->disableRxIRQ();
-	dma_in->enable_tc_irq();
+	EnableIT_TC(RPI_conf->DMA_StreamRx);
 
-	this->dma_in->setNumberOfData(nbr_of_bytes);
-	this->dma_in->enableDMA();
-	spi->enableSPI_DMA();
+	SetDataLength(RPI_conf->DMA_StreamRx, nbr_of_bytes);
+	EnableChannel(RPI_conf->DMA_StreamRx);
+	LL_SPI_EnableDMAReq_RX(RPI_conf->SPIx);
+	
+	RPI_conf->SPIx->CR1 |= SPI_CR1_SPE;
+	RPI_conf->SPIx->CR1 |= SPI_CR1_CSTART;
 }
 
 void RPI::start_dma_out_communication(uint32_t nbr_of_bytes)
 {
-	dma_out->enable_tc_irq();
+	EnableIT_TC(RPI_conf->DMA_StreamTx);
 
-	this->dma_out->setNumberOfData(nbr_of_bytes);
-	this->dma_out->enableDMA();
-	spi->enableSPI_DMA();
+	SetDataLength(RPI_conf->DMA_StreamTx, nbr_of_bytes);
+	EnableChannel(RPI_conf->DMA_StreamTx);
+	LL_SPI_EnableDMAReq_TX(RPI_conf->SPIx);
+
+	RPI_conf->SPIx->CR1 |= SPI_CR1_SPE;
 	this->dma_out_ready_pin_high();
+	RPI_conf->SPIx->CR1 |= SPI_CR1_CSTART;
 }
 
 volatile uint8_t *RPI::get_read_buffer()
