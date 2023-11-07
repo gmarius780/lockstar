@@ -17,7 +17,7 @@
 
 // #define CYCTEST
 #define SINWAVE
-#define PROBE_SPI
+// #define PROBE_SPI
 #include "dac_config.h"
 extern ADC_HandleTypeDef hadc3;
 
@@ -51,7 +51,7 @@ public:
 			m1 = sin_wave[i++];
 			DAC_1->write(m1);
 			DAC_2->write(m1);
-			DAC_3->write(m1);
+			// DAC_3->write(m1);
 #endif
 #ifdef CYCTEST
 			if (isCountingUp)

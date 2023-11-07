@@ -157,6 +157,7 @@ void start(void);
 // #define ANALOG_OUTPUT_MODULE
 // #define AI_TEST_MODULE
 #define AO_TEST_MODULE
+#define AO_TEST_MODULE
 // #define SPI_TEST_MODULE
 // #define SPI_TEST_MODULE_HAL
 //#define TEST_MODULE
