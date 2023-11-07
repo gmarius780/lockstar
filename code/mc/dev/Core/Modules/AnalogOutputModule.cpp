@@ -187,7 +187,6 @@ AnalogOutputModule *module;
  ******************************
  * Callbacks are functions that are executed in response to events such as SPI communication finished, change on trigger line etc */
 
-__attribute__((section("sram_func")))
 void HAL_GPIO_EXTI_Callback (uint16_t gpio_pin)
 {
 	if(gpio_pin == DigitalIn_Pin) {
@@ -204,52 +203,58 @@ void HAL_GPIO_EXTI_Callback (uint16_t gpio_pin)
 }
 
 // DMA Interrupts. You probably don't want to change these, they are neccessary for the low-level communications between MCU, converters and RPi
-__attribute__((section("sram_func")))
-__weak void DMA2_Stream4_IRQHandler(void)
-{
-	module->dac_2->dma_transmission_callback();
-}
-__attribute__((section("sram_func")))
-void DMA2_Stream5_IRQHandler(void)
+
+
+/********************
+||      DAC1      ||
+********************/
+void BDMA_Channel1_IRQHandler(void)
 {
 	module->dac_1->dma_transmission_callback();
 }
-__attribute__((section("sram_func")))
-void DMA2_Stream2_IRQHandler(void)
+
+void SPI6_IRQHandler(void)
 {
-	// SPI 1 rx
-	module->adc->dma_transmission_callback();
+	module->dac_1->dma_transmission_callback();
 }
-__attribute__((section("sram_func")))
+/********************
+||      DAC2      ||
+********************/
 void DMA2_Stream3_IRQHandler(void)
 {
-	// SPI 1 tx - SPI 5 rx
-	// no action required
+	module->dac_2->dma_transmission_callback();
 }
-__attribute__((section("sram_func")))
-void DMA2_Stream0_IRQHandler(void)
+void SPI5_IRQHandler(void)
+{
+	module->dac_2->dma_transmission_callback();
+}
+/********************
+||       ADC       ||
+********************/
+void DMA1_Stream4_IRQHandler(void)
+{
+	module->adc->dma_receive_callback();
+}
+
+void DMA1_Stream5_IRQHandler(void)
+{
+	module->adc->dma_transmission_callback();
+}
+/********************
+||       RPI       ||
+********************/
+void DMA1_Stream0_IRQHandler(void)
 {
 	module->rpi_dma_in_interrupt();
 }
-__attribute__((section("sram_func")))
-void DMA2_Stream1_IRQHandler(void)
+void DMA1_Stream1_IRQHandler(void)
 {
-	// SPI 4 Tx
 	module->rpi->dma_out_interrupt();
 }
-__attribute__((section("sram_func")))
-void DMA2_Stream6_IRQHandler(void)
-{
-	// SPI 6 Rx
-	// no action required
-}
-
-__attribute__((section("sram_func")))
-void SPI4_IRQHandler(void) {
+void SPI1_IRQHandler(void) {
 	module->rpi->spi_interrupt();
 }
 
-__attribute__((section("sram_func")))
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	if (htim->Instance == TIM4) {
