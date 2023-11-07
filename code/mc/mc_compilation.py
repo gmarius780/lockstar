@@ -44,12 +44,12 @@ def write_cfg_file_for_module(config_dict, output_folder):
 
     with open(join(output_folder, outfile_name), 'w+') as f:
         f.writelines([
-            "source [find interface/sysfsgpio-raspberrypi.cfg]\n",
+            "source [find interface/raspberrypi-swd.cfg]\n",
             "transport select swd\n",
-            "set WORKAREASIZE 0x2000\n",
-            "source [find target/stm32f4x.cfg]\n",
-            "adapter_nsrst_delay 100\n",
-            "adapter_nsrst_assert_width 100\n",
+            "set WORKAREASIZE 0x8000\n",
+            "source [find target/stm32h7x.cfg]\n",
+            "adapter srst delay 100\n",
+            "adapter srst pulse_width 100\n",
             "init\n",
             "targets\n",
             "reset halt\n",
