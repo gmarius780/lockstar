@@ -13,7 +13,7 @@
 SPI::SPI(SPI_TypeDef *SPIx)
 {
 	SPI_regs = SPIx;
-	LL_SPI_EnableGPIOControl(SPIx);
+	// LL_SPI_EnableGPIOControl(SPIx);
 	// LL_SPI_SetMode(SPIx, LL_SPI_MODE_MASTER);
     // LL_SPI_DisableNSSPulseMgt(SPIx);
 	// LL_SPI_SetNSSMode(SPIx, LL_SPI_NSS_SOFT);
