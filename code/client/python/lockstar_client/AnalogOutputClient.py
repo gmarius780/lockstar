@@ -43,7 +43,7 @@ if __name__ == "__main__":
     #         logging.StreamHandler()
     #     ]
     # )
-    client = AnalogOutputClient('192.168.88.200', 10780, 1234)
+    client = AnalogOutputClient('192.168.137.2', 10780, 1234)
     asyncio.run(client.register_client_id())
     
     print(asyncio.run(client.output_on()))
