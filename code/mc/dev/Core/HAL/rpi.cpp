@@ -7,9 +7,8 @@
 
 #include "rpi.h"
 #include "main.h"
-#include "rpi_config.h"
 
-RPI::RPI()
+RPI::RPI(RPI_TypeDef *RPI_conf)
 {
 	this->RPI_conf = RPI_conf;
 	read_buffer = new uint8_t[255 * READ_NBR_BYTES_MULTIPLIER];
@@ -36,10 +35,14 @@ RPI::RPI()
 	RPI_conf->DMA_InitStructTx->PeriphOrM2MSrcAddress = (uint32_t) & (RPI_conf->SPIx->TXDR);
 	RPI_conf->DMA_InitStructTx->MemoryOrM2MDstAddress = (uint32_t)write_buffer;
 
+	LL_DMA_Init(RPI_conf->DMARx, __LL_DMA_GET_STREAM(RPI_conf->DMA_StreamRx), RPI_conf->DMA_InitStructRx);
+    LL_DMA_Init(RPI_conf->DMATx, __LL_DMA_GET_STREAM(RPI_conf->DMA_StreamTx), RPI_conf->DMA_InitStructTx);
+
 	is_communicating = false;
 	current_nbr_of_bytes = 0;
-
+	// LL_SPI_SetTransferSize(DAC_conf->SPIx, 3);
 	spi->enableRxIRQ();
+	RPI_conf->SPIx->CR1 |= SPI_CR1_SPE;
 }
 
 RPI::~RPI()
@@ -55,6 +58,7 @@ void RPI::spi_interrupt()
 		comm_reset_timer->enable_interrupt();
 		comm_reset_timer->enable();
 		current_nbr_of_bytes = READ_NBR_BYTES_MULTIPLIER * ((uint32_t) * (volatile uint8_t *)spi->getRXDRAddress());
+		RPI_conf->SPIx->CR1 &= ~SPI_CR1_SPE;
 		if (current_nbr_of_bytes != 0)
 		{
 			is_communicating = true;
@@ -127,7 +131,6 @@ void RPI::start_dma_in_communication(uint32_t nbr_of_bytes)
 	LL_SPI_EnableDMAReq_RX(RPI_conf->SPIx);
 	
 	RPI_conf->SPIx->CR1 |= SPI_CR1_SPE;
-	RPI_conf->SPIx->CR1 |= SPI_CR1_CSTART;
 }
 
 void RPI::start_dma_out_communication(uint32_t nbr_of_bytes)
@@ -140,7 +143,6 @@ void RPI::start_dma_out_communication(uint32_t nbr_of_bytes)
 
 	RPI_conf->SPIx->CR1 |= SPI_CR1_SPE;
 	this->dma_out_ready_pin_high();
-	RPI_conf->SPIx->CR1 |= SPI_CR1_CSTART;
 }
 
 volatile uint8_t *RPI::get_read_buffer()

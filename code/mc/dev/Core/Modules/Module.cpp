@@ -8,6 +8,7 @@
 #include "Module.h"
 #include "dac_config.h"
 #include "adc_config.h"
+#include "rpi_config.h"
 extern ADC_HandleTypeDef hadc3;
 
 Module::Module() {
@@ -84,7 +85,7 @@ void Module::initialize_adc_dac(uint8_t ch1_config, uint8_t ch2_config) {
 }
 
 void Module::initialize_rpi() {
-	rpi = new RPI();
+	rpi = new RPI(&RPI_conf);
 }
 
 /** RPI METHODS START***/

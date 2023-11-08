@@ -34,6 +34,7 @@ typedef struct
 class RPI {
 public:
 	RPI();
+	RPI(RPI_TypeDef *RPI_conf);
 	virtual ~RPI();
 
 	void spi_interrupt();
