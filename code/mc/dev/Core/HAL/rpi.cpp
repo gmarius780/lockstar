@@ -7,7 +7,7 @@
 
 #include "rpi.h"
 #include "main.h"
-
+#include "../HAL/leds.hpp"
 RPI::RPI(RPI_TypeDef *RPI_conf)
 {
 	this->RPI_conf = RPI_conf;
@@ -30,13 +30,13 @@ RPI::RPI(RPI_TypeDef *RPI_conf)
 
 	RPI_conf->DMA_InitStructRx->PeriphOrM2MSrcAddress = (uint32_t) & (RPI_conf->SPIx->RXDR);
 	RPI_conf->DMA_InitStructRx->MemoryOrM2MDstAddress = (uint32_t)read_buffer;
-	RPI_conf->DMA_InitStructRx->NbData = 255*READ_NBR_BYTES_MULTIPLIER;
+	RPI_conf->DMA_InitStructRx->NbData = 255 * READ_NBR_BYTES_MULTIPLIER;
 
 	RPI_conf->DMA_InitStructTx->PeriphOrM2MSrcAddress = (uint32_t) & (RPI_conf->SPIx->TXDR);
 	RPI_conf->DMA_InitStructTx->MemoryOrM2MDstAddress = (uint32_t)write_buffer;
 
 	LL_DMA_Init(RPI_conf->DMARx, __LL_DMA_GET_STREAM(RPI_conf->DMA_StreamRx), RPI_conf->DMA_InitStructRx);
-    LL_DMA_Init(RPI_conf->DMATx, __LL_DMA_GET_STREAM(RPI_conf->DMA_StreamTx), RPI_conf->DMA_InitStructTx);
+	LL_DMA_Init(RPI_conf->DMATx, __LL_DMA_GET_STREAM(RPI_conf->DMA_StreamTx), RPI_conf->DMA_InitStructTx);
 
 	is_communicating = false;
 	current_nbr_of_bytes = 0;
@@ -57,10 +57,11 @@ void RPI::spi_interrupt()
 		// get new command from rpi
 		comm_reset_timer->enable_interrupt();
 		comm_reset_timer->enable();
+
 		current_nbr_of_bytes = READ_NBR_BYTES_MULTIPLIER * ((uint32_t) * (volatile uint8_t *)spi->getRXDRAddress());
-		RPI_conf->SPIx->CR1 &= ~SPI_CR1_SPE;
 		if (current_nbr_of_bytes != 0)
 		{
+			CLEAR_BIT(RPI_conf->SPIx->CR1, SPI_CR1_SPE);
 			is_communicating = true;
 			this->start_dma_in_communication(this->current_nbr_of_bytes);
 		}
@@ -69,19 +70,24 @@ void RPI::spi_interrupt()
 
 bool RPI::dma_in_interrupt()
 {
+	RPI_conf->dmaRx_clr_flag(RPI_conf->DMARx);
 	this->comm_reset_timer->disable();
 	this->comm_reset_timer->disable_interrupt();
 	this->comm_reset_timer->reset_counter();
 
-	RPI_conf->dmaRx_clr_flag(RPI_conf->DMARx);
+	while (LL_SPI_IsActiveFlag_RXWNE(RPI_conf->SPIx) || LL_SPI_GetRxFIFOPackingLevel(RPI_conf->SPIx))
+	{
+	}
 
-    CLEAR_BIT(RPI_conf->SPIx->CR1, SPI_CR1_SPE);
-    CLEAR_BIT(RPI_conf->SPIx->CFG1, SPI_CFG1_TXDMAEN);
-
-	is_communicating = false;
+	CLEAR_BIT(RPI_conf->SPIx->CR1, SPI_CR1_SPE);
+	CLEAR_BIT(RPI_conf->SPIx->CFG1, SPI_CFG1_RXDMAEN);
+	while (LL_SPI_IsEnabled(RPI_conf->SPIx) || LL_SPI_IsEnabledDMAReq_RX(RPI_conf->SPIx))
+	{
+	}
 	spi->enableRxIRQ();
+	// SET_BIT(RPI_conf->SPIx->CR1, SPI_CR1_SPE);
+	is_communicating = false;
 	return true;
-
 }
 
 void RPI::comm_reset_timer_interrupt()
@@ -111,10 +117,20 @@ void RPI::dma_in_error_interrupt()
 void RPI::dma_out_interrupt()
 {
 	RPI_conf->dmaTx_clr_flag(RPI_conf->DMATx);
-
-	CLEAR_BIT(RPI_conf->SPIx->CR1, SPI_CR1_SPE);
-    CLEAR_BIT(RPI_conf->SPIx->CFG1, SPI_CFG1_TXDMAEN | SPI_CFG1_RXDMAEN);
+	while (!LL_SPI_IsActiveFlag_TXC(RPI_conf->SPIx))
+	{
+	}
 	this->dma_out_ready_pin_low();
+	CLEAR_BIT(RPI_conf->SPIx->CR1, SPI_CR1_SPE);
+	CLEAR_BIT(RPI_conf->SPIx->CFG1, SPI_CFG1_TXDMAEN);
+	while (LL_SPI_IsEnabled(RPI_conf->SPIx) || LL_SPI_IsEnabledDMAReq_TX(RPI_conf->SPIx))
+	{
+	}
+	spi->enableRxIRQ();
+	RPI_conf->SPIx->CR1 |= SPI_CR1_SPE;
+	while (!LL_SPI_IsEnabled(RPI_conf->SPIx))
+	{
+	}
 }
 
 void RPI::dma_out_error_interrupt()
@@ -129,7 +145,7 @@ void RPI::start_dma_in_communication(uint32_t nbr_of_bytes)
 	SetDataLength(RPI_conf->DMA_StreamRx, nbr_of_bytes);
 	EnableChannel(RPI_conf->DMA_StreamRx);
 	LL_SPI_EnableDMAReq_RX(RPI_conf->SPIx);
-	
+
 	RPI_conf->SPIx->CR1 |= SPI_CR1_SPE;
 }
 
@@ -140,8 +156,14 @@ void RPI::start_dma_out_communication(uint32_t nbr_of_bytes)
 	SetDataLength(RPI_conf->DMA_StreamTx, nbr_of_bytes);
 	EnableChannel(RPI_conf->DMA_StreamTx);
 	LL_SPI_EnableDMAReq_TX(RPI_conf->SPIx);
+	while (!LL_SPI_IsEnabledDMAReq_TX(RPI_conf->SPIx))
+	{
+	}
 
 	RPI_conf->SPIx->CR1 |= SPI_CR1_SPE;
+	while (!LL_SPI_IsEnabled(RPI_conf->SPIx))
+	{
+	}
 	this->dma_out_ready_pin_high();
 }
 
