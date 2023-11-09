@@ -30,8 +30,9 @@ public:
 	AnalogOutputModule() : ScopeModule() {
 		initialize_rpi();
 		turn_LED6_off();
-		turn_LED5_on();
-		output_value_one = output_value_two = 0;
+		turn_LED4_on();
+		output_value_one = 5;
+		output_value_two = 5;
 	}
 
 	void run() {
@@ -41,7 +42,7 @@ public:
 
 		/*** work loop ***/
 		while(true) {
-			HAL_Delay(50);
+			// HAL_Delay(50);
 		}
 	}
 
