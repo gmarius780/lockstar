@@ -116,8 +116,8 @@ if __name__ == "__main__":
     #         logging.StreamHandler()
     #     ]
     # )
-    client = SinglePIDClient('192.168.88.200', 10780, 1234)
-    #print(asyncio.run(client.initialize(0.01,100000,0,0,10,True, 0, 0, 0.005, True)))
+    client = SinglePIDClient('192.168.137.2', 10780, 1234)
+    print(asyncio.run(client.initialize(0.01,100000,0,0,10,True, 0, 0, 0.005, True)))
 
     asyncio.run(client.register_client_id())
 
