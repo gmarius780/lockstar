@@ -62,8 +62,7 @@ void DAC_Device::write(float output)
     }
 
     busy = true;
-
-    output = std::min(max_output, std::max(output, min_output));
+    output = MIN(max_output, MAX(output, min_output));
     last_output = output;
 
     int32_t int_output = (int32_t)((output - zero_voltage) * inv_step_size);
@@ -78,7 +77,8 @@ void DAC_Device::write(float output)
     begin_dma_transfer();
 }
 
-void DAC_Device::dma_transmission_callback(){
+void DAC_Device::dma_transmission_callback()
+{
 }
 void DAC1_Device::dma_transmission_callback()
 {
