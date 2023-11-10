@@ -16,12 +16,8 @@
 #include <stdio.h>
 
 #ifdef AI_TEST_MODULE
-extern ADC_HandleTypeDef hadc3;
-volatile uint32_t start_counter = 0;
-volatile uint32_t end_counter = 0;
-volatile uint32_t diff = 0;
 
-#define ARM_CM_DWT_CYCCNT (*(volatile uint32_t *)0xE0001004)
+extern ADC_HandleTypeDef hadc3;
 
 class AITestModule
 {
@@ -39,36 +35,14 @@ public:
 		dac_2->config_output();
 		turn_LED2_on();
 		turn_LED3_on();
-		// ADC_Dev->start_conversion();
-
-		SET_BIT(DWT->CTRL, DWT_CTRL_CYCCNTENA_Msk);
-
-		__disable_irq();
-		// Read the current value of the cycle counter
-		start_counter = ARM_CM_DWT_CYCCNT;
-		/*
-		Begin Cycle measurement
-		*/
-		ADC_Dev->start_conversion();
-		m1 = ADC_Dev->channel1->get_result();
-		m2 = ADC_Dev->channel2->get_result();
-		dac_1->write(m1);
-		dac_2->write(m1);
-
-		/*
-		End Cycle measurement
-		*/
-		end_counter = DWT->CYCCNT;
-
-		diff = (end_counter - start_counter);
-		__asm__ __volatile__("" ::"m"(diff));
+		
 		while (true)
 		{
-			// ADC_Dev->start_conversion();
-			// m1 = ADC_Dev->channel1->get_result();
-			// m2 = ADC_Dev->channel2->get_result();
-			// dac_1->write(m1);
-			// dac_2->write(m1);
+			ADC_Dev->start_conversion();
+			m1 = ADC_Dev->channel1->get_result();
+			m2 = ADC_Dev->channel2->get_result();
+			dac_1->write(m1);
+			dac_2->write(m1);
 			// printf("Channel 1: %f\n", m1);
 			// printf("Channel 2: %f\n", m2);
 		}
