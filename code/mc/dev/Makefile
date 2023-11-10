@@ -28,7 +28,7 @@ TARGET = dev
 # debug build?
 DEBUG = 1
 # optimization
-OPT = -Og
+OPT = -O0
 
 
 #######################################
@@ -165,7 +165,8 @@ C_DEFS =  \
 -DUSE_HAL_DRIVER \
 -DSTM32H725xx \
 -DUSE_FULL_LL_DRIVER \
--DDEBUG
+-DDEBUG \
+-D$(app)
 
 
 # AS includes

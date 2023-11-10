@@ -152,9 +152,9 @@ void start(void);
 //DEFINE WHICH MODULE TO RUN!!
 //#define AWG_PID_MODULE
 //#define AWG_MODULE
-//#define SINGLE_PID_MODULE
+// #define SINGLE_PID_MODULE
 //#define LINEARIZATION_MODULE
-#define ANALOG_OUTPUT_MODULE
+// #define ANALOG_OUTPUT_MODULE
 // #define AI_TEST_MODULE
 // #define AO_TEST_MODULE
 // #define SPI_TEST_MODULE
