@@ -28,7 +28,7 @@ TARGET = dev
 # debug build?
 DEBUG = 1
 # optimization
-OPT = -O0
+OPT = -Ofast
 
 
 #######################################
@@ -186,9 +186,9 @@ CPP_INCLUDES =
 # compile gcc flags
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
 
-CFLAGS += $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
+CFLAGS += $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections --specs=nano.specs
 
-CPPFLAGS = $(CPP_INCLUDES) -std=gnu++14 -fno-exceptions -fno-rtti -fno-use-cxa-atexit
+CPPFLAGS = $(CPP_INCLUDES) $(OPT) -std=gnu++14 -fno-exceptions -fno-rtti -fno-use-cxa-atexit
 
 ifeq ($(DEBUG), 1)
 CFLAGS += -gdwarf-2
