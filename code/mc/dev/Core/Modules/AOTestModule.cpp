@@ -17,7 +17,7 @@
 
 // #define CYCTEST
 #define SINWAVE
-// #define PROBE_SPI
+#define PROBE_SPI
 #include "dac_config.h"
 extern ADC_HandleTypeDef hadc3;
 
@@ -107,21 +107,22 @@ void SPI2_IRQHandler(void)
 	module->DAC_3->dma_transmission_callback();
 }
 #endif
-
+__attribute__((section(".sram_func")))
 void DMA2_Stream3_IRQHandler(void)
 {
 	module->DAC_2->dma_transmission_callback();
 }
+__attribute__((section(".sram_func")))
 void SPI5_IRQHandler(void)
 {
 	module->DAC_2->dma_transmission_callback();
 }
-
+__attribute__((section(".sram_func")))
 void BDMA_Channel1_IRQHandler(void)
 {
 	module->DAC_1->dma_transmission_callback();
 }
-
+__attribute__((section(".sram_func")))
 void SPI6_IRQHandler(void)
 {
 	module->DAC_1->dma_transmission_callback();
@@ -129,6 +130,7 @@ void SPI6_IRQHandler(void)
 /******************************
  *       MAIN FUNCTION        *
  ******************************/
+// __attribute__((section(".sram_func")))
 void start(void)
 {
 	/* To speed up the access to functions, that are often called, we store them in the RAM instead of the FLASH memory.

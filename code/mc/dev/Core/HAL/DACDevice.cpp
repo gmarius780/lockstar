@@ -54,7 +54,7 @@ DAC2_Device::DAC2_Device(DAC_Device_TypeDef *DAC_conf) : DAC_Device(DAC_conf)
     LL_SPI_EnableIT_EOT(DAC_conf->SPIx);
 }
 
-//__attribute__((section("sram_func")))
+__attribute__((section(".sram_func")))
 void DAC_Device::write(float output)
 {
     while (busy)
@@ -62,7 +62,7 @@ void DAC_Device::write(float output)
     }
 
     busy = true;
-    output = MIN(max_output, MAX(output, min_output));
+    output = std::min(max_output, std::max(output, min_output));
     last_output = output;
 
     int32_t int_output = (int32_t)((output - zero_voltage) * inv_step_size);
@@ -80,6 +80,7 @@ void DAC_Device::write(float output)
 void DAC_Device::dma_transmission_callback()
 {
 }
+__attribute__((section(".sram_func")))
 void DAC1_Device::dma_transmission_callback()
 {
     while (!LL_SPI_IsActiveFlag_TXC(DAC_conf->SPIx))
@@ -97,7 +98,7 @@ void DAC1_Device::dma_transmission_callback()
 
     busy = false;
 }
-
+__attribute__((section(".sram_func")))
 void DAC2_Device::dma_transmission_callback()
 {
     while (!LL_SPI_IsActiveFlag_TXC(DAC_conf->SPIx))
@@ -233,15 +234,8 @@ void DAC_Device::prepare_buffer()
 
 void DAC_Device::begin_dma_transfer()
 {
-    EnableChannel(DAC_conf->DMA_Streamx);
-    LL_SPI_EnableDMAReq_TX(DAC_conf->SPIx);
-    while (!IsEnabledChannel(DAC_conf->DMA_Streamx))
-    {
-    }
-    ATOMIC_SET_BIT(DAC_conf->SPIx->CR1, SPI_CR1_SPE);
-    SET_BIT(DAC_conf->SPIx->CR1, SPI_CR1_CSTART);
 }
-// __attribute__((section("sram_func")))
+__attribute__((section(".sram_func")))
 void DAC1_Device::begin_dma_transfer()
 {
     LL_SPI_SetTransferSize(DAC_conf->SPIx, 3);
@@ -260,7 +254,7 @@ void DAC1_Device::begin_dma_transfer()
     }
     DAC_conf->SPIx->CR1 |= SPI_CR1_CSTART;
 }
-// __attribute__((section("sram_func")))
+__attribute__((section(".sram_func")))
 void DAC2_Device::begin_dma_transfer()
 {
     LL_SPI_SetTransferSize(DAC_conf->SPIx, 3);

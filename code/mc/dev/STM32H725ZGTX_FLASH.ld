@@ -81,11 +81,12 @@ SECTIONS
   
   .sram_func : 
   {
-    __sram_func_start = .;
-    *(sram_func)
     . = ALIGN(4);
+    __sram_func_start = .;
+    *(.sram_func)
+    *(.sram_func*)
     __sram_func_end = .;
-  } >RAM_D1 AT>FLASH 
+  } >ITCMRAM AT>FLASH 
   __sram_func_loadaddr = LOADADDR(.sram_func);
   
   /* Constant data goes into FLASH */
