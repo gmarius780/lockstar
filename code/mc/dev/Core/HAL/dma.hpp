@@ -73,12 +73,12 @@ private:
 __STATIC_INLINE void EnableIT_TC(BDMA_Channel_TypeDef *BDMA_Channel)
 {
 
-  ATOMIC_SET_BIT(BDMA_Channel->CCR, BDMA_CCR_TCIE);
+  SET_BIT(BDMA_Channel->CCR, BDMA_CCR_TCIE);
 }
 
 __STATIC_INLINE void EnableIT_TC(DMA_Stream_TypeDef *DMA_Stream)
 {
-  ATOMIC_SET_BIT(DMA_Stream->CR, DMA_SxCR_TCIE);
+  SET_BIT(DMA_Stream->CR, DMA_SxCR_TCIE);
 }
 
 __STATIC_INLINE void EnableChannel(BDMA_Channel_TypeDef *BDMA_Channel)
@@ -111,11 +111,16 @@ __STATIC_INLINE void DisableChannel(DMA_Stream_TypeDef *DMA_Stream)
 
 __STATIC_INLINE void SetDataLength(BDMA_Channel_TypeDef *BDMA_Channel, uint32_t NbData)
 {
-  MODIFY_REG(BDMA_Channel->CNDTR, BDMA_CNDTR_NDT, NbData);
+  ATOMIC_MODIFY_REG(BDMA_Channel->CNDTR, BDMA_CNDTR_NDT, NbData);
 }
 __STATIC_INLINE void SetDataLength(DMA_Stream_TypeDef *DMA_Stream, uint32_t NbData)
 {
   MODIFY_REG(DMA_Stream->NDTR, DMA_SxNDT, NbData);
+}
+
+__STATIC_INLINE uint32_t DMA_GetDataLength(BDMA_Channel_TypeDef *BDMA_Channel)
+{
+  return (READ_BIT(BDMA_Channel->CNDTR, BDMA_CNDTR_NDT));
 }
 
 #endif /* HAL_DMA_HPP_ */
