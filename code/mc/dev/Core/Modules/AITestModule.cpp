@@ -18,7 +18,7 @@
 #ifdef AI_TEST_MODULE
 
 extern ADC_HandleTypeDef hadc3;
-
+uint32_t start_cycle, end_cycle, total_cycles;
 class AITestModule
 {
 public:
@@ -35,7 +35,18 @@ public:
 		dac_2->config_output();
 		turn_LED2_on();
 		turn_LED3_on();
-		
+		enable_cycle_counter();
+
+
+		// start_cycle = get_cycle_count();
+
+		// ADC_Dev->start_conversion();
+		// m1 = ADC_Dev->channel1->get_result();
+		// m2 = ADC_Dev->channel2->get_result();
+		// dac_1->write(m1);
+		// dac_2->write(m1);
+		// end_cycle = get_cycle_count();
+		// total_cycles = end_cycle - start_cycle;
 		while (true)
 		{
 			ADC_Dev->start_conversion();
