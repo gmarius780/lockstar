@@ -13,6 +13,7 @@
 __attribute__((section(".BDMABlock"))) uint8_t dmaD3_buffer[DAC1_BUFFER_SIZE] = {0};
 __attribute__((section(".DMA_D1"))) uint8_t dmaD1_buffer[DAC2_BUFFER_SIZE] = {0};
 
+// uint32_t start_cycle, end_cycle, total_cycles;
 DAC_Device::DAC_Device(DAC_Device_TypeDef *DAC_conf)
 {
     inv_step_size = 0;
@@ -74,7 +75,7 @@ void DAC_Device::write(float output)
 
     if (invert)
         int_output = -int_output;
-
+    
     // DB23 Read/Write, DB22-D20 Address 001 --> 0x10 first byte
     // int_output is 18 bit value and has to split into 3 parts of 4, 8 and 6 bits
     // DB19-D14 buffer[0], DB13-D6 buffer[1], DB5-D2 buffer[2], last 2 bits X
@@ -91,17 +92,11 @@ void DAC_Device::dma_transmission_callback()
 // __attribute__((section(".sram_func")))
 void DAC1_Device::dma_transmission_callback()
 {
-    while (!LL_SPI_IsActiveFlag_TXC(DAC_conf->SPIx))
-    {
-    }
     DisableChannel(DAC_conf->BDMA_Channelx);
     DAC_conf->bdma_clr_flag(DAC_conf->BDMAx);
     LL_SPI_ClearFlag_EOT(DAC_conf->SPIx);
     CLEAR_BIT(DAC_conf->SPIx->CR1, SPI_CR1_SPE);
     SET_BIT(DAC_conf->SPIx->IFCR, SPI_IFCR_TXTFC);
-    while (LL_SPI_IsEnabled(DAC_conf->SPIx))
-    {
-    }
     CLEAR_BIT(DAC_conf->SPIx->CFG1, SPI_CFG1_TXDMAEN);
 
     busy = false;
@@ -109,16 +104,10 @@ void DAC1_Device::dma_transmission_callback()
 // __attribute__((section(".sram_func")))
 void DAC2_Device::dma_transmission_callback()
 {
-    while (!LL_SPI_IsActiveFlag_TXC(DAC_conf->SPIx))
-    {
-    }
     DAC_conf->dma_clr_flag(DAC_conf->DMAx);
     LL_SPI_ClearFlag_EOT(DAC_conf->SPIx);
     CLEAR_BIT(DAC_conf->SPIx->CR1, SPI_CR1_SPE);
     SET_BIT(DAC_conf->SPIx->IFCR, SPI_IFCR_TXTFC);
-    while (LL_SPI_IsEnabled(DAC_conf->SPIx))
-    {
-    }
     CLEAR_BIT(DAC_conf->SPIx->CFG1, SPI_CFG1_TXDMAEN);
 
     busy = false;
@@ -249,36 +238,18 @@ void DAC1_Device::begin_dma_transfer()
     SetDataLength(DAC_conf->BDMA_Channelx, DAC1_BUFFER_SIZE);
     SPI_SetTransferSize(DAC_conf->SPIx, DAC1_BUFFER_SIZE);
     EnableChannel(DAC_conf->BDMA_Channelx);
-    while (!IsEnabledChannel(DAC_conf->BDMA_Channelx))
-    {
-    }
     LL_SPI_EnableDMAReq_TX(DAC_conf->SPIx);
-    while (!LL_SPI_IsEnabledDMAReq_TX(DAC_conf->SPIx))
-    {
-    }
     DAC_conf->SPIx->CR1 |= SPI_CR1_SPE;
-    while (!LL_SPI_IsEnabled(DAC_conf->SPIx))
-    {
-    }
     DAC_conf->SPIx->CR1 |= SPI_CR1_CSTART;
 }
 // __attribute__((section(".sram_func")))
 void DAC2_Device::begin_dma_transfer()
 {
     SetDataLength(DAC_conf->DMA_Streamx, DAC2_BUFFER_SIZE);
-    LL_SPI_SetTransferSize(DAC_conf->SPIx, DAC2_BUFFER_SIZE);
+    SPI_SetTransferSize(DAC_conf->SPIx, DAC2_BUFFER_SIZE);
     EnableChannel(DAC_conf->DMA_Streamx);
-    while (!IsEnabledChannel(DAC_conf->DMA_Streamx))
-    {
-    }
     LL_SPI_EnableDMAReq_TX(DAC_conf->SPIx);
-    while (!LL_SPI_IsEnabledDMAReq_TX(DAC_conf->SPIx))
-    {
-    }
     DAC_conf->SPIx->CR1 |= SPI_CR1_SPE;
-    while (!LL_SPI_IsEnabled(DAC_conf->SPIx))
-    {
-    }
     DAC_conf->SPIx->CR1 |= SPI_CR1_CSTART;
 }
 

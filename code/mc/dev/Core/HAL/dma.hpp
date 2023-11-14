@@ -83,7 +83,7 @@ __STATIC_INLINE void EnableIT_TC(DMA_Stream_TypeDef *DMA_Stream)
 
 __STATIC_INLINE void EnableChannel(BDMA_Channel_TypeDef *BDMA_Channel)
 {
-  ATOMIC_SET_BIT(BDMA_Channel->CCR, BDMA_CCR_EN);
+  SET_BIT(BDMA_Channel->CCR, BDMA_CCR_EN);
 }
 
 __STATIC_INLINE uint32_t IsEnabledChannel(BDMA_Channel_TypeDef *BDMA_Channel)
