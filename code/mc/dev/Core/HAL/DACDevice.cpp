@@ -7,7 +7,6 @@
 
 #include "DACDevice.hpp"
 
-
 #define DAC1_BUFFER_SIZE 3
 #define DAC2_BUFFER_SIZE 3
 
@@ -76,10 +75,13 @@ void DAC_Device::write(float output)
     if (invert)
         int_output = -int_output;
 
-    // Doesn't check that value is 20bit, may get unexpected results
-    dma_buffer[0] = 0b00010000 + ((int_output >> 14) & 0x0f);
-    dma_buffer[1] = (int_output >> 6) & 0xff;
-    dma_buffer[2] = int_output & 0xff;
+    // DB23 Read/Write, DB22-D20 Address 001 --> 0x10 first byte
+    // int_output is 18 bit value and has to split into 3 parts of 4, 8 and 6 bits
+    // DB19-D14 buffer[0], DB13-D6 buffer[1], DB5-D2 buffer[2], last 2 bits X
+    dma_buffer[0] = 0x10;                         // 0x10 first byte
+    dma_buffer[0] += ((int_output >> 14) & 0x0f); // Get the most significant 4 bits
+    dma_buffer[1] = (int_output >> 6) & 0xff;     // Get the middle 8 bits
+    dma_buffer[2] = int_output & 0xff;            // Get the least significant 6 bits
     begin_dma_transfer();
 }
 
