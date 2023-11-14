@@ -86,7 +86,7 @@ SECTIONS
     *(.sram_func)
     *(.sram_func*)
     __sram_func_end = .;
-  } >ITCMRAM AT>FLASH 
+  } >FLASH 
   __sram_func_loadaddr = LOADADDR(.sram_func);
   
   /* Constant data goes into FLASH */
