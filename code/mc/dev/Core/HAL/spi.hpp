@@ -59,4 +59,10 @@ private:
     SPI_TypeDef* SPI_regs;
 };
 
+__STATIC_INLINE void SPI_SetTransferSize(SPI_TypeDef *SPIx, uint32_t Count)
+{
+  MODIFY_REG(SPIx->CR2, SPI_CR2_TSIZE, Count);
+}
+
+
 #endif /* HAL_SPI_HPP_ */
