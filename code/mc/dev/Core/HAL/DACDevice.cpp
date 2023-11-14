@@ -7,8 +7,12 @@
 
 #include "DACDevice.hpp"
 
-__attribute__((section(".data"))) uint8_t dmaD1_buffer[3] = {0};
-__attribute__((section(".BDMABlock"))) uint8_t dmaD3_buffer[3] = {0};
+
+#define DAC1_BUFFER_SIZE 3
+#define DAC2_BUFFER_SIZE 3
+
+__attribute__((section(".BDMABlock"))) uint8_t dmaD3_buffer[DAC1_BUFFER_SIZE] = {0};
+__attribute__((section(".DMA_D1"))) uint8_t dmaD1_buffer[DAC2_BUFFER_SIZE] = {0};
 
 DAC_Device::DAC_Device(DAC_Device_TypeDef *DAC_conf)
 {
@@ -26,8 +30,8 @@ DAC_Device::DAC_Device(DAC_Device_TypeDef *DAC_conf)
 
     this->DAC_conf = DAC_conf;
     spi_handler = new SPI(DAC_conf->SPIx);
-    LL_SPI_SetFIFOThreshold(DAC_conf->SPIx, LL_SPI_FIFO_TH_03DATA);
-    LL_SPI_SetTransferSize(DAC_conf->SPIx, 3);
+    LL_SPI_EnableGPIOControl(DAC_conf->SPIx);
+    LL_SPI_SetFIFOThreshold(DAC_conf->SPIx, LL_SPI_FIFO_TH_04DATA);
 
     // Disable Clear-bit from start
     HAL_GPIO_WritePin(DAC_conf->clear_port, DAC_conf->clear_pin, GPIO_PIN_SET);
@@ -35,26 +39,28 @@ DAC_Device::DAC_Device(DAC_Device_TypeDef *DAC_conf)
 
 DAC1_Device::DAC1_Device(DAC_Device_TypeDef *DAC_conf) : DAC_Device(DAC_conf)
 {
+    LL_SPI_SetTransferSize(DAC_conf->SPIx, DAC1_BUFFER_SIZE);
     dma_buffer = dmaD3_buffer;
     DAC_conf->BDMA_InitStruct->PeriphOrM2MSrcAddress = (uint32_t) & (DAC_conf->SPIx->TXDR);
     DAC_conf->BDMA_InitStruct->MemoryOrM2MDstAddress = (uint32_t)dma_buffer;
-    DAC_conf->BDMA_InitStruct->NbData = 3;
+    DAC_conf->BDMA_InitStruct->NbData = DAC1_BUFFER_SIZE;
     LL_BDMA_Init(DAC_conf->BDMAx, __LL_BDMA_GET_CHANNEL(DAC_conf->BDMA_Channelx), DAC_conf->BDMA_InitStruct);
     // EnableIT_TC(DAC_conf->BDMA_Channelx);
     LL_SPI_EnableIT_EOT(DAC_conf->SPIx);
 }
 DAC2_Device::DAC2_Device(DAC_Device_TypeDef *DAC_conf) : DAC_Device(DAC_conf)
 {
+    LL_SPI_SetTransferSize(DAC_conf->SPIx, DAC2_BUFFER_SIZE);
     dma_buffer = dmaD1_buffer;
     DAC_conf->DMA_InitStruct->PeriphOrM2MSrcAddress = (uint32_t) & (DAC_conf->SPIx->TXDR);
     DAC_conf->DMA_InitStruct->MemoryOrM2MDstAddress = (uint32_t)dma_buffer;
-    DAC_conf->DMA_InitStruct->NbData = 3;
+    DAC_conf->DMA_InitStruct->NbData = DAC2_BUFFER_SIZE;
     LL_DMA_Init(DAC_conf->DMAx, __LL_DMA_GET_STREAM(DAC_conf->DMA_Streamx), DAC_conf->DMA_InitStruct);
     // EnableIT_TC(DAC_conf->DMA_Streamx);
     LL_SPI_EnableIT_EOT(DAC_conf->SPIx);
 }
 
-__attribute__((section(".sram_func")))
+// __attribute__((section(".sram_func")))
 void DAC_Device::write(float output)
 {
     while (busy)
@@ -80,7 +86,7 @@ void DAC_Device::write(float output)
 void DAC_Device::dma_transmission_callback()
 {
 }
-__attribute__((section(".sram_func")))
+// __attribute__((section(".sram_func")))
 void DAC1_Device::dma_transmission_callback()
 {
     while (!LL_SPI_IsActiveFlag_TXC(DAC_conf->SPIx))
@@ -98,7 +104,7 @@ void DAC1_Device::dma_transmission_callback()
 
     busy = false;
 }
-__attribute__((section(".sram_func")))
+// __attribute__((section(".sram_func")))
 void DAC2_Device::dma_transmission_callback()
 {
     while (!LL_SPI_IsActiveFlag_TXC(DAC_conf->SPIx))
@@ -235,11 +241,11 @@ void DAC_Device::prepare_buffer()
 void DAC_Device::begin_dma_transfer()
 {
 }
-__attribute__((section(".sram_func")))
+// __attribute__((section(".sram_func")))
 void DAC1_Device::begin_dma_transfer()
 {
-    LL_SPI_SetTransferSize(DAC_conf->SPIx, 3);
-    SetDataLength(DAC_conf->BDMA_Channelx, 3);
+    SetDataLength(DAC_conf->BDMA_Channelx, DAC1_BUFFER_SIZE);
+    SPI_SetTransferSize(DAC_conf->SPIx, DAC1_BUFFER_SIZE);
     EnableChannel(DAC_conf->BDMA_Channelx);
     while (!IsEnabledChannel(DAC_conf->BDMA_Channelx))
     {
@@ -254,11 +260,11 @@ void DAC1_Device::begin_dma_transfer()
     }
     DAC_conf->SPIx->CR1 |= SPI_CR1_CSTART;
 }
-__attribute__((section(".sram_func")))
+// __attribute__((section(".sram_func")))
 void DAC2_Device::begin_dma_transfer()
 {
-    LL_SPI_SetTransferSize(DAC_conf->SPIx, 3);
-    SetDataLength(DAC_conf->DMA_Streamx, 3);
+    SetDataLength(DAC_conf->DMA_Streamx, DAC2_BUFFER_SIZE);
+    LL_SPI_SetTransferSize(DAC_conf->SPIx, DAC2_BUFFER_SIZE);
     EnableChannel(DAC_conf->DMA_Streamx);
     while (!IsEnabledChannel(DAC_conf->DMA_Streamx))
     {
