@@ -66,10 +66,12 @@ void SPI3_IRQHandler(void);
 void DMA2_Stream0_IRQHandler(void);
 void DMA2_Stream1_IRQHandler(void);
 void DMA2_Stream3_IRQHandler(void);
+void DMA2_Stream7_IRQHandler(void);
 void SPI4_IRQHandler(void);
 void SPI5_IRQHandler(void);
 void SPI6_IRQHandler(void);
 void BDMA_Channel1_IRQHandler(void);
+void CORDIC_IRQHandler(void);
 /* USER CODE BEGIN EFP */
 
 /* USER CODE END EFP */
