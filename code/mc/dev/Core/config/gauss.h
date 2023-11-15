@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-
+#define WAVE gauss_wave
 /** Generated using Dr LUT - Free Lookup Table Generator
   * https://github.com/ppelikan/drlut
   **/
