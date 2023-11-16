@@ -70,13 +70,15 @@ Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_spi.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_spi_ex.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_tim.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_tim_ex.c \
+Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_cordic.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_bdma.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_dma.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_exti.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_gpio.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_rcc.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_spi.c \
-Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_utils.c
+Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_utils.c \
+Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_tim.c
 
 CPP_SOURCES = \
 Core/Src/FFTCorrection.cpp \
@@ -85,6 +87,7 @@ Core/Src/lock.cpp \
 Core/Src/misc_func.cpp \
 Core/Modules/AITestModule.cpp \
 Core/Modules/AOTestModule.cpp \
+Core/Modules/TIMTestModule.cpp \
 Core/Modules/AWGModule.cpp \
 Core/Modules/AWGPIDModule.cpp \
 Core/Modules/AnalogOutputModule.cpp \
