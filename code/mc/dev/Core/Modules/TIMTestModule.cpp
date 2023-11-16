@@ -7,8 +7,8 @@
 
 #define PPM_BUFFER_SIZE ((CAPTURE_BUFFER_SIZE) - 1)
 #define PERIOD 0xFFFFF 
-#define MEASURED_SIGNAL 1000 /* Measured signal frequency in Hz*/
-#define ETRP_CLK 250000 /* external source Clock frequency after the divider in Hz*/
+#define MEASURED_SIGNAL 10000 /* Measured signal frequency in Hz*/
+#define ETRP_CLK 10000000 /* external source Clock frequency after the divider in Hz*/
 #define TREF ((ETRP_CLK) / (MEASURED_SIGNAL)) /* the ideal number of count between two input capture */
 #define CONSTANT ((1000000) / (TREF)) /* constant used to calculate the PPM*/
 #define CAPTURE_BUFFER_SIZE ((uint32_t)1001) /* The Buffer size */
@@ -30,7 +30,7 @@ public:
 	}
 	void run()
 	{   
-        prescaler = 34;
+        // prescaler = 34;
         DMA2_Stream5->CR |= DMA_PRIORITY_HIGH;
         DMA2_Stream5->NDTR = CAPTURE_BUFFER_SIZE;
         DMA2_Stream5->PAR = (uint32_t)&TIM1->CCR1;
