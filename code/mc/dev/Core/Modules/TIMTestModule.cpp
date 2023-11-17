@@ -19,7 +19,10 @@ uint32_t aSRC_Buffer[BUFFER_DATA_NUMBER] = {4000 - 1, 1, 0, 800, 10000 - 1, 0, 0
 uint16_t Tim1Prescaler = 0;
 
 // #define CH1_FreqMeasure
-#define CH2_PWM
+// #define CH2_PWM
+#define CH3_OCM
+
+
 uint16_t prescaler = 0;
 uint16_t aCaptureBuffer[CAPTURE_BUFFER_SIZE];
 uint16_t aPPMBuffer[PPM_BUFFER_SIZE];
@@ -54,21 +57,34 @@ public:
 #ifdef CH2_PWM
 		DMA1_Stream2->CR |= DMA_PRIORITY_HIGH;
 		DMA1_Stream2->NDTR = BUFFER_DATA_NUMBER;
-		DMA1_Stream2->PAR = (uint32_t)&TIM1->DMAR;
+		DMA1_Stream2->PAR = (uint32_t)&TIM1->DMAR; // Virtual register of TIM1
 		DMA1_Stream2->M0AR = (uint32_t)aSRC_Buffer;
 
 		TIM1->CCR2 = 0xFFF;
-		LL_TIM_EnableARRPreload(TIM1);
-		LL_TIM_EnableDMAReq_UPDATE(TIM1);
+		LL_TIM_EnableARRPreload(TIM1);	  // Enable ARR Preload
+		LL_TIM_EnableDMAReq_UPDATE(TIM1); // Enable DMA request on Update Event
+		// Base Address of TIM1 ARR register is used as DMA burst base address
+		// Bursts because 4 consecutive register are written (TIM1_ARR, TIM1_RCR TIM1_CCR1, TIM1_CCR2)
 		LL_TIM_ConfigDMABurst(TIM1, LL_TIM_DMABURST_BASEADDR_ARR, LL_TIM_DMABURST_LENGTH_4TRANSFERS);
+		// Generate an update event to reload the Prescaler and the repetition counter values immediately
+		LL_TIM_GenerateEvent_UPDATE(TIM1);
 		while (!LL_TIM_IsEnabledDMAReq_UPDATE(TIM1))
 		{
 		}
+		LL_TIM_EnableAllOutputs(TIM1);	 // Enable all output channels
+		TIM1->CCER |= TIM_CCER_CC2E;	 // Enable channel 2
+		TIM1->CR1 |= TIM_CR1_CEN;		 // Enable timer
+		DMA1_Stream2->CR |= DMA_SxCR_EN; // Enable DMA
+#endif
+#ifdef CH3_OCM
+
+		TIM1->PSC = 10; // Set prescaler
+		TIM1->CCR3 = 0xFF;
+		LL_TIM_EnableARRPreload(TIM1);
 		LL_TIM_EnableAllOutputs(TIM1);
+		LL_TIM_EnableIT_CC3(TIM1);
 		TIM1->CCER |= TIM_CCER_CC2E;
 		TIM1->CR1 |= TIM_CR1_CEN;
-		DMA1_Stream2->CR |= DMA_SxCR_EN;
-		LL_TIM_GenerateEvent_UPDATE(TIM1);
 #endif
 		while (true)
 		{
@@ -93,8 +109,17 @@ static void PPM_Calculate(void)
  *         INTERRUPTS          *
  *******************************/
 /********************
-||      DAC1      ||
+||      TIM1       ||
 ********************/
+
+void TIM1_CC_IRQHandler(void)
+{
+	if (TIM1->SR & TIM_SR_CC3IF)
+	{
+		TIM1->SR &= ~TIM_SR_CC3IF;
+	}
+}
+
 
 /******************************
  *       MAIN FUNCTION        *
