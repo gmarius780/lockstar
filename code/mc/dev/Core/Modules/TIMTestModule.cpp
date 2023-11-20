@@ -20,8 +20,9 @@ uint16_t Tim1Prescaler = 0;
 
 // #define CH1_FreqMeasure
 // #define CH2_PWM
-#define CH3_OCM
-
+// #define CH3_OCM
+#define TRIGGER
+// #define TRIGGER_PWM
 
 uint16_t prescaler = 0;
 uint16_t aCaptureBuffer[CAPTURE_BUFFER_SIZE];
@@ -77,15 +78,60 @@ public:
 		DMA1_Stream2->CR |= DMA_SxCR_EN; // Enable DMA
 #endif
 #ifdef CH3_OCM
+		TIM_OC_InitStruct.OCMode = LL_TIM_OCMODE_FROZEN;
+		TIM_OC_InitStruct.OCState = LL_TIM_OCSTATE_DISABLE;
+		TIM_OC_InitStruct.OCNState = LL_TIM_OCSTATE_DISABLE;
+		TIM_OC_InitStruct.CompareValue = 0;
+		TIM_OC_InitStruct.OCPolarity = LL_TIM_OCPOLARITY_HIGH;
+		TIM_OC_InitStruct.OCNPolarity = LL_TIM_OCPOLARITY_HIGH;
+		TIM_OC_InitStruct.OCIdleState = LL_TIM_OCIDLESTATE_LOW;
+		TIM_OC_InitStruct.OCNIdleState = LL_TIM_OCIDLESTATE_LOW;
+		LL_TIM_OC_Init(TIM1, LL_TIM_CHANNEL_CH3, &TIM_OC_InitStruct);
+		LL_TIM_OC_DisableFast(TIM1, LL_TIM_CHANNEL_CH3);
 
 		TIM1->PSC = 10; // Set prescaler
 		TIM1->CCR3 = 0xFF;
 		LL_TIM_EnableARRPreload(TIM1);
 		LL_TIM_EnableAllOutputs(TIM1);
 		LL_TIM_EnableIT_CC3(TIM1);
-		TIM1->CCER |= TIM_CCER_CC2E;
+		TIM1->CCER |= TIM_CCER_CC3E;
 		TIM1->CR1 |= TIM_CR1_CEN;
 #endif
+#ifdef TRIGGER
+
+		LL_TIM_OC_InitTypeDef TIM_OC_InitStruct = {0};
+		TIM_OC_InitStruct.OCMode = LL_TIM_OCMODE_FROZEN;
+		TIM_OC_InitStruct.OCState = LL_TIM_OCSTATE_DISABLE;
+		TIM_OC_InitStruct.OCNState = LL_TIM_OCSTATE_DISABLE;
+		TIM_OC_InitStruct.CompareValue = 0;
+		TIM_OC_InitStruct.OCPolarity = LL_TIM_OCPOLARITY_HIGH;
+		TIM_OC_InitStruct.OCNPolarity = LL_TIM_OCPOLARITY_HIGH;
+		TIM_OC_InitStruct.OCIdleState = LL_TIM_OCIDLESTATE_LOW;
+		TIM_OC_InitStruct.OCNIdleState = LL_TIM_OCIDLESTATE_LOW;
+		LL_TIM_OC_Init(TIM1, LL_TIM_CHANNEL_CH1, &TIM_OC_InitStruct);
+		LL_TIM_OC_DisableFast(TIM1, LL_TIM_CHANNEL_CH1);
+
+		LL_TIM_SetTriggerInput(TIM1, LL_TIM_TS_TI2FP2);
+		LL_TIM_SetSlaveMode(TIM1, LL_TIM_SLAVEMODE_TRIGGER);
+		LL_TIM_CC_DisableChannel(TIM1, LL_TIM_CHANNEL_CH2);
+		LL_TIM_IC_SetFilter(TIM1, LL_TIM_CHANNEL_CH2, LL_TIM_IC_FILTER_FDIV1);
+		LL_TIM_IC_SetPolarity(TIM1, LL_TIM_CHANNEL_CH2, LL_TIM_IC_POLARITY_RISING);
+		LL_TIM_DisableIT_TRIG(TIM1);
+		LL_TIM_DisableDMAReq_TRIG(TIM1);
+		LL_TIM_SetTriggerOutput(TIM1, LL_TIM_TRGO_RESET);
+		LL_TIM_SetTriggerOutput2(TIM1, LL_TIM_TRGO2_RESET);
+
+		TIM1->PSC = 10000; // Set prescaler
+		TIM1->CCR1 = 5000;
+
+		LL_TIM_SetOnePulseMode(TIM1, LL_TIM_ONEPULSEMODE_SINGLE);
+		LL_TIM_EnableARRPreload(TIM1);
+		LL_TIM_EnableAllOutputs(TIM1);
+		LL_TIM_EnableIT_CC1(TIM1);
+		TIM1->CCER |= TIM_CCER_CC1E;
+		LL_TIM_GenerateEvent_UPDATE(TIM1);
+#endif
+
 		while (true)
 		{
 		}
@@ -118,8 +164,11 @@ void TIM1_CC_IRQHandler(void)
 	{
 		TIM1->SR &= ~TIM_SR_CC3IF;
 	}
+	if (TIM1->SR & TIM_SR_CC1IF)
+	{
+		TIM1->SR &= ~TIM_SR_CC1IF;
+	}
 }
-
 
 /******************************
  *       MAIN FUNCTION        *
