@@ -26,6 +26,8 @@
 /* USER CODE END Includes */
 extern DMA_HandleTypeDef hdma_cordic_wr;
 
+extern DMA_HandleTypeDef hdma_cordic_rd;
+
 extern DMA_HandleTypeDef hdma_spi1_rx;
 
 extern DMA_HandleTypeDef hdma_spi1_tx;
@@ -206,6 +208,24 @@ void HAL_CORDIC_MspInit(CORDIC_HandleTypeDef* hcordic)
 
     __HAL_LINKDMA(hcordic,hdmaOut,hdma_cordic_wr);
 
+    /* CORDIC_RD Init */
+    hdma_cordic_rd.Instance = DMA1_Stream6;
+    hdma_cordic_rd.Init.Request = DMA_REQUEST_CORDIC_READ;
+    hdma_cordic_rd.Init.Direction = DMA_PERIPH_TO_MEMORY;
+    hdma_cordic_rd.Init.PeriphInc = DMA_PINC_DISABLE;
+    hdma_cordic_rd.Init.MemInc = DMA_MINC_ENABLE;
+    hdma_cordic_rd.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+    hdma_cordic_rd.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+    hdma_cordic_rd.Init.Mode = DMA_NORMAL;
+    hdma_cordic_rd.Init.Priority = DMA_PRIORITY_LOW;
+    hdma_cordic_rd.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
+    if (HAL_DMA_Init(&hdma_cordic_rd) != HAL_OK)
+    {
+      Error_Handler();
+    }
+
+    __HAL_LINKDMA(hcordic,hdmaIn,hdma_cordic_rd);
+
     /* CORDIC interrupt Init */
     HAL_NVIC_SetPriority(CORDIC_IRQn, 0, 0);
     HAL_NVIC_EnableIRQ(CORDIC_IRQn);
@@ -234,6 +254,7 @@ void HAL_CORDIC_MspDeInit(CORDIC_HandleTypeDef* hcordic)
 
     /* CORDIC DMA DeInit */
     HAL_DMA_DeInit(hcordic->hdmaOut);
+    HAL_DMA_DeInit(hcordic->hdmaIn);
 
     /* CORDIC interrupt DeInit */
     HAL_NVIC_DisableIRQ(CORDIC_IRQn);

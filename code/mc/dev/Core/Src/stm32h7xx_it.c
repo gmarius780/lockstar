@@ -56,6 +56,7 @@
 
 /* External variables --------------------------------------------------------*/
 extern DMA_HandleTypeDef hdma_cordic_wr;
+extern DMA_HandleTypeDef hdma_cordic_rd;
 extern CORDIC_HandleTypeDef hcordic;
 extern DMA_HandleTypeDef hdma_spi1_rx;
 extern DMA_HandleTypeDef hdma_spi1_tx;
