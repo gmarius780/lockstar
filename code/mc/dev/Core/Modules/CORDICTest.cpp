@@ -10,7 +10,7 @@
 #define MODULUS (int32_t)0x7FFFFFFF      /* 1 */
 #define COS_REF (int32_t)0x7641AF3C      /* cos(pi/8) reference value */
 #define SIN_REF (int32_t)0x30FBC54D      /* sin(pi/8) reference value */
-#define ERROR (uint32_t)0x00001000
+#define ERROR (int32_t)0x00001000
 #define PASS 0
 #define FAIL 1
 
@@ -20,10 +20,10 @@
 // #define single_test
 #define multi_test
 
-uint32_t Check_Residual_Error(uint32_t VarA, uint32_t VarB, uint32_t MaxError);
+uint32_t Check_Residual_Error(int32_t VarA, int32_t VarB, int32_t MaxError);
 
-int32_t start_angle = 0x00000000;
-static uint32_t aAngles[ARRAY_SIZE] =
+uint32_t start_angle = 0x00000000;
+const static uint32_t aAngles[ARRAY_SIZE] =
     {
         0x00000000, 0x04000000, 0x08000000, 0x0C000000,
         0x10000000, 0x14000000, 0x18000000, 0x1C000000,
@@ -41,7 +41,7 @@ static uint32_t aAngles[ARRAY_SIZE] =
         0xD0000000, 0xD4000000, 0xD8000000, 0xDC000000,
         0xE0000000, 0xE4000000, 0xE8000000, 0xEC000000,
         0xF0000000, 0xF4000000, 0xF8000000, 0xFC000000};
-static uint32_t aRefSin[ARRAY_SIZE] =
+const uint32_t aRefSin[ARRAY_SIZE] =
     {
         0x00000000, 0x0C8BD35E, 0x18F8B83C, 0x25280C5D,
         0x30FBC54D, 0x3C56BA70, 0x471CECE6, 0x5133CC94,
@@ -97,12 +97,14 @@ public:
 #ifdef multi_test
         start_ticks = SysTick->VAL;
         /* Write first angle to cordic */
-        CORDIC->WDATA = aAngles[0];
+        CORDIC->WDATA = start_angle;
+        // CORDIC->WDATA = aAngles[0];
         /* Write remaining angles and read sine results */
-        for (uint32_t i = 0; i < ARRAY_SIZE; i++)
+        for (uint32_t i = 1; i < ARRAY_SIZE; i++)
         {
-            // start_angle += DELTA;
-            CORDIC->WDATA = aAngles[i];
+            start_angle += DELTA;
+            CORDIC->WDATA = start_angle;
+            // CORDIC->WDATA = aAngles[i];
             *pCalculatedSin++ = CORDIC->RDATA;
         }
         /* Read last result */
@@ -130,7 +132,7 @@ public:
 
 CORDICTestModule *module;
 
-uint32_t Check_Residual_Error(uint32_t VarA, uint32_t VarB, uint32_t MaxError)
+uint32_t Check_Residual_Error(int32_t VarA, int32_t VarB, int32_t MaxError)
 {
     uint32_t status = PASS;
 
@@ -158,18 +160,6 @@ uint32_t Check_Residual_Error(uint32_t VarA, uint32_t VarB, uint32_t MaxError)
 /********************
 ||      TIM1       ||
 ********************/
-
-void TIM1_CC_IRQHandler(void)
-{
-    if (TIM1->SR & TIM_SR_CC3IF)
-    {
-        TIM1->SR &= ~TIM_SR_CC3IF;
-    }
-    if (TIM1->SR & TIM_SR_CC1IF)
-    {
-        TIM1->SR &= ~TIM_SR_CC1IF;
-    }
-}
 
 /******************************
  *       MAIN FUNCTION        *
