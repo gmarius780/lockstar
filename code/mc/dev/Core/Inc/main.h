@@ -28,6 +28,8 @@ extern "C" {
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32h7xx_hal.h"
+#include "stm32h7xx_ll_bdma.h"
+#include "stm32h7xx_ll_cordic.h"
 #include "stm32h7xx_ll_rcc.h"
 #include "stm32h7xx_ll_spi.h"
 #include "stm32h7xx_ll_tim.h"
@@ -38,13 +40,12 @@ extern "C" {
 #include "stm32h7xx_ll_pwr.h"
 #include "stm32h7xx_ll_gpio.h"
 #include "stm32h7xx_ll_dma.h"
-#include "stm32h7xx_ll_bdma.h"
+
 #include "stm32h7xx_ll_exti.h"
-#include "stm32h7xx_ll_cordic.h"
-#include "../Src/runtime.h"
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "../Src/runtime.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -73,12 +74,8 @@ void start(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define DAC_2_Sync_Pin GPIO_PIN_6
-#define DAC_2_Sync_GPIO_Port GPIOF
 #define CLR5_Pin GPIO_PIN_10
 #define CLR5_GPIO_Port GPIOF
-#define DAC_1_Sync_Pin GPIO_PIN_0
-#define DAC_1_Sync_GPIO_Port GPIOA
 #define Pi_Int_Pin GPIO_PIN_1
 #define Pi_Int_GPIO_Port GPIOA
 #define SPI3_NSS_Pin GPIO_PIN_4
@@ -87,8 +84,6 @@ void start(void);
 #define DigitalOut_GPIO_Port GPIOC
 #define DigitalIn_Pin GPIO_PIN_5
 #define DigitalIn_GPIO_Port GPIOC
-#define SPI2_NSS_Pin GPIO_PIN_12
-#define SPI2_NSS_GPIO_Port GPIOB
 #define LED6_Pin GPIO_PIN_8
 #define LED6_GPIO_Port GPIOD
 #define LED5_Pin GPIO_PIN_9
@@ -117,6 +112,13 @@ void start(void);
 #define CLR6_GPIO_Port GPIOE
 
 /* USER CODE BEGIN Private defines */
+
+#define SPI2_NSS_Pin GPIO_PIN_12
+#define SPI2_NSS_GPIO_Port GPIOB
+#define DAC_2_Sync_Pin GPIO_PIN_6
+#define DAC_2_Sync_GPIO_Port GPIOF
+#define DAC_1_Sync_Pin GPIO_PIN_0
+#define DAC_1_Sync_GPIO_Port GPIOA
 
 #define ADC_CNV_GPIO_Port SPI3_NSS_GPIO_Port
 #define ADC_CNV_Pin SPI3_NSS_Pin
