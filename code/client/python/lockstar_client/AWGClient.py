@@ -48,7 +48,7 @@ if __name__ == "__main__":
     #         logging.StreamHandler()
     #     ]
     # )
-    client = AWGClient('192.168.88.25', 10780, 1234)
+    client = AWGClient('192.168.137.2', 10780, 1234)
 
     
     if asyncio.run(client.register_client_id()):
@@ -102,8 +102,8 @@ if __name__ == "__main__":
         # print(await lient.set_ch_one_output_limits(0, 1))
         print(asyncio.run(client.initialize_buffers(len(ch_one_buffer), len(ch_two_buffer), len(ch_one_chunks), 
                                         len(ch_two_chunks), sampling_rate)))
-        print(asyncio.run(client.set_ch_one_output_limits(-5, 5)))
-        print(asyncio.run(client.set_ch_two_output_limits(-5, 5)))
+        print(asyncio.run(client.set_ch_one_output_limits(-10, 10)))
+        print(asyncio.run(client.set_ch_two_output_limits(-10, 10)))
         print(asyncio.run(client.set_ch_one_chunks(ch_one_chunks)))
         print(asyncio.run(client.set_ch_two_chunks(ch_two_chunks)))
         print(asyncio.run(client.set_ch_one_buffer(ch_one_buffer)))
