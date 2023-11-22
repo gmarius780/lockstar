@@ -55,17 +55,11 @@
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
-extern DMA_HandleTypeDef hdma_cordic_wr;
-extern DMA_HandleTypeDef hdma_cordic_rd;
-extern CORDIC_HandleTypeDef hcordic;
 extern DMA_HandleTypeDef hdma_spi1_rx;
 extern DMA_HandleTypeDef hdma_spi1_tx;
 extern DMA_HandleTypeDef hdma_spi3_rx;
 extern DMA_HandleTypeDef hdma_spi3_tx;
 extern DMA_HandleTypeDef hdma_spi5_tx;
-extern SPI_HandleTypeDef hspi1;
-extern SPI_HandleTypeDef hspi3;
-extern SPI_HandleTypeDef hspi5;
 /* USER CODE BEGIN EV */
 
 /* USER CODE END EV */
@@ -207,7 +201,6 @@ void SysTick_Handler(void)
 /* For the available peripheral interrupt handler names,                      */
 /* please refer to the startup file (startup_stm32h7xx.s).                    */
 /******************************************************************************/
-
 
 /* USER CODE BEGIN 1 */
 
