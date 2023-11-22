@@ -130,7 +130,15 @@ int main(void)
   MX_TIM1_Init();
   MX_CORDIC_Init();
   /* USER CODE BEGIN 2 */
-
+  // TIM2 interrupt init
+  NVIC_SetPriority(TIM2_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),0, 0));
+  NVIC_EnableIRQ(TIM2_IRQn);
+  // TIM4 interrupt init
+  NVIC_SetPriority(TIM4_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),0, 0));
+  NVIC_EnableIRQ(TIM4_IRQn);
+  // TIM7 interrupt init
+  NVIC_SetPriority(TIM7_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),0, 0));
+  NVIC_EnableIRQ(TIM7_IRQn);
   /* USER CODE END 2 */
 
   /* Infinite loop */

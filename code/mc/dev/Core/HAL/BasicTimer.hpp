@@ -9,6 +9,8 @@
 #define HAL_BASICTIMER_HPP_
 
 #include "stm32h725xx.h"
+#include "stm32h7xx_ll_tim.h"
+#include "stm32h7xx_ll_bus.h"
 
 /*
  * Timers are used at the following places so far:
