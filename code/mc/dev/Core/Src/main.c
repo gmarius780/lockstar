@@ -42,10 +42,6 @@
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc3;
 
-CORDIC_HandleTypeDef hcordic;
-DMA_HandleTypeDef hdma_cordic_wr;
-DMA_HandleTypeDef hdma_cordic_rd;
-
 SPI_HandleTypeDef hspi1;
 SPI_HandleTypeDef hspi3;
 SPI_HandleTypeDef hspi5;
@@ -100,9 +96,6 @@ int main(void)
 
   /* Enable I-Cache---------------------------------------------------------*/
   SCB_EnableICache();
-
-  /* Enable D-Cache---------------------------------------------------------*/
-  // SCB_EnableDCache();
 
   /* MCU Configuration--------------------------------------------------------*/
 
@@ -326,14 +319,59 @@ static void MX_CORDIC_Init(void)
 
   /* USER CODE END CORDIC_Init 0 */
 
+  /* Peripheral clock enable */
+  __HAL_RCC_CORDIC_CLK_ENABLE();
+
+  /* CORDIC DMA Init */
+
+  /* CORDIC_WR Init */
+  LL_DMA_SetPeriphRequest(DMA2, LL_DMA_STREAM_7, LL_DMAMUX1_REQ_CORDIC_WRITE);
+
+  LL_DMA_SetDataTransferDirection(DMA2, LL_DMA_STREAM_7, LL_DMA_DIRECTION_MEMORY_TO_PERIPH);
+
+  LL_DMA_SetStreamPriorityLevel(DMA2, LL_DMA_STREAM_7, LL_DMA_PRIORITY_LOW);
+
+  LL_DMA_SetMode(DMA2, LL_DMA_STREAM_7, LL_DMA_MODE_NORMAL);
+
+  LL_DMA_SetPeriphIncMode(DMA2, LL_DMA_STREAM_7, LL_DMA_PERIPH_NOINCREMENT);
+
+  LL_DMA_SetMemoryIncMode(DMA2, LL_DMA_STREAM_7, LL_DMA_MEMORY_INCREMENT);
+
+  LL_DMA_SetPeriphSize(DMA2, LL_DMA_STREAM_7, LL_DMA_PDATAALIGN_BYTE);
+
+  LL_DMA_SetMemorySize(DMA2, LL_DMA_STREAM_7, LL_DMA_MDATAALIGN_BYTE);
+
+  LL_DMA_DisableFifoMode(DMA2, LL_DMA_STREAM_7);
+
+  /* CORDIC_RD Init */
+  LL_DMA_SetPeriphRequest(DMA1, LL_DMA_STREAM_6, LL_DMAMUX1_REQ_CORDIC_READ);
+
+  LL_DMA_SetDataTransferDirection(DMA1, LL_DMA_STREAM_6, LL_DMA_DIRECTION_PERIPH_TO_MEMORY);
+
+  LL_DMA_SetStreamPriorityLevel(DMA1, LL_DMA_STREAM_6, LL_DMA_PRIORITY_LOW);
+
+  LL_DMA_SetMode(DMA1, LL_DMA_STREAM_6, LL_DMA_MODE_NORMAL);
+
+  LL_DMA_SetPeriphIncMode(DMA1, LL_DMA_STREAM_6, LL_DMA_PERIPH_NOINCREMENT);
+
+  LL_DMA_SetMemoryIncMode(DMA1, LL_DMA_STREAM_6, LL_DMA_MEMORY_INCREMENT);
+
+  LL_DMA_SetPeriphSize(DMA1, LL_DMA_STREAM_6, LL_DMA_PDATAALIGN_BYTE);
+
+  LL_DMA_SetMemorySize(DMA1, LL_DMA_STREAM_6, LL_DMA_MDATAALIGN_BYTE);
+
+  LL_DMA_DisableFifoMode(DMA1, LL_DMA_STREAM_6);
+
+  /* CORDIC interrupt Init */
+  NVIC_SetPriority(CORDIC_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),0, 0));
+  NVIC_EnableIRQ(CORDIC_IRQn);
+
   /* USER CODE BEGIN CORDIC_Init 1 */
 
   /* USER CODE END CORDIC_Init 1 */
-  hcordic.Instance = CORDIC;
-  if (HAL_CORDIC_Init(&hcordic) != HAL_OK)
-  {
-    Error_Handler();
-  }
+
+  /* nothing else to be configured */
+
   /* USER CODE BEGIN CORDIC_Init 2 */
 
   /* USER CODE END CORDIC_Init 2 */
@@ -913,8 +951,9 @@ static void MX_TIM1_Init(void)
 static void MX_BDMA_Init(void)
 {
 
+  /* Init with LL driver */
   /* DMA controller clock enable */
-  __HAL_RCC_BDMA_CLK_ENABLE();
+  LL_AHB4_GRP1_EnableClock(LL_AHB4_GRP1_PERIPH_BDMA);
 
   /* DMA interrupt init */
   /* BDMA_Channel1_IRQn interrupt configuration */
@@ -974,8 +1013,8 @@ static void MX_DMA_Init(void)
   HAL_NVIC_SetPriority(DMA1_Stream5_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(DMA1_Stream5_IRQn);
   /* DMA1_Stream6_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Stream6_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(DMA1_Stream6_IRQn);
+  NVIC_SetPriority(DMA1_Stream6_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),0, 0));
+  NVIC_EnableIRQ(DMA1_Stream6_IRQn);
   /* DMA2_Stream0_IRQn interrupt configuration */
   NVIC_SetPriority(DMA2_Stream0_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),0, 0));
   NVIC_EnableIRQ(DMA2_Stream0_IRQn);
@@ -986,8 +1025,8 @@ static void MX_DMA_Init(void)
   HAL_NVIC_SetPriority(DMA2_Stream3_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(DMA2_Stream3_IRQn);
   /* DMA2_Stream7_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA2_Stream7_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(DMA2_Stream7_IRQn);
+  NVIC_SetPriority(DMA2_Stream7_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),0, 0));
+  NVIC_EnableIRQ(DMA2_Stream7_IRQn);
 
 }
 
@@ -1067,7 +1106,7 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin : DigitalIn_Pin */
   GPIO_InitStruct.Pin = DigitalIn_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(DigitalIn_GPIO_Port, &GPIO_InitStruct);
 

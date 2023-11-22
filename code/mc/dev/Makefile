@@ -70,7 +70,6 @@ Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_spi.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_spi_ex.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_tim.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_tim_ex.c \
-Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_cordic.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_bdma.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_dma.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_exti.c \

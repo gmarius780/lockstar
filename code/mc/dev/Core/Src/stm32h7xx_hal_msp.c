@@ -24,10 +24,6 @@
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
-extern DMA_HandleTypeDef hdma_cordic_wr;
-
-extern DMA_HandleTypeDef hdma_cordic_rd;
-
 extern DMA_HandleTypeDef hdma_spi1_rx;
 
 extern DMA_HandleTypeDef hdma_spi1_tx;
@@ -169,98 +165,6 @@ void HAL_ADC_MspDeInit(ADC_HandleTypeDef* hadc)
   /* USER CODE BEGIN ADC3_MspDeInit 1 */
 
   /* USER CODE END ADC3_MspDeInit 1 */
-  }
-
-}
-
-/**
-* @brief CORDIC MSP Initialization
-* This function configures the hardware resources used in this example
-* @param hcordic: CORDIC handle pointer
-* @retval None
-*/
-void HAL_CORDIC_MspInit(CORDIC_HandleTypeDef* hcordic)
-{
-  if(hcordic->Instance==CORDIC)
-  {
-  /* USER CODE BEGIN CORDIC_MspInit 0 */
-
-  /* USER CODE END CORDIC_MspInit 0 */
-    /* Peripheral clock enable */
-    __HAL_RCC_CORDIC_CLK_ENABLE();
-
-    /* CORDIC DMA Init */
-    /* CORDIC_WR Init */
-    hdma_cordic_wr.Instance = DMA2_Stream7;
-    hdma_cordic_wr.Init.Request = DMA_REQUEST_CORDIC_WRITE;
-    hdma_cordic_wr.Init.Direction = DMA_MEMORY_TO_PERIPH;
-    hdma_cordic_wr.Init.PeriphInc = DMA_PINC_DISABLE;
-    hdma_cordic_wr.Init.MemInc = DMA_MINC_ENABLE;
-    hdma_cordic_wr.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
-    hdma_cordic_wr.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
-    hdma_cordic_wr.Init.Mode = DMA_NORMAL;
-    hdma_cordic_wr.Init.Priority = DMA_PRIORITY_LOW;
-    hdma_cordic_wr.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
-    if (HAL_DMA_Init(&hdma_cordic_wr) != HAL_OK)
-    {
-      Error_Handler();
-    }
-
-    __HAL_LINKDMA(hcordic,hdmaOut,hdma_cordic_wr);
-
-    /* CORDIC_RD Init */
-    hdma_cordic_rd.Instance = DMA1_Stream6;
-    hdma_cordic_rd.Init.Request = DMA_REQUEST_CORDIC_READ;
-    hdma_cordic_rd.Init.Direction = DMA_PERIPH_TO_MEMORY;
-    hdma_cordic_rd.Init.PeriphInc = DMA_PINC_DISABLE;
-    hdma_cordic_rd.Init.MemInc = DMA_MINC_ENABLE;
-    hdma_cordic_rd.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
-    hdma_cordic_rd.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
-    hdma_cordic_rd.Init.Mode = DMA_NORMAL;
-    hdma_cordic_rd.Init.Priority = DMA_PRIORITY_LOW;
-    hdma_cordic_rd.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
-    if (HAL_DMA_Init(&hdma_cordic_rd) != HAL_OK)
-    {
-      Error_Handler();
-    }
-
-    __HAL_LINKDMA(hcordic,hdmaIn,hdma_cordic_rd);
-
-    /* CORDIC interrupt Init */
-    HAL_NVIC_SetPriority(CORDIC_IRQn, 0, 0);
-    HAL_NVIC_EnableIRQ(CORDIC_IRQn);
-  /* USER CODE BEGIN CORDIC_MspInit 1 */
-
-  /* USER CODE END CORDIC_MspInit 1 */
-  }
-
-}
-
-/**
-* @brief CORDIC MSP De-Initialization
-* This function freeze the hardware resources used in this example
-* @param hcordic: CORDIC handle pointer
-* @retval None
-*/
-void HAL_CORDIC_MspDeInit(CORDIC_HandleTypeDef* hcordic)
-{
-  if(hcordic->Instance==CORDIC)
-  {
-  /* USER CODE BEGIN CORDIC_MspDeInit 0 */
-
-  /* USER CODE END CORDIC_MspDeInit 0 */
-    /* Peripheral clock disable */
-    __HAL_RCC_CORDIC_CLK_DISABLE();
-
-    /* CORDIC DMA DeInit */
-    HAL_DMA_DeInit(hcordic->hdmaOut);
-    HAL_DMA_DeInit(hcordic->hdmaIn);
-
-    /* CORDIC interrupt DeInit */
-    HAL_NVIC_DisableIRQ(CORDIC_IRQn);
-  /* USER CODE BEGIN CORDIC_MspDeInit 1 */
-
-  /* USER CODE END CORDIC_MspDeInit 1 */
   }
 
 }
