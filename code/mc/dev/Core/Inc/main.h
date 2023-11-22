@@ -84,6 +84,7 @@ void start(void);
 #define DigitalOut_GPIO_Port GPIOC
 #define DigitalIn_Pin GPIO_PIN_5
 #define DigitalIn_GPIO_Port GPIOC
+#define DigitalIn_EXTI_IRQn EXTI9_5_IRQn
 #define LED6_Pin GPIO_PIN_8
 #define LED6_GPIO_Port GPIOD
 #define LED5_Pin GPIO_PIN_9
