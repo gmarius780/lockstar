@@ -56,7 +56,7 @@ void DebugMon_Handler(void);
 void PendSV_Handler(void);
 void SysTick_Handler(void);
 /* USER CODE BEGIN EFP */
-void EXTI9_5_IRQHandler(uint16_t gpio_pin);
+void EXTI9_5_IRQHandler(void);
 void BDMA_Channel1_IRQHandler(void);
 void SPI6_IRQHandler(void);
 void DMA2_Stream3_IRQHandler(void);

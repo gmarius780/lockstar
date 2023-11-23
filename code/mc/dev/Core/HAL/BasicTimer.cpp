@@ -80,7 +80,7 @@ void BasicTimer::reset_counter() { tim_regs->CNT = 0; }
 
 void BasicTimer::reset_interrupt()
 {
-	//	tim_regs->SR &= ~TIM_SR_UIF;
+		tim_regs->SR &= ~TIM_SR_UIF;
 	//	tim_regs->SR &= ~TIM_SR_TIF;
-	tim_regs->SR &= 0;
+	// tim_regs->SR &= 0;
 }

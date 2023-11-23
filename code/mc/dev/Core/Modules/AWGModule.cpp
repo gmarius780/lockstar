@@ -31,7 +31,7 @@ public:
 		turn_LED6_off();
 		turn_LED5_on();
 		// default sampling rate is INTERNAL_CLOCK_FREQUENCY/prescaler * counter_max = 90e6/90*1000 = 1khz
-		prescaler = 90;
+		prescaler = 275;
 		counter_max = 1000;
 		this->sampling_timer = new BasicTimer(2, counter_max, prescaler);
 
@@ -49,7 +49,7 @@ public:
 		/*** work loop ***/
 		while (true)
 		{
-			HAL_Delay(100);
+			// HAL_Delay(100);
 			// this->dac_1->write(this->pid->calculate_output(adc->channel1->get_result(), adc->channel2->get_result(), dt));
 		}
 	}
@@ -99,6 +99,11 @@ public:
 
 	void digital_in_falling_edge()
 	{
+		if (this->is_output_ttl)
+		{
+			this->output_next_chunk();
+			this->enable_sampling();
+		}
 	}
 
 	//__attribute__((section("sram_func")))
@@ -114,6 +119,11 @@ public:
 			{
 				turn_LED6_off();
 				this->disable_sampling();
+				this->is_output_on = true;
+				this->is_output_ttl = false;
+				turn_LED6_on();
+
+				this->output_next_chunk();
 			}
 		}
 
@@ -127,6 +137,11 @@ public:
 			{
 				turn_LED6_off();
 				this->disable_sampling();
+				this->is_output_on = true;
+				this->is_output_ttl = false;
+				turn_LED6_on();
+
+				this->output_next_chunk();
 			}
 		}
 	}
@@ -139,19 +154,26 @@ AWGModule *module;
  ******************************
  * Callbacks are functions that are executed in response to events such as SPI communication finished, change on trigger line etc */
 
-void EXTI9_5_IRQHandler(uint16_t gpio_pin)
+void EXTI9_5_IRQHandler(void)
 {
-	if (gpio_pin == DigitalIn_Pin)
+	if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_5) != 0x00U)
 	{
+		/* DataReady Pin Rising */
+		__HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_5);
 		// Rising Edge
 		if (HAL_GPIO_ReadPin(DigitalIn_GPIO_Port, DigitalIn_Pin) == GPIO_PIN_RESET)
+		{
+			turn_LED3_on();
 			module->digital_in_rising_edge();
+		}
 
 		// Falling Edge
 		if (HAL_GPIO_ReadPin(DigitalIn_GPIO_Port, DigitalIn_Pin) == GPIO_PIN_SET)
+		{
+			turn_LED2_on();
 			module->digital_in_falling_edge();
+		}
 	}
-
 	// Note: Tested with square wave input. Rising and falling edge seem to be inverted?
 }
 
@@ -210,6 +232,7 @@ void SPI1_IRQHandler(void)
 
 void TIM2_IRQHandler(void)
 {
+	LL_TIM_ClearFlag_UPDATE(TIM2);
 	module->sampling_timer_interrupt();
 }
 void TIM4_IRQHandler(void)
