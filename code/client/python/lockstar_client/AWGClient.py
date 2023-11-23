@@ -77,11 +77,11 @@ if __name__ == "__main__":
 
         ch_one_chunks = [999, 1999, 2999, 3999, 4999]
         ch_two_chunks = [1999, 2999]
-        ch_one_buffer = np.concatenate((np.sin(np.linspace(0, 2*np.pi, num=1000)),
+        ch_one_buffer = np.concatenate((np.cos(np.linspace(0, 2*np.pi, num=1000)),
                                         np.linspace(0, 1, num=1000),
                                         np.cos(np.linspace(0, 6*np.pi, num=1000)),
-                                        np.linspace(1, -3, num=1000),
-                                        np.linspace(-3, 0, num=1000))).tolist()
+                                        np.linspace(1, -1, num=1000),
+                                        np.linspace(-1, 0, num=1000)))
         # ch_one_buffer = np.concatenate((np.sin(np.linspace(0, 1*2*np.pi, num=1000)),
         #                                 np.sin(np.linspace(0, 1*2*np.pi, num=1000)),
         #                                 np.sin(np.linspace(0, 1*2*np.pi, num=1000)),
@@ -89,7 +89,10 @@ if __name__ == "__main__":
         #                                 np.sin(np.linspace(0, 1*2*np.pi, num=1000)))).tolist()
 
         ch_two_buffer = np.concatenate((np.cos(np.linspace(0, 50*4*np.pi, num=2000)),
-                                        np.linspace(1, 4, num=500), np.linspace(4, 1, num=500))).tolist()
+                                        np.linspace(1, 2, num=500), np.linspace(2, 1, num=500)))
+
+        ch_one_buffer = (ch_one_buffer * 5).tolist()
+        ch_two_buffer = (ch_two_buffer * 5).tolist()
         
 
         # ch_one_chunks = [1999]
@@ -101,11 +104,11 @@ if __name__ == "__main__":
 
         # print(await lient.set_ch_one_output_limits(0, 1))
         print(asyncio.run(client.initialize_buffers(len(ch_one_buffer), len(ch_two_buffer), len(ch_one_chunks), 
-                                        len(ch_two_chunks), sampling_rate)))
+                                        len(ch_two_chunks), 1000)))
         print(asyncio.run(client.set_ch_one_output_limits(-10, 10)))
         print(asyncio.run(client.set_ch_two_output_limits(-10, 10)))
         print(asyncio.run(client.set_ch_one_chunks(ch_one_chunks)))
         print(asyncio.run(client.set_ch_two_chunks(ch_two_chunks)))
         print(asyncio.run(client.set_ch_one_buffer(ch_one_buffer)))
         print(asyncio.run(client.set_ch_two_buffer(ch_two_buffer)))
-        # asyncio.run(client.output_ttl())
+        print(asyncio.run(client.output_on()))
