@@ -97,17 +97,12 @@ void RPI::comm_reset_timer_interrupt()
 		// reset rpi-communication
 		this->is_communicating = false;
 		this->current_nbr_of_bytes = 0;
-		while (spi->isBusy())
-			;
-		spi->disableSPI_DMA();
-		dma_in->disableDMA();
-		dma_in->resetTransferCompleteInterruptFlag();
-		is_communicating = false;
-		spi->enableRxIRQ();
+		dma_in_interrupt();
 	}
 	this->comm_reset_timer->disable();
 	this->comm_reset_timer->disable_interrupt();
 	this->comm_reset_timer->reset_counter();
+	// RPI_conf->SPIx->CR1 |= SPI_CR1_SPE;
 }
 
 void RPI::dma_in_error_interrupt()

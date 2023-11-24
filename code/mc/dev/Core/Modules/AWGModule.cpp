@@ -237,11 +237,13 @@ void TIM2_IRQHandler(void)
 }
 void TIM4_IRQHandler(void)
 {
-	module->rpi->comm_reset_timer_interrupt();
+	LL_TIM_ClearFlag_UPDATE(TIM4);
+	// module->rpi->comm_reset_timer_interrupt();
 }
 
 void TIM7_IRQHandler(void)
 {
+	LL_TIM_ClearFlag_UPDATE(TIM7);
 	module->scope_timer_interrupt();
 }
 
