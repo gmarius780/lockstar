@@ -57,9 +57,17 @@ BasicTimer::BasicTimer(uint8_t timer_x, uint32_t auto_reload, uint32_t prescaler
 	disable_interrupt();
 }
 
-void BasicTimer::set_auto_reload(uint32_t value) { tim_regs->ARR = value; }
+void BasicTimer::set_auto_reload(uint32_t value)
+{
+	tim_regs->ARR = value;
+	LL_TIM_GenerateEvent_UPDATE(tim_regs);
+}
 
-void BasicTimer::set_prescaler(uint32_t value) { tim_regs->PSC = value; }
+void BasicTimer::set_prescaler(uint32_t value)
+{
+	tim_regs->PSC = value;
+	LL_TIM_GenerateEvent_UPDATE(tim_regs);
+}
 
 uint32_t BasicTimer::get_counter() { return (uint32_t)tim_regs->CNT; }
 
@@ -80,7 +88,7 @@ void BasicTimer::reset_counter() { tim_regs->CNT = 0; }
 
 void BasicTimer::reset_interrupt()
 {
-		tim_regs->SR &= ~TIM_SR_UIF;
+	tim_regs->SR &= ~TIM_SR_UIF;
 	//	tim_regs->SR &= ~TIM_SR_TIF;
 	// tim_regs->SR &= 0;
 }
