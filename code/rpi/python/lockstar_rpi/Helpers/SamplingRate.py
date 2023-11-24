@@ -14,4 +14,4 @@ class SamplingRate:
         possible_counters = rate/possible_prescalers
         best_counter = int(possible_counters[np.abs(possible_counters - possible_counters.astype(int)).argmin()])
         best_prescaler = int(rate/best_counter)
-        return best_prescaler , best_counter
+        return best_prescaler - 1  , best_counter - 1
