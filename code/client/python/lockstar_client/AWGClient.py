@@ -57,7 +57,7 @@ if __name__ == "__main__":
         linearization_file = join(dirname(__file__), 'test_linearization.json')
         linearization_length = 2000
 
-        sampling_rate = 1000
+        sampling_rate = 525000
         
         # ch_one_chunks = [1999]
         # ch_one_buffer = np.linspace(0, 10, num=2000).tolist()
@@ -104,7 +104,7 @@ if __name__ == "__main__":
 
         # print(await lient.set_ch_one_output_limits(0, 1))
         print(asyncio.run(client.initialize_buffers(len(ch_one_buffer), len(ch_two_buffer), len(ch_one_chunks), 
-                                        len(ch_two_chunks), 1000)))
+                                        len(ch_two_chunks), sampling_rate)))
         print(asyncio.run(client.set_ch_one_output_limits(-10, 10)))
         print(asyncio.run(client.set_ch_two_output_limits(-10, 10)))
         print(asyncio.run(client.set_ch_one_chunks(ch_one_chunks)))
