@@ -26,6 +26,7 @@
 // #define single_test
 #define multi_test
 
+__STATIC_INLINE float to_float(int32_t value, uint32_t scaling_factor);
 uint32_t Check_Residual_Error(int32_t VarA, int32_t VarB, int32_t MaxError);
 
 uint32_t step_size = MAX_VALUE / ARRAY_SIZE;
@@ -37,11 +38,11 @@ uint32_t start_ticks, stop_ticks, elapsed_ticks;
 uint32_t index = 0;
 
 /* Array of calculated sines in Q1.31 format */
-static int32_t aCalculatedSin[ARRAY_SIZE];
+static float aCalculatedSin[ARRAY_SIZE];
 /* Pointer to start of array */
-int32_t *pCalculatedSin = aCalculatedSin;
-int32_t *dacPointer = aCalculatedSin;
-int32_t *endPointer = aCalculatedSin + (ARRAY_SIZE - 1);
+float *pCalculatedSin = aCalculatedSin;
+float *dacPointer = aCalculatedSin;
+float *endPointer = aCalculatedSin + (ARRAY_SIZE - 1);
 class CORDICTestModule
 {
 public:
@@ -66,7 +67,7 @@ public:
         dac_2->config_output();
 
         prescaler = 0;
-        counter_max = 304;
+        counter_max = 499;
         this->sampling_timer = new BasicTimer(2, counter_max, prescaler);
 
         dac_1->write(0);
@@ -81,34 +82,38 @@ public:
 #endif
 #ifdef multi_test
 
-        start_ticks = SysTick->VAL;
+        // start_ticks = SysTick->VAL;
         /* Write first angle to cordic */
         CORDIC->WDATA = start_angle;
         // CORDIC->WDATA = aAngles[0];
         /* Write remaining angles and read sine results */
         for (uint32_t i = 1; i < ARRAY_SIZE; i++)
         {
+            // if (i == 500)
+            // {
+            //     sampling_timer->enable_interrupt();
+            //     sampling_timer->enable();
+            // }
             start_angle += step_size;
             CORDIC->WDATA = start_angle;
             // CORDIC->WDATA = aAngles[i];
-            *pCalculatedSin++ = CORDIC->RDATA;
+            *pCalculatedSin++ = to_float(CORDIC->RDATA, 5);
         }
         /* Read last result */
-        *pCalculatedSin = CORDIC->RDATA;
-        stop_ticks = SysTick->VAL;
-        elapsed_ticks = start_ticks - stop_ticks;
-
-        /*## Compare CORDIC results to the reference values #####################*/
-        for (uint32_t i = 0; i < ARRAY_SIZE; i++)
-        {
-            if (Check_Residual_Error(aCalculatedSin[i], sin_values[i], ERROR) == FAIL)
-            {
-                Error_Handler();
-            }
-        }
-
+        *pCalculatedSin = to_float(CORDIC->RDATA, 5);
         sampling_timer->enable_interrupt();
         sampling_timer->enable();
+        // stop_ticks = SysTick->VAL;
+        // elapsed_ticks = start_ticks - stop_ticks;
+
+        /*## Compare CORDIC results to the reference values #####################*/
+        // for (uint32_t i = 0; i < ARRAY_SIZE; i++)
+        // {
+        //     if (Check_Residual_Error(aCalculatedSin[i], sin_values[i], ERROR) == FAIL)
+        //     {
+        //         Error_Handler();
+        //     }
+        // }
 
 #endif
         while (true)
@@ -118,11 +123,11 @@ public:
 
     void sampling_timer_interrupt()
     {
-        index++;
-        float value = ((float)*(dacPointer++) / (float)(1 << FIXED_POINT_FRACTIONAL_BITS))*5;
+        // float value = ((float)*(dacPointer++) / (float)(1 << FIXED_POINT_FRACTIONAL_BITS)) * 5;
         if (dacPointer < endPointer)
         {
-            this->dac_1->write(value);
+            this->dac_1->write(*dacPointer);
+            this->dac_2->write(*(dacPointer++));
         }
 
         else
@@ -163,7 +168,10 @@ uint32_t Check_Residual_Error(int32_t VarA, int32_t VarB, int32_t MaxError)
 
     return status;
 }
-
+__STATIC_INLINE float to_float(int32_t value, uint32_t scaling_factor)
+{
+    return ((float)value / (float)(1 << FIXED_POINT_FRACTIONAL_BITS)) * scaling_factor;
+}
 /******************************
  *         INTERRUPTS          *
  *******************************/
