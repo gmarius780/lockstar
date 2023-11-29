@@ -35,7 +35,6 @@ uint32_t start_angle = 0x00000000;
 int32_t cosOutput = 0;
 int32_t sinOutput = 0;
 uint32_t start_ticks, stop_ticks, elapsed_ticks;
-uint32_t index = 0;
 
 /* Array of calculated sines in Q1.31 format */
 static float aCalculatedSin[ARRAY_SIZE];
@@ -209,19 +208,6 @@ void TIM2_IRQHandler(void)
  ******************************/
 void start(void)
 {
-    /* To speed up the access to functions, that are often called, we store them in the RAM instead of the FLASH memory.
-     * RAM is volatile. We therefore need to load the code into RAM at startup time. For background and explanations,
-     * check https://rhye.org/post/stm32-with-opencm3-4-memory-sections/
-     * */
-    extern unsigned __sram_func_start, __sram_func_end, __sram_func_loadaddr;
-    volatile unsigned *src = &__sram_func_loadaddr;
-    volatile unsigned *dest = &__sram_func_start;
-    while (dest < &__sram_func_end)
-    {
-        *dest = *src;
-        src++;
-        dest++;
-    }
 
     /* After power on, give all devices a moment to properly start up */
     HAL_Delay(200);

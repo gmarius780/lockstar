@@ -45,6 +45,12 @@ defined in linker script */
 .word  _ebss
 /* stack used for SystemInit_ExtMemCtl; always internal RAM used */
 
+/* start address of the .isr_vector section.*/
+.word _svector
+/* end address for the .isr_vector section. */
+.word _evector
+/* start address for the initialization values of the .ivector section.*/
+.word _sivector
 /**
  * @brief  This is the code that gets called when the processor first
  *          starts execution following a reset event. Only the absolutely
@@ -92,6 +98,23 @@ FillZerobss:
 LoopFillZerobss:
   cmp r2, r4
   bcc FillZerobss
+
+  /* Copy isr_vector */
+  ldr r0, =_svector
+  ldr r1, =_evector
+  ldr r2, =_sivector
+  movs r3, #0
+  b LoopCopyVecInit
+
+  CopyVecInit:
+  ldr r4, [r2, r3]
+  str r4, [r0, r3]
+  adds r3, r3, #4
+LoopCopyVecInit:
+  adds r4, r0, r3
+  cmp r4, r1
+  bcc CopyVecInit
+/* End of copy Vector */
 
 /* Call static constructors */
     bl __libc_init_array
