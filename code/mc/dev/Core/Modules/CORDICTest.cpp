@@ -5,6 +5,11 @@
 #include "stm32h7xx_it.h"
 #include "../../data/angle_data.h"
 
+#include "../HAL/ADCDevice.hpp"
+#include "../HAL/DACDevice.hpp"
+#include "../HAL/BasicTimer.hpp"
+#include "dac_config.h"
+
 /* Reference values in Q1.31 format */
 #define ANGLE_CORDIC (int32_t)0x10000000 /* pi/8 in CORDIC input angle mapping */
 #define ANGLE_LIB (int32_t)0x08000000    /* pi/8 in arm math lib input angle mapping */
@@ -16,6 +21,7 @@
 #define FAIL 1
 
 #define MAX_VALUE 0xFFFFFFFF
+#define FIXED_POINT_FRACTIONAL_BITS 31
 
 // #define single_test
 #define multi_test
@@ -28,17 +34,20 @@ uint32_t start_angle = 0x00000000;
 int32_t cosOutput = 0;
 int32_t sinOutput = 0;
 uint32_t start_ticks, stop_ticks, elapsed_ticks;
+uint32_t index = 0;
 
 /* Array of calculated sines in Q1.31 format */
-static uint32_t aCalculatedSin[ARRAY_SIZE];
+static int32_t aCalculatedSin[ARRAY_SIZE];
 /* Pointer to start of array */
-uint32_t *pCalculatedSin = aCalculatedSin;
-
+int32_t *pCalculatedSin = aCalculatedSin;
+int32_t *dacPointer = aCalculatedSin;
+int32_t *endPointer = aCalculatedSin + (ARRAY_SIZE - 1);
 class CORDICTestModule
 {
 public:
     CORDICTestModule()
     {
+
         LL_CORDIC_Config(CORDIC,
                          LL_CORDIC_FUNCTION_SINE,     /* cosine function */
                          LL_CORDIC_PRECISION_6CYCLES, /* max precision for q1.31 cosine */
@@ -51,6 +60,17 @@ public:
     }
     void run()
     {
+        dac_1 = new DAC1_Device(&DAC1_conf);
+        dac_2 = new DAC2_Device(&DAC2_conf);
+        dac_1->config_output();
+        dac_2->config_output();
+
+        prescaler = 0;
+        counter_max = 304;
+        this->sampling_timer = new BasicTimer(2, counter_max, prescaler);
+
+        dac_1->write(0);
+        dac_2->write(0);
 
 #ifdef single_test
         start_ticks = SysTick->VAL;
@@ -87,13 +107,37 @@ public:
             }
         }
 
+        sampling_timer->enable_interrupt();
+        sampling_timer->enable();
+
 #endif
         while (true)
         {
         }
     }
 
+    void sampling_timer_interrupt()
+    {
+        index++;
+        float value = ((float)*(dacPointer++) / (float)(1 << FIXED_POINT_FRACTIONAL_BITS))*5;
+        if (dacPointer < endPointer)
+        {
+            this->dac_1->write(value);
+        }
+
+        else
+        {
+            dacPointer = aCalculatedSin;
+            // sampling_timer->disable_interrupt();
+            // sampling_timer->disable();
+        }
+    }
+
 public:
+    DAC_Device *dac_1;
+    DAC_Device *dac_2;
+    BasicTimer *sampling_timer;
+    uint32_t counter_max, prescaler;
 };
 
 CORDICTestModule *module;
@@ -101,7 +145,6 @@ CORDICTestModule *module;
 uint32_t Check_Residual_Error(int32_t VarA, int32_t VarB, int32_t MaxError)
 {
     uint32_t status = PASS;
-    
 
     if ((VarA - VarB) >= 0)
     {
@@ -124,10 +167,35 @@ uint32_t Check_Residual_Error(int32_t VarA, int32_t VarB, int32_t MaxError)
 /******************************
  *         INTERRUPTS          *
  *******************************/
-/********************
-||      TIM1       ||
-********************/
 
+/********************
+||      DAC1      ||
+********************/
+void BDMA_Channel1_IRQHandler(void)
+{
+    module->dac_1->dma_transmission_callback();
+}
+
+void SPI6_IRQHandler(void)
+{
+    module->dac_1->dma_transmission_callback();
+}
+/********************
+||      DAC2      ||
+********************/
+void DMA2_Stream3_IRQHandler(void)
+{
+    module->dac_2->dma_transmission_callback();
+}
+void SPI5_IRQHandler(void)
+{
+    module->dac_2->dma_transmission_callback();
+}
+void TIM2_IRQHandler(void)
+{
+    LL_TIM_ClearFlag_UPDATE(TIM2);
+    module->sampling_timer_interrupt();
+}
 /******************************
  *       MAIN FUNCTION        *
  ******************************/
