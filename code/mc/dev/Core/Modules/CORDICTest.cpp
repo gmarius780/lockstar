@@ -68,19 +68,12 @@ public:
         dac_2->config_output();
 
         prescaler = 0;
-        counter_max = 457;
+        counter_max = 391;
         this->sampling_timer = new BasicTimer(2, counter_max, prescaler);
 
         dac_1->write(0);
         dac_2->write(0);
 
-#ifdef single_test
-        start_ticks = SysTick->VAL;
-        LL_CORDIC_WriteData(CORDIC, ANGLE_CORDIC);
-        cosOutput = (int32_t)LL_CORDIC_ReadData(CORDIC);
-        stop_ticks = SysTick->VAL;
-        elapsed_ticks = start_ticks - stop_ticks;
-#endif
 #ifdef multi_test
 
         start_ticks = SysTick->VAL;
