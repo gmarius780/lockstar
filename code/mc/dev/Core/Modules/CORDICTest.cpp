@@ -42,6 +42,7 @@ static float aCalculatedSin[ARRAY_SIZE];
 float *pCalculatedSin = aCalculatedSin;
 float *dacPointer = aCalculatedSin;
 float *endPointer = aCalculatedSin + (ARRAY_SIZE - 1);
+
 class CORDICTestModule
 {
 public:
@@ -60,6 +61,7 @@ public:
     }
     void run()
     {
+        
         dac_1 = new DAC1_Device(&DAC1_conf);
         dac_2 = new DAC2_Device(&DAC2_conf);
         dac_1->config_output();
@@ -81,7 +83,7 @@ public:
 #endif
 #ifdef multi_test
 
-        // start_ticks = SysTick->VAL;
+        start_ticks = SysTick->VAL;
         /* Write first angle to cordic */
         CORDIC->WDATA = start_angle;
         // CORDIC->WDATA = aAngles[0];
@@ -134,6 +136,8 @@ public:
             dacPointer = aCalculatedSin;
             // sampling_timer->disable_interrupt();
             // sampling_timer->disable();
+            // stop_ticks = SysTick->VAL;
+            // elapsed_ticks = start_ticks - stop_ticks;
         }
     }
 
@@ -178,11 +182,12 @@ __STATIC_INLINE float to_float(int32_t value, uint32_t scaling_factor)
 /********************
 ||      DAC1      ||
 ********************/
+__attribute__((section (".itcmram")))
 void BDMA_Channel1_IRQHandler(void)
 {
     module->dac_1->dma_transmission_callback();
 }
-
+__attribute__((section (".itcmram")))
 void SPI6_IRQHandler(void)
 {
     module->dac_1->dma_transmission_callback();
@@ -190,14 +195,17 @@ void SPI6_IRQHandler(void)
 /********************
 ||      DAC2      ||
 ********************/
+__attribute__((section (".itcmram")))
 void DMA2_Stream3_IRQHandler(void)
 {
     module->dac_2->dma_transmission_callback();
 }
+__attribute__((section (".itcmram")))
 void SPI5_IRQHandler(void)
 {
     module->dac_2->dma_transmission_callback();
 }
+__attribute__((section (".itcmram")))
 void TIM2_IRQHandler(void)
 {
     LL_TIM_ClearFlag_UPDATE(TIM2);
