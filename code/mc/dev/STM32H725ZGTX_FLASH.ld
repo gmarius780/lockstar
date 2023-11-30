@@ -65,6 +65,35 @@ SECTIONS
     _evector = .;
   } >RAM_D1 AT> FLASH
 
+ /*--- New ITCMRAM linker section definition ---*/
+ _siitcmram = LOADADDR(.itcmram);
+ /* CCMRAM section */
+ .itcmram :
+ {
+ . = ALIGN(4);
+ _sitcmram = .; /* define a global symbols at ccmitcmramram start */
+ *(.itcmram) 
+ *(.itcmram*)
+ . = ALIGN(4);
+ _eitcmram = .; /* define a global symbols at itcmram end */
+ } >ITCMRAM AT> FLASH
+ /*--- End of ITCMRAM linker section definition ---*/
+
+  /*--- New DTCMRAM linker section definition ---*/
+ _sidtcmram = LOADADDR(.dtcmram);
+ /* CCMRAM section */
+ .dtcmram :
+ {
+ . = ALIGN(4);
+ _sdtcmram = .; /* define a global symbols at dtcmram start */
+ *(.dtcmram) 
+ *(.dtcmram*)
+ . = ALIGN(4);
+ _edtcmram = .; /* define a global symbols at dtcmram end */
+ } >dtcmram AT> FLASH
+ /*--- End of DTCMRAM linker section definition ---*/
+
+
   /* The program code and other data goes into FLASH */
   .text :
   {

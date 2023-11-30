@@ -51,6 +51,14 @@ defined in linker script */
 .word _evector
 /* start address for the initialization values of the .ivector section.*/
 .word _sivector
+
+.word _sitcmram
+.word _eitcmram
+.word _siitcmram
+.word _sdtcmram
+.word _edtcmram
+.word _sidtcmram
+
 /**
  * @brief  This is the code that gets called when the processor first
  *          starts execution following a reset event. Only the absolutely
@@ -115,6 +123,40 @@ LoopCopyVecInit:
   cmp r4, r1
   bcc CopyVecInit
 /* End of copy Vector */
+
+/* Copy itcm_ram */
+  ldr r0, =_sitcmram
+  ldr r1, =_eitcmram
+  ldr r2, =_siitcmram
+  movs r3, #0
+b LoopCopyITCMInit
+
+CopyITCMInit:
+  ldr r4, [r2, r3]
+  str r4, [r0, r3]
+  adds r3, r3, #4
+LoopCopyITCMInit:
+  adds r4, r0, r3
+  cmp r4, r1
+  bcc CopyITCMInit
+/* End of copy itcm_ram */
+
+/* Copy DTCM_ram */
+  ldr r0, =_sdtcmram
+  ldr r1, =_edtcmram
+  ldr r2, =_sidtcmram
+  movs r3, #0
+b LoopCopyDTCMInit
+
+CopyDTCMInit:
+  ldr r4, [r2, r3]
+  str r4, [r0, r3]
+  adds r3, r3, #4
+LoopCopyDTCMInit:
+  adds r4, r0, r3
+  cmp r4, r1
+  bcc CopyDTCMInit
+/* End of copy DTCM_ram */
 
 /* Call static constructors */
     bl __libc_init_array
