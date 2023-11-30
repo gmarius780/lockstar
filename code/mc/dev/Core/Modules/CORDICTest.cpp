@@ -37,7 +37,7 @@ int32_t sinOutput = 0;
 uint32_t start_ticks, stop_ticks, elapsed_ticks;
 
 /* Array of calculated sines in Q1.31 format */
-__attribute__((section (".dtcmram"))) static float aCalculatedSin[ARRAY_SIZE];
+static float aCalculatedSin[ARRAY_SIZE];
 /* Pointer to start of array */
 float *pCalculatedSin = aCalculatedSin;
 float *dacPointer = aCalculatedSin;
@@ -68,7 +68,7 @@ public:
         dac_2->config_output();
 
         prescaler = 0;
-        counter_max = 499;
+        counter_max = 549;
         this->sampling_timer = new BasicTimer(2, counter_max, prescaler);
 
         dac_1->write(0);
