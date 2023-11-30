@@ -37,7 +37,7 @@ int32_t sinOutput = 0;
 uint32_t start_ticks, stop_ticks, elapsed_ticks;
 
 /* Array of calculated sines in Q1.31 format */
-static float aCalculatedSin[ARRAY_SIZE];
+__attribute__((section (".dtcmram"))) static float aCalculatedSin[ARRAY_SIZE];
 /* Pointer to start of array */
 float *pCalculatedSin = aCalculatedSin;
 float *dacPointer = aCalculatedSin;

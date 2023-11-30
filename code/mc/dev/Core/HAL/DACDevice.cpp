@@ -10,8 +10,13 @@
 #define DAC1_BUFFER_SIZE 3
 #define DAC2_BUFFER_SIZE 3
 
-__attribute__((section(".BDMABlock"))) uint8_t dmaD3_buffer[DAC1_BUFFER_SIZE] = {0};
-__attribute__((section(".DMA_D1"))) uint8_t dmaD1_buffer[DAC2_BUFFER_SIZE] = {0};
+__attribute__((section(".BDMABlock"))) 
+__attribute__((__aligned__(32)))
+uint8_t dmaD3_buffer[DAC1_BUFFER_SIZE] = {0};
+
+__attribute__((section(".DMA_D1"))) 
+__attribute__((__aligned__(32)))
+uint8_t dmaD1_buffer[DAC2_BUFFER_SIZE] = {0};
 
 // uint32_t start_cycle, end_cycle, total_cycles;
 DAC_Device::DAC_Device(DAC_Device_TypeDef *DAC_conf)

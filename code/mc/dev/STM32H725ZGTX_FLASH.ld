@@ -67,7 +67,7 @@ SECTIONS
 
  /*--- New ITCMRAM linker section definition ---*/
  _siitcmram = LOADADDR(.itcmram);
- /* CCMRAM section */
+ /* ITCMRAM section */
  .itcmram :
  {
  . = ALIGN(4);
@@ -81,7 +81,7 @@ SECTIONS
 
   /*--- New DTCMRAM linker section definition ---*/
  _sidtcmram = LOADADDR(.dtcmram);
- /* CCMRAM section */
+ /* DTCMRAM section */
  .dtcmram :
  {
  . = ALIGN(4);
@@ -90,7 +90,7 @@ SECTIONS
  *(.dtcmram*)
  . = ALIGN(4);
  _edtcmram = .; /* define a global symbols at dtcmram end */
- } >dtcmram AT> FLASH
+ } >DTCMRAM AT> FLASH
  /*--- End of DTCMRAM linker section definition ---*/
 
 
@@ -205,13 +205,15 @@ SECTIONS
   } >RAM_D1
   .BDMABlock : 
   {
-    . = ALIGN(8);
+    . = ALIGN(32);
     *(.BDMA_Access)
+    . = ALIGN(32);
   } >RAM_D3 AT> FLASH
   .DMA_D1 : 
   {
-    . = ALIGN(8);
+    . = ALIGN(0x20);
     *(.DMA_Access)
+    . = ALIGN(0x20);
   } >RAM_D1 AT> FLASH
 
   /* Remove information from the standard libraries */
