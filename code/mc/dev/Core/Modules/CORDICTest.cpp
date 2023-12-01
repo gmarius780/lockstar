@@ -23,8 +23,7 @@
 #define MAX_VALUE 0xFFFFFFFF
 #define FIXED_POINT_FRACTIONAL_BITS 31
 
-// #define single_test
-#define multi_test
+// #define check_cordic_output
 
 __STATIC_INLINE float to_float(int32_t value, uint32_t scaling_factor);
 uint32_t Check_Residual_Error(int32_t VarA, int32_t VarB, int32_t MaxError);
@@ -74,8 +73,6 @@ public:
         dac_1->write(0);
         dac_2->write(0);
 
-#ifdef multi_test
-
         start_ticks = SysTick->VAL;
         /* Write first angle to cordic */
         CORDIC->WDATA = start_angle;
@@ -87,30 +84,22 @@ public:
         {
             start_angle += step_size;
             CORDIC->WDATA = start_angle;
-            // if (i == 1)
-            // {
-            //     sampling_timer->enable_interrupt();
-            //     sampling_timer->enable();
-            // }
-            // CORDIC->WDATA = aAngles[i];
+
             *pCalculatedSin++ = to_float(CORDIC->RDATA, 5);
         }
         /* Read last result */
         *pCalculatedSin = to_float(CORDIC->RDATA, 5);
-        // sampling_timer->enable_interrupt();
-        // sampling_timer->enable();
-        // stop_ticks = SysTick->VAL;
-        // elapsed_ticks = start_ticks - stop_ticks;
 
+
+#ifdef check_cordic_output
         /*## Compare CORDIC results to the reference values #####################*/
-        // for (uint32_t i = 0; i < ARRAY_SIZE; i++)
-        // {
-        //     if (Check_Residual_Error(aCalculatedSin[i], sin_values[i], ERROR) == FAIL)
-        //     {
-        //         Error_Handler();
-        //     }
-        // }
-
+        for (uint32_t i = 0; i < ARRAY_SIZE; i++)
+        {
+            if (Check_Residual_Error(aCalculatedSin[i], sin_values[i], ERROR) == FAIL)
+            {
+                Error_Handler();
+            }
+        }
 #endif
         while (true)
         {
