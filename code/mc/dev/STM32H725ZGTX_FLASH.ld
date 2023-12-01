@@ -209,11 +209,18 @@ SECTIONS
     *(.BDMA_Access)
     . = ALIGN(32);
   } >RAM_D3 AT> FLASH
-  .DMA_D1 ORIGIN(RAM_D1) + LENGTH(RAM_D1) - 0x20 : 
+  .DMA_D1 ORIGIN(RAM_D1) + LENGTH(RAM_D1) - 0x40 : 
   {
     . = ALIGN(0x20);
     *(.DMA_Access)
     KEEP(*(.DMA_Access)) 
+    . = ALIGN(0x20);
+  } >RAM_D1 AT> FLASH
+  .ADC_D1 ORIGIN(RAM_D1) + LENGTH(RAM_D1) - 0x20 : 
+  {
+    . = ALIGN(0x20);
+    *(.ADC_Access)
+    KEEP(*(.ADC_Access)) 
     . = ALIGN(0x20);
   } >RAM_D1 AT> FLASH
 
