@@ -9,7 +9,10 @@
 // ADC_TX_DMA_STREAM TX
 #include "ADCDevice.hpp"
 #include "adc_config.h"
-__attribute__((section(".data"))) uint8_t dmaADC_buffer[3] = {0};
+__attribute__((section(".ADC_D1")))
+uint8_t dmaADC_buffer[3] = {0};
+
+__attribute__((section(".ADC_D1"))) float result_buffer = 0;
 
 ADC_Device::ADC_Device(ADC_Device_TypeDef *ADC_conf, uint8_t ch1_config, uint8_t ch2_config)
 {
@@ -96,18 +99,22 @@ ADC_Device_Channel::ADC_Device_Channel(ADC_Device *parentDevice, uint16_t channe
 
 void ADC_Device_Channel::update_result(int16_t result)
 {
-    this->result = two_comp ? (step_size * result) : (step_size * (uint16_t)result);
+    result_buffer = two_comp ? (step_size * result) : (step_size * (uint16_t)result);
+}
+float ADC_Device_Channel::get_result()
+{
+    return result_buffer;
 }
 
 void ADC_Device::start_conversion()
 {
 
-    while(busy){
+    while (busy)
+    {
     }
 
     // busy flag gets reset when DMA transfer is finished
     busy = true;
-    
 
     SetDataLength(ADC_conf->DMA_StreamRx, DATAWIDTH);
     SetDataLength(ADC_conf->DMA_StreamTx, DATAWIDTH);
@@ -130,7 +137,6 @@ void ADC_Device::dma_transmission_callback(void)
 {
     ADC_conf->dmaTx_clr_flag(ADC_conf->DMATx);
 }
-__attribute__((section("sram_func")))
 void ADC_Device::dma_receive_callback(void)
 {
 

@@ -49,7 +49,7 @@ class ADC_Device_Channel
 {
 public:
     ADC_Device_Channel(ADC_Device *parent_device, uint16_t channel_id, uint8_t setup);
-    float get_result() { return result; }
+    float get_result();
     uint8_t get_channel_code() { return channel_code; }
 
     friend class ADC_Device;
@@ -57,7 +57,7 @@ public:
 private:
     void update_result(int16_t result);
     // Samuel: Maybe it makes more sense to move the channel buffer to the modules using the ADC?
-    float result;
+    float *result;
     float step_size;
     bool two_comp;
     ADC_Device *parent_device;
