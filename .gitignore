@@ -209,3 +209,4 @@ doc/STM32H725_DMA_Ref.pdf
 doc/STM32H725_SPI_Ref.pdf
 *.T3001OPEN
 code/mc/dev/data/angle_data.h
+code/mc/dev/devRemote.cfg

@@ -34,8 +34,8 @@ public:
 		turn_LED2_on();
 		turn_LED3_on();
 
-		prescaler = 275;
-		counter_max = 1000;
+		prescaler = 0;
+		counter_max = 549;
 		this->sampling_timer = new BasicTimer(2, counter_max, prescaler);
 
 		dac_1->write(0);
@@ -116,11 +116,20 @@ __attribute__((section(".itcmram"))) void DMA1_Stream5_IRQHandler(void)
 	module->ADC_Dev->dma_transmission_callback();
 }
 
-// void SPI2_IRQHandler(void)
-// {
-// 	module->ADC_Dev->spi_transmision_callback();
-// }
+__attribute__((section(".itcmram"))) void DMA1_Stream2_IRQHandler(void)
+{
+	module->ADC_Dev->dma_receive_callback();
+}
 
+__attribute__((section(".itcmram"))) void DMA1_Stream3_IRQHandler(void)
+{
+	module->ADC_Dev->dma_transmission_callback();
+}
+
+__attribute__((section(".itcmram"))) void SPI2_IRQHandler(void)
+{
+	module->ADC_Dev->spi_transmision_callback();
+}
 /******************************
  *       MAIN FUNCTION        *
  ******************************/
