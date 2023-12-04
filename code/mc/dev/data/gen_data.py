@@ -2,10 +2,10 @@ import math
 import numpy as np
 
 # Define sinus wave parameters
-num_samples = 75000
+num_samples = 1000
 amplitude = np.float32(1.0)
 frequency = np.float32(1.0)
-x_values = np.float32(np.linspace(0, 2, num_samples+1))
+x_values = np.float32(np.linspace(0.5, -0.5, num_samples+1))
 
 # Generate y values
 y_values = np.float32([amplitude * math.sin(np.pi * frequency * x) for x in x_values])
@@ -33,6 +33,8 @@ with open('data/angle_data.h', 'w') as f:
     f.write('const uint32_t angle_values[ARRAY_SIZE] = {\n')
     index = 0
     for x in x_values[:-1]:
+        if x < 0:
+            x = 2 + x
         index += 1
         f.write(f'{hex(int(x*(2**31)))}, ')
         if(index % 8 == 0):

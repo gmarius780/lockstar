@@ -25,7 +25,7 @@
 
 // #define check_cordic_output
 
-__STATIC_INLINE float to_float(int32_t value, uint32_t scaling_factor);
+__STATIC_INLINE float to_float(int32_t value, uint32_t scaling_factor, uint32_t offset);
 uint32_t Check_Residual_Error(int32_t VarA, int32_t VarB, int32_t MaxError);
 
 uint32_t step_size = MAX_VALUE / ARRAY_SIZE;
@@ -49,9 +49,9 @@ public:
     {
 
         LL_CORDIC_Config(CORDIC,
-                         LL_CORDIC_FUNCTION_SINE,     /* cosine function */
+                         LL_CORDIC_FUNCTION_ARCTANGENT,     /* cosine function */
                          LL_CORDIC_PRECISION_6CYCLES, /* max precision for q1.31 cosine */
-                         LL_CORDIC_SCALE_0,           /* no scale */
+                         LL_CORDIC_SCALE_6,           /* no scale */
                          LL_CORDIC_NBWRITE_1,         /* One input data: angle. Second input data (modulus) is 1
                                   after cordic reset */
                          LL_CORDIC_NBREAD_1,          /* Two output data: cosine, then sine */
@@ -66,8 +66,8 @@ public:
         dac_1->config_output();
         dac_2->config_output();
 
-        prescaler = 0;
-        counter_max = 391;
+        prescaler = 275;
+        counter_max = 1000;
         this->sampling_timer = new BasicTimer(2, counter_max, prescaler);
 
         dac_1->write(0);
@@ -75,20 +75,21 @@ public:
 
         start_ticks = SysTick->VAL;
         /* Write first angle to cordic */
-        CORDIC->WDATA = start_angle;
-        // CORDIC->WDATA = aAngles[0];
+        // CORDIC->WDATA = start_angle;
+        CORDIC->WDATA = angle_values[0];
         /* Write remaining angles and read sine results */
         sampling_timer->enable_interrupt();
         sampling_timer->enable();
         for (uint32_t i = 1; i < ARRAY_SIZE; i++)
         {
-            start_angle += step_size;
-            CORDIC->WDATA = start_angle;
+            // start_angle += step_size;
+            // CORDIC->WDATA = start_angle;
+            CORDIC->WDATA = angle_values[i];
 
-            *pCalculatedSin++ = to_float(CORDIC->RDATA, 5);
+            *pCalculatedSin++ = to_float(CORDIC->RDATA, 133.3*4, 4);
         }
         /* Read last result */
-        *pCalculatedSin = to_float(CORDIC->RDATA, 5);
+        *pCalculatedSin = to_float(CORDIC->RDATA, 133.3*4, 4);
 
 
 #ifdef check_cordic_output
@@ -155,9 +156,9 @@ uint32_t Check_Residual_Error(int32_t VarA, int32_t VarB, int32_t MaxError)
 
     return status;
 }
-__STATIC_INLINE float to_float(int32_t value, uint32_t scaling_factor)
+__STATIC_INLINE float to_float(int32_t value, uint32_t scaling_factor, uint32_t offset)
 {
-    return ((float)value / (float)(1 << FIXED_POINT_FRACTIONAL_BITS)) * scaling_factor;
+    return ((float)value / (float)(1 << FIXED_POINT_FRACTIONAL_BITS)) * scaling_factor + offset;
 }
 /******************************
  *         INTERRUPTS          *
