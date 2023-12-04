@@ -112,7 +112,8 @@ void ADC_Device::start_conversion()
     while (busy)
     {
     }
-
+    ADC_conf->cnv_port->BSRR = ADC_conf->cnv_pin;
+    ADC_conf->cnv_port->BSRR = ADC_conf->cnv_pin << 16U;
     // busy flag gets reset when DMA transfer is finished
     busy = true;
 
@@ -146,8 +147,6 @@ void ADC_Device::dma_receive_callback(void)
     CLEAR_BIT(ADC_conf->SPIx->CR1, SPI_CR1_SPE);
     CLEAR_BIT(ADC_conf->SPIx->CFG1, SPI_CFG1_TXDMAEN | SPI_CFG1_RXDMAEN);
 
-    ADC_conf->cnv_port->BSRR = ADC_conf->cnv_pin;
-    ADC_conf->cnv_port->BSRR = ADC_conf->cnv_pin << 16U;
     channel2->update_result(bytes_to_u16(ADCdma_buffer[0], ADCdma_buffer[1]));
     channel1->update_result(bytes_to_u16(ADCdma_buffer[3], ADCdma_buffer[4]));
     busy = false;
