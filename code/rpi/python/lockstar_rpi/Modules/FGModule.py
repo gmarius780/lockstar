@@ -15,7 +15,6 @@ class FGModule(BufferBaseModule_):
 
     # ==== START: client methods
     async def set_cfunction(self, func: str, writer, respond=True):
-
         match func:
             case "cos":
                 ll_func = ctypes.c_uint32(0)
@@ -33,9 +32,9 @@ class FGModule(BufferBaseModule_):
                 ll_func = ctypes.c_uint32(6)
             case "arctanh":
                 ll_func = ctypes.c_uint32(7)
-            case "ln"
+            case "ln":
                 ll_func = ctypes.c_uint32(8)
-            case "sqrt"
+            case "sqrt":
                 ll_func = ctypes.c_uint32(9)
             case _:
                 ll_func = ctypes.c_uint32(0)
