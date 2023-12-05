@@ -36,11 +36,34 @@ if __name__ == "__main__":
 
     client = FGClient("192.168.137.2", 10780, 1234)
 
-    asyncio.run(client.register_client_id())
-    logging.info(f"Successfully initialized Single PID module")
+if asyncio.run(client.register_client_id()):
+        logging.info(f'Successfully initialized AWG module')
+        
+        linearization_file = join(dirname(__file__), 'test_linearization.json')
+        linearization_length = 2000
 
-    print(asyncio.run(client.set_ch_one_output_limits(-10, 10)))
-    print(asyncio.run(client.set_ch_two_output_limits(-10, 10)))
-    print(asyncio.run(client.set_cfunction("arctan")))
-    print(asyncio.run(client.start_ccalculation()))
-    print(asyncio.run(client.start_output()))
+        sampling_rate = 500000
+
+        # ch_one_chunks = [999, 1999, 2999, 3999, 4999]
+        # ch_two_chunks = [1999, 2999]
+        # ch_one_buffer = np.concatenate((np.cos(np.linspace(0, 2*np.pi, num=1000)),
+        #                                 np.linspace(0, 1, num=1000),
+        #                                 np.cos(np.linspace(0, 6*np.pi, num=1000)),
+        #                                 np.linspace(1, -1, num=1000),
+        #                                 np.linspace(-1, 0, num=1000)))
+
+
+        # ch_two_buffer = np.concatenate((np.cos(np.linspace(0, 50*4*np.pi, num=2000)),
+        #                                 np.linspace(1, 2, num=500), np.linspace(2, 1, num=500)))
+
+        # ch_one_buffer = (ch_one_buffer * 5).tolist()
+        # ch_two_buffer = (ch_two_buffer * 5).tolist()
+        
+        # print(asyncio.run(client.initialize_buffers(len(ch_one_buffer), len(ch_two_buffer), len(ch_one_chunks), 
+        #                                 len(ch_two_chunks), sampling_rate)))
+        print(asyncio.run(client.set_sampling_rate(sampling_rate)))
+        print(asyncio.run(client.set_ch_one_output_limits(-10, 10)))
+        print(asyncio.run(client.set_ch_two_output_limits(-10, 10)))
+        print(asyncio.run(client.set_cfnction("arctan")))
+        print(asyncio.run(client.start_ccalculation()))
+        print(asyncio.run(client.start_output()))
