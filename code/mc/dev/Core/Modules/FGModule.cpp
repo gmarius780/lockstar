@@ -11,7 +11,6 @@
 #include "dac_config.h"
 #include "BufferBaseModule.h"
 
-
 #define MAX_VALUE 0xFFFFFFFF
 #define FIXED_POINT_FRACTIONAL_BITS 31
 
@@ -44,7 +43,7 @@ public:
     {
         initialize_rpi();
         LL_CORDIC_Config(CORDIC,
-                         LL_CORDIC_FUNCTION_ARCTANGENT, /* cosine function */
+                         LL_CORDIC_FUNCTION_COSINE, /* cosine function */
                          LL_CORDIC_PRECISION_6CYCLES,   /* max precision for q1.31 cosine */
                          LL_CORDIC_SCALE_6,             /* no scale */
                          LL_CORDIC_NBWRITE_1,           /* One input data: angle. Second input data (modulus) is 1
@@ -64,31 +63,59 @@ public:
 
         dac_1->write(0);
         dac_2->write(0);
-        /* Write first angle to cordic */
-        // CORDIC->WDATA = start_angle;
-        CORDIC->WDATA = angle_values[0];
-        /* Write remaining angles and read sine results */
-        sampling_timer->enable_interrupt();
-        sampling_timer->enable();
 
         // allocate buffer and chunk space
         this->buffer = new float[BUFFER_LIMIT_kBYTES * 250]; // contains buffer_one and buffer_two sequentially
         this->chunks = new uint32_t[MAX_NBR_OF_CHUNKS];      // contains chuncks_one and chunks_two sequentially
 
+        while (true)
+        {
+        }
+    }
+
+    /*** START: METHODS ACCESSIBLE FROM THE RPI ***/
+    static const uint32_t METHOD_SET_CFUNCTION = 31;
+    void set_cfunction(RPIDataPackage *read_package)
+    {
+        /***Read arguments***/
+        uint32_t func = read_package->pop_from_buffer<float>();
+        LL_CORDIC_SetFunction(CORDIC, func);
+        /*** send ACK ***/
+        RPIDataPackage *write_package = rpi->get_write_package();
+        write_package->push_ack();
+        rpi->send_package(write_package);
+    }
+
+    static const uint32_t METHOD_START_CCalculation = 32;
+    void start_ccalculation(RPIDataPackage *read_package)
+    {
+        /***Read arguments***/
+
+        /* Write first angle to cordic */
+        CORDIC->WDATA = angle_values[0];
         for (uint32_t i = 1; i < ARRAY_SIZE; i++)
         {
-            // start_angle += step_size;
-            // CORDIC->WDATA = start_angle;
             CORDIC->WDATA = angle_values[i];
-
             *pCalculatedSin++ = to_float(CORDIC->RDATA, 133.3 * 4, 4);
         }
         /* Read last result */
         *pCalculatedSin = to_float(CORDIC->RDATA, 133.3 * 4, 4);
 
-        while (true)
-        {
-        }
+        /*** send ACK ***/
+        RPIDataPackage *write_package = rpi->get_write_package();
+        write_package->push_ack();
+        rpi->send_package(write_package);
+    }
+    static const uint32_t METHOD_START_Output = 33;
+    void start_output(RPIDataPackage *read_package)
+    {
+        sampling_timer->enable_interrupt();
+        sampling_timer->enable();
+
+        /*** send ACK ***/
+        RPIDataPackage *write_package = rpi->get_write_package();
+        write_package->push_ack();
+        rpi->send_package(write_package);
     }
 
     void handle_rpi_input()
@@ -100,6 +127,15 @@ public:
             // switch between method_identifier
             switch (read_package->pop_from_buffer<uint32_t>())
             {
+            case METHOD_SET_CFUNCTION:
+                set_cfunction(read_package);
+                break;
+            case METHOD_START_CCalculation:
+                start_ccalculation(read_package);
+                break;
+            case METHOD_START_Output:
+                start_output(read_package);
+                break;
             default:
                 /*** send NACK because the method_identifier is not valid ***/
                 RPIDataPackage *write_package = rpi->get_write_package();
