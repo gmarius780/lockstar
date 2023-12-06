@@ -42,7 +42,7 @@ class FGModule(BufferBaseModule_):
         """Set Cordic function"""
         mc_data_package = MCDataPackage()
         mc_data_package.push_to_buffer(
-            "uint32_t", ctypes.c_uint32(31)
+            "uint32_t", 31
         )  # method_identifier
         mc_data_package.push_to_buffer("uint32_t", ll_func)
         await MC.I().write_mc_data_package(mc_data_package)
@@ -52,7 +52,7 @@ class FGModule(BufferBaseModule_):
         """Start Cordic computation"""
         mc_data_package = MCDataPackage()
         mc_data_package.push_to_buffer(
-            "uint32_t", ctypes.c_uint32(32)
+            "uint32_t", 32
         )  # method_identifier
         await MC.I().write_mc_data_package(mc_data_package)
         return await self.check_for_ack(writer=(writer if respond else None))
@@ -61,7 +61,7 @@ class FGModule(BufferBaseModule_):
         """start output"""
         mc_data_package = MCDataPackage()
         mc_data_package.push_to_buffer(
-            "uint32_t", ctypes.c_uint32(32)
+            "uint32_t", 33
         )  # method_identifier
         await MC.I().write_mc_data_package(mc_data_package)
         return await self.check_for_ack(writer=(writer if respond else None))
