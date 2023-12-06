@@ -17,27 +17,27 @@ class FGModule(BufferBaseModule_):
     async def set_cfunction(self, func:str, writer, respond=True):
         match func:
             case "cos":
-                ll_func = ctypes.c_uint32(0)
+                ll_func = 0
             case "sin":
-                ll_func = ctypes.c_uint32(1)
+                ll_func = 1
             case "phase":
-                ll_func = ctypes.c_uint32(2)
+                ll_func = 2
             case "mod":
-                ll_func = ctypes.c_uint32(3)
+                ll_func = 3
             case "arctan":
-                ll_func = ctypes.c_uint32(4)
+                ll_func = 4
             case "cosh":
-                ll_func = ctypes.c_uint32(5)
+                ll_func = 5
             case "sinh":
-                ll_func = ctypes.c_uint32(6)
+                ll_func = 6
             case "arctanh":
-                ll_func = ctypes.c_uint32(7)
+                ll_func = 7
             case "ln":
-                ll_func = ctypes.c_uint32(8)
+                ll_func = 8
             case "sqrt":
-                ll_func = ctypes.c_uint32(9)
+                ll_func = 9
             case _:
-                ll_func = ctypes.c_uint32(0)
+                ll_func = 0
 
         """Set Cordic function"""
         mc_data_package = MCDataPackage()
