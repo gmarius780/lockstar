@@ -14,7 +14,7 @@ class FGModule(BufferBaseModule_):
         super().__init__()
 
     # ==== START: client methods
-    async def set_cfunction(self, func: str, writer, respond=True):
+    async def set_cfunction(self, func:str, writer, respond=True):
         match func:
             case "cos":
                 ll_func = ctypes.c_uint32(0)
@@ -44,6 +44,7 @@ class FGModule(BufferBaseModule_):
         mc_data_package.push_to_buffer(
             "uint32_t", ctypes.c_uint32(31)
         )  # method_identifier
+        mc_data_package.push_to_buffer("uint32_t", ll_func)
         await MC.I().write_mc_data_package(mc_data_package)
         return await self.check_for_ack(writer=(writer if respond else None))
 
