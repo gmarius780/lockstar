@@ -94,6 +94,38 @@ SECTIONS
  /*--- End of DTCMRAM linker section definition ---*/
 
 
+.BDMABlock : 
+{
+  . = ALIGN(32);
+  *(.BDMA_Access)
+  . = ALIGN(32);
+} >RAM_D3
+
+.DMA_D1 : 
+{
+  *(.DMA_Access)
+  KEEP(*(.DMA_Access)) 
+} >RAM_D1
+
+.ADC_D1 : 
+{
+  *(.ADC_Access)
+  KEEP(*(.ADC_Access)) 
+} >RAM_D1
+
+.RPI_W_D1 :
+{
+  *(.RPI_W_Access)
+  KEEP(*(.RPI_W_Access))
+} >RAM_D1
+
+.RPI_R_D1 :
+{
+  *(.RPI_R_Access)
+  KEEP(*(.RPI_R_Access))
+} >RAM_D1
+
+
   /* The program code and other data goes into FLASH */
   .text :
   {
@@ -203,26 +235,6 @@ SECTIONS
     . = . + _Min_Stack_Size;
     . = ALIGN(8);
   } >RAM_D1
-  .BDMABlock : 
-  {
-    . = ALIGN(32);
-    *(.BDMA_Access)
-    . = ALIGN(32);
-  } >RAM_D3 AT> FLASH
-  .DMA_D1 ORIGIN(RAM_D1) + LENGTH(RAM_D1) - 0x40 : 
-  {
-    . = ALIGN(0x20);
-    *(.DMA_Access)
-    KEEP(*(.DMA_Access)) 
-    . = ALIGN(0x20);
-  } >RAM_D1 AT> FLASH
-  .ADC_D1 ORIGIN(RAM_D1) + LENGTH(RAM_D1) - 0x20 : 
-  {
-    . = ALIGN(0x20);
-    *(.ADC_Access)
-    KEEP(*(.ADC_Access)) 
-    . = ALIGN(0x20);
-  } >RAM_D1 AT> FLASH
 
   /* Remove information from the standard libraries */
   /DISCARD/ :

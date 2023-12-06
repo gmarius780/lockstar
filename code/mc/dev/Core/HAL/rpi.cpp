@@ -8,11 +8,21 @@
 #include "rpi.h"
 #include "main.h"
 #include "../HAL/leds.hpp"
+
+
+__attribute__((section(".RPI_W_D1"))) 
+__attribute__((__aligned__(0x1000)))
+uint8_t write_D1_buffer[4096] = {0};
+
+__attribute__((section(".RPI_R_D1"))) 
+__attribute__((__aligned__(0x1000)))
+uint8_t read_D1_buffer[4096] = {0};
+
 RPI::RPI(RPI_TypeDef *RPI_conf)
 {
 	this->RPI_conf = RPI_conf;
-	read_buffer = new uint8_t[255 * READ_NBR_BYTES_MULTIPLIER];
-	write_buffer = new uint8_t[4096];
+	read_buffer = read_D1_buffer;
+	write_buffer = write_D1_buffer;
 
 	/*Configure communication_reset_timer
 	 * It is used to reset is_comminicating, in case the communication failed

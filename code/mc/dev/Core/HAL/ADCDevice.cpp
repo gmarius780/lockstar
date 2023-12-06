@@ -9,7 +9,10 @@
 // ADC_TX_DMA_STREAM TX
 #include "ADCDevice.hpp"
 #include "adc_config.h"
+
+
 __attribute__((section(".ADC_D1")))
+__attribute__((__aligned__(0x20)))
 uint8_t dmaADC_buffer[3] = {0};
 
 __attribute__((section(".ADC_D1"))) float result_buffer = 0;
