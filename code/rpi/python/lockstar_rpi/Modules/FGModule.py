@@ -62,8 +62,8 @@ class FGModule(BufferBaseModule_):
         mc_data_package.push_to_buffer("float", total_scaling)
         mc_data_package.push_to_buffer("uint32_t", offset)
         mc_data_package.push_to_buffer("uint32_t", num_samples)
-        mc_data_package.push_to_buffer("uint32_t", start_value)
-        mc_data_package.push_to_buffer("uint32_t", step_size)
+        mc_data_package.push_to_buffer("int32_t", start_value)
+        mc_data_package.push_to_buffer("int32_t", step_size)
 
         await MC.I().write_mc_data_package(mc_data_package)
         return await self.check_for_ack(writer=(writer if respond else None))
