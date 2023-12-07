@@ -11,19 +11,11 @@
 #include "dac_config.h"
 #include "BufferBaseModule.h"
 
-#define MAX_VALUE 0xFFFFFFFF
+
 #define FIXED_POINT_FRACTIONAL_BITS 31
 
-// #define check_cordic_output
+__STATIC_INLINE float to_float(int32_t value, float scaling_factor, uint32_t offset);
 
-__STATIC_INLINE float to_float(int32_t value, uint32_t scaling_factor, uint32_t offset);
-uint32_t Check_Residual_Error(int32_t VarA, int32_t VarB, int32_t MaxError);
-
-uint32_t step_size = MAX_VALUE / ARRAY_SIZE;
-uint32_t start_angle = 0x00000000;
-
-int32_t cosOutput = 0;
-int32_t sinOutput = 0;
 uint32_t start_ticks, stop_ticks, elapsed_ticks;
 
 /* Array of calculated sines in Q1.31 format */
@@ -93,15 +85,15 @@ public:
         float scale = read_package->pop_from_buffer<float>();
         uint32_t offset = read_package->pop_from_buffer<uint32_t>();
         uint32_t n_samples = read_package->pop_from_buffer<uint32_t>();
-        uint32_t start_value = read_package->pop_from_buffer<uint32_t>();
-        uint32_t step_size = read_package->pop_from_buffer<uint32_t>();
+        int32_t start_value = read_package->pop_from_buffer<uint32_t>();
+        int32_t step = read_package->pop_from_buffer<uint32_t>();
         
         endPointer = aCalculatedSin + n_samples - 1;
         /* Write first angle to cordic */
         CORDIC->WDATA = start_value;
         for (uint32_t i = 1; i < n_samples; i++)
         {
-            start_value += step_size;
+            start_value += step;
             CORDIC->WDATA = start_value;
             *pCalculatedSin++ = to_float(CORDIC->RDATA, scale, offset);
         }
@@ -191,9 +183,9 @@ public:
 
 FGModule *module;
 
-__STATIC_INLINE float to_float(int32_t value, uint32_t scaling_factor, uint32_t offset)
+__STATIC_INLINE float to_float(int32_t value, float scaling_factor, uint32_t offset)
 {
-    return ((float)value / (float)(1 << FIXED_POINT_FRACTIONAL_BITS)) * scaling_factor + offset;
+    return ((value * scaling_factor) / (1 << FIXED_POINT_FRACTIONAL_BITS)) + offset;
 }
 /******************************
  *         INTERRUPTS          *

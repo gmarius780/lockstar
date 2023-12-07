@@ -102,6 +102,7 @@ Core/Modules/SinglePIDModule.cpp \
 Core/Modules/TestModule.cpp \
 Core/Modules/RPITestModule.cpp \
 Core/Modules/CORDICTest.cpp \
+Core/Modules/FGModule.cpp \
 Core/Lib/LinearizableDAC.cpp \
 Core/Lib/RPIDataPackage.cpp \
 Core/Lib/Scope.cpp \
@@ -169,7 +170,8 @@ C_DEFS =  \
 -DSTM32H725xx \
 -DUSE_FULL_LL_DRIVER \
 -DDEBUG \
--D$(app)
+-D$(app) \
+-DFG_MODULE
 
 
 # AS includes
