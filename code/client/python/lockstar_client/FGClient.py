@@ -43,6 +43,8 @@ class FGClient(BufferBaseClient_):
 
 client = None
 
+def to_q31(x):
+    return int(x * 2**31)
 
 if __name__ == "__main__":
     from os.path import join, dirname
@@ -59,13 +61,15 @@ if asyncio.run(client.register_client_id()):
     sampling_rate = 500000
 
     num_samples = 1000
-    ramp_begin = 0.1
-    ramp_end = -0.1
+    ramp_begin = -0.1
+    ramp_end = 0.1
 
-    start_value = int(ramp_begin * (2**31))
-    step_size = int((ramp_begin * (2**31) - ramp_end * (2**31)) / num_samples)
+    start_value = to_q31(ramp_begin)
+    end_value = to_q31(ramp_end)
+    step_size = (ramp_end - ramp_begin)/num_samples
+    step_size = to_q31(step_size)
     scaling_factor = 6
-    scaling = 128 / (np.arctan(ramp_begin * (2**scaling_factor)) * 2 / np.pi)
+    scaling = np.abs((2**scaling_factor)/(np.arctan(ramp_begin*(2**scaling_factor))/np.pi))
     amplitude = 4
     total_scaling = scaling * amplitude
     offset = 4
