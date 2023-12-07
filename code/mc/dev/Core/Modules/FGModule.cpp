@@ -27,11 +27,11 @@ int32_t sinOutput = 0;
 uint32_t start_ticks, stop_ticks, elapsed_ticks;
 
 /* Array of calculated sines in Q1.31 format */
-static float aCalculatedSin[ARRAY_SIZE];
+static float aCalculatedSin[16384];
 /* Pointer to start of array */
 float *pCalculatedSin = aCalculatedSin;
 float *dacPointer = aCalculatedSin;
-float *endPointer = aCalculatedSin + (ARRAY_SIZE - 1);
+float *endPointer;
 
 class FGModule : public BufferBaseModule
 {
@@ -78,7 +78,7 @@ public:
     void set_cfunction(RPIDataPackage *read_package)
     {
         /***Read arguments***/
-        uint32_t func = read_package->pop_from_buffer<float>();
+        uint32_t func = read_package->pop_from_buffer<uint32_t>();
         LL_CORDIC_SetFunction(CORDIC, func);
         /*** send ACK ***/
         RPIDataPackage *write_package = rpi->get_write_package();
@@ -90,16 +90,23 @@ public:
     void start_ccalculation(RPIDataPackage *read_package)
     {
         /***Read arguments***/
-
+        float scale = read_package->pop_from_buffer<float>();
+        uint32_t offset = read_package->pop_from_buffer<uint32_t>();
+        uint32_t n_samples = read_package->pop_from_buffer<uint32_t>();
+        uint32_t start_value = read_package->pop_from_buffer<uint32_t>();
+        uint32_t step_size = read_package->pop_from_buffer<uint32_t>();
+        
+        endPointer = aCalculatedSin + n_samples - 1;
         /* Write first angle to cordic */
-        CORDIC->WDATA = angle_values[0];
-        for (uint32_t i = 1; i < ARRAY_SIZE; i++)
+        CORDIC->WDATA = start_value;
+        for (uint32_t i = 1; i < n_samples; i++)
         {
-            CORDIC->WDATA = angle_values[i];
-            *pCalculatedSin++ = to_float(CORDIC->RDATA, 133.3 * 4, 4);
+            start_value += step_size;
+            CORDIC->WDATA = start_value;
+            *pCalculatedSin++ = to_float(CORDIC->RDATA, scale, offset);
         }
         /* Read last result */
-        *pCalculatedSin = to_float(CORDIC->RDATA, 133.3 * 4, 4);
+        *pCalculatedSin = to_float(CORDIC->RDATA, scale, offset);
 
         /*** send ACK ***/
         RPIDataPackage *write_package = rpi->get_write_package();
@@ -168,11 +175,17 @@ public:
             this->dac_1->write(*dacPointer);
             this->dac_2->write(*(dacPointer++));
         }
-
-        else
-        {
+        else{
+            sampling_timer->disable_interrupt();
+            sampling_timer->disable();
+            pCalculatedSin = aCalculatedSin;
             dacPointer = aCalculatedSin;
         }
+
+        // else
+        // {
+        //     dacPointer = aCalculatedSin;
+        // }
     }
 };
 
