@@ -17,7 +17,7 @@ class MCDataPackage:
     @staticmethod
     def struct_type_from_cpp_type(str_cpp_type):
         if str_cpp_type == 'uint32_t': return 'I'
-        elif str_cpp_type == 'int32_t': return 'I'
+        elif str_cpp_type == 'int32_t': return 'i'
         elif str_cpp_type == 'float': return 'f'
         elif str_cpp_type == 'bool': return '?'
         else: raise ValueError(f'Datatype: {str_cpp_type} not recognized.')
