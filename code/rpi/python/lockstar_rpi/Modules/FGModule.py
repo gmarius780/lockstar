@@ -4,6 +4,8 @@ from lockstar_rpi.Modules.BufferBaseModule_ import BufferBaseModule_
 import logging
 import ctypes
 
+from numpy import uint32
+from numpy import int32
 
 class FGModule(BufferBaseModule_):
     """Allows user to upload arbitrary waveforms into two buffers (corresponding to the two analog outputs), splitting
@@ -62,8 +64,8 @@ class FGModule(BufferBaseModule_):
         mc_data_package.push_to_buffer("float", total_scaling)
         mc_data_package.push_to_buffer("uint32_t", offset)
         mc_data_package.push_to_buffer("uint32_t", num_samples)
-        mc_data_package.push_to_buffer("int32_t", start_value)
-        mc_data_package.push_to_buffer("int32_t", step_size)
+        mc_data_package.push_to_buffer("int32_t", int32(start_value))
+        mc_data_package.push_to_buffer("int32_t", int32(step_size))
 
         await MC.I().write_mc_data_package(mc_data_package)
         return await self.check_for_ack(writer=(writer if respond else None))
