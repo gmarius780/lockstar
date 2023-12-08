@@ -46,6 +46,33 @@ client = None
 def to_q31(x):
     return int(x * 2**31)
 
+def ramp_gen(sampling_freq, flat_scale, ramp_time, amplitude, offset, inverse=False):
+    cordic_scaling_factor = 6
+
+    num_samples = int(ramp_time * sampling_freq)
+    ramp_begin = -flat_scale
+    ramp_end = flat_scale
+    inverse = False
+    start_value = to_q31(ramp_begin)
+    end_value = to_q31(ramp_end)
+    step_size = (ramp_end - ramp_begin)/num_samples
+    step_size = to_q31(step_size)
+
+    scaling = (2**cordic_scaling_factor)/(np.arctan(ramp_begin*(2**cordic_scaling_factor))/np.pi)
+    scaling = -scaling if inverse else scaling
+    total_scaling = scaling * amplitude
+    print(total_scaling, offset, num_samples, start_value, step_size)
+    return total_scaling, offset, num_samples, start_value, step_size
+
+def sin_gen(sample_freq, wave_freq, amplitude, offset):
+    num_samples = int(sample_freq/wave_freq)
+    start_value = 0
+    step_size = 0xFFFFFFFF/num_samples
+    print(amplitude, offset, num_samples, start_value, step_size)
+    return amplitude, offset, num_samples, start_value, step_size
+
+
+
 if __name__ == "__main__":
     from os.path import join, dirname
     from time import sleep
@@ -59,22 +86,10 @@ if asyncio.run(client.register_client_id()):
     linearization_length = 2000
 
     sampling_rate = 500000
+    
+    ramp1 = ramp_gen(sampling_rate, 0.1, 0.01, 4, 4)
+    sin1 = sin_gen(sampling_rate, 2000, 4, 0)
 
-    num_samples = 1000
-    ramp_begin = 0.1
-    ramp_end = -0.1
-    inverse = True
-    start_value = to_q31(ramp_begin)
-    end_value = to_q31(ramp_end)
-    step_size = (ramp_end - ramp_begin)/num_samples
-    step_size = to_q31(step_size)
-    scaling_factor = 6
-    scaling = (2**scaling_factor)/(np.arctan(ramp_begin*(2**scaling_factor))/np.pi)
-    scaling = -scaling if inverse else scaling
-    amplitude = 4
-    total_scaling = scaling * amplitude
-    offset = 4
-    print(scaling, total_scaling, start_value, step_size)
     # ch_one_chunks = [999, 1999, 2999, 3999, 4999]
     # ch_two_chunks = [1999, 2999]
     # ch_one_buffer = np.concatenate((np.cos(np.linspace(0, 2*np.pi, num=1000)),
@@ -94,11 +109,20 @@ if asyncio.run(client.register_client_id()):
     print(asyncio.run(client.set_sampling_rate(sampling_rate)))
     print(asyncio.run(client.set_ch_one_output_limits(-10, 10)))
     print(asyncio.run(client.set_ch_two_output_limits(-10, 10)))
-    print(asyncio.run(client.set_cfunction("arctan")))
+    # print(asyncio.run(client.set_cfunction("arctan")))
+    # print(
+    #     asyncio.run(
+    #         client.start_ccalculation(
+    #             *ramp1
+    #         )
+    #     )
+    # )
+    # print(asyncio.run(client.start_output()))
+    print(asyncio.run(client.set_cfunction("sin")))
     print(
         asyncio.run(
             client.start_ccalculation(
-                total_scaling, offset, num_samples, start_value, step_size
+                *sin1
             )
         )
     )
