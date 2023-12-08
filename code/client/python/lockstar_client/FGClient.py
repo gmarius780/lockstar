@@ -61,15 +61,16 @@ if asyncio.run(client.register_client_id()):
     sampling_rate = 500000
 
     num_samples = 1000
-    ramp_begin = -0.1
-    ramp_end = 0.1
-
+    ramp_begin = 0.1
+    ramp_end = -0.1
+    inverse = True
     start_value = to_q31(ramp_begin)
     end_value = to_q31(ramp_end)
     step_size = (ramp_end - ramp_begin)/num_samples
     step_size = to_q31(step_size)
     scaling_factor = 6
     scaling = (2**scaling_factor)/(np.arctan(ramp_begin*(2**scaling_factor))/np.pi)
+    scaling = -scaling if inverse else scaling
     amplitude = 4
     total_scaling = scaling * amplitude
     offset = 4
