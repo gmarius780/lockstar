@@ -69,7 +69,7 @@ if asyncio.run(client.register_client_id()):
     step_size = (ramp_end - ramp_begin)/num_samples
     step_size = to_q31(step_size)
     scaling_factor = 6
-    scaling = np.abs((2**scaling_factor)/(np.arctan(ramp_begin*(2**scaling_factor))/np.pi))
+    scaling = (2**scaling_factor)/(np.arctan(ramp_begin*(2**scaling_factor))/np.pi)
     amplitude = 4
     total_scaling = scaling * amplitude
     offset = 4
