@@ -11,7 +11,6 @@
 #include "dac_config.h"
 #include "BufferBaseModule.h"
 
-
 #define FIXED_POINT_FRACTIONAL_BITS 31
 
 __STATIC_INLINE float to_float(int32_t value, float scaling_factor, uint32_t offset);
@@ -35,13 +34,13 @@ public:
     {
         initialize_rpi();
         LL_CORDIC_Config(CORDIC,
-                         LL_CORDIC_FUNCTION_COSINE, /* cosine function */
-                         LL_CORDIC_PRECISION_6CYCLES,   /* max precision for q1.31 cosine */
-                         LL_CORDIC_SCALE_6,             /* no scale */
-                         LL_CORDIC_NBWRITE_1,           /* One input data: angle. Second input data (modulus) is 1
-                                    after cordic reset */
-                         LL_CORDIC_NBREAD_1,            /* Two output data: cosine, then sine */
-                         LL_CORDIC_INSIZE_32BITS,       /* q1.31 format for input data */
+                         LL_CORDIC_FUNCTION_COSINE,   /* cosine function */
+                         LL_CORDIC_PRECISION_6CYCLES, /* max precision for q1.31 cosine */
+                         LL_CORDIC_SCALE_6,           /* no scale */
+                         LL_CORDIC_NBWRITE_1,         /* One input data: angle. Second input data (modulus) is 1
+                                  after cordic reset */
+                         LL_CORDIC_NBREAD_1,          /* Two output data: cosine, then sine */
+                         LL_CORDIC_INSIZE_32BITS,     /* q1.31 format for input data */
                          LL_CORDIC_OUTSIZE_32BITS);
     }
     void run()
@@ -87,7 +86,7 @@ public:
         uint32_t n_samples = read_package->pop_from_buffer<uint32_t>();
         int32_t start_value = read_package->pop_from_buffer<uint32_t>();
         int32_t step = read_package->pop_from_buffer<uint32_t>();
-        
+
         endPointer = aCalculatedSin + n_samples - 1;
         /* Write first angle to cordic */
         CORDIC->WDATA = start_value;
@@ -95,10 +94,10 @@ public:
         {
             start_value += step;
             CORDIC->WDATA = start_value;
-            *pCalculatedSin++ = to_float(CORDIC->RDATA, scale, offset);
+            *pCalculatedSin++ = to_float((int32_t)CORDIC->RDATA, scale, offset);
         }
         /* Read last result */
-        *pCalculatedSin = to_float(CORDIC->RDATA, scale, offset);
+        *pCalculatedSin = to_float((int32_t)CORDIC->RDATA, scale, offset);
 
         /*** send ACK ***/
         RPIDataPackage *write_package = rpi->get_write_package();
@@ -167,7 +166,8 @@ public:
             this->dac_1->write(*dacPointer);
             this->dac_2->write(*(dacPointer++));
         }
-        else{
+        else
+        {
             sampling_timer->disable_interrupt();
             sampling_timer->disable();
             pCalculatedSin = aCalculatedSin;
