@@ -13,9 +13,9 @@ class FGClient(BufferBaseClient_):
     def __init__(self, lockstar_ip, lockstar_port, client_id) -> None:
         super().__init__(lockstar_ip, lockstar_port, client_id, "FGModule")
 
-    async def set_cfunction(self, func: str):
+    async def set_cfunction(self, func: str, scale: str):
         bc = BackendCall(
-            self.client_id, "FGModule", "set_cfunction", args={"func": func}
+            self.client_id, "FGModule", "set_cfunction", args={"func": func, "scale": scale}
         )
         return await self._call_lockstar(bc)
 
@@ -109,16 +109,16 @@ if asyncio.run(client.register_client_id()):
     print(asyncio.run(client.set_sampling_rate(sampling_rate)))
     print(asyncio.run(client.set_ch_one_output_limits(-10, 10)))
     print(asyncio.run(client.set_ch_two_output_limits(-10, 10)))
-    # print(asyncio.run(client.set_cfunction("arctan")))
-    # print(
-    #     asyncio.run(
-    #         client.start_ccalculation(
-    #             *ramp1
-    #         )
-    #     )
-    # )
-    # print(asyncio.run(client.start_output()))
-    print(asyncio.run(client.set_cfunction("sin")))
+    print(asyncio.run(client.set_cfunction("arctan", "LL_CORDIC_SCALE_6")))
+    print(
+        asyncio.run(
+            client.start_ccalculation(
+                *ramp1
+            )
+        )
+    )
+    print(asyncio.run(client.start_output()))
+    print(asyncio.run(client.set_cfunction("sin", "LL_CORDIC_SCALE_0")))
     print(
         asyncio.run(
             client.start_ccalculation(

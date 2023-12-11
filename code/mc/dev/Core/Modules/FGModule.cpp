@@ -36,7 +36,7 @@ public:
         LL_CORDIC_Config(CORDIC,
                          LL_CORDIC_FUNCTION_COSINE,   /* cosine function */
                          LL_CORDIC_PRECISION_6CYCLES, /* max precision for q1.31 cosine */
-                         LL_CORDIC_SCALE_6,           /* no scale */
+                         LL_CORDIC_SCALE_0,           /* no scale */
                          LL_CORDIC_NBWRITE_1,         /* One input data: angle. Second input data (modulus) is 1
                                   after cordic reset */
                          LL_CORDIC_NBREAD_1,          /* Two output data: cosine, then sine */
@@ -70,7 +70,10 @@ public:
     {
         /***Read arguments***/
         uint32_t func = read_package->pop_from_buffer<uint32_t>();
+        uint32_t scale = read_package->pop_from_buffer<uint32_t>();
         LL_CORDIC_SetFunction(CORDIC, func);
+        LL_CORDIC_SetScale(CORDIC, scale);
+        
         /*** send ACK ***/
         RPIDataPackage *write_package = rpi->get_write_package();
         write_package->push_ack();
@@ -92,6 +95,10 @@ public:
         CORDIC->WDATA = start_value;
         for (uint32_t i = 1; i < n_samples; i++)
         {
+            if(i == n_samples - 400)
+            {
+                __NOP();
+            }
             start_value += step;
             CORDIC->WDATA = start_value;
             *pCalculatedSin++ = to_float((int32_t)CORDIC->RDATA, scale, offset);
