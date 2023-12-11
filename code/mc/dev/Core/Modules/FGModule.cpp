@@ -10,6 +10,7 @@
 #include "../HAL/BasicTimer.hpp"
 #include "dac_config.h"
 #include "BufferBaseModule.h"
+// #include "../Src/runtime.h"
 
 #define FIXED_POINT_FRACTIONAL_BITS 31
 
@@ -23,6 +24,18 @@ static float aCalculatedSin[16384];
 float *pCalculatedSin = aCalculatedSin;
 float *dacPointer = aCalculatedSin;
 float *endPointer;
+
+struct waveFunction
+{
+    uint32_t function;
+    uint32_t cordic_scale;
+    uint32_t start_value;
+    uint32_t step;
+    uint32_t n_samples;
+    float scale;
+    uint32_t offset;
+};
+
 
 class FGModule : public BufferBaseModule
 {
@@ -59,6 +72,8 @@ public:
         this->buffer = new float[BUFFER_LIMIT_kBYTES * 250]; // contains buffer_one and buffer_two sequentially
         this->chunks = new uint32_t[MAX_NBR_OF_CHUNKS];      // contains chuncks_one and chunks_two sequentially
 
+        enable_cycle_counter();
+
         while (true)
         {
         }
@@ -73,7 +88,7 @@ public:
         uint32_t scale = read_package->pop_from_buffer<uint32_t>();
         LL_CORDIC_SetFunction(CORDIC, func);
         LL_CORDIC_SetScale(CORDIC, scale);
-        
+
         /*** send ACK ***/
         RPIDataPackage *write_package = rpi->get_write_package();
         write_package->push_ack();
@@ -83,6 +98,7 @@ public:
     static const uint32_t METHOD_START_CCalculation = 32;
     void start_ccalculation(RPIDataPackage *read_package)
     {
+        start_ticks = get_cycle_count();
         /***Read arguments***/
         float scale = read_package->pop_from_buffer<float>();
         uint32_t offset = read_package->pop_from_buffer<uint32_t>();
@@ -91,13 +107,15 @@ public:
         int32_t step = read_package->pop_from_buffer<uint32_t>();
 
         endPointer = aCalculatedSin + n_samples - 1;
+        uint32_t limit = (uint32_t)(n_samples * 0.1);
         /* Write first angle to cordic */
         CORDIC->WDATA = start_value;
         for (uint32_t i = 1; i < n_samples; i++)
         {
-            if(i == n_samples - 400)
+            if (i == limit)
             {
-                __NOP();
+                sampling_timer->enable_interrupt();
+                sampling_timer->enable();
             }
             start_value += step;
             CORDIC->WDATA = start_value;
@@ -179,6 +197,8 @@ public:
             sampling_timer->disable();
             pCalculatedSin = aCalculatedSin;
             dacPointer = aCalculatedSin;
+            stop_ticks = get_cycle_count();
+            elapsed_ticks = stop_ticks - start_ticks;
         }
 
         // else
