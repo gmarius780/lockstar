@@ -30,27 +30,27 @@ class FGModule(BufferBaseModule_):
     async def set_cfunction(self, func: str, scale: str, writer, respond=True):
         match func:
             case "cos":
-                ll_func = 0
+                ll_func = 0x00000000
             case "sin":
-                ll_func = 1
+                ll_func = 0x00000001
             case "phase":
-                ll_func = 2
+                ll_func = 0x00000002
             case "mod":
-                ll_func = 3
+                ll_func = 0x00000003
             case "arctan":
-                ll_func = 4
+                ll_func = 0x00000004
             case "cosh":
-                ll_func = 5
+                ll_func = 0x00000005
             case "sinh":
-                ll_func = 6
+                ll_func = 0x00000006
             case "arctanh":
-                ll_func = 7
+                ll_func = 0x00000007
             case "ln":
-                ll_func = 8
+                ll_func = 0x00000008
             case "sqrt":
-                ll_func = 9
+                ll_func = 0x00000009
             case _:
-                ll_func = 0
+                ll_func = 0x00000000
 
         for cordic_scale in CordicScale:
             if cordic_scale.name == scale:
