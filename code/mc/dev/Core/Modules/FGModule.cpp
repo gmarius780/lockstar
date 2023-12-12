@@ -29,13 +29,15 @@ struct waveFunction
 {
     uint32_t function;
     uint32_t cordic_scale;
-    uint32_t start_value;
-    uint32_t step;
+    int32_t start_value;
+    int32_t step;
     uint32_t n_samples;
     float scale;
     uint32_t offset;
+    uint32_t n_periods;
 };
 
+struct waveFunction functions[4];
 
 class FGModule : public BufferBaseModule
 {
@@ -71,9 +73,32 @@ public:
         // allocate buffer and chunk space
         this->buffer = new float[BUFFER_LIMIT_kBYTES * 250]; // contains buffer_one and buffer_two sequentially
         this->chunks = new uint32_t[MAX_NBR_OF_CHUNKS];      // contains chuncks_one and chunks_two sequentially
-
+        functions[0] = {LL_CORDIC_FUNCTION_SINE, LL_CORDIC_SCALE_0, 0, 17179869, 250, 4.0, 0, 4};
+        functions[1] = {LL_CORDIC_FUNCTION_ARCTANGENT, LL_CORDIC_SCALE_6, -214748364, 85899, 5000, -568.0519530539988, 4, 1};
+        functions[2] = {LL_CORDIC_FUNCTION_SINE, LL_CORDIC_SCALE_0, 0, 17179869, 250, 4.0, 0, 5};
+        functions[3] = {LL_CORDIC_FUNCTION_ARCTANGENT, LL_CORDIC_SCALE_6, -214748364, 85899, 5000, -568.0519530539988, 4, 1};
         enable_cycle_counter();
-
+        for (waveFunction func : functions){
+            LL_CORDIC_SetFunction(CORDIC, func.function);
+            LL_CORDIC_SetScale(CORDIC, func.cordic_scale);
+            uint32_t limit = (uint32_t)(func.n_samples * 1)-1;
+            endPointer = aCalculatedSin + 16384 - 1;
+            CORDIC->WDATA = func.start_value;
+            for (uint32_t i = 1; i < func.n_samples; i++)
+            {
+                if (i == 1)
+                {
+                    sampling_timer->enable_interrupt();
+                    sampling_timer->enable();
+                }
+                func.start_value += func.step;
+                CORDIC->WDATA = func.start_value;
+                *pCalculatedSin++ = to_float((int32_t)CORDIC->RDATA, func.scale, func.offset);
+            }
+            /* Read last result */
+            *pCalculatedSin = to_float((int32_t)CORDIC->RDATA, func.scale, func.offset);
+        }
+        
         while (true)
         {
         }
