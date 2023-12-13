@@ -69,6 +69,7 @@ def sin_gen(sample_freq, wave_freq, amplitude, offset):
     start_value = 0
     step_size = 0xFFFFFFFF/num_samples
     print(amplitude, offset, num_samples, start_value, step_size)
+    print("Amplitude: ", amplitude, "Offset: ", offset, "Num Samples: ", num_samples, "Start Value: ", start_value, "Step Size: ", step_size)
     return amplitude, offset, num_samples, start_value, step_size
 
 
@@ -87,8 +88,8 @@ if asyncio.run(client.register_client_id()):
 
     sampling_rate = 500000
     
-    ramp1 = ramp_gen(sampling_rate, 0.1, 0.01, 4, 4)
-    sin1 = sin_gen(sampling_rate, 2000, 4, 0)
+    ramp1 = ramp_gen(sampling_rate, flat_scale=0.1, ramp_time=0.01, amplitude=4, offset=4)
+    sin1 = sin_gen(sampling_rate, 50, 4, 0)
 
     # ch_one_chunks = [999, 1999, 2999, 3999, 4999]
     # ch_two_chunks = [1999, 2999]
@@ -109,21 +110,21 @@ if asyncio.run(client.register_client_id()):
     print(asyncio.run(client.set_sampling_rate(sampling_rate)))
     print(asyncio.run(client.set_ch_one_output_limits(-10, 10)))
     print(asyncio.run(client.set_ch_two_output_limits(-10, 10)))
-    print(asyncio.run(client.set_cfunction("arctan", "LL_CORDIC_SCALE_6")))
-    print(
-        asyncio.run(
-            client.start_ccalculation(
-                *ramp1
-            )
-        )
-    )
-    print(asyncio.run(client.start_output()))
-    print(asyncio.run(client.set_cfunction("sin", "LL_CORDIC_SCALE_0")))
-    print(
-        asyncio.run(
-            client.start_ccalculation(
-                *sin1
-            )
-        )
-    )
-    print(asyncio.run(client.start_output()))
+    # print(asyncio.run(client.set_cfunction("arctan", "LL_CORDIC_SCALE_6")))
+    # print(
+    #     asyncio.run(
+    #         client.start_ccalculation(
+    #             *ramp1
+    #         )
+    #     )
+    # )
+    # print(asyncio.run(client.start_output()))
+    # print(asyncio.run(client.set_cfunction("sin", "LL_CORDIC_SCALE_0")))
+    # print(
+    #     asyncio.run(
+    #         client.start_ccalculation(
+    #             *sin1
+    #         )
+    #     )
+    # )
+    # print(asyncio.run(client.start_output()))
