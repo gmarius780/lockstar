@@ -74,7 +74,7 @@ public:
         this->buffer = new float[BUFFER_LIMIT_kBYTES * 250]; // contains buffer_one and buffer_two sequentially
         this->chunks = new uint32_t[MAX_NBR_OF_CHUNKS];      // contains chuncks_one and chunks_two sequentially
         functions[0] = {LL_CORDIC_FUNCTION_SINE, LL_CORDIC_SCALE_0, 0, 17179869, 250, 4.0, 0, 4};
-        functions[1] = {LL_CORDIC_FUNCTION_ARCTANGENT, LL_CORDIC_SCALE_6, -214748364, 85899, 5000, -568.0519530539988, 4, 1};
+        functions[1] = {LL_CORDIC_FUNCTION_ARCTANGENT, LL_CORDIC_SCALE_6, -214748364, 85899, 5000, -568.0519530539988, 4, 2};
         functions[2] = {LL_CORDIC_FUNCTION_SINE, LL_CORDIC_SCALE_0, 0, 17179869, 250, 4.0, 0, 5};
         functions[3] = {LL_CORDIC_FUNCTION_ARCTANGENT, LL_CORDIC_SCALE_6, -214748364, 85899, 5000, -568.0519530539988, 4, 1};
 
@@ -218,16 +218,21 @@ public:
             this->current_period++;
             dacPointer = this->current_start;
         }
-        else
+        else if(chunk_counter < 4)
         {   
             sampling_timer->disable_interrupt();
             sampling_timer->disable();
             this->current_period = 1;
+            this->current_start += this->currentFunction.n_samples;
             this->currentFunction = functions[chunk_counter++];
             endPointer += this->currentFunction.n_samples;
-            this->current_start += this->currentFunction.n_samples;
             stop_ticks = get_cycle_count();
             elapsed_ticks = stop_ticks - start_ticks;
+        }
+        else
+        {
+            sampling_timer->disable_interrupt();
+            sampling_timer->disable();
         }
         // else
         // {
