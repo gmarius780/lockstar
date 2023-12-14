@@ -17,7 +17,7 @@
 __STATIC_INLINE float to_float(int32_t value, float scaling_factor, uint32_t offset);
 
 uint32_t start_ticks, stop_ticks, elapsed_ticks;
-
+uint32_t chunke_times_buffer[10] = {5000, 8000, 3000, 4000, 8000, 12000, 3000, 5000, 5000, 2000};
 /* Array of calculated sines in Q1.31 format */
 static float aCalculatedSin[16384];
 /* Pointer to start of array */
@@ -81,11 +81,32 @@ public:
         this->currentFunction = functions[chunk_counter++];
         endPointer = aCalculatedSin + this->currentFunction.n_samples - 1;
         this->current_start = aCalculatedSin;
+
+        DMA1_Stream7->CR |= DMA_PRIORITY_HIGH;
+        DMA1_Stream7->NDTR = 10;
+        DMA1_Stream7->PAR = (uint32_t)&TIM1->DMAR; // Virtual register of TIM1
+        DMA1_Stream7->M0AR = (uint32_t)chunke_times_buffer;
+
+        TIM1->PSC = 10000; // Set prescaler
+        TIM1->ARR = 100;
+
+        LL_TIM_EnableARRPreload(TIM1);
+        LL_TIM_EnableDMAReq_UPDATE(TIM1);
+        LL_TIM_ConfigDMABurst(TIM1, LL_TIM_DMABURST_BASEADDR_ARR, LL_TIM_DMABURST_LENGTH_1TRANSFER);
+        LL_TIM_GenerateEvent_UPDATE(TIM1);
+        while (!LL_TIM_IsEnabledDMAReq_UPDATE(TIM1))
+        {
+        }
+        LL_TIM_ClearFlag_UPDATE(TIM1);
+        LL_TIM_EnableAllOutputs(TIM1);
+        LL_TIM_EnableIT_UPDATE(TIM1);
+
         enable_cycle_counter();
-        for (waveFunction func : functions){
+        for (waveFunction func : functions)
+        {
             LL_CORDIC_SetFunction(CORDIC, func.function);
             LL_CORDIC_SetScale(CORDIC, func.cordic_scale);
-            uint32_t limit = (uint32_t)(func.n_samples * 1)-1;
+            uint32_t limit = (uint32_t)(func.n_samples * 1) - 1;
             CORDIC->WDATA = func.start_value;
             for (uint32_t i = 1; i < func.n_samples; i++)
             {
@@ -96,7 +117,7 @@ public:
             /* Read last result */
             *pCalculatedSin = to_float((int32_t)CORDIC->RDATA, func.scale, func.offset);
         }
-        
+
         while (true)
         {
         }
@@ -155,8 +176,10 @@ public:
     static const uint32_t METHOD_START_Output = 33;
     void start_output(RPIDataPackage *read_package)
     {
-        sampling_timer->enable_interrupt();
-        sampling_timer->enable();
+        // sampling_timer->enable_interrupt();
+        // sampling_timer->enable();
+        DMA1_Stream7->CR |= DMA_SxCR_EN; // Enable DMA
+        TIM1->CR1 |= TIM_CR1_CEN;
 
         /*** send ACK ***/
         RPIDataPackage *write_package = rpi->get_write_package();
@@ -214,12 +237,13 @@ public:
             this->dac_1->write(*dacPointer);
             this->dac_2->write(*(dacPointer++));
         }
-        else if(this->current_period < this->currentFunction.n_periods){
+        else if (this->current_period < this->currentFunction.n_periods)
+        {
             this->current_period++;
             dacPointer = this->current_start;
         }
-        else if(chunk_counter < 4)
-        {   
+        else if (chunk_counter < 4)
+        {
             sampling_timer->disable_interrupt();
             sampling_timer->disable();
             this->current_period = 1;
@@ -239,6 +263,7 @@ public:
         //     dacPointer = aCalculatedSin;
         // }
     }
+
 public:
     waveFunction currentFunction;
     uint16_t chunk_counter = 0;
@@ -306,7 +331,15 @@ __attribute__((section(".itcmram"))) void TIM4_IRQHandler(void)
     LL_TIM_ClearFlag_UPDATE(TIM4);
     // module->rpi->comm_reset_timer_interrupt();
 }
-
+__attribute__((section(".itcmram"))) void TIM1_UP_IRQHandler(void)
+{
+    if (TIM1->SR & TIM_SR_UIF)
+    {
+        HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);
+        module->enable_sampling();
+        TIM1->SR &= ~TIM_SR_UIF;
+    }
+}
 /******************************
  *       MAIN FUNCTION        *
  ******************************/
