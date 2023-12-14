@@ -18,13 +18,14 @@
 
 // uint32_t aSRC_Buffer[BUFFER_DATA_NUMBER] = {4000 - 1, 1, 0, 800, 10000 - 1, 0, 0, 8500, 4000 - 1, 2, 0, 2000};
 uint32_t aSRC_Buffer[BUFFER_DATA_NUMBER] = {5000 - 1, 0, 1000, 10000 - 1, 0, 7000, 1000 - 1, 0, 500};
+uint32_t chunke_times_buffer[10] = {5000, 8000, 3000, 4000, 8000, 12000, 3000, 5000, 5000, 2000};
 uint16_t Tim1Prescaler = 0;
 
 // #define CH1_FreqMeasure
 // #define CH2_PWM
-// #define CH3_OCM
+#define CH3_OCM
 // #define TRIGGER
-#define TRIGGER_PWM
+// #define TRIGGER_PWM
 
 uint16_t prescaler = 0;
 uint16_t aCaptureBuffer[CAPTURE_BUFFER_SIZE];
@@ -79,6 +80,11 @@ public:
 
 #endif
 #ifdef CH3_OCM
+		DMA1_Stream7->CR |= DMA_PRIORITY_HIGH;
+		DMA1_Stream7->NDTR = 10;
+		DMA1_Stream7->PAR = (uint32_t)&TIM1->DMAR; // Virtual register of TIM1
+		DMA1_Stream7->M0AR = (uint32_t)chunke_times_buffer;
+
 		LL_TIM_OC_InitTypeDef TIM_OC_InitStruct = {0};
 		TIM_OC_InitStruct.OCMode = LL_TIM_OCMODE_FROZEN;
 		TIM_OC_InitStruct.OCState = LL_TIM_OCSTATE_DISABLE;
@@ -94,10 +100,16 @@ public:
 		TIM1->PSC = 10000; // Set prescaler
 		TIM1->CCR3 = 5000;
 		LL_TIM_EnableARRPreload(TIM1);
+		LL_TIM_EnableDMAReq_UPDATE(TIM1);
+		LL_TIM_ConfigDMABurst(TIM1, LL_TIM_DMABURST_BASEADDR_CCR3, LL_TIM_DMABURST_LENGTH_1TRANSFER);
 		LL_TIM_GenerateEvent_UPDATE(TIM1);
+		while (!LL_TIM_IsEnabledDMAReq_UPDATE(TIM1))
+		{
+		}
 		LL_TIM_EnableAllOutputs(TIM1);
 		LL_TIM_EnableIT_CC3(TIM1);
 		TIM1->CCER |= TIM_CCER_CC3E;
+		DMA1_Stream7->CR |= DMA_SxCR_EN; // Enable DMA
 		TIM1->CR1 |= TIM_CR1_CEN;
 		turn_LED3_on();
 #endif
@@ -203,7 +215,7 @@ __attribute__((section(".itcmram"))) void TIM1_CC_IRQHandler(void)
 {
 	if (TIM1->SR & TIM_SR_CC3IF)
 	{
-		turn_LED2_on();
+		HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);
 		TIM1->SR &= ~TIM_SR_CC3IF;
 	}
 	if (TIM1->SR & TIM_SR_CC1IF)
