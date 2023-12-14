@@ -433,6 +433,7 @@ NVIC.SPI6_IRQn=true\:0\:0\:false\:false\:false\:false\:false\:true
 NVIC.SVCall_IRQn=true\:0\:0\:false\:false\:true\:false\:false\:false
 NVIC.SysTick_IRQn=true\:15\:0\:false\:false\:true\:false\:true\:false
 NVIC.TIM1_CC_IRQn=true\:0\:0\:false\:false\:false\:true\:false\:true
+NVIC.TIM1_UP_IRQn=true\:0\:0\:false\:false\:false\:true\:false\:true
 NVIC.UsageFault_IRQn=true\:0\:0\:false\:false\:true\:false\:false\:false
 PA0.Locked=true
 PA0.Mode=NSS_Signal_Hard_Output
