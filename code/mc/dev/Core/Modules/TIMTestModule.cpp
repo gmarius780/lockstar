@@ -3,6 +3,7 @@
 #include "main.h"
 #include "stm32h725xx.h"
 #include "stm32h7xx_it.h"
+#include "../HAL/leds.hpp"
 
 #define PPM_BUFFER_SIZE ((CAPTURE_BUFFER_SIZE)-1)
 #define PERIOD 0xFFFFF
@@ -57,10 +58,10 @@ public:
 		PPM_Calculate();
 #endif
 #ifdef CH2_PWM
-		DMA1_Stream2->CR |= DMA_PRIORITY_HIGH;
-		DMA1_Stream2->NDTR = BUFFER_DATA_NUMBER;
-		DMA1_Stream2->PAR = (uint32_t)&TIM1->DMAR; // Virtual register of TIM1
-		DMA1_Stream2->M0AR = (uint32_t)aSRC_Buffer;
+		DMA1_Stream7->CR |= DMA_PRIORITY_HIGH;
+		DMA1_Stream7->NDTR = BUFFER_DATA_NUMBER;
+		DMA1_Stream7->PAR = (uint32_t)&TIM1->DMAR; // Virtual register of TIM1
+		DMA1_Stream7->M0AR = (uint32_t)aSRC_Buffer;
 
 		TIM1->CCR2 = 0xFFF;
 		LL_TIM_EnableARRPreload(TIM1);	  // Enable ARR Preload
@@ -78,6 +79,7 @@ public:
 
 #endif
 #ifdef CH3_OCM
+		LL_TIM_OC_InitTypeDef TIM_OC_InitStruct = {0};
 		TIM_OC_InitStruct.OCMode = LL_TIM_OCMODE_FROZEN;
 		TIM_OC_InitStruct.OCState = LL_TIM_OCSTATE_DISABLE;
 		TIM_OC_InitStruct.OCNState = LL_TIM_OCSTATE_DISABLE;
@@ -89,13 +91,15 @@ public:
 		LL_TIM_OC_Init(TIM1, LL_TIM_CHANNEL_CH3, &TIM_OC_InitStruct);
 		LL_TIM_OC_DisableFast(TIM1, LL_TIM_CHANNEL_CH3);
 
-		TIM1->PSC = 10; // Set prescaler
-		TIM1->CCR3 = 0xFF;
+		TIM1->PSC = 10000; // Set prescaler
+		TIM1->CCR3 = 5000;
 		LL_TIM_EnableARRPreload(TIM1);
+		LL_TIM_GenerateEvent_UPDATE(TIM1);
 		LL_TIM_EnableAllOutputs(TIM1);
 		LL_TIM_EnableIT_CC3(TIM1);
 		TIM1->CCER |= TIM_CCER_CC3E;
 		TIM1->CR1 |= TIM_CR1_CEN;
+		turn_LED3_on();
 #endif
 #ifdef TRIGGER
 
@@ -135,10 +139,10 @@ public:
 
 		TIM1->PSC = 1000; // Set prescaler
 		TIM1->CCR1 = 0xFFF;
-		DMA1_Stream2->CR |= DMA_PRIORITY_HIGH;
-		DMA1_Stream2->NDTR = BUFFER_DATA_NUMBER;
-		DMA1_Stream2->PAR = (uint32_t)&TIM1->DMAR; // Virtual register of TIM1
-		DMA1_Stream2->M0AR = (uint32_t)aSRC_Buffer;
+		DMA1_Stream7->CR |= DMA_PRIORITY_HIGH;
+		DMA1_Stream7->NDTR = BUFFER_DATA_NUMBER;
+		DMA1_Stream7->PAR = (uint32_t)&TIM1->DMAR; // Virtual register of TIM1
+		DMA1_Stream7->M0AR = (uint32_t)aSRC_Buffer;
 
 		LL_TIM_SetOnePulseMode(TIM1, LL_TIM_ONEPULSEMODE_SINGLE);
 
@@ -165,7 +169,7 @@ public:
 		LL_TIM_EnableAllOutputs(TIM1); // Enable all output channels
 		TIM1->CCER |= TIM_CCER_CC1E;   // Enable channel 1
 		// TIM1->CR1 |= TIM_CR1_CEN;		 // Enable timer
-		DMA1_Stream2->CR |= DMA_SxCR_EN; // Enable DMA
+		DMA1_Stream7->CR |= DMA_SxCR_EN; // Enable DMA
 
 #endif
 
@@ -195,10 +199,11 @@ static void PPM_Calculate(void)
 ||      TIM1       ||
 ********************/
 
-void TIM1_CC_IRQHandler(void)
+__attribute__((section(".itcmram"))) void TIM1_CC_IRQHandler(void)
 {
 	if (TIM1->SR & TIM_SR_CC3IF)
 	{
+		turn_LED2_on();
 		TIM1->SR &= ~TIM_SR_CC3IF;
 	}
 	if (TIM1->SR & TIM_SR_CC1IF)
@@ -212,20 +217,6 @@ void TIM1_CC_IRQHandler(void)
  ******************************/
 void start(void)
 {
-	/* To speed up the access to functions, that are often called, we store them in the RAM instead of the FLASH memory.
-	 * RAM is volatile. We therefore need to load the code into RAM at startup time. For background and explanations,
-	 * check https://rhye.org/post/stm32-with-opencm3-4-memory-sections/
-	 * */
-	extern unsigned __sram_func_start, __sram_func_end, __sram_func_loadaddr;
-	volatile unsigned *src = &__sram_func_loadaddr;
-	volatile unsigned *dest = &__sram_func_start;
-	while (dest < &__sram_func_end)
-	{
-		*dest = *src;
-		src++;
-		dest++;
-	}
-
 	/* After power on, give all devices a moment to properly start up */
 	HAL_Delay(200);
 
