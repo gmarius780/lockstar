@@ -77,20 +77,18 @@ public:
         functions[1] = {LL_CORDIC_FUNCTION_ARCTANGENT, LL_CORDIC_SCALE_6, -214748364, 85899, 5000, -568.0519530539988, 4, 1};
         functions[2] = {LL_CORDIC_FUNCTION_SINE, LL_CORDIC_SCALE_0, 0, 17179869, 250, 4.0, 0, 5};
         functions[3] = {LL_CORDIC_FUNCTION_ARCTANGENT, LL_CORDIC_SCALE_6, -214748364, 85899, 5000, -568.0519530539988, 4, 1};
+
+        this->currentFunction = functions[chunk_counter++];
+        endPointer = aCalculatedSin + this->currentFunction.n_samples - 1;
+        this->current_start = aCalculatedSin;
         enable_cycle_counter();
         for (waveFunction func : functions){
             LL_CORDIC_SetFunction(CORDIC, func.function);
             LL_CORDIC_SetScale(CORDIC, func.cordic_scale);
             uint32_t limit = (uint32_t)(func.n_samples * 1)-1;
-            endPointer = aCalculatedSin + 16384 - 1;
             CORDIC->WDATA = func.start_value;
             for (uint32_t i = 1; i < func.n_samples; i++)
             {
-                if (i == 1)
-                {
-                    sampling_timer->enable_interrupt();
-                    sampling_timer->enable();
-                }
                 func.start_value += func.step;
                 CORDIC->WDATA = func.start_value;
                 *pCalculatedSin++ = to_float((int32_t)CORDIC->RDATA, func.scale, func.offset);
@@ -216,21 +214,31 @@ public:
             this->dac_1->write(*dacPointer);
             this->dac_2->write(*(dacPointer++));
         }
+        else if(this->current_period < this->currentFunction.n_periods){
+            this->current_period++;
+            dacPointer = this->current_start;
+        }
         else
-        {
+        {   
             sampling_timer->disable_interrupt();
             sampling_timer->disable();
-            pCalculatedSin = aCalculatedSin;
-            dacPointer = aCalculatedSin;
+            this->current_period = 1;
+            this->currentFunction = functions[chunk_counter++];
+            endPointer += this->currentFunction.n_samples;
+            this->current_start += this->currentFunction.n_samples;
             stop_ticks = get_cycle_count();
             elapsed_ticks = stop_ticks - start_ticks;
         }
-
         // else
         // {
         //     dacPointer = aCalculatedSin;
         // }
     }
+public:
+    waveFunction currentFunction;
+    uint16_t chunk_counter = 0;
+    uint16_t current_period = 1;
+    float *current_start;
 };
 
 FGModule *module;
