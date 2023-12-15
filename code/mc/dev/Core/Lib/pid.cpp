@@ -41,7 +41,7 @@ void PID::disable_intensity_mode() {
 	this->calculate_output_func_pointer = &PID::calculate_output_normal;
 }
 
-__attribute__((section("sram_func")))
+__attribute__((section(".itcmram")))
 float PID::calculate_output(float setpoint,float measured,float dt) {
 	return (this->*calculate_output_func_pointer)(setpoint, measured, dt);
 }
@@ -49,7 +49,7 @@ float PID::calculate_output(float setpoint,float measured,float dt) {
 /*
  * Calculates pid outputs the standard way (in contrast to 'for_intensity')
  */
-__attribute__((section("sram_func")))
+__attribute__((section(".itcmram")))
 float PID::calculate_output_normal(float setpoint,float measured,float dt) {
 	error = setpoint - measured + input_offset;
 
@@ -73,7 +73,7 @@ float PID::calculate_output_normal(float setpoint,float measured,float dt) {
  * and the integrator is set to zero. This is useful in case of an
  * intensity stabilization with a non zero photodiode offset
  */
-__attribute__((section("sram_func")))
+__attribute__((section(".itcmram")))
 float PID::calculate_output_for_intensity(float setpoint,float measured,float dt) {
 	error = setpoint - measured + input_offset;
 
