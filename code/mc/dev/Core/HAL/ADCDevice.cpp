@@ -136,11 +136,12 @@ void ADC_Device::start_conversion()
 void ADC_Device::spi_transmision_callback()
 {
 }
-
+__attribute__((section(".itcmram")))
 void ADC_Device::dma_transmission_callback(void)
 {
     ADC_conf->dmaTx_clr_flag(ADC_conf->DMATx);
 }
+__attribute__((section(".itcmram")))
 void ADC_Device::dma_receive_callback(void)
 {
 
