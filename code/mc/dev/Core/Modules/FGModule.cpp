@@ -10,6 +10,7 @@
 #include "../HAL/BasicTimer.hpp"
 #include "dac_config.h"
 #include "BufferBaseModule.h"
+#include "../Lib/pid.hpp"
 // #include "../Src/runtime.h"
 
 #define FIXED_POINT_FRACTIONAL_BITS 31
@@ -64,11 +65,15 @@ public:
         initialize_adc_dac(ADC_UNIPOLAR_10V, ADC_UNIPOLAR_10V);
 
         prescaler = 0;
-        counter_max = 549;
+        counter_max = 1099;
         this->sampling_timer = new BasicTimer(2, counter_max, prescaler);
 
         dac_1->write(0);
         dac_2->write(0);
+
+        this->pid_one = new PID(0., 0., 0., 0., 0.);
+        this->pid_two = new PID(0., 0., 0., 0., 0.);
+        this->setpoint_one = this->setpoint_two = 0.;
 
         // allocate buffer and chunk space
         this->buffer = new float[BUFFER_LIMIT_kBYTES * 250]; // contains buffer_one and buffer_two sequentially
@@ -83,11 +88,11 @@ public:
         this->current_start = aCalculatedSin;
 
         DMA1_Stream7->CR |= DMA_PRIORITY_HIGH;
-        DMA1_Stream7->NDTR = 10;
+        DMA1_Stream7->NDTR = 4;
         DMA1_Stream7->PAR = (uint32_t)&TIM1->DMAR; // Virtual register of TIM1
         DMA1_Stream7->M0AR = (uint32_t)chunke_times_buffer;
 
-        TIM1->PSC = 10000; // Set prescaler
+        TIM1->PSC = 100; // Set prescaler
         TIM1->ARR = 100;
 
         LL_TIM_EnableARRPreload(TIM1);
@@ -178,6 +183,7 @@ public:
     {
         // sampling_timer->enable_interrupt();
         // sampling_timer->enable();
+        DMA1_Stream7->NDTR = 4;
         DMA1_Stream7->CR |= DMA_SxCR_EN; // Enable DMA
         TIM1->CR1 |= TIM_CR1_CEN;
 
@@ -234,6 +240,9 @@ public:
     {
         if (dacPointer < endPointer)
         {
+            adc->start_conversion();
+            this->pid_one->calculate_output(this->setpoint_one, adc->channel1->get_result(), 0.000002);
+            this->pid_two->calculate_output(this->setpoint_two, adc->channel2->get_result(), 0.000002);
             this->dac_1->write(*dacPointer);
             this->dac_2->write(*(dacPointer++));
         }
@@ -255,8 +264,14 @@ public:
         }
         else
         {
+            LL_TIM_DisableCounter(TIM1);
             sampling_timer->disable_interrupt();
             sampling_timer->disable();
+            this->current_period = 1;
+            this->chunk_counter = 0;
+            this->current_start = aCalculatedSin;
+            this->currentFunction = functions[chunk_counter++];
+            endPointer = aCalculatedSin + this->currentFunction.n_samples - 1;
         }
         // else
         // {
@@ -269,6 +284,9 @@ public:
     uint16_t chunk_counter = 0;
     uint16_t current_period = 1;
     float *current_start;
+    PID *pid_one;
+    PID *pid_two;
+    float setpoint_one, setpoint_two;
 };
 
 FGModule *module;
@@ -302,6 +320,18 @@ __attribute__((section(".itcmram"))) void DMA2_Stream3_IRQHandler(void)
 __attribute__((section(".itcmram"))) void SPI5_IRQHandler(void)
 {
     module->dac_2->dma_transmission_callback();
+}
+/********************
+||       ADC       ||
+********************/
+__attribute__((section(".itcmram"))) void DMA1_Stream4_IRQHandler(void)
+{
+	module->adc->dma_receive_callback();
+}
+
+__attribute__((section(".itcmram"))) void DMA1_Stream5_IRQHandler(void)
+{
+	module->adc->dma_transmission_callback();
 }
 /********************
 ||       RPI       ||
