@@ -15,7 +15,10 @@ class FGClient(BufferBaseClient_):
 
     async def set_cfunction(self, func: str, scale: str):
         bc = BackendCall(
-            self.client_id, "FGModule", "set_cfunction", args={"func": func, "scale": scale}
+            self.client_id,
+            "FGModule",
+            "set_cfunction",
+            args={"func": func, "scale": scale},
         )
         return await self._call_lockstar(bc)
 
@@ -43,8 +46,10 @@ class FGClient(BufferBaseClient_):
 
 client = None
 
+
 def to_q31(x):
     return int(x * 2**31)
+
 
 def ramp_gen(sampling_freq, flat_scale, ramp_time, amplitude, offset, inverse=False):
     cordic_scaling_factor = 6
@@ -55,23 +60,36 @@ def ramp_gen(sampling_freq, flat_scale, ramp_time, amplitude, offset, inverse=Fa
     inverse = False
     start_value = to_q31(ramp_begin)
     end_value = to_q31(ramp_end)
-    step_size = (ramp_end - ramp_begin)/num_samples
+    step_size = (ramp_end - ramp_begin) / num_samples
     step_size = to_q31(step_size)
 
-    scaling = (2**cordic_scaling_factor)/(np.arctan(ramp_begin*(2**cordic_scaling_factor))/np.pi)
+    scaling = (2**cordic_scaling_factor) / (
+        np.arctan(ramp_begin * (2**cordic_scaling_factor)) / np.pi
+    )
     scaling = -scaling if inverse else scaling
     total_scaling = scaling * amplitude
     print(total_scaling, offset, num_samples, start_value, step_size)
     return total_scaling, offset, num_samples, start_value, step_size
 
-def sin_gen(sample_freq, wave_freq, amplitude, offset):
-    num_samples = int(sample_freq/wave_freq)
-    start_value = 0
-    step_size = 0xFFFFFFFF/num_samples
-    print(amplitude, offset, num_samples, start_value, step_size)
-    print("Amplitude: ", amplitude, "Offset: ", offset, "Num Samples: ", num_samples, "Start Value: ", start_value, "Step Size: ", step_size)
-    return amplitude, offset, num_samples, start_value, step_size
 
+def sin_gen(sample_freq, wave_freq, amplitude, offset):
+    num_samples = int(sample_freq / wave_freq)
+    start_value = 0
+    step_size = 0xFFFFFFFF / num_samples
+    print(amplitude, offset, num_samples, start_value, step_size)
+    print(
+        "Amplitude: ",
+        amplitude,
+        "Offset: ",
+        offset,
+        "Num Samples: ",
+        num_samples,
+        "Start Value: ",
+        start_value,
+        "Step Size: ",
+        step_size,
+    )
+    return amplitude, offset, num_samples, start_value, step_size
 
 
 if __name__ == "__main__":
@@ -86,11 +104,55 @@ if asyncio.run(client.register_client_id()):
     linearization_file = join(dirname(__file__), "test_linearization.json")
     linearization_length = 2000
 
-    sampling_rate = 500000
-    
-    ramp1 = ramp_gen(sampling_rate, flat_scale=0.1, ramp_time=0.01, amplitude=4, offset=4)
+    sampling_rate = 450000
+
+    ramp1 = ramp_gen(
+        sampling_rate, flat_scale=0.1, ramp_time=0.01, amplitude=4, offset=4
+    )
     sin1 = sin_gen(sampling_rate, 50, 4, 0)
 
+    func_buffer = [
+        {
+            "ll_func": 0x00000001,
+            "ll_scaling": 0x00000000,
+            "start_value": 0,
+            "step_size": 17179869,
+            "num_samples": 250,
+            "total_scaling": 4.0,
+            "offset": 0,
+            "n_periods": 4,
+        },
+        {
+            "ll_func": 0x00000004,
+            "ll_scaling": 0x00000600,
+            "start_value": -214748364,
+            "step_size": 85899,
+            "num_samples": 5000,
+            "total_scaling": -568.0519530539988,
+            "offset": 4,
+            "n_periods": 2,
+        },
+        # {
+        #     "ll_func": 0x00000001,
+        #     "ll_scaling": 0x00000000,
+        #     "start_value": 0,
+        #     "step_size": 17179869,
+        #     "num_samples": 250,
+        #     "total_scaling": 4.0,
+        #     "offset": 0,
+        #     "n_periods": 5,
+        # },
+        # {
+        #     "ll_func": 0x00000004,
+        #     "ll_scaling": 0x00000600,
+        #     "start_value": -214748364,
+        #     "step_size": 85899,
+        #     "num_samples": 5000,
+        #     "total_scaling": -568.0519530539988,
+        #     "offset": 4,
+        #     "n_periods": 1,
+        # },
+    ]
     # ch_one_chunks = [999, 1999, 2999, 3999, 4999]
     # ch_two_chunks = [1999, 2999]
     # ch_one_buffer = np.concatenate((np.cos(np.linspace(0, 2*np.pi, num=1000)),
@@ -110,14 +172,15 @@ if asyncio.run(client.register_client_id()):
     print(asyncio.run(client.set_sampling_rate(sampling_rate)))
     print(asyncio.run(client.set_ch_one_output_limits(-10, 10)))
     print(asyncio.run(client.set_ch_two_output_limits(-10, 10)))
+    print(asyncio.run(client.set_ch_func_buffer(func_buffer)))
     # print(asyncio.run(client.set_cfunction("arctan", "LL_CORDIC_SCALE_6")))
-    # print(
-    #     asyncio.run(
-    #         client.start_ccalculation(
-    #             *ramp1
-    #         )
-    #     )
-    # )
+    print(
+        asyncio.run(
+            client.start_ccalculation(
+                *ramp1
+            )
+        )
+    )
     # print(asyncio.run(client.start_output()))
     # print(asyncio.run(client.set_cfunction("sin", "LL_CORDIC_SCALE_0")))
     # print(
