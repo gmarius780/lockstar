@@ -26,19 +26,7 @@ float *pCalculatedSin = aCalculatedSin;
 float *dacPointer = aCalculatedSin;
 float *endPointer;
 
-struct waveFunction
-{
-    uint32_t function;
-    uint32_t cordic_scale;
-    int32_t start_value;
-    int32_t step;
-    uint32_t n_samples;
-    float scale;
-    uint32_t offset;
-    uint32_t n_periods;
-};
-
-struct waveFunction functions[4];
+waveFunction functions[8];
 
 class FGModule : public BufferBaseModule
 {
@@ -78,14 +66,8 @@ public:
         // allocate buffer and chunk space
         this->buffer = new float[BUFFER_LIMIT_kBYTES * 250]; // contains buffer_one and buffer_two sequentially
         this->chunks = new uint32_t[MAX_NBR_OF_CHUNKS];      // contains chuncks_one and chunks_two sequentially
-        functions[0] = {LL_CORDIC_FUNCTION_SINE, LL_CORDIC_SCALE_0, 0, 17179869, 250, 4.0, 0, 4};
-        functions[1] = {LL_CORDIC_FUNCTION_ARCTANGENT, LL_CORDIC_SCALE_6, -214748364, 85899, 5000, -568.0519530539988, 4, 2};
-        functions[2] = {LL_CORDIC_FUNCTION_SINE, LL_CORDIC_SCALE_0, 0, 17179869, 250, 4.0, 0, 5};
-        functions[3] = {LL_CORDIC_FUNCTION_ARCTANGENT, LL_CORDIC_SCALE_6, -214748364, 85899, 5000, -568.0519530539988, 4, 1};
 
-        this->currentFunction = functions[chunk_counter++];
-        endPointer = aCalculatedSin + this->currentFunction.n_samples - 1;
-        this->current_start = aCalculatedSin;
+        this->func_one = functions;
 
         DMA1_Stream7->CR |= DMA_PRIORITY_HIGH;
         DMA1_Stream7->NDTR = 4;
@@ -105,23 +87,6 @@ public:
         LL_TIM_ClearFlag_UPDATE(TIM1);
         LL_TIM_EnableAllOutputs(TIM1);
         LL_TIM_EnableIT_UPDATE(TIM1);
-
-        enable_cycle_counter();
-        for (waveFunction func : functions)
-        {
-            LL_CORDIC_SetFunction(CORDIC, func.function);
-            LL_CORDIC_SetScale(CORDIC, func.cordic_scale);
-            uint32_t limit = (uint32_t)(func.n_samples * 1) - 1;
-            CORDIC->WDATA = func.start_value;
-            for (uint32_t i = 1; i < func.n_samples; i++)
-            {
-                func.start_value += func.step;
-                CORDIC->WDATA = func.start_value;
-                *pCalculatedSin++ = to_float((int32_t)CORDIC->RDATA, func.scale, func.offset);
-            }
-            /* Read last result */
-            *pCalculatedSin = to_float((int32_t)CORDIC->RDATA, func.scale, func.offset);
-        }
 
         while (true)
         {
@@ -147,32 +112,29 @@ public:
     static const uint32_t METHOD_START_CCalculation = 32;
     void start_ccalculation(RPIDataPackage *read_package)
     {
-        start_ticks = get_cycle_count();
-        /***Read arguments***/
-        float scale = read_package->pop_from_buffer<float>();
-        uint32_t offset = read_package->pop_from_buffer<uint32_t>();
-        uint32_t n_samples = read_package->pop_from_buffer<uint32_t>();
-        int32_t start_value = read_package->pop_from_buffer<uint32_t>();
-        int32_t step = read_package->pop_from_buffer<uint32_t>();
-
-        endPointer = aCalculatedSin + n_samples - 1;
-        uint32_t limit = (uint32_t)(n_samples * 0.1);
-        /* Write first angle to cordic */
-        CORDIC->WDATA = start_value;
-        for (uint32_t i = 1; i < n_samples; i++)
+        for (uint16_t i = 0; i < 1; i++)
         {
-            if (i == limit)
+            waveFunction func = this->func_one[i];
+            LL_CORDIC_SetFunction(CORDIC, func.function);
+            LL_CORDIC_SetScale(CORDIC, func.cordic_scale);
+            uint32_t limit = (uint32_t)(func.n_samples * 1) - 1;
+            CORDIC->WDATA = func.start_value;
+            for (uint32_t i = 1; i < func.n_samples; i++)
             {
-                sampling_timer->enable_interrupt();
-                sampling_timer->enable();
+                func.start_value += func.step;
+                CORDIC->WDATA = func.start_value;
+                *pCalculatedSin++ = to_float((int32_t)CORDIC->RDATA, func.scale, func.offset);
             }
-            start_value += step;
-            CORDIC->WDATA = start_value;
-            *pCalculatedSin++ = to_float((int32_t)CORDIC->RDATA, scale, offset);
+            /* Read last result */
+            *pCalculatedSin = to_float((int32_t)CORDIC->RDATA, func.scale, func.offset);
         }
-        /* Read last result */
-        *pCalculatedSin = to_float((int32_t)CORDIC->RDATA, scale, offset);
+        this->currentFunction = this->func_one[chunk_counter++];
+        endPointer = aCalculatedSin + this->currentFunction.n_samples - 1;
+        this->current_start = aCalculatedSin;
 
+        DMA1_Stream7->NDTR = 4;
+        DMA1_Stream7->CR |= DMA_SxCR_EN; // Enable DMA
+        TIM1->CR1 |= TIM_CR1_CEN;
         /*** send ACK ***/
         RPIDataPackage *write_package = rpi->get_write_package();
         write_package->push_ack();
@@ -240,10 +202,10 @@ public:
     {
         if (dacPointer < endPointer)
         {
-            adc->start_conversion();
-            this->pid_one->calculate_output(this->setpoint_one, adc->channel1->get_result(), 0.000002);
-            this->pid_two->calculate_output(this->setpoint_two, adc->channel2->get_result(), 0.000002);
-            this->dac_1->write(*dacPointer);
+            // adc->start_conversion();
+            // this->pid_one->calculate_output(this->setpoint_one, adc->channel1->get_result(), 0.000002);
+            // this->pid_two->calculate_output(this->setpoint_two, adc->channel2->get_result(), 0.000002);
+            this->dac_1->write(*(dacPointer));
             this->dac_2->write(*(dacPointer++));
         }
         else if (this->current_period < this->currentFunction.n_periods)
@@ -259,8 +221,6 @@ public:
             this->current_start += this->currentFunction.n_samples;
             this->currentFunction = functions[chunk_counter++];
             endPointer += this->currentFunction.n_samples;
-            stop_ticks = get_cycle_count();
-            elapsed_ticks = stop_ticks - start_ticks;
         }
         else
         {
@@ -326,12 +286,12 @@ __attribute__((section(".itcmram"))) void SPI5_IRQHandler(void)
 ********************/
 __attribute__((section(".itcmram"))) void DMA1_Stream4_IRQHandler(void)
 {
-	module->adc->dma_receive_callback();
+    module->adc->dma_receive_callback();
 }
 
 __attribute__((section(".itcmram"))) void DMA1_Stream5_IRQHandler(void)
 {
-	module->adc->dma_transmission_callback();
+    module->adc->dma_transmission_callback();
 }
 /********************
 ||       RPI       ||
