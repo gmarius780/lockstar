@@ -29,6 +29,10 @@ class BufferBaseClient_(ScopeClient):
     async def set_ch_two_buffer(self, buffer):
         bc = BackendCall(self.client_id, self.module_name, 'set_ch_two_buffer', args={'buffer': buffer})
         return await self._call_lockstar(bc)
+    
+    async def set_ch_func_buffer(self, func_buffer):
+        bc = BackendCall(self.client_id, self.module_name, 'set_ch_func_buffer', args={'func_buffer': func_buffer})
+        return await self._call_lockstar(bc)
 
     async def initialize_buffers(self, buffer_one_size: int, buffer_two_size: int, chunks_one_size: int, 
                             chunks_two_size: int, sampling_rate:int):
