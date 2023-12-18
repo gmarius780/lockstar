@@ -17,6 +17,19 @@
 #ifndef MODULES_BUFFERBASEMODULE_H_
 #define MODULES_BUFFERBASEMODULE_H_
 
+typedef struct waveFunction
+{
+    uint32_t function;
+    uint32_t cordic_scale;
+    int32_t start_value;
+    int32_t step;
+    uint32_t n_samples;
+    float scale;
+    uint32_t offset;
+    uint32_t n_periods;
+};
+
+
 class BufferBaseModule: public ScopeModule {
 public:
 	BufferBaseModule();
@@ -55,6 +68,9 @@ public:
 	void set_ch_two_buffer(RPIDataPackage* read_package);
 	void set_ch_buffer(RPIDataPackage* read_package, float *current_read, float *channel_buffer, float *buffer_end, bool buffer_one);
 
+	static const uint32_t METHOD_SET_CH_ONE_FUNC_BUFFER = 22;
+	void set_ch_func_buffer(RPIDataPackage* read_package, waveFunction *current_read, waveFunction *func_buffer, bool buffer_one);
+
 	void reset_output();
 	void turn_output_off();
 
@@ -76,6 +92,8 @@ public:
 	float *current_end_chunk_one, *current_end_chunk_two; //points to the end of the current chunk
 	uint32_t counter_max, prescaler;
 	BasicTimer *sampling_timer;
+	waveFunction *func_one, *func_two;
+	waveFunction *current_func_one, *current_func_two;
 
 };
 

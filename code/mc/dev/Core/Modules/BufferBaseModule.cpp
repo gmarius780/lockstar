@@ -58,6 +58,9 @@ bool BufferBaseModule::handle_rpi_base_methods() {
 		case METHOD_SET_CH_TWO_CHUNKS:
 			set_ch_two_chunks(read_package);
 			break;
+		case METHOD_SET_CH_ONE_FUNC_BUFFER:
+			set_ch_func_buffer(read_package, this->current_func_one, this->func_one, true);
+			break;
 		default:
 			return false;
 		}
@@ -259,6 +262,32 @@ void BufferBaseModule::set_ch_buffer(RPIDataPackage* read_package, float *curren
 	rpi->send_package(write_package);
 }
 
+
+void BufferBaseModule::set_ch_func_buffer(RPIDataPackage* read_package, waveFunction *current_read, waveFunction *func_buffer, bool buffer_one) {
+
+	/***Read arguments***/
+	uint32_t nbr_values_to_read = read_package->pop_from_buffer<uint32_t>();
+	
+	current_read = func_buffer;
+
+	waveFunction *end_read = func_buffer + nbr_values_to_read;
+	while (current_read < end_read) {
+		current_read->function = read_package->pop_from_buffer<uint32_t>();
+		current_read->cordic_scale = read_package->pop_from_buffer<uint32_t>();
+		current_read->start_value = read_package->pop_from_buffer<int32_t>();
+		current_read->step = read_package->pop_from_buffer<int32_t>();
+		current_read->n_samples = read_package->pop_from_buffer<uint32_t>();
+		current_read->scale = read_package->pop_from_buffer<float>();
+		current_read->offset = read_package->pop_from_buffer<uint32_t>();
+		current_read->n_periods = read_package->pop_from_buffer<uint32_t>();
+		current_read++;
+	}
+	
+	/*** send ACK ***/
+	RPIDataPackage* write_package = rpi->get_write_package();
+	write_package->push_ack();
+	rpi->send_package(write_package);
+}
 /*** END: METHODS ACCESSIBLE FROM THE RPI ***/
 
 /**
