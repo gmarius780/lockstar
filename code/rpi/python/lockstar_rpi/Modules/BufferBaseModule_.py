@@ -133,6 +133,46 @@ class BufferBaseModule_(ScopeModule_):
                 await writer.drain()
             return True
 
+    async def set_ch_func_buffer(self, func_buffer, writer, respond=True, buffer_one=True):
+        mc_data_package = MCDataPackage()
+        mc_data_package.push_to_buffer('uint32_t', (22 if buffer_one else 23)) # method_identifier
+
+        nbr_values_to_read = len(func_buffer)
+        
+        
+        mc_data_package.push_to_buffer('uint32_t', nbr_values_to_read)
+        for func in func_buffer:
+            mc_data_package.push_to_buffer('uint32_t', func["ll_func"])
+            mc_data_package.push_to_buffer('uint32_t', func["ll_scaling"])
+            mc_data_package.push_to_buffer('int32_t', func["start_value"])
+            mc_data_package.push_to_buffer('int32_t', func["step_size"])            
+            mc_data_package.push_to_buffer('uint32_t', func["num_samples"])
+            mc_data_package.push_to_buffer('float', func["total_scaling"])
+            mc_data_package.push_to_buffer('uint32_t', func["offset"])
+            mc_data_package.push_to_buffer('uint32_t', func["n_periods"])
+
+        logging.debug(f'send {nbr_values_to_read} floats')
+        await MC.I().write_mc_data_package(mc_data_package)
+        #wait for acknowledgment of reception by MC
+        ack = await self.check_for_ack(writer=None)
+        if not ack:
+            logging.error(f'set ch {"one" if buffer_one else "two"} buffer: could not send packet!!')
+            if writer is not None:
+                writer.write(BackendResponse.NACK().to_bytes())
+                await writer.drain()
+                return False
+    
+        if buffer_one:
+            self.buffer_one = func_buffer.copy()
+        else:
+            self.buffer_two = func_buffer.copy()
+
+        if writer is not None:
+            writer.write(BackendResponse.ACK().to_bytes())
+            await writer.drain()
+        return True
+
+
     async def initialize_buffers(self, buffer_one_size: int, buffer_two_size: int, chunks_one_size: int, 
                                 chunks_two_size: int, sampling_rate:int, writer, respond=True):
         """sets the sizes of the buffer_one and buffer two, numbers of chunks for buffer_one 
