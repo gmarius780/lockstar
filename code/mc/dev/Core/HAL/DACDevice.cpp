@@ -18,6 +18,11 @@ __attribute__((section(".DMA_D1")))
 __attribute__((__aligned__(32)))
 uint8_t dmaD1_buffer[DAC2_BUFFER_SIZE] = {0};
 
+__attribute__((section(".dtcmram")))
+int32_t int_output;
+
+uint32_t skipped = 0;
+
 // uint32_t start_cycle, end_cycle, total_cycles;
 DAC_Device::DAC_Device(DAC_Device_TypeDef *DAC_conf)
 {
@@ -65,18 +70,19 @@ DAC2_Device::DAC2_Device(DAC_Device_TypeDef *DAC_conf) : DAC_Device(DAC_conf)
     LL_SPI_EnableIT_EOT(DAC_conf->SPIx);
 }
 
-// __attribute__((section(".sram_func")))
+__attribute__((section(".itcmram")))
 void DAC_Device::write(float output)
 {
-    while (busy)
-    {
-    }
+    // while (busy)
+    // {
+    //     skipped++;
+    // }
 
     busy = true;
     output = std::min(max_output, std::max(output, min_output));
     last_output = output;
 
-    int32_t int_output = (int32_t)((output - zero_voltage) * inv_step_size);
+    int_output = (int32_t)((output - zero_voltage) * inv_step_size);
 
     if (invert)
         int_output = -int_output;
@@ -90,11 +96,11 @@ void DAC_Device::write(float output)
     dma_buffer[2] = int_output & 0xff;            // Get the least significant 6 bits
     begin_dma_transfer();
 }
-
+__attribute__((section(".itcmram")))
 void DAC_Device::dma_transmission_callback()
 {
 }
-// __attribute__((section(".sram_func")))
+__attribute__((section(".itcmram")))
 void DAC1_Device::dma_transmission_callback()
 {
     DisableChannel(DAC_conf->BDMA_Channelx);
@@ -106,7 +112,7 @@ void DAC1_Device::dma_transmission_callback()
 
     busy = false;
 }
-// __attribute__((section(".sram_func")))
+__attribute__((section(".itcmram")))
 void DAC2_Device::dma_transmission_callback()
 {
     DAC_conf->dma_clr_flag(DAC_conf->DMAx);
@@ -203,6 +209,7 @@ void DAC2_Device::config_output()
     while (busy)
         ;
 }
+__attribute__((section(".itcmram")))
 void DAC_Device::prepare_buffer()
 {
     busy = true;
@@ -234,10 +241,11 @@ void DAC_Device::prepare_buffer()
     dma_buffer[2] = ((comp & 0b11) << 6) + control_reg;
 }
 
+__attribute__((section(".itcmram")))
 void DAC_Device::begin_dma_transfer()
 {
 }
-// __attribute__((section(".sram_func")))
+__attribute__((section(".itcmram")))
 void DAC1_Device::begin_dma_transfer()
 {
     SetDataLength(DAC_conf->BDMA_Channelx, DAC1_BUFFER_SIZE);
@@ -247,7 +255,7 @@ void DAC1_Device::begin_dma_transfer()
     DAC_conf->SPIx->CR1 |= SPI_CR1_SPE;
     DAC_conf->SPIx->CR1 |= SPI_CR1_CSTART;
 }
-// __attribute__((section(".sram_func")))
+__attribute__((section(".itcmram")))
 void DAC2_Device::begin_dma_transfer()
 {
     SetDataLength(DAC_conf->DMA_Streamx, DAC2_BUFFER_SIZE);

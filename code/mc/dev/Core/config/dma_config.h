@@ -6,6 +6,7 @@ extern "C" {
 #endif
 #include "stm32h7xx_ll_dma.h"
 
+__attribute__((section(".dtcmram")))
 static LL_BDMA_InitTypeDef DAC1_DMA_CONF = {
     .PeriphOrM2MSrcAddress = 0,
     .MemoryOrM2MDstAddress = 0,
@@ -19,6 +20,7 @@ static LL_BDMA_InitTypeDef DAC1_DMA_CONF = {
     .PeriphRequest = LL_DMAMUX2_REQ_SPI6_TX,
     .Priority = LL_BDMA_PRIORITY_HIGH};
 
+__attribute__((section(".dtcmram")))
 static LL_DMA_InitTypeDef DAC2_DMA_CONF = {
     .PeriphOrM2MSrcAddress = 0,
     .MemoryOrM2MDstAddress = 0,

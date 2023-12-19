@@ -37,19 +37,19 @@ LinearizableDAC::LinearizableDAC(DAC_Device_TypeDef* DAC_conf) {
 LinearizableDAC::~LinearizableDAC() {
 	// TODO Auto-generated destructor stub
 }
-
+__attribute__((section(".itcmram")))
 void LinearizableDAC::config_output() {
 	dac->config_output();
 }
-
+__attribute__((section(".itcmram")))
 void LinearizableDAC::write(float value) {
-	if (linearization_enabled) {
-		dac->write(linearize(value));
-	} else {
+	// if (linearization_enabled) {
+	// 	dac->write(linearize(value));
+	// } else {
 		dac->write(value);
-	}
+	// }
 }
-
+__attribute__((section(".itcmram")))
 void LinearizableDAC::dma_transmission_callback() {
 	dac->dma_transmission_callback();
 }
@@ -79,7 +79,7 @@ float LinearizableDAC::get_max_output() {
 float LinearizableDAC::get_last_output() {
 	return dac->get_last_output();
 }
-
+__attribute__((section(".itcmram")))
 void LinearizableDAC::set_linearization_length(uint32_t length) {
 	linearization_length = length;
 }
@@ -87,7 +87,7 @@ void LinearizableDAC::set_linearization_length(uint32_t length) {
 void LinearizableDAC::disable_linearization() {
 	linearization_enabled = false;
 }
-
+__attribute__((section(".itcmram")))
 bool LinearizableDAC::enable_linearization() {
 	if (linearization_available) {
 		linearization_enabled = true;
@@ -97,6 +97,7 @@ bool LinearizableDAC::enable_linearization() {
 	}
 }
 
+__attribute__((section(".itcmram")))
 float LinearizableDAC::linearize(float value) {
 	value = value/ramp_range*output_range;
 
@@ -110,6 +111,7 @@ float LinearizableDAC::linearize(float value) {
 	return linearization_buffer[pivot_index] + (linearization_buffer[pivot_index+1]-linearization_buffer[pivot_index])*interpolation;
 }
 
+__attribute__((section(".itcmram")))
 bool LinearizableDAC::push_to_linearization_buffer(float linearization_pivot, bool append) {
 	if (linearization_length > 0) {
 		if (append == false) {

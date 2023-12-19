@@ -13,6 +13,7 @@ extern "C" {
 
 extern ADC_HandleTypeDef hadc3;
 
+__attribute__((section(".dtcmram")))
 static DAC_Device_TypeDef DAC1_conf = {
     .dac_id = 1,
     .isBDMA = true,
@@ -29,7 +30,7 @@ static DAC_Device_TypeDef DAC1_conf = {
     .SENH = LL_ADC_CHANNEL_10,
     .SENL = LL_ADC_CHANNEL_11
 };
-
+__attribute__((section(".dtcmram")))
 static DAC_Device_TypeDef DAC2_conf = {
     .dac_id = 2,
     .isBDMA = false,
