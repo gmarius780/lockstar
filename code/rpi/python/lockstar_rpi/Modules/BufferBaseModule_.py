@@ -150,6 +150,7 @@ class BufferBaseModule_(ScopeModule_):
             mc_data_package.push_to_buffer('float', func["total_scaling"])
             mc_data_package.push_to_buffer('uint32_t', func["offset"])
             mc_data_package.push_to_buffer('uint32_t', func["n_periods"])
+            mc_data_package.push_to_buffer('uint32_t', func["time_start"])
 
         logging.debug(f'send {nbr_values_to_read} floats')
         await MC.I().write_mc_data_package(mc_data_package)
