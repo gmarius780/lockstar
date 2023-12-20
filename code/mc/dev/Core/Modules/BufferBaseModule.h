@@ -27,6 +27,7 @@ typedef struct waveFunction
     float scale;
     uint32_t offset;
     uint32_t n_periods;
+	uint16_t time_start;
 };
 
 
@@ -69,7 +70,7 @@ public:
 	void set_ch_buffer(RPIDataPackage* read_package, float *current_read, float *channel_buffer, float *buffer_end, bool buffer_one);
 
 	static const uint32_t METHOD_SET_CH_ONE_FUNC_BUFFER = 22;
-	void set_ch_func_buffer(RPIDataPackage* read_package, waveFunction *current_read, waveFunction *func_buffer, bool buffer_one);
+	void set_ch_func_buffer(RPIDataPackage* read_package, waveFunction *current_read, waveFunction *func_buffer, uint32_t *time_buffer, bool buffer_one);
 
 	void reset_output();
 	void turn_output_off();
@@ -92,8 +93,9 @@ public:
 	float *current_end_chunk_one, *current_end_chunk_two; //points to the end of the current chunk
 	uint32_t counter_max, prescaler;
 	BasicTimer *sampling_timer;
-	waveFunction *func_one, *func_two;
+	waveFunction *func_buffer_one, *func_buffer_two;
 	waveFunction *current_func_one, *current_func_two;
+	uint32_t *time_buffer_one, *time_buffer_two;
 
 };
 

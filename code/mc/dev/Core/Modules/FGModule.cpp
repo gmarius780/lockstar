@@ -18,7 +18,7 @@
 __STATIC_INLINE float to_float(int32_t value, float scaling_factor, uint32_t offset);
 
 uint32_t start_ticks, stop_ticks, elapsed_ticks;
-uint32_t chunke_times_buffer[10] = {5000, 8000, 3000, 4000, 8000, 12000, 3000, 5000, 5000, 2000};
+uint32_t chunke_times_buffer[10] = {0};
 /* Array of calculated sines in Q1.31 format */
 static float aCalculatedSin[16384];
 /* Pointer to start of array */
@@ -67,7 +67,8 @@ public:
         this->buffer = new float[BUFFER_LIMIT_kBYTES * 250]; // contains buffer_one and buffer_two sequentially
         this->chunks = new uint32_t[MAX_NBR_OF_CHUNKS];      // contains chuncks_one and chunks_two sequentially
 
-        this->func_one = functions;
+        this->func_buffer_one = functions;
+        this->time_buffer_one = chunke_times_buffer;
 
         DMA1_Stream7->CR |= DMA_PRIORITY_HIGH;
         DMA1_Stream7->NDTR = 4;
@@ -112,9 +113,9 @@ public:
     static const uint32_t METHOD_START_CCalculation = 32;
     void start_ccalculation(RPIDataPackage *read_package)
     {
-        for (uint16_t i = 0; i < 1; i++)
+        for (uint16_t i = 0; i < 4; i++)
         {
-            waveFunction func = this->func_one[i];
+            waveFunction func = this->func_buffer_one[i];
             LL_CORDIC_SetFunction(CORDIC, func.function);
             LL_CORDIC_SetScale(CORDIC, func.cordic_scale);
             uint32_t limit = (uint32_t)(func.n_samples * 1) - 1;
@@ -128,7 +129,7 @@ public:
             /* Read last result */
             *pCalculatedSin = to_float((int32_t)CORDIC->RDATA, func.scale, func.offset);
         }
-        this->currentFunction = this->func_one[chunk_counter++];
+        this->currentFunction = this->func_buffer_one[chunk_counter++];
         endPointer = aCalculatedSin + this->currentFunction.n_samples - 1;
         this->current_start = aCalculatedSin;
 
@@ -202,11 +203,15 @@ public:
     {
         if (dacPointer < endPointer)
         {
-            // adc->start_conversion();
-            // this->pid_one->calculate_output(this->setpoint_one, adc->channel1->get_result(), 0.000002);
-            // this->pid_two->calculate_output(this->setpoint_two, adc->channel2->get_result(), 0.000002);
+            adc->start_conversion();
+            this->pid_one->calculate_output(this->setpoint_one, adc->channel1->get_result(), 0.000002);
+            this->pid_two->calculate_output(this->setpoint_two, adc->channel2->get_result(), 0.000002);
+            
             this->dac_1->write(*(dacPointer));
-            this->dac_2->write(*(dacPointer++));
+            this->dac_2->write(*(dacPointer));
+            
+            dacPointer++;
+            
         }
         else if (this->current_period < this->currentFunction.n_periods)
         {
@@ -219,7 +224,7 @@ public:
             sampling_timer->disable();
             this->current_period = 1;
             this->current_start += this->currentFunction.n_samples;
-            this->currentFunction = functions[chunk_counter++];
+            this->currentFunction = this->func_buffer_one[chunk_counter++];
             endPointer += this->currentFunction.n_samples;
         }
         else
@@ -230,7 +235,7 @@ public:
             this->current_period = 1;
             this->chunk_counter = 0;
             this->current_start = aCalculatedSin;
-            this->currentFunction = functions[chunk_counter++];
+            this->currentFunction = this->func_buffer_one[chunk_counter++];
             endPointer = aCalculatedSin + this->currentFunction.n_samples - 1;
         }
         // else
@@ -247,8 +252,9 @@ public:
     PID *pid_one;
     PID *pid_two;
     float setpoint_one, setpoint_two;
+    // DAC_Device *dac_1, *dac_2;
 };
-
+__attribute__((section(".dtcmram")))
 FGModule *module;
 
 __STATIC_INLINE float to_float(int32_t value, float scaling_factor, uint32_t offset)

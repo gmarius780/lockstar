@@ -59,7 +59,7 @@ bool BufferBaseModule::handle_rpi_base_methods() {
 			set_ch_two_chunks(read_package);
 			break;
 		case METHOD_SET_CH_ONE_FUNC_BUFFER:
-			set_ch_func_buffer(read_package, this->current_func_one, this->func_one, true);
+			set_ch_func_buffer(read_package, this->current_func_one, this->func_buffer_one, this->time_buffer_one, true);
 			break;
 		default:
 			return false;
@@ -263,7 +263,7 @@ void BufferBaseModule::set_ch_buffer(RPIDataPackage* read_package, float *curren
 }
 
 
-void BufferBaseModule::set_ch_func_buffer(RPIDataPackage* read_package, waveFunction *current_read, waveFunction *func_buffer, bool buffer_one) {
+void BufferBaseModule::set_ch_func_buffer(RPIDataPackage* read_package, waveFunction *current_read, waveFunction *func_buffer, uint32_t *time_buffer, bool buffer_one) {
 
 	/***Read arguments***/
 	uint32_t nbr_values_to_read = read_package->pop_from_buffer<uint32_t>();
@@ -280,7 +280,9 @@ void BufferBaseModule::set_ch_func_buffer(RPIDataPackage* read_package, waveFunc
 		current_read->scale = read_package->pop_from_buffer<float>();
 		current_read->offset = read_package->pop_from_buffer<uint32_t>();
 		current_read->n_periods = read_package->pop_from_buffer<uint32_t>();
+		*(time_buffer) = read_package->pop_from_buffer<uint32_t>();
 		current_read++;
+		time_buffer++;
 	}
 	
 	/*** send ACK ***/
