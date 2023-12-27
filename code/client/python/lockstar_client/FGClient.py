@@ -104,7 +104,7 @@ if asyncio.run(client.register_client_id()):
     linearization_file = join(dirname(__file__), "test_linearization.json")
     linearization_length = 2000
 
-    sampling_rate = 320000
+    sampling_rate = 300000
 
     ramp1 = ramp_gen(
         sampling_rate, flat_scale=0.1, ramp_time=0.01, amplitude=4, offset=4
@@ -121,7 +121,7 @@ if asyncio.run(client.register_client_id()):
             "total_scaling": 4.0,
             "offset": 0,
             "n_periods": 4,
-            "time_start": 3000
+            "time_start": 7000,
         },
         {
             "ll_func": 0x00000004,
@@ -132,7 +132,7 @@ if asyncio.run(client.register_client_id()):
             "total_scaling": -568.0519530539988,
             "offset": 4,
             "n_periods": 2,
-            "time_start": 5000
+            "time_start": 8000,
         },
         {
             "ll_func": 0x00000001,
@@ -143,7 +143,7 @@ if asyncio.run(client.register_client_id()):
             "total_scaling": 4.0,
             "offset": 0,
             "n_periods": 5,
-            "time_start": 3000
+            "time_start": 11000,
         },
         {
             "ll_func": 0x00000004,
@@ -154,8 +154,8 @@ if asyncio.run(client.register_client_id()):
             "total_scaling": -568.0519530539988,
             "offset": 4,
             "n_periods": 5,
-            "time_start": 5000
-        },
+            "time_start": 5000,
+        }
     ]
     # ch_one_chunks = [999, 1999, 2999, 3999, 4999]
     # ch_two_chunks = [1999, 2999]
@@ -178,13 +178,7 @@ if asyncio.run(client.register_client_id()):
     print(asyncio.run(client.set_ch_two_output_limits(-10, 10)))
     print(asyncio.run(client.set_ch_func_buffer(func_buffer)))
     # print(asyncio.run(client.set_cfunction("arctan", "LL_CORDIC_SCALE_6")))
-    print(
-        asyncio.run(
-            client.start_ccalculation(
-                *ramp1
-            )
-        )
-    )
+    print(asyncio.run(client.start_ccalculation(*ramp1)))
     # print(asyncio.run(client.start_output()))
     # print(asyncio.run(client.set_cfunction("sin", "LL_CORDIC_SCALE_0")))
     # print(

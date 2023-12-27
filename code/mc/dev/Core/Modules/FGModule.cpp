@@ -14,19 +14,22 @@
 // #include "../Src/runtime.h"
 
 #define FIXED_POINT_FRACTIONAL_BITS 31
+#define NUM_FUNCS 4
 
 __STATIC_INLINE float to_float(int32_t value, float scaling_factor, uint32_t offset);
 
 uint32_t start_ticks, stop_ticks, elapsed_ticks;
 uint32_t chunke_times_buffer[10] = {0};
 /* Array of calculated sines in Q1.31 format */
-static float aCalculatedSin[16384];
+static float aCalculatedSin[16384] = {0};
 /* Pointer to start of array */
 float *pCalculatedSin = aCalculatedSin;
 float *dacPointer = aCalculatedSin;
 float *endPointer;
+__attribute((section(".dtcmram"))) uint16_t chunk_counter = 0;
+__attribute((section(".dtcmram"))) uint16_t current_period = 1;
 
-waveFunction functions[8];
+waveFunction functions[8] = {0};
 
 class FGModule : public BufferBaseModule
 {
@@ -71,21 +74,23 @@ public:
         this->time_buffer_one = chunke_times_buffer;
 
         DMA1_Stream7->CR |= DMA_PRIORITY_HIGH;
-        DMA1_Stream7->NDTR = 4;
+        DMA1_Stream7->NDTR = NUM_FUNCS;
         DMA1_Stream7->PAR = (uint32_t)&TIM1->DMAR; // Virtual register of TIM1
         DMA1_Stream7->M0AR = (uint32_t)chunke_times_buffer;
 
         TIM1->PSC = 100; // Set prescaler
-        TIM1->ARR = 100;
+        TIM1->ARR = 10000;
 
         LL_TIM_EnableARRPreload(TIM1);
         LL_TIM_EnableDMAReq_UPDATE(TIM1);
         LL_TIM_ConfigDMABurst(TIM1, LL_TIM_DMABURST_BASEADDR_ARR, LL_TIM_DMABURST_LENGTH_1TRANSFER);
-        LL_TIM_GenerateEvent_UPDATE(TIM1);
+        // LL_TIM_GenerateEvent_UPDATE(TIM1);
         while (!LL_TIM_IsEnabledDMAReq_UPDATE(TIM1))
         {
         }
+        // LL_TIM_GenerateEvent_UPDATE(TIM1);
         LL_TIM_ClearFlag_UPDATE(TIM1);
+        LL_TIM_SetCounter(TIM1, 0);
         LL_TIM_EnableAllOutputs(TIM1);
         LL_TIM_EnableIT_UPDATE(TIM1);
 
@@ -113,7 +118,7 @@ public:
     static const uint32_t METHOD_START_CCalculation = 32;
     void start_ccalculation(RPIDataPackage *read_package)
     {
-        for (uint16_t i = 0; i < 4; i++)
+        for (uint16_t i = 0; i < NUM_FUNCS; i++)
         {
             waveFunction func = this->func_buffer_one[i];
             LL_CORDIC_SetFunction(CORDIC, func.function);
@@ -133,9 +138,11 @@ public:
         endPointer = aCalculatedSin + this->currentFunction.n_samples - 1;
         this->current_start = aCalculatedSin;
 
-        DMA1_Stream7->NDTR = 4;
-        DMA1_Stream7->CR |= DMA_SxCR_EN; // Enable DMA
+        DMA1_Stream7->NDTR = NUM_FUNCS;
         TIM1->CR1 |= TIM_CR1_CEN;
+        DMA1_Stream7->CR |= DMA_SxCR_EN; // Enable DMA
+        // LL_TIM_EnableDMAReq_UPDATE(TIM1);
+        // TIM1->CR1 |= TIM_CR1_CEN;
         /*** send ACK ***/
         RPIDataPackage *write_package = rpi->get_write_package();
         write_package->push_ack();
@@ -146,7 +153,7 @@ public:
     {
         // sampling_timer->enable_interrupt();
         // sampling_timer->enable();
-        DMA1_Stream7->NDTR = 4;
+        DMA1_Stream7->NDTR = NUM_FUNCS;
         DMA1_Stream7->CR |= DMA_SxCR_EN; // Enable DMA
         TIM1->CR1 |= TIM_CR1_CEN;
 
@@ -203,26 +210,25 @@ public:
     {
         if (dacPointer < endPointer)
         {
-            adc->start_conversion();
-            this->pid_one->calculate_output(this->setpoint_one, adc->channel1->get_result(), 0.000002);
-            this->pid_two->calculate_output(this->setpoint_two, adc->channel2->get_result(), 0.000002);
-            
+            // adc->start_conversion();
+            // this->pid_one->calculate_output(this->setpoint_one, adc->channel1->get_result(), 0.000002);
+            // this->pid_two->calculate_output(this->setpoint_two, adc->channel2->get_result(), 0.000002);
+
             this->dac_1->write(*(dacPointer));
             this->dac_2->write(*(dacPointer));
-            
+
             dacPointer++;
-            
         }
-        else if (this->current_period < this->currentFunction.n_periods)
+        else if (current_period < this->currentFunction.n_periods)
         {
-            this->current_period++;
+            current_period++;
             dacPointer = this->current_start;
         }
-        else if (chunk_counter < 4)
+        else if (chunk_counter < NUM_FUNCS)
         {
-            sampling_timer->disable_interrupt();
+            // sampling_timer->disable_interrupt();
             sampling_timer->disable();
-            this->current_period = 1;
+            current_period = 1;
             this->current_start += this->currentFunction.n_samples;
             this->currentFunction = this->func_buffer_one[chunk_counter++];
             endPointer += this->currentFunction.n_samples;
@@ -230,12 +236,15 @@ public:
         else
         {
             LL_TIM_DisableCounter(TIM1);
-            sampling_timer->disable_interrupt();
+            // sampling_timer->disable_interrupt();
             sampling_timer->disable();
-            this->current_period = 1;
-            this->chunk_counter = 0;
+            // this->func_buffer_one = functions;
+            // this->time_buffer_one = chunke_times_buffer;
+            current_period = 1;
+            chunk_counter = 0;
             this->current_start = aCalculatedSin;
             this->currentFunction = this->func_buffer_one[chunk_counter++];
+            // dacPointer = aCalculatedSin;
             endPointer = aCalculatedSin + this->currentFunction.n_samples - 1;
         }
         // else
@@ -246,8 +255,8 @@ public:
 
 public:
     waveFunction currentFunction;
-    uint16_t chunk_counter = 0;
-    uint16_t current_period = 1;
+    // uint16_t chunk_counter;
+    // uint16_t current_period;
     float *current_start;
     PID *pid_one;
     PID *pid_two;
