@@ -122,6 +122,7 @@ void BufferBaseModule::set_sampling_rate(RPIDataPackage* read_package) {
 
 	this->sampling_timer->set_auto_reload(counter_max);
 	this->sampling_timer->set_prescaler(prescaler);
+	this->sampling_timer->enable_interrupt();
 
 	/*** send ACK ***/
 	RPIDataPackage* write_package = rpi->get_write_package();
@@ -271,6 +272,7 @@ void BufferBaseModule::set_ch_func_buffer(RPIDataPackage* read_package, waveFunc
 	current_read = func_buffer;
 
 	waveFunction *end_read = func_buffer + nbr_values_to_read;
+	uint32_t time = 0;
 	while (current_read < end_read) {
 		current_read->function = read_package->pop_from_buffer<uint32_t>();
 		current_read->cordic_scale = read_package->pop_from_buffer<uint32_t>();
@@ -280,7 +282,10 @@ void BufferBaseModule::set_ch_func_buffer(RPIDataPackage* read_package, waveFunc
 		current_read->scale = read_package->pop_from_buffer<float>();
 		current_read->offset = read_package->pop_from_buffer<uint32_t>();
 		current_read->n_periods = read_package->pop_from_buffer<uint32_t>();
-		*(time_buffer) = read_package->pop_from_buffer<uint32_t>();
+		time = read_package->pop_from_buffer<uint32_t>();
+		current_read->time_start = time;
+		*(time_buffer) = time;
+
 		current_read++;
 		time_buffer++;
 	}
