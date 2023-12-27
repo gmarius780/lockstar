@@ -51,22 +51,30 @@ BasicTimer::BasicTimer(uint8_t timer_x, uint32_t auto_reload, uint32_t prescaler
 
 	// ARPE: Auto-reload preload enable - enable chaning of sampling rate on the fly
 	LL_TIM_EnableARRPreload(tim_regs);
-	LL_TIM_SetClockSource(TIM2, LL_TIM_CLOCKSOURCE_INTERNAL);
-	LL_TIM_SetTriggerOutput(TIM2, LL_TIM_TRGO_RESET);
-	LL_TIM_DisableMasterSlaveMode(TIM2);
-	disable_interrupt();
+	LL_TIM_SetClockSource(tim_regs, LL_TIM_CLOCKSOURCE_INTERNAL);
+	LL_TIM_SetTriggerOutput(tim_regs, LL_TIM_TRGO_UPDATE);
+	LL_TIM_DisableMasterSlaveMode(tim_regs);
+
+	LL_TIM_SetTriggerInput(tim_regs, LL_TIM_TS_ITR0);
+	LL_TIM_SetSlaveMode(tim_regs, LL_TIM_SLAVEMODE_TRIGGER);
+	LL_TIM_DisableIT_TRIG(tim_regs);
+	LL_TIM_DisableDMAReq_TRIG(tim_regs);
+
+	// enable_interrupt();
 }
 
 void BasicTimer::set_auto_reload(uint32_t value)
 {
 	tim_regs->ARR = value;
 	LL_TIM_GenerateEvent_UPDATE(tim_regs);
+	reset_interrupt();
 }
 
 void BasicTimer::set_prescaler(uint32_t value)
 {
 	tim_regs->PSC = value;
 	LL_TIM_GenerateEvent_UPDATE(tim_regs);
+	reset_interrupt();
 }
 
 uint32_t BasicTimer::get_counter() { return (uint32_t)tim_regs->CNT; }
