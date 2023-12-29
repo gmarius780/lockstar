@@ -57,6 +57,17 @@ public:
 
         prescaler = 0;
         counter_max = 1099;
+
+        DBGMCU->APB2FZ1 |= DBGMCU_APB2FZ1_DBG_TIM1; // stop TIM1 when core is halted
+        DBGMCU->APB1LFZ1 |= DBGMCU_APB1LFZ1_DBG_TIM2; // stop TIM2 when core is halted
+
+        TIM1->PSC = 1000; // Set prescaler
+        TIM1->ARR = 1000;
+        // LL_TIM_GenerateEvent_UPDATE(TIM1);
+        // LL_TIM_ClearFlag_UPDATE(TIM1);
+        LL_TIM_EnableARRPreload(TIM1);
+
+
         this->sampling_timer = new BasicTimer(2, counter_max, prescaler);
 
         dac_1->write(0);
@@ -77,22 +88,17 @@ public:
         DMA1_Stream7->NDTR = NUM_FUNCS;
         DMA1_Stream7->PAR = (uint32_t)&TIM1->DMAR; // Virtual register of TIM1
         DMA1_Stream7->M0AR = (uint32_t)chunke_times_buffer;
-
-        TIM1->PSC = 100; // Set prescaler
-        TIM1->ARR = 10000;
-
-        LL_TIM_EnableARRPreload(TIM1);
+        
         LL_TIM_EnableDMAReq_UPDATE(TIM1);
         LL_TIM_ConfigDMABurst(TIM1, LL_TIM_DMABURST_BASEADDR_ARR, LL_TIM_DMABURST_LENGTH_1TRANSFER);
-        // LL_TIM_GenerateEvent_UPDATE(TIM1);
         while (!LL_TIM_IsEnabledDMAReq_UPDATE(TIM1))
         {
         }
         // LL_TIM_GenerateEvent_UPDATE(TIM1);
-        LL_TIM_ClearFlag_UPDATE(TIM1);
+        
         LL_TIM_SetCounter(TIM1, 0);
         LL_TIM_EnableAllOutputs(TIM1);
-        LL_TIM_EnableIT_UPDATE(TIM1);
+        // LL_TIM_EnableIT_UPDATE(TIM1);
 
         while (true)
         {
@@ -138,11 +144,11 @@ public:
         endPointer = aCalculatedSin + this->currentFunction.n_samples - 1;
         this->current_start = aCalculatedSin;
 
-        DMA1_Stream7->NDTR = NUM_FUNCS;
+        // DMA1_Stream7->NDTR = NUM_FUNCS;
         TIM1->CR1 |= TIM_CR1_CEN;
-        DMA1_Stream7->CR |= DMA_SxCR_EN; // Enable DMA
         // LL_TIM_EnableDMAReq_UPDATE(TIM1);
         // TIM1->CR1 |= TIM_CR1_CEN;
+        DMA1_Stream7->CR |= DMA_SxCR_EN; // Enable DMA
         /*** send ACK ***/
         RPIDataPackage *write_package = rpi->get_write_package();
         write_package->push_ack();
