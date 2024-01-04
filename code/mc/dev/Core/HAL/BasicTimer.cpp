@@ -55,10 +55,6 @@ BasicTimer::BasicTimer(uint8_t timer_x, uint32_t auto_reload, uint32_t prescaler
 	LL_TIM_SetTriggerOutput(tim_regs, LL_TIM_TRGO_UPDATE);
 	LL_TIM_DisableMasterSlaveMode(tim_regs);
 
-	LL_TIM_SetTriggerInput(tim_regs, LL_TIM_TS_ITR0);
-	LL_TIM_SetSlaveMode(tim_regs, LL_TIM_SLAVEMODE_TRIGGER);
-	LL_TIM_DisableIT_TRIG(tim_regs);
-	LL_TIM_DisableDMAReq_TRIG(tim_regs);
 
 	// enable_interrupt();
 }
