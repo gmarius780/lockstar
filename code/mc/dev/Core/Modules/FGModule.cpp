@@ -62,7 +62,7 @@ public:
         DBGMCU->APB1LFZ1 |= DBGMCU_APB1LFZ1_DBG_TIM2; // stop TIM2 when core is halted
 
         TIM1->PSC = 1000; // Set prescaler
-        TIM1->ARR = 1000;
+        // TIM1->ARR = 2000;
         // LL_TIM_GenerateEvent_UPDATE(TIM1);
         // LL_TIM_ClearFlag_UPDATE(TIM1);
         LL_TIM_EnableARRPreload(TIM1);
@@ -89,15 +89,7 @@ public:
         DMA1_Stream7->PAR = (uint32_t)&TIM1->DMAR; // Virtual register of TIM1
         DMA1_Stream7->M0AR = (uint32_t)chunke_times_buffer;
         
-        LL_TIM_EnableDMAReq_UPDATE(TIM1);
-        LL_TIM_ConfigDMABurst(TIM1, LL_TIM_DMABURST_BASEADDR_ARR, LL_TIM_DMABURST_LENGTH_1TRANSFER);
-        while (!LL_TIM_IsEnabledDMAReq_UPDATE(TIM1))
-        {
-        }
-        // LL_TIM_GenerateEvent_UPDATE(TIM1);
-        
-        LL_TIM_SetCounter(TIM1, 0);
-        LL_TIM_EnableAllOutputs(TIM1);
+        // LL_TIM_EnableAllOutputs(TIM1);
         // LL_TIM_EnableIT_UPDATE(TIM1);
 
         while (true)
@@ -124,6 +116,21 @@ public:
     static const uint32_t METHOD_START_CCalculation = 32;
     void start_ccalculation(RPIDataPackage *read_package)
     {
+
+        LL_TIM_EnableUpdateEvent(TIM1);
+        LL_TIM_EnableDMAReq_UPDATE(TIM1);
+        LL_TIM_ConfigDMABurst(TIM1, LL_TIM_DMABURST_BASEADDR_ARR, LL_TIM_DMABURST_LENGTH_1TRANSFER);
+        while (!LL_TIM_IsEnabledDMAReq_UPDATE(TIM1))
+        {
+        }
+        LL_TIM_GenerateEvent_UPDATE(TIM1);
+        
+        LL_TIM_SetCounter(TIM1, 0);
+        LL_TIM_SetTriggerInput(TIM2, LL_TIM_TS_ITR0);
+        LL_TIM_SetSlaveMode(TIM2, LL_TIM_SLAVEMODE_TRIGGER);
+        LL_TIM_DisableIT_TRIG(TIM2);
+        LL_TIM_DisableDMAReq_TRIG(TIM2);
+
         for (uint16_t i = 0; i < NUM_FUNCS; i++)
         {
             waveFunction func = this->func_buffer_one[i];
@@ -143,6 +150,8 @@ public:
         this->currentFunction = this->func_buffer_one[chunk_counter++];
         endPointer = aCalculatedSin + this->currentFunction.n_samples - 1;
         this->current_start = aCalculatedSin;
+        // TIM1->ARR = current_func_one->time_start;
+        // LL_TIM_GenerateEvent_UPDATE(TIM1);
 
         // DMA1_Stream7->NDTR = NUM_FUNCS;
         TIM1->CR1 |= TIM_CR1_CEN;
