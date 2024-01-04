@@ -14,12 +14,12 @@
 // #include "../Src/runtime.h"
 
 #define FIXED_POINT_FRACTIONAL_BITS 31
-#define NUM_FUNCS 4
+#define NUM_FUNCS 10
 
 __STATIC_INLINE float to_float(int32_t value, float scaling_factor, uint32_t offset);
 
 uint32_t start_ticks, stop_ticks, elapsed_ticks;
-uint32_t chunke_times_buffer[10] = {0};
+uint32_t chunke_times_buffer[NUM_FUNCS] = {0};
 /* Array of calculated sines in Q1.31 format */
 static float aCalculatedSin[16384] = {0};
 /* Pointer to start of array */
@@ -29,7 +29,7 @@ float *endPointer;
 __attribute((section(".dtcmram"))) uint16_t chunk_counter = 0;
 __attribute((section(".dtcmram"))) uint16_t current_period = 1;
 
-waveFunction functions[8] = {0};
+waveFunction functions[NUM_FUNCS] = {0};
 
 class FGModule : public BufferBaseModule
 {
@@ -117,14 +117,14 @@ public:
     void start_ccalculation(RPIDataPackage *read_package)
     {
 
-        LL_TIM_EnableUpdateEvent(TIM1);
+        LL_TIM_EnableUpdateEvent(TIM1);  
         LL_TIM_EnableDMAReq_UPDATE(TIM1);
         LL_TIM_ConfigDMABurst(TIM1, LL_TIM_DMABURST_BASEADDR_ARR, LL_TIM_DMABURST_LENGTH_1TRANSFER);
         while (!LL_TIM_IsEnabledDMAReq_UPDATE(TIM1))
         {
         }
         LL_TIM_GenerateEvent_UPDATE(TIM1);
-        
+
         LL_TIM_SetCounter(TIM1, 0);
         LL_TIM_SetTriggerInput(TIM2, LL_TIM_TS_ITR0);
         LL_TIM_SetSlaveMode(TIM2, LL_TIM_SLAVEMODE_TRIGGER);
@@ -242,7 +242,9 @@ public:
         else if (chunk_counter < NUM_FUNCS)
         {
             // sampling_timer->disable_interrupt();
-            sampling_timer->disable();
+            if(this->currentFunction.time_start > 1){
+                sampling_timer->disable();
+            }
             current_period = 1;
             this->current_start += this->currentFunction.n_samples;
             this->currentFunction = this->func_buffer_one[chunk_counter++];
