@@ -58,15 +58,13 @@ public:
         prescaler = 0;
         counter_max = 1099;
 
-        DBGMCU->APB2FZ1 |= DBGMCU_APB2FZ1_DBG_TIM1; // stop TIM1 when core is halted
+        DBGMCU->APB2FZ1 |= DBGMCU_APB2FZ1_DBG_TIM1;   // stop TIM1 when core is halted
         DBGMCU->APB1LFZ1 |= DBGMCU_APB1LFZ1_DBG_TIM2; // stop TIM2 when core is halted
 
         TIM1->PSC = 999; // Set prescaler
         TIM1->ARR = 1;
-        // LL_TIM_GenerateEvent_UPDATE(TIM1);
-        // LL_TIM_ClearFlag_UPDATE(TIM1);
+        
         LL_TIM_EnableARRPreload(TIM1);
-
 
         this->sampling_timer = new BasicTimer(2, counter_max, prescaler);
 
@@ -88,9 +86,6 @@ public:
         DMA1_Stream7->NDTR = NUM_FUNCS;
         DMA1_Stream7->PAR = (uint32_t)&TIM1->DMAR; // Virtual register of TIM1
         DMA1_Stream7->M0AR = (uint32_t)chunke_times_buffer;
-        
-        // LL_TIM_EnableAllOutputs(TIM1);
-        // LL_TIM_EnableIT_UPDATE(TIM1);
 
         while (true)
         {
@@ -117,7 +112,7 @@ public:
     void start_ccalculation(RPIDataPackage *read_package)
     {
 
-        LL_TIM_EnableUpdateEvent(TIM1);  
+        LL_TIM_EnableUpdateEvent(TIM1);
         LL_TIM_EnableDMAReq_UPDATE(TIM1);
         LL_TIM_ConfigDMABurst(TIM1, LL_TIM_DMABURST_BASEADDR_ARR, LL_TIM_DMABURST_LENGTH_1TRANSFER);
         while (!LL_TIM_IsEnabledDMAReq_UPDATE(TIM1))
@@ -150,13 +145,9 @@ public:
         this->currentFunction = this->func_buffer_one[chunk_counter++];
         endPointer = aCalculatedSin + this->currentFunction.n_samples - 1;
         this->current_start = aCalculatedSin;
-        // TIM1->ARR = current_func_one->time_start;
-        // LL_TIM_GenerateEvent_UPDATE(TIM1);
+        TIM1->ARR = this->currentFunction.time_start;
 
-        // DMA1_Stream7->NDTR = NUM_FUNCS;
         TIM1->CR1 |= TIM_CR1_CEN;
-        // LL_TIM_EnableDMAReq_UPDATE(TIM1);
-        // TIM1->CR1 |= TIM_CR1_CEN;
         DMA1_Stream7->CR |= DMA_SxCR_EN; // Enable DMA
         /*** send ACK ***/
         RPIDataPackage *write_package = rpi->get_write_package();
@@ -242,7 +233,8 @@ public:
         else if (chunk_counter < NUM_FUNCS)
         {
             // sampling_timer->disable_interrupt();
-            if(this->currentFunction.time_start > 1){
+            if (this->currentFunction.time_start > 1)
+            {
                 sampling_timer->disable();
             }
             current_period = 1;
@@ -255,19 +247,20 @@ public:
             LL_TIM_DisableCounter(TIM1);
             // sampling_timer->disable_interrupt();
             sampling_timer->disable();
-            // this->func_buffer_one = functions;
-            // this->time_buffer_one = chunke_times_buffer;
             current_period = 1;
             chunk_counter = 0;
             this->current_start = aCalculatedSin;
-            this->currentFunction = this->func_buffer_one[chunk_counter++];
-            // dacPointer = aCalculatedSin;
+            pCalculatedSin = aCalculatedSin;
+            this->currentFunction = this->func_buffer_one[0];
+            dacPointer = aCalculatedSin;
             endPointer = aCalculatedSin + this->currentFunction.n_samples - 1;
+            TIM1->ARR = 1;
+            LL_DMA_ClearFlag_TC7(DMA1);
+            DMA1_Stream7->NDTR = NUM_FUNCS;
+            DMA1_Stream7->PAR = (uint32_t)&TIM1->DMAR; // Virtual register of TIM1
+            DMA1_Stream7->M0AR = (uint32_t)chunke_times_buffer;
+
         }
-        // else
-        // {
-        //     dacPointer = aCalculatedSin;
-        // }
     }
 
 public:
