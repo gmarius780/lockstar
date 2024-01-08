@@ -14,14 +14,14 @@
 // #include "../Src/runtime.h"
 
 #define FIXED_POINT_FRACTIONAL_BITS 31
-#define NUM_FUNCS 10
+#define NUM_FUNCS 11
 
 __STATIC_INLINE float to_float(int32_t value, float scaling_factor, uint32_t offset);
 
 uint32_t start_ticks, stop_ticks, elapsed_ticks;
 uint32_t chunke_times_buffer[NUM_FUNCS] = {0};
 /* Array of calculated sines in Q1.31 format */
-static float aCalculatedSin[16384] = {0};
+static float aCalculatedSin[32000] = {0};
 /* Pointer to start of array */
 float *pCalculatedSin = aCalculatedSin;
 float *dacPointer = aCalculatedSin;
@@ -61,8 +61,8 @@ public:
         DBGMCU->APB2FZ1 |= DBGMCU_APB2FZ1_DBG_TIM1; // stop TIM1 when core is halted
         DBGMCU->APB1LFZ1 |= DBGMCU_APB1LFZ1_DBG_TIM2; // stop TIM2 when core is halted
 
-        TIM1->PSC = 1000; // Set prescaler
-        // TIM1->ARR = 2000;
+        TIM1->PSC = 999; // Set prescaler
+        TIM1->ARR = 1;
         // LL_TIM_GenerateEvent_UPDATE(TIM1);
         // LL_TIM_ClearFlag_UPDATE(TIM1);
         LL_TIM_EnableARRPreload(TIM1);
