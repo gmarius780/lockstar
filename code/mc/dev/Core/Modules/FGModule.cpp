@@ -28,11 +28,8 @@ etl::circular_buffer<float, 32000> aCalculatedSinBuffer;
 auto itr = aCalculatedSinBuffer.begin();
 auto end = aCalculatedSinBuffer.begin();
 auto temp = aCalculatedSinBuffer.begin();
-/* Pointer to start of array */
-float *aCalculatedSin;
-float *pCalculatedSin = aCalculatedSin;
-float *dacPointer = aCalculatedSin;
-float *endPointer;
+
+
 __attribute((section(".dtcmram"))) uint16_t chunk_counter = 0;
 __attribute((section(".dtcmram"))) uint16_t current_period = 1;
 
@@ -151,13 +148,14 @@ public:
             /* Read last result */
             aCalculatedSinBuffer.push(to_float((int32_t)CORDIC->RDATA, func.scale, func.offset));
         }
+
         this->currentFunction = this->func_buffer_one[chunk_counter++];
         advance(end, this->currentFunction.n_samples);
-        this->current_start = aCalculatedSin;
+        
         TIM1->ARR = this->currentFunction.time_start;
-
         TIM1->CR1 |= TIM_CR1_CEN;
         DMA1_Stream7->CR |= DMA_SxCR_EN; // Enable DMA
+
         /*** send ACK ***/
         RPIDataPackage *write_package = rpi->get_write_package();
         write_package->push_ack();
@@ -166,8 +164,6 @@ public:
     static const uint32_t METHOD_START_Output = 33;
     void start_output(RPIDataPackage *read_package)
     {
-        // sampling_timer->enable_interrupt();
-        // sampling_timer->enable();
         DMA1_Stream7->NDTR = NUM_FUNCS;
         DMA1_Stream7->CR |= DMA_SxCR_EN; // Enable DMA
         TIM1->CR1 |= TIM_CR1_CEN;
@@ -256,11 +252,13 @@ public:
             sampling_timer->disable();
             current_period = 1;
             chunk_counter = 0;
-            this->current_start = aCalculatedSin;
-            pCalculatedSin = aCalculatedSin;
+
             this->currentFunction = this->func_buffer_one[0];
-            dacPointer = aCalculatedSin;
-            endPointer = aCalculatedSin + this->currentFunction.n_samples - 1;
+
+            itr = aCalculatedSinBuffer.begin();
+            end = aCalculatedSinBuffer.begin();
+            temp = aCalculatedSinBuffer.begin();
+
             TIM1->ARR = 1;
             LL_DMA_ClearFlag_TC7(DMA1);
             DMA1_Stream7->NDTR = NUM_FUNCS;
@@ -272,13 +270,10 @@ public:
 
 public:
     waveFunction currentFunction;
-    // uint16_t chunk_counter;
-    // uint16_t current_period;
-    float *current_start;
+
     PID *pid_one;
     PID *pid_two;
     float setpoint_one, setpoint_two;
-    // DAC_Device *dac_1, *dac_2;
 };
 __attribute__((section(".dtcmram")))
 FGModule *module;
