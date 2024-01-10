@@ -11,25 +11,32 @@
 #include "dac_config.h"
 #include "BufferBaseModule.h"
 #include "../Lib/pid.hpp"
+// #include "bbbuffers.h"
+#include "etl/circular_buffer.h"
 // #include "../Src/runtime.h"
 
 #define FIXED_POINT_FRACTIONAL_BITS 31
-#define NUM_FUNCS 11
+#define NUM_FUNCS 10
 
 __STATIC_INLINE float to_float(int32_t value, float scaling_factor, uint32_t offset);
 
 uint32_t start_ticks, stop_ticks, elapsed_ticks;
 uint32_t chunke_times_buffer[NUM_FUNCS] = {0};
 /* Array of calculated sines in Q1.31 format */
-static float aCalculatedSin[32000] = {0};
+// static float aCalculatedSin[32000] = {0};
+etl::circular_buffer<float, 32000> aCalculatedSinBuffer;
+etl::circular_buffer<float, 32000>::iterator itr = aCalculatedSinBuffer.begin();
 /* Pointer to start of array */
+float *aCalculatedSin;
 float *pCalculatedSin = aCalculatedSin;
 float *dacPointer = aCalculatedSin;
 float *endPointer;
 __attribute((section(".dtcmram"))) uint16_t chunk_counter = 0;
 __attribute((section(".dtcmram"))) uint16_t current_period = 1;
 
-waveFunction functions[NUM_FUNCS] = {0};
+waveFunction functions[20] = {0};
+
+
 
 class FGModule : public BufferBaseModule
 {
@@ -133,17 +140,17 @@ public:
             LL_CORDIC_SetScale(CORDIC, func.cordic_scale);
             uint32_t limit = (uint32_t)(func.n_samples * 1) - 1;
             CORDIC->WDATA = func.start_value;
-            for (uint32_t i = 1; i < func.n_samples; i++)
+            for (uint32_t j = 1; j < func.n_samples; j++)
             {
                 func.start_value += func.step;
                 CORDIC->WDATA = func.start_value;
-                *pCalculatedSin++ = to_float((int32_t)CORDIC->RDATA, func.scale, func.offset);
+                aCalculatedSinBuffer.push(to_float((int32_t)CORDIC->RDATA, func.scale, func.offset));
             }
             /* Read last result */
-            *pCalculatedSin = to_float((int32_t)CORDIC->RDATA, func.scale, func.offset);
+            aCalculatedSinBuffer.push(to_float((int32_t)CORDIC->RDATA, func.scale, func.offset));
         }
         this->currentFunction = this->func_buffer_one[chunk_counter++];
-        endPointer = aCalculatedSin + this->currentFunction.n_samples - 1;
+        endPointer = &aCalculatedSinBuffer[this->currentFunction.n_samples - 1];
         this->current_start = aCalculatedSin;
         TIM1->ARR = this->currentFunction.time_start;
 
@@ -220,10 +227,10 @@ public:
             // this->pid_one->calculate_output(this->setpoint_one, adc->channel1->get_result(), 0.000002);
             // this->pid_two->calculate_output(this->setpoint_two, adc->channel2->get_result(), 0.000002);
 
-            this->dac_1->write(*(dacPointer));
-            this->dac_2->write(*(dacPointer));
+            this->dac_1->write(*itr);
+            this->dac_2->write(*(itr++));
 
-            dacPointer++;
+            // dacPointer++;
         }
         else if (current_period < this->currentFunction.n_periods)
         {
