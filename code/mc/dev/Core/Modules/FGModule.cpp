@@ -239,8 +239,9 @@ public:
             {
                 sampling_timer->disable();
             }
+            aCalculatedSinBuffer.pop(this->currentFunction.n_samples);
             current_period = 1;
-            itr = end;
+            itr = aCalculatedSinBuffer.begin();
             temp = itr;
             this->currentFunction = this->func_buffer_one[chunk_counter++];
             advance(end, this->currentFunction.n_samples);
@@ -253,8 +254,9 @@ public:
             current_period = 1;
             chunk_counter = 0;
 
-            this->currentFunction = this->func_buffer_one[0];
+            aCalculatedSinBuffer.pop();
 
+            this->currentFunction = this->func_buffer_one[0];
             itr = aCalculatedSinBuffer.begin();
             end = aCalculatedSinBuffer.begin();
             temp = aCalculatedSinBuffer.begin();
