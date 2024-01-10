@@ -25,7 +25,9 @@ uint32_t chunke_times_buffer[NUM_FUNCS] = {0};
 /* Array of calculated sines in Q1.31 format */
 // static float aCalculatedSin[32000] = {0};
 etl::circular_buffer<float, 32000> aCalculatedSinBuffer;
-etl::circular_buffer<float, 32000>::iterator itr = aCalculatedSinBuffer.begin();
+auto itr = aCalculatedSinBuffer.begin();
+auto end = aCalculatedSinBuffer.begin();
+auto temp = aCalculatedSinBuffer.begin();
 /* Pointer to start of array */
 float *aCalculatedSin;
 float *pCalculatedSin = aCalculatedSin;
@@ -68,7 +70,7 @@ public:
         DBGMCU->APB2FZ1 |= DBGMCU_APB2FZ1_DBG_TIM1;   // stop TIM1 when core is halted
         DBGMCU->APB1LFZ1 |= DBGMCU_APB1LFZ1_DBG_TIM2; // stop TIM2 when core is halted
 
-        TIM1->PSC = 999; // Set prescaler
+        TIM1->PSC = 9999; // Set prescaler
         TIM1->ARR = 1;
         
         LL_TIM_EnableARRPreload(TIM1);
@@ -150,7 +152,7 @@ public:
             aCalculatedSinBuffer.push(to_float((int32_t)CORDIC->RDATA, func.scale, func.offset));
         }
         this->currentFunction = this->func_buffer_one[chunk_counter++];
-        endPointer = &aCalculatedSinBuffer[this->currentFunction.n_samples - 1];
+        advance(end, this->currentFunction.n_samples);
         this->current_start = aCalculatedSin;
         TIM1->ARR = this->currentFunction.time_start;
 
@@ -221,7 +223,7 @@ public:
 
     void sampling_timer_interrupt()
     {
-        if (dacPointer < endPointer)
+        if (itr <= end)
         {
             // adc->start_conversion();
             // this->pid_one->calculate_output(this->setpoint_one, adc->channel1->get_result(), 0.000002);
@@ -229,25 +231,23 @@ public:
 
             this->dac_1->write(*itr);
             this->dac_2->write(*(itr++));
-
-            // dacPointer++;
         }
         else if (current_period < this->currentFunction.n_periods)
         {
             current_period++;
-            dacPointer = this->current_start;
+            itr = temp;
         }
         else if (chunk_counter < NUM_FUNCS)
         {
-            // sampling_timer->disable_interrupt();
             if (this->currentFunction.time_start > 1)
             {
                 sampling_timer->disable();
             }
             current_period = 1;
-            this->current_start += this->currentFunction.n_samples;
+            itr = end;
+            temp = itr;
             this->currentFunction = this->func_buffer_one[chunk_counter++];
-            endPointer += this->currentFunction.n_samples;
+            advance(end, this->currentFunction.n_samples);
         }
         else
         {
