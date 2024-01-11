@@ -25,7 +25,9 @@ uint32_t chunke_times_buffer[NUM_FUNCS] = {0};
 /* Array of calculated sines in Q1.31 format */
 // static float aCalculatedSin[32000] = {0};
 etl::circular_buffer<float, 32000> aCalculatedSinBuffer;
-auto itr = aCalculatedSinBuffer.begin();
+
+etl::icircular_buffer<float>::iterator itr = aCalculatedSinBuffer.begin();
+// auto itr = aCalculatedSinBuffer.begin();
 auto end = aCalculatedSinBuffer.begin();
 auto temp = aCalculatedSinBuffer.begin();
 
@@ -74,16 +76,12 @@ public:
 
         this->sampling_timer = new BasicTimer(2, counter_max, prescaler);
 
-        dac_1->write(0);
-        dac_2->write(0);
+        dac_1->write();
+        dac_2->write();
 
         this->pid_one = new PID(0., 0., 0., 0., 0.);
         this->pid_two = new PID(0., 0., 0., 0., 0.);
         this->setpoint_one = this->setpoint_two = 0.;
-
-        // allocate buffer and chunk space
-        this->buffer = new float[BUFFER_LIMIT_kBYTES * 250]; // contains buffer_one and buffer_two sequentially
-        this->chunks = new uint32_t[MAX_NBR_OF_CHUNKS];      // contains chuncks_one and chunks_two sequentially
 
         this->func_buffer_one = functions;
         this->time_buffer_one = chunke_times_buffer;
@@ -225,8 +223,8 @@ public:
             // this->pid_one->calculate_output(this->setpoint_one, adc->channel1->get_result(), 0.000002);
             // this->pid_two->calculate_output(this->setpoint_two, adc->channel2->get_result(), 0.000002);
 
-            this->dac_1->write(*itr);
-            this->dac_2->write(*(itr++));
+            this->dac_1->write();
+            // this->dac_2->write();
         }
         else if (current_period < this->currentFunction.n_periods)
         {

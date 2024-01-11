@@ -16,7 +16,7 @@
 #include "etl/circular_buffer.h"
 
 
-extern etl::circular_buffer<float, 32000>::iterator itr;
+extern etl::icircular_buffer<float>::iterator itr;
 
 typedef struct
 {
