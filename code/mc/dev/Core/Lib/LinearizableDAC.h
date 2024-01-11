@@ -24,6 +24,7 @@ public:
 	void config_output();
 
 	void write(float value);
+	void write();
 
 	void dma_transmission_callback();
 	bool is_busy();

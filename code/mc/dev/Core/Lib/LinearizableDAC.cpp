@@ -50,6 +50,15 @@ void LinearizableDAC::write(float value) {
 	// }
 }
 __attribute__((section(".itcmram")))
+void LinearizableDAC::write() {
+	// if (linearization_enabled) {
+	// 	dac->write(linearize(value));
+	// } else {
+		dac->write();
+	// }
+}
+
+__attribute__((section(".itcmram")))
 void LinearizableDAC::dma_transmission_callback() {
 	dac->dma_transmission_callback();
 }

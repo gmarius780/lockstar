@@ -13,6 +13,10 @@
 #include "spi.hpp"
 
 #include <algorithm>
+#include "etl/circular_buffer.h"
+
+
+extern etl::circular_buffer<float, 32000>::iterator itr;
 
 typedef struct
 {
@@ -46,6 +50,7 @@ public:
     void config_output(ADC_HandleTypeDef *hadc, uint32_t ADC_SENL, uint32_t ADC_SENH);
 
     void write(float value);
+    void write();
     virtual void dma_transmission_callback();
     bool is_busy();
     void set_min_output(float m); // can only set the minimum higher than set with jumpers
