@@ -28,7 +28,7 @@ TARGET = dev
 # debug build?
 DEBUG = 1
 # optimization
-OPT = -Ofast
+OPT = -O3
 
 
 #######################################
@@ -184,16 +184,17 @@ C_INCLUDES =  \
 -IDrivers/STM32H7xx_HAL_Driver/Inc \
 -IDrivers/STM32H7xx_HAL_Driver/Inc/Legacy \
 -IDrivers/CMSIS/Device/ST/STM32H7xx/Include \
--IDrivers/CMSIS/Include
+-IDrivers/CMSIS/Include \
+-IDrivers/ETL/Include
 
 CPP_INCLUDES = 
 
 # compile gcc flags
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
 
-CFLAGS += $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections --specs=nano.specs
+CFLAGS += $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections --specs=nano.specs -Wno-unused-variable
 
-CPPFLAGS = $(CPP_INCLUDES) $(OPT) -std=gnu++14 -fno-exceptions -fno-rtti -fno-use-cxa-atexit
+CPPFLAGS = $(CPP_INCLUDES) $(OPT) -std=gnu++17 -fno-exceptions -fno-rtti -fno-use-cxa-atexit
 
 ifeq ($(DEBUG), 1)
 CFLAGS += -gdwarf-2

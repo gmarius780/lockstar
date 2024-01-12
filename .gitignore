@@ -210,3 +210,4 @@ doc/STM32H725_SPI_Ref.pdf
 *.T3001OPEN
 code/mc/dev/data/angle_data.h
 code/mc/dev/devRemote.cfg
+code/mc/dev/Drivers/ETL/Include/etl/*
