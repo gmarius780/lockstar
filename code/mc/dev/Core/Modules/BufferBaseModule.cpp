@@ -268,28 +268,26 @@ void BufferBaseModule::set_ch_func_buffer(RPIDataPackage* read_package, waveFunc
 
 	/***Read arguments***/
 	uint32_t nbr_values_to_read = read_package->pop_from_buffer<uint32_t>();
-	
-	current_read = func_buffer;
-
-	waveFunction *end_read = func_buffer + nbr_values_to_read;
 	uint32_t time = 0;
-	while (current_read < end_read) {
-		current_read->function = read_package->pop_from_buffer<uint32_t>();
-		current_read->cordic_scale = read_package->pop_from_buffer<uint32_t>();
-		current_read->start_value = read_package->pop_from_buffer<int32_t>();
-		current_read->step = read_package->pop_from_buffer<int32_t>();
-		current_read->n_samples = read_package->pop_from_buffer<uint32_t>();
-		current_read->scale = read_package->pop_from_buffer<float>();
-		current_read->offset = read_package->pop_from_buffer<uint32_t>();
-		current_read->n_periods = read_package->pop_from_buffer<uint32_t>();
+	
+	for(uint32_t i = 0; i < nbr_values_to_read; i++) {
+		waveFunction temp = {
+			.function = read_package->pop_from_buffer<uint32_t>(),
+			.cordic_scale = read_package->pop_from_buffer<uint32_t>(),
+			.start_value = read_package->pop_from_buffer<int32_t>(),
+			.step = read_package->pop_from_buffer<int32_t>(),
+			.n_samples = read_package->pop_from_buffer<uint32_t>(),
+			.scale = read_package->pop_from_buffer<float>(),
+			.offset = read_package->pop_from_buffer<uint32_t>(),
+			.n_periods = read_package->pop_from_buffer<uint32_t>()
+		};
 		time = read_package->pop_from_buffer<uint32_t>();
-		current_read->time_start = time;
+		temp.time_start = time;
 		*(time_buffer) = time;
-
-		current_read++;
+		functions.push(temp);
 		time_buffer++;
 	}
-	
+
 	/*** send ACK ***/
 	RPIDataPackage* write_package = rpi->get_write_package();
 	write_package->push_ack();

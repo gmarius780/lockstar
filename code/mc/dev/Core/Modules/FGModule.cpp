@@ -35,9 +35,12 @@ auto temp = aCalculatedSinBuffer.begin();
 __attribute((section(".dtcmram"))) uint16_t chunk_counter = 0;
 __attribute((section(".dtcmram"))) uint16_t current_period = 1;
 
-waveFunction functions[20] = {0};
+// waveFunction functions[20] = {0};
 
+etl::circular_buffer<waveFunction, 100> functions;
+etl::icircular_buffer<waveFunction>::iterator funcItr = functions.begin();
 
+uint32_t count = 0;
 
 class FGModule : public BufferBaseModule
 {
@@ -83,7 +86,7 @@ public:
         this->pid_two = new PID(0., 0., 0., 0., 0.);
         this->setpoint_one = this->setpoint_two = 0.;
 
-        this->func_buffer_one = functions;
+        // this->func_buffer_one = functions;
         this->time_buffer_one = chunke_times_buffer;
 
         DMA1_Stream7->CR |= DMA_PRIORITY_HIGH;
@@ -130,9 +133,8 @@ public:
         LL_TIM_DisableIT_TRIG(TIM2);
         LL_TIM_DisableDMAReq_TRIG(TIM2);
 
-        for (uint16_t i = 0; i < NUM_FUNCS; i++)
+        for (waveFunction &func : functions)
         {
-            waveFunction func = this->func_buffer_one[i];
             LL_CORDIC_SetFunction(CORDIC, func.function);
             LL_CORDIC_SetScale(CORDIC, func.cordic_scale);
             uint32_t limit = (uint32_t)(func.n_samples * 1) - 1;
@@ -145,12 +147,13 @@ public:
             }
             /* Read last result */
             aCalculatedSinBuffer.push(to_float((int32_t)CORDIC->RDATA, func.scale, func.offset));
+            // functions.pop();
         }
-
-        this->currentFunction = this->func_buffer_one[chunk_counter++];
-        advance(end, this->currentFunction.n_samples);
+        waveFunction tem = *(functions.begin());
+        // this->currentFunction = *(functions.begin());
+        advance(end, tem.n_samples);
         
-        TIM1->ARR = this->currentFunction.time_start;
+        TIM1->ARR =  tem.time_start;
         TIM1->CR1 |= TIM_CR1_CEN;
         DMA1_Stream7->CR |= DMA_SxCR_EN; // Enable DMA
 
@@ -217,6 +220,7 @@ public:
 
     void sampling_timer_interrupt()
     {
+        auto tem = *(functions.begin());
         if (itr <= end)
         {
             // adc->start_conversion();
@@ -226,23 +230,24 @@ public:
             this->dac_1->write();
             // this->dac_2->write();
         }
-        else if (current_period < this->currentFunction.n_periods)
+        else if (current_period < tem.n_periods)
         {
             current_period++;
             itr = temp;
         }
-        else if (chunk_counter < NUM_FUNCS)
+        else if (funcItr < functions.end())
         {
-            if (this->currentFunction.time_start > 1)
+            if (tem.time_start > 1)
             {
                 sampling_timer->disable();
             }
-            aCalculatedSinBuffer.pop(this->currentFunction.n_samples);
+            aCalculatedSinBuffer.pop(tem.n_samples);
             current_period = 1;
             itr = aCalculatedSinBuffer.begin();
             temp = itr;
-            this->currentFunction = this->func_buffer_one[chunk_counter++];
-            advance(end, this->currentFunction.n_samples);
+            functions.pop();
+            next(funcItr);
+            advance(end, tem.n_samples);
         }
         else
         {
@@ -253,8 +258,9 @@ public:
             chunk_counter = 0;
 
             aCalculatedSinBuffer.pop();
+            funcItr = functions.begin();
 
-            this->currentFunction = this->func_buffer_one[0];
+            // this->currentFunction = this->func_buffer_one[0];
             itr = aCalculatedSinBuffer.begin();
             end = aCalculatedSinBuffer.begin();
             temp = aCalculatedSinBuffer.begin();
@@ -269,7 +275,7 @@ public:
     }
 
 public:
-    waveFunction currentFunction;
+    // waveFunction currentFunction;
 
     PID *pid_one;
     PID *pid_two;

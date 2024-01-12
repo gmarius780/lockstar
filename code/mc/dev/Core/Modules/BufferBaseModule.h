@@ -13,6 +13,7 @@
 #include "../Lib/RPIDataPackage.h"
 #include "../HAL/BasicTimer.hpp"
 #include "ScopeModule.h"
+#include "etl/circular_buffer.h"
 
 #ifndef MODULES_BUFFERBASEMODULE_H_
 #define MODULES_BUFFERBASEMODULE_H_
@@ -30,6 +31,8 @@ typedef struct waveFunction
 	uint16_t time_start;
 };
 
+
+extern etl::circular_buffer<waveFunction, 100> functions;
 
 class BufferBaseModule: public ScopeModule {
 public:
