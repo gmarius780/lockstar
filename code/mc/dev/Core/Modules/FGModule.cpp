@@ -23,13 +23,10 @@ __STATIC_INLINE float to_float(int32_t value, float scaling_factor, uint32_t off
 uint32_t start_ticks, stop_ticks, elapsed_ticks;
 uint32_t chunke_times_buffer[NUM_FUNCS] = {0};
 /* Array of calculated sines in Q1.31 format */
-static float aCalculatedSin[16000] = {0};
 etl::circular_buffer<float, 16000> aCalculatedSinBuffer;
 
 etl::icircular_buffer<float>::iterator itr = aCalculatedSinBuffer.begin();
-// auto itr = aCalculatedSinBuffer.begin();
 auto end = aCalculatedSinBuffer.begin();
-auto temp = aCalculatedSinBuffer.begin();
 
 
 __attribute((section(".dtcmram"))) uint16_t chunk_counter = 0;
@@ -140,22 +137,17 @@ public:
             CORDIC->WDATA = func.start_value;
             for (uint32_t j = 1; j < func.n_samples; j++)
             {
-                // if(j == 4000){
+                // if(j == 2500){
                 //     __asm__ __volatile__ ("bkpt #0");
                 // }
                 func.start_value += func.step;
                 CORDIC->WDATA = func.start_value;
-                float tmp = to_float((int32_t)CORDIC->RDATA, func.scale, func.offset);
-                // aCalculatedSinBuffer.push(to_float((int32_t)CORDIC->RDATA, func.scale, func.offset));
-                aCalculatedSinBuffer.push(tmp);
-                aCalculatedSin[cnt++] = tmp;
+                aCalculatedSinBuffer.push(to_float((int32_t)CORDIC->RDATA, func.scale, func.offset));
             }
             /* Read last result */
             aCalculatedSinBuffer.push(to_float((int32_t)CORDIC->RDATA, func.scale, func.offset));
-            // functions.pop();
         }
         waveFunction tem = functions.front();
-        // this->currentFunction = *(functions.begin());
         advance(end, tem.n_samples);
         
         TIM1->ARR =  tem.time_start;
@@ -228,11 +220,11 @@ public:
         auto tem = functions.front();
         if (itr <= end)
         {
-            // adc->start_conversion();
-            // this->pid_one->calculate_output(this->setpoint_one, adc->channel1->get_result(), 0.000002);
-            // this->pid_two->calculate_output(this->setpoint_two, adc->channel2->get_result(), 0.000002);
+        //     adc->start_conversion();
+        //     this->pid_one->calculate_output(this->setpoint_one, adc->channel1->get_result(), 0.000002);
+        //     this->pid_two->calculate_output(this->setpoint_two, adc->channel2->get_result(), 0.000002);
             this->dac_1->write(*(itr++));
-            // this->dac_2->write();
+            // this->dac_2->write(*(itr++));
         }
         else if (current_period < tem.n_periods)
         {
@@ -247,7 +239,6 @@ public:
             }
             aCalculatedSinBuffer.pop(tem.n_samples);
             current_period = 1;
-            // itr = aCalculatedSinBuffer.begin();
             functions.pop();
             tem = functions.front();
             advance(end, tem.n_samples);
@@ -255,14 +246,10 @@ public:
         else
         {
             LL_TIM_DisableCounter(TIM1);
-            // sampling_timer->disable_interrupt();
             sampling_timer->disable();
             current_period = 1;
             chunk_counter = 0;
 
-            // aCalculatedSinBuffer.pop();
-
-            // this->currentFunction = this->func_buffer_one[0];
             itr = aCalculatedSinBuffer.begin();
             end = aCalculatedSinBuffer.begin();
 
