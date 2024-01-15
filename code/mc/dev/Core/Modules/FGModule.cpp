@@ -28,7 +28,6 @@ etl::circular_buffer<float, 16000> aCalculatedSinBuffer;
 etl::icircular_buffer<float>::iterator itr = aCalculatedSinBuffer.begin();
 auto end = aCalculatedSinBuffer.begin();
 
-
 __attribute((section(".dtcmram"))) uint16_t chunk_counter = 0;
 __attribute((section(".dtcmram"))) uint16_t current_period = 1;
 
@@ -70,7 +69,7 @@ public:
 
         TIM1->PSC = 9999; // Set prescaler
         TIM1->ARR = 1;
-        
+
         LL_TIM_EnableARRPreload(TIM1);
 
         this->sampling_timer = new BasicTimer(2, counter_max, prescaler);
@@ -143,14 +142,16 @@ public:
                 func.start_value += func.step;
                 CORDIC->WDATA = func.start_value;
                 aCalculatedSinBuffer.push(to_float((int32_t)CORDIC->RDATA, func.scale, func.offset));
+                __NOP();
             }
+
             /* Read last result */
             aCalculatedSinBuffer.push(to_float((int32_t)CORDIC->RDATA, func.scale, func.offset));
         }
         waveFunction tem = functions.front();
         advance(end, tem.n_samples);
-        
-        TIM1->ARR =  tem.time_start;
+
+        TIM1->ARR = tem.time_start;
         TIM1->CR1 |= TIM_CR1_CEN;
         DMA1_Stream7->CR |= DMA_SxCR_EN; // Enable DMA
 
@@ -217,54 +218,51 @@ public:
 
     void sampling_timer_interrupt()
     {
-        auto tem = functions.front();
         if (itr <= end)
         {
-        //     adc->start_conversion();
-        //     this->pid_one->calculate_output(this->setpoint_one, adc->channel1->get_result(), 0.000002);
-        //     this->pid_two->calculate_output(this->setpoint_two, adc->channel2->get_result(), 0.000002);
+            //     adc->start_conversion();
+            //     this->pid_one->calculate_output(this->setpoint_one, adc->channel1->get_result(), 0.000002);
+            //     this->pid_two->calculate_output(this->setpoint_two, adc->channel2->get_result(), 0.000002);
             this->dac_1->write(*(itr++));
             // this->dac_2->write(*(itr++));
         }
-        else if (current_period < tem.n_periods)
+        else if (current_period < functions.front().n_periods)
         {
             current_period++;
             itr = aCalculatedSinBuffer.begin();
         }
         else if (!functions.empty())
         {
-            if (tem.time_start > 1)
+            if (functions.front().time_start > 1)
             {
                 sampling_timer->disable();
             }
-            aCalculatedSinBuffer.pop(tem.n_samples);
+            aCalculatedSinBuffer.pop(functions.front().n_samples);
             current_period = 1;
             functions.pop();
-            tem = functions.front();
-            advance(end, tem.n_samples);
-        }
-        else
-        {
-            LL_TIM_DisableCounter(TIM1);
-            sampling_timer->disable();
-            current_period = 1;
-            chunk_counter = 0;
+            if (!functions.empty()){
+                advance(end, functions.front().n_samples);
+            }
+            else
+            {
+                LL_TIM_DisableCounter(TIM1);
+                sampling_timer->disable();
+                current_period = 1;
+                chunk_counter = 0;
 
-            itr = aCalculatedSinBuffer.begin();
-            end = aCalculatedSinBuffer.begin();
+                itr = aCalculatedSinBuffer.begin();
+                end = aCalculatedSinBuffer.begin();
 
-            TIM1->ARR = 1;
-            LL_DMA_ClearFlag_TC7(DMA1);
-            DMA1_Stream7->NDTR = NUM_FUNCS;
-            DMA1_Stream7->PAR = (uint32_t)&TIM1->DMAR; // Virtual register of TIM1
-            DMA1_Stream7->M0AR = (uint32_t)chunke_times_buffer;
-
+                TIM1->ARR = 1;
+                LL_DMA_ClearFlag_TC7(DMA1);
+                DMA1_Stream7->NDTR = NUM_FUNCS;
+                DMA1_Stream7->PAR = (uint32_t)&TIM1->DMAR; // Virtual register of TIM1
+                DMA1_Stream7->M0AR = (uint32_t)chunke_times_buffer;
+            }
         }
     }
 
 public:
-    // waveFunction currentFunction;
-
     PID *pid_one;
     PID *pid_two;
     float setpoint_one, setpoint_two;
@@ -272,7 +270,7 @@ public:
 __attribute__((section(".dtcmram")))
 FGModule *module;
 
-__STATIC_INLINE float to_float(int32_t value, float scaling_factor, uint32_t offset)
+__STATIC_FORCEINLINE float to_float(int32_t value, float scaling_factor, uint32_t offset)
 {
     float debug_val = ((value * scaling_factor) / (1 << FIXED_POINT_FRACTIONAL_BITS)) + offset;
     return debug_val;
