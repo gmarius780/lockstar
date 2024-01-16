@@ -11,17 +11,14 @@
 #include "dac_config.h"
 #include "BufferBaseModule.h"
 #include "../Lib/pid.hpp"
-// #include "bbbuffers.h"
 #include "etl/circular_buffer.h"
-// #include "../Src/runtime.h"
 
 #define FIXED_POINT_FRACTIONAL_BITS 31
-#define NUM_FUNCS 20
 
 __STATIC_INLINE float to_float(int32_t value, float scaling_factor, uint32_t offset);
 
 uint32_t start_ticks, stop_ticks, elapsed_ticks;
-// uint32_t chunke_times_buffer[NUM_FUNCS] = {0};
+
 /* Array of calculated sines in Q1.31 format */
 etl::circular_buffer<float, 36000> aCalculatedSinBuffer;
 
@@ -30,8 +27,6 @@ auto end = aCalculatedSinBuffer.begin();
 
 __attribute((section(".dtcmram"))) uint16_t chunk_counter = 0;
 __attribute((section(".dtcmram"))) uint16_t current_period = 1;
-
-// waveFunction functions[20] = {0};
 
 etl::circular_buffer<waveFunction, 100> functions;
 etl::circular_buffer<uint32_t, 100> times_buffer;
@@ -81,11 +76,7 @@ public:
         this->pid_two = new PID(0., 0., 0., 0., 0.);
         this->setpoint_one = this->setpoint_two = 0.;
 
-        // this->func_buffer_one = functions;
-        // this->time_buffer_one = chunke_times_buffer;
-
         DMA1_Stream7->CR |= DMA_PRIORITY_HIGH;
-        // DMA1_Stream7->NDTR = NUM_FUNCS;
         DMA1_Stream7->PAR = (uint32_t)&TIM1->DMAR; // Virtual register of TIM1
         DMA1_Stream7->M0AR = (uint32_t)(&times_buffer[0]);
 
@@ -142,7 +133,7 @@ public:
                 func.start_value += func.step;
                 CORDIC->WDATA = func.start_value;
                 aCalculatedSinBuffer.push(to_float((int32_t)CORDIC->RDATA, func.scale, func.offset));
-                __NOP();
+                // __NOP();
             }
 
             /* Read last result */
@@ -163,7 +154,7 @@ public:
     static const uint32_t METHOD_START_Output = 33;
     void start_output(RPIDataPackage *read_package)
     {
-        DMA1_Stream7->NDTR = NUM_FUNCS;
+        DMA1_Stream7->NDTR = (uint32_t)functions.size();
         DMA1_Stream7->CR |= DMA_SxCR_EN; // Enable DMA
         TIM1->CR1 |= TIM_CR1_CEN;
 
