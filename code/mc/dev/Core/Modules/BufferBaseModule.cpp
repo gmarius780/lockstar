@@ -283,9 +283,10 @@ void BufferBaseModule::set_ch_func_buffer(RPIDataPackage* read_package, waveFunc
 		};
 		time = read_package->pop_from_buffer<uint32_t>();
 		temp.time_start = time;
-		*(time_buffer) = time;
+		times_buffer.push(time);
+		// *(time_buffer) = time;
 		functions.push(temp);
-		time_buffer++;
+		// time_buffer++;
 	}
 
 	/*** send ACK ***/

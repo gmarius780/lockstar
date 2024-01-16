@@ -16,14 +16,14 @@
 // #include "../Src/runtime.h"
 
 #define FIXED_POINT_FRACTIONAL_BITS 31
-#define NUM_FUNCS 10
+#define NUM_FUNCS 20
 
 __STATIC_INLINE float to_float(int32_t value, float scaling_factor, uint32_t offset);
 
 uint32_t start_ticks, stop_ticks, elapsed_ticks;
-uint32_t chunke_times_buffer[NUM_FUNCS] = {0};
+// uint32_t chunke_times_buffer[NUM_FUNCS] = {0};
 /* Array of calculated sines in Q1.31 format */
-etl::circular_buffer<float, 16000> aCalculatedSinBuffer;
+etl::circular_buffer<float, 36000> aCalculatedSinBuffer;
 
 etl::icircular_buffer<float>::iterator itr = aCalculatedSinBuffer.begin();
 auto end = aCalculatedSinBuffer.begin();
@@ -34,7 +34,7 @@ __attribute((section(".dtcmram"))) uint16_t current_period = 1;
 // waveFunction functions[20] = {0};
 
 etl::circular_buffer<waveFunction, 100> functions;
-
+etl::circular_buffer<uint32_t, 100> times_buffer;
 uint32_t count = 0;
 
 class FGModule : public BufferBaseModule
@@ -82,12 +82,12 @@ public:
         this->setpoint_one = this->setpoint_two = 0.;
 
         // this->func_buffer_one = functions;
-        this->time_buffer_one = chunke_times_buffer;
+        // this->time_buffer_one = chunke_times_buffer;
 
         DMA1_Stream7->CR |= DMA_PRIORITY_HIGH;
-        DMA1_Stream7->NDTR = NUM_FUNCS;
+        // DMA1_Stream7->NDTR = NUM_FUNCS;
         DMA1_Stream7->PAR = (uint32_t)&TIM1->DMAR; // Virtual register of TIM1
-        DMA1_Stream7->M0AR = (uint32_t)chunke_times_buffer;
+        DMA1_Stream7->M0AR = (uint32_t)(&times_buffer[0]);
 
         while (true)
         {
@@ -113,7 +113,7 @@ public:
     static const uint32_t METHOD_START_CCalculation = 32;
     void start_ccalculation(RPIDataPackage *read_package)
     {
-
+        DMA1_Stream7->NDTR = (uint32_t)functions.size();
         LL_TIM_EnableUpdateEvent(TIM1);
         LL_TIM_EnableDMAReq_UPDATE(TIM1);
         LL_TIM_ConfigDMABurst(TIM1, LL_TIM_DMABURST_BASEADDR_ARR, LL_TIM_DMABURST_LENGTH_1TRANSFER);
@@ -148,10 +148,10 @@ public:
             /* Read last result */
             aCalculatedSinBuffer.push(to_float((int32_t)CORDIC->RDATA, func.scale, func.offset));
         }
-        waveFunction tem = functions.front();
-        advance(end, tem.n_samples);
 
-        TIM1->ARR = tem.time_start;
+        advance(end, functions.front().n_samples);
+
+        TIM1->ARR = functions.front().time_start;
         TIM1->CR1 |= TIM_CR1_CEN;
         DMA1_Stream7->CR |= DMA_SxCR_EN; // Enable DMA
 
@@ -255,9 +255,9 @@ public:
 
                 TIM1->ARR = 1;
                 LL_DMA_ClearFlag_TC7(DMA1);
-                DMA1_Stream7->NDTR = NUM_FUNCS;
+                DMA1_Stream7->NDTR = 0;
                 DMA1_Stream7->PAR = (uint32_t)&TIM1->DMAR; // Virtual register of TIM1
-                DMA1_Stream7->M0AR = (uint32_t)chunke_times_buffer;
+                DMA1_Stream7->M0AR = (uint32_t)(&times_buffer[0]);
             }
         }
     }

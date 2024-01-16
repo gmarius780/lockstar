@@ -33,6 +33,7 @@ typedef struct waveFunction
 
 
 extern etl::circular_buffer<waveFunction, 100> functions;
+extern etl::circular_buffer<uint32_t, 100> times_buffer;
 
 class BufferBaseModule: public ScopeModule {
 public:
