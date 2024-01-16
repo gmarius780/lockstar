@@ -22,6 +22,7 @@ __attribute__((section(".dtcmram")))
 int32_t int_output;
 
 uint32_t skipped = 0;
+extern etl::atomic<bool> unlocked;
 
 // uint32_t start_cycle, end_cycle, total_cycles;
 DAC_Device::DAC_Device(DAC_Device_TypeDef *DAC_conf)
@@ -106,6 +107,7 @@ void DAC_Device::write()
     // }
 
     busy = true;
+    unlocked = false;
     float output = std::min(max_output, std::max(*(itr++), min_output));
     last_output = output;
 

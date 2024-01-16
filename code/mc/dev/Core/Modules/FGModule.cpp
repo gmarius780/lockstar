@@ -31,7 +31,7 @@ __attribute((section(".dtcmram"))) uint16_t current_period = 1;
 etl::circular_buffer<waveFunction, 100> functions;
 etl::circular_buffer<uint32_t, 100> times_buffer;
 uint32_t count = 0;
-
+etl::atomic<bool> unlocked = false;
 class FGModule : public BufferBaseModule
 {
     static const uint32_t BUFFER_LIMIT_kBYTES = 160; // if this is chosen to large (200) there is no warning, the MC simply crashes (hangs in syscalls.c _exit())
@@ -82,6 +82,9 @@ public:
 
         while (true)
         {
+            if(unlocked){
+                dac_1->write();
+            }
         }
     }
 
@@ -214,7 +217,8 @@ public:
             //     adc->start_conversion();
             //     this->pid_one->calculate_output(this->setpoint_one, adc->channel1->get_result(), 0.000002);
             //     this->pid_two->calculate_output(this->setpoint_two, adc->channel2->get_result(), 0.000002);
-            this->dac_1->write(*(itr++));
+            // this->dac_1->write(*(itr++));
+            unlocked = true;
             // this->dac_2->write(*(itr++));
         }
         else if (current_period < functions.front().n_periods)
