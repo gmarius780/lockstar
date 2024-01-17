@@ -32,6 +32,7 @@ etl::circular_buffer<waveFunction, 100> functions;
 etl::circular_buffer<uint32_t, 100> times_buffer;
 uint32_t count = 0;
 etl::atomic<bool> unlocked = false;
+std::atomic_flag lock = ATOMIC_FLAG_INIT;
 class FGModule : public BufferBaseModule
 {
     static const uint32_t BUFFER_LIMIT_kBYTES = 160; // if this is chosen to large (200) there is no warning, the MC simply crashes (hangs in syscalls.c _exit())
@@ -214,8 +215,8 @@ public:
     {
         if (itr <= end)
         {
-            //     adc->start_conversion();
-            //     this->pid_one->calculate_output(this->setpoint_one, adc->channel1->get_result(), 0.000002);
+                //     adc->start_conversion();
+                //     this->pid_one->calculate_output(this->setpoint_one, adc->channel1->get_result(), 0.000002);
             //     this->pid_two->calculate_output(this->setpoint_two, adc->channel2->get_result(), 0.000002);
             // this->dac_1->write(*(itr++));
             unlocked = true;
@@ -277,14 +278,14 @@ __STATIC_FORCEINLINE float to_float(int32_t value, float scaling_factor, uint32_
 /********************
 ||      DAC1      ||
 ********************/
-__attribute__((section(".itcmram"))) void BDMA_Channel1_IRQHandler(void)
-{
-    module->dac_1->dma_transmission_callback();
-}
-__attribute__((section(".itcmram"))) void SPI6_IRQHandler(void)
-{
-    module->dac_1->dma_transmission_callback();
-}
+// __attribute__((section(".itcmram"))) void BDMA_Channel1_IRQHandler(void)
+// {
+//     module->dac_1->dma_transmission_callback();
+// }
+// __attribute__((section(".itcmram"))) void SPI6_IRQHandler(void)
+// {
+//     module->dac_1->dma_transmission_callback();
+// }
 /********************
 ||      DAC2      ||
 ********************/

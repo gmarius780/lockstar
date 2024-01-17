@@ -23,6 +23,7 @@ int32_t int_output;
 
 uint32_t skipped = 0;
 extern etl::atomic<bool> unlocked;
+extern std::atomic_flag lock;
 
 // uint32_t start_cycle, end_cycle, total_cycles;
 DAC_Device::DAC_Device(DAC_Device_TypeDef *DAC_conf)
@@ -108,6 +109,7 @@ void DAC_Device::write()
 
     busy = true;
     unlocked = false;
+    // lock.clear();
     float output = std::min(max_output, std::max(*(itr++), min_output));
     last_output = output;
 
@@ -132,17 +134,20 @@ __attribute__((section(".itcmram")))
 void DAC_Device::dma_transmission_callback()
 {
 }
-__attribute__((section(".itcmram")))
+
 void DAC1_Device::dma_transmission_callback()
 {
-    DisableChannel(DAC_conf->BDMA_Channelx);
-    DAC_conf->bdma_clr_flag(DAC_conf->BDMAx);
-    LL_SPI_ClearFlag_EOT(DAC_conf->SPIx);
-    CLEAR_BIT(DAC_conf->SPIx->CR1, SPI_CR1_SPE);
-    SET_BIT(DAC_conf->SPIx->IFCR, SPI_IFCR_TXTFC);
-    CLEAR_BIT(DAC_conf->SPIx->CFG1, SPI_CFG1_TXDMAEN);
-
-    busy = false;
+}
+__attribute__((section(".itcmram"))) void SPI6_IRQHandler(void)
+{
+    
+    DisableChannel(BDMA_Channel1);
+    LL_BDMA_ClearFlag_TC1(BDMA);
+    LL_SPI_ClearFlag_EOT(SPI6);
+    CLEAR_BIT(SPI6->CR1, SPI_CR1_SPE);
+    SET_BIT(SPI6->IFCR, SPI_IFCR_TXTFC);
+    CLEAR_BIT(SPI6->CFG1, SPI_CFG1_TXDMAEN);
+    // busy = false;
 }
 __attribute__((section(".itcmram")))
 void DAC2_Device::dma_transmission_callback()
@@ -228,8 +233,8 @@ void DAC1_Device::config_output()
     begin_dma_transfer();
 
     // Wait till configuration is sent
-    while (busy)
-        ;
+    // while (busy)
+    //     ;
 }
 void DAC2_Device::config_output()
 {

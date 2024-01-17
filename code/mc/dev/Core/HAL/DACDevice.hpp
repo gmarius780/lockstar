@@ -14,6 +14,7 @@
 
 #include <algorithm>
 #include "etl/circular_buffer.h"
+#include "stm32h7xx_it.h"
 
 
 extern etl::icircular_buffer<float>::iterator itr;
