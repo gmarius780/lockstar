@@ -12,38 +12,35 @@
 
 class RPIDataPackage {
 public:
-	RPIDataPackage();
-	virtual ~RPIDataPackage();
+  RPIDataPackage();
+  virtual ~RPIDataPackage();
 
-	template <typename T>
-	void push_to_buffer(T value) {
-		uint8_t const *p = reinterpret_cast<uint8_t *>(&value);
-		for (std::size_t j = 0; j < sizeof(value); ++j)
-		{
-			current_buffer[j] =  p[j];
-		}
-		current_buffer = current_buffer + sizeof(value);
-	}
+  template <typename T> void push_to_buffer(T value) {
+    uint8_t const *p = reinterpret_cast<uint8_t *>(&value);
+    for (std::size_t j = 0; j < sizeof(value); ++j) {
+      current_buffer[j] = p[j];
+    }
+    current_buffer = current_buffer + sizeof(value);
+  }
 
-	void set_buffer(uint8_t *buffer) {
-		this->buffer = buffer;
-		this->current_buffer = buffer;
-	}
+  void set_buffer(uint8_t *buffer) {
+    this->buffer = buffer;
+    this->current_buffer = buffer;
+  }
 
-	void push_ack(); //ack = 221194(uint32_t)
-	void push_nack(); //nack = 999999(uint32_t)
+  void push_ack();  // ack = 221194(uint32_t)
+  void push_nack(); // nack = 999999(uint32_t)
 
-	template <typename T>
-	T pop_from_buffer() { 
-		current_buffer += sizeof(T);
-		return ((T*)(current_buffer - sizeof(T)))[0];
-	}
+  template <typename T> T pop_from_buffer() {
+    current_buffer += sizeof(T);
+    return ((T *)(current_buffer - sizeof(T)))[0];
+  }
 
-	uint32_t nbr_of_bytes_to_send();
+  uint32_t nbr_of_bytes_to_send();
 
 private:
-	uint8_t *buffer;
-	uint8_t *current_buffer;
+  uint8_t *buffer;
+  uint8_t *current_buffer;
 };
 
 #endif /* LIB_RPIDATAPACKAGE_H_ */

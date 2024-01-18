@@ -1,21 +1,21 @@
 /* USER CODE BEGIN Header */
 /**
-  ******************************************************************************
-  * @file           : main.h
-  * @brief          : Header for main.c file.
-  *                   This file contains the common defines of the application.
-  ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2023 STMicroelectronics.
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * @file           : main.h
+ * @brief          : Header for main.c file.
+ *                   This file contains the common defines of the application.
+ ******************************************************************************
+ * @attention
+ *
+ * Copyright (c) 2023 STMicroelectronics.
+ * All rights reserved.
+ *
+ * This software is licensed under terms that can be found in the LICENSE file
+ * in the root directory of this software component.
+ * If no LICENSE file comes with this software, it is provided AS-IS.
+ *
+ ******************************************************************************
+ */
 /* USER CODE END Header */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
@@ -29,17 +29,17 @@ extern "C" {
 /* Includes ------------------------------------------------------------------*/
 #include "stm32h7xx_hal.h"
 #include "stm32h7xx_ll_bdma.h"
+#include "stm32h7xx_ll_bus.h"
 #include "stm32h7xx_ll_cordic.h"
+#include "stm32h7xx_ll_cortex.h"
+#include "stm32h7xx_ll_dma.h"
+#include "stm32h7xx_ll_gpio.h"
+#include "stm32h7xx_ll_pwr.h"
 #include "stm32h7xx_ll_rcc.h"
 #include "stm32h7xx_ll_spi.h"
-#include "stm32h7xx_ll_tim.h"
-#include "stm32h7xx_ll_bus.h"
-#include "stm32h7xx_ll_cortex.h"
 #include "stm32h7xx_ll_system.h"
+#include "stm32h7xx_ll_tim.h"
 #include "stm32h7xx_ll_utils.h"
-#include "stm32h7xx_ll_pwr.h"
-#include "stm32h7xx_ll_gpio.h"
-#include "stm32h7xx_ll_dma.h"
 
 #include "stm32h7xx_ll_exti.h"
 
@@ -69,7 +69,7 @@ void Error_Handler(void);
 /* USER CODE BEGIN EFP */
 void cppmain(void);
 
-//HAS to be implemented by the modules
+// HAS to be implemented by the modules
 void start(void);
 /* USER CODE END EFP */
 
@@ -124,10 +124,10 @@ void start(void);
 #define ADC_CNV_GPIO_Port SPI3_NSS_GPIO_Port
 #define ADC_CNV_Pin SPI3_NSS_Pin
 
-#define _20BIT_MIN					0xfff80000
-#define _20BIT_MAX					0x0007ffff
-#define _16Bit_MIN					0x8000
-#define _16Bit_MAX					0x7fff
+#define _20BIT_MIN 0xfff80000
+#define _20BIT_MAX 0x0007ffff
+#define _16Bit_MIN 0x8000
+#define _16Bit_MAX 0x7fff
 
 //#define Receive_Pid_Vars 			0x0001
 //#define Send_Measured_Data 			0x0002
@@ -142,7 +142,6 @@ void start(void);
 //#define Save_Waypoints_Lock 		0x000b
 //#define Send_AOM_Data		 		0x000c
 
-
 //#define PID_Save_Data 				0x0100
 //#define Ziegler_Nichols 			0x0101
 //#define AOM_Save_Data 				0x0102
@@ -154,18 +153,18 @@ void start(void);
 //#define Lock_And_Measure 			0x0108
 //#define Continuous_Lock 			0x0109
 
-//DEFINE WHICH MODULE TO RUN!!
+// DEFINE WHICH MODULE TO RUN!!
 //#define AWG_PID_MODULE
 //#define AWG_MODULE
-// #define SINGLE_PID_MODULE
+//  #define SINGLE_PID_MODULE
 //#define LINEARIZATION_MODULE
-// #define ANALOG_OUTPUT_MODULE
-// #define AI_TEST_MODULE
-// #define AO_TEST_MODULE
-// #define SPI_TEST_MODULE
-// #define SPI_TEST_MODULE_HAL
-// #define RPI_TEST_MODULE
-// #define LED_MODULE
+//  #define ANALOG_OUTPUT_MODULE
+//  #define AI_TEST_MODULE
+//  #define AO_TEST_MODULE
+//  #define SPI_TEST_MODULE
+//  #define SPI_TEST_MODULE_HAL
+//  #define RPI_TEST_MODULE
+//  #define LED_MODULE
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

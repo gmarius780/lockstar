@@ -1,6 +1,3 @@
 #include <main.h>
 
-void cppmain(void) {
-	start();
-
-}
+void cppmain(void) { start(); }

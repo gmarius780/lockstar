@@ -7,43 +7,37 @@ extern "C" {
 
 #include "dma_config.h"
 
+static ADC_Device_TypeDef ADC_conf = {.SPIx = SPI3,
+                                      .DMARx = DMA1,
+                                      .DMATx = DMA1,
+                                      .DMA_StreamRx = DMA1_Stream4,
+                                      .DMA_StreamTx = DMA1_Stream5,
+                                      .DMA_InitStructRx = &ADC_DMA_RX_CONF,
+                                      .DMA_InitStructTx = &ADC_DMA_TX_CONF,
+                                      .dmaRx_clr_flag = LL_DMA_ClearFlag_TC4,
+                                      .dmaTx_clr_flag = LL_DMA_ClearFlag_TC5,
+                                      .cnv_port = SPI3_NSS_GPIO_Port,
+                                      .cnv_pin = SPI3_NSS_Pin,
+                                      .channel1_config = ADC_BIPOLAR_5V,
+                                      .channel2_config = ADC_BIPOLAR_5V};
 
-static ADC_Device_TypeDef ADC_conf = {
-  .SPIx = SPI3,
-  .DMARx = DMA1,
-  .DMATx = DMA1,
-  .DMA_StreamRx = DMA1_Stream4,
-  .DMA_StreamTx = DMA1_Stream5,
-  .DMA_InitStructRx = &ADC_DMA_RX_CONF,
-  .DMA_InitStructTx = &ADC_DMA_TX_CONF,
-  .dmaRx_clr_flag = LL_DMA_ClearFlag_TC4,
-  .dmaTx_clr_flag = LL_DMA_ClearFlag_TC5,
-  .cnv_port = SPI3_NSS_GPIO_Port,
-  .cnv_pin = SPI3_NSS_Pin,
-  .channel1_config = ADC_BIPOLAR_5V,
-  .channel2_config = ADC_BIPOLAR_5V
-  };
-
-  static ADC_Device_TypeDef ADC2_conf = {
-  .SPIx = SPI2,
-  .DMARx = DMA1,
-  .DMATx = DMA1,
-  .DMA_StreamRx = DMA1_Stream2,
-  .DMA_StreamTx = DMA1_Stream3,
-  .DMA_InitStructRx = &ADC2_DMA_RX_CONF,
-  .DMA_InitStructTx = &ADC2_DMA_TX_CONF,
-  .dmaRx_clr_flag = LL_DMA_ClearFlag_TC2,
-  .dmaTx_clr_flag = LL_DMA_ClearFlag_TC3,
-  .cnv_port = SPI2_NSS_GPIO_Port,
-  .cnv_pin = SPI2_NSS_Pin,
-  .channel1_config = ADC_BIPOLAR_5V,
-  .channel2_config = ADC_BIPOLAR_5V
-  };
-
+static ADC_Device_TypeDef ADC2_conf = {.SPIx = SPI2,
+                                       .DMARx = DMA1,
+                                       .DMATx = DMA1,
+                                       .DMA_StreamRx = DMA1_Stream2,
+                                       .DMA_StreamTx = DMA1_Stream3,
+                                       .DMA_InitStructRx = &ADC2_DMA_RX_CONF,
+                                       .DMA_InitStructTx = &ADC2_DMA_TX_CONF,
+                                       .dmaRx_clr_flag = LL_DMA_ClearFlag_TC2,
+                                       .dmaTx_clr_flag = LL_DMA_ClearFlag_TC3,
+                                       .cnv_port = SPI2_NSS_GPIO_Port,
+                                       .cnv_pin = SPI2_NSS_Pin,
+                                       .channel1_config = ADC_BIPOLAR_5V,
+                                       .channel2_config = ADC_BIPOLAR_5V};
 
 /**
-  * @}
-  */
+ * @}
+ */
 
 #ifdef __cplusplus
 }

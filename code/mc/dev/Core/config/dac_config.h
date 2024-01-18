@@ -13,8 +13,7 @@ extern "C" {
 
 extern ADC_HandleTypeDef hadc3;
 
-__attribute__((section(".dtcmram")))
-static DAC_Device_TypeDef DAC1_conf = {
+__attribute__((section(".dtcmram"))) static DAC_Device_TypeDef DAC1_conf = {
     .dac_id = 1,
     .isBDMA = true,
     .SPIx = SPI6,
@@ -28,10 +27,8 @@ static DAC_Device_TypeDef DAC1_conf = {
     .clear_pin = CLR6_Pin,
     .STM_ADC = &hadc3,
     .SENH = LL_ADC_CHANNEL_10,
-    .SENL = LL_ADC_CHANNEL_11
-};
-__attribute__((section(".dtcmram")))
-static DAC_Device_TypeDef DAC2_conf = {
+    .SENL = LL_ADC_CHANNEL_11};
+__attribute__((section(".dtcmram"))) static DAC_Device_TypeDef DAC2_conf = {
     .dac_id = 2,
     .isBDMA = false,
     .SPIx = SPI5,
@@ -45,34 +42,30 @@ static DAC_Device_TypeDef DAC2_conf = {
     .clear_pin = CLR5_Pin,
     .STM_ADC = &hadc3,
     .SENH = LL_ADC_CHANNEL_0,
-    .SENL =  LL_ADC_CHANNEL_1
+    .SENL = LL_ADC_CHANNEL_1
 
 };
 
 #ifdef PROBE_SPI
-static DAC_Device_TypeDef DAC3_conf = {
-    .dac_id = 3,
-    .isBDMA = false,
-    .SPIx = SPI2,
-    .DMAx = DMA1,
-    .DMA_Streamx = DMA1_Stream3,
-    .DMA_InitStruct = &DAC3_DMA_CONF,
-    .dma_clr_flag = LL_DMA_ClearFlag_TC3,
-    .sync_port = SPI2_NSS_GPIO_Port,
-    .sync_pin = SPI2_NSS_Pin,
-    .clear_port = CLR5_GPIO_Port,
-    .clear_pin = CLR5_Pin,
-    .STM_ADC = &hadc3,
-    .SENH = LL_ADC_CHANNEL_0,
-    .SENL =  LL_ADC_CHANNEL_1
-};
+static DAC_Device_TypeDef DAC3_conf = {.dac_id = 3,
+                                       .isBDMA = false,
+                                       .SPIx = SPI2,
+                                       .DMAx = DMA1,
+                                       .DMA_Streamx = DMA1_Stream3,
+                                       .DMA_InitStruct = &DAC3_DMA_CONF,
+                                       .dma_clr_flag = LL_DMA_ClearFlag_TC3,
+                                       .sync_port = SPI2_NSS_GPIO_Port,
+                                       .sync_pin = SPI2_NSS_Pin,
+                                       .clear_port = CLR5_GPIO_Port,
+                                       .clear_pin = CLR5_Pin,
+                                       .STM_ADC = &hadc3,
+                                       .SENH = LL_ADC_CHANNEL_0,
+                                       .SENL = LL_ADC_CHANNEL_1};
 #endif
 
-
-
 /**
-  * @}
-  */
+ * @}
+ */
 
 #ifdef __cplusplus
 }

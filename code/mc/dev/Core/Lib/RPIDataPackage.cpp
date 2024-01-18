@@ -7,27 +7,21 @@
 
 #include "RPIDataPackage.h"
 
-#include <cmath>        // std::abs
+#include <cmath> // std::abs
 
 RPIDataPackage::RPIDataPackage() {
-	this->buffer = 0;
-	this->current_buffer = 0;
+  this->buffer = 0;
+  this->current_buffer = 0;
 }
 
 RPIDataPackage::~RPIDataPackage() {
-	// TODO Auto-generated destructor stub
+  // TODO Auto-generated destructor stub
 }
-
 
 uint32_t RPIDataPackage::nbr_of_bytes_to_send() {
-	return std::abs(current_buffer - buffer);
+  return std::abs(current_buffer - buffer);
 }
 
-void RPIDataPackage::push_ack() {
-	push_to_buffer<uint32_t>((uint32_t)221194);
-}
+void RPIDataPackage::push_ack() { push_to_buffer<uint32_t>((uint32_t)221194); }
 
-void RPIDataPackage::push_nack() {
-	push_to_buffer<uint32_t>((uint32_t)999999);
-}
-
+void RPIDataPackage::push_nack() { push_to_buffer<uint32_t>((uint32_t)999999); }

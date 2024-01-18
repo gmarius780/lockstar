@@ -16,59 +16,63 @@
 
 class LinearizableDAC {
 public:
-	LinearizableDAC(uint8_t SPI, uint8_t dma_stream_out, uint8_t dma_channel_out, GPIO_TypeDef* sync_port, uint16_t sync_pin, GPIO_TypeDef* clear_port, uint16_t clear_pin);
-	LinearizableDAC(DAC_Device_TypeDef* DAC_conf);
-	
-	virtual ~LinearizableDAC();
+  LinearizableDAC(uint8_t SPI, uint8_t dma_stream_out, uint8_t dma_channel_out,
+                  GPIO_TypeDef *sync_port, uint16_t sync_pin,
+                  GPIO_TypeDef *clear_port, uint16_t clear_pin);
+  LinearizableDAC(DAC_Device_TypeDef *DAC_conf);
 
-	void config_output();
+  virtual ~LinearizableDAC();
 
-	void write(float value);
-	void write();
+  void config_output();
 
-	void dma_transmission_callback();
-	bool is_busy();
-	void set_min_output(float m);
+  void write(float value);
+  void write();
 
-	void set_max_output(float m);
-	float get_min_output();
-	float get_max_output();
-	float get_last_output();
+  void dma_transmission_callback();
+  bool is_busy();
+  void set_min_output(float m);
 
-	/**
-	 * initializes the buffer which stores the linearization parameters (pivots).
-	 * Expects the buffer length as parameter.
-	 * Don't call this method unless you set the length for the first time or want to change it
-	 * otherwise the system can run out of ram since new simply increments the heap(?) pointer
-	 */
-	void set_linearization_length(uint32_t length);
+  void set_max_output(float m);
+  float get_min_output();
+  float get_max_output();
+  float get_last_output();
 
-	/**
-	 * add pivot points to the linearization buffer
-	 */
-	bool push_to_linearization_buffer(float linearization_pivot, bool append);
+  /**
+   * initializes the buffer which stores the linearization parameters (pivots).
+   * Expects the buffer length as parameter.
+   * Don't call this method unless you set the length for the first time or want
+   * to change it otherwise the system can run out of ram since new simply
+   * increments the heap(?) pointer
+   */
+  void set_linearization_length(uint32_t length);
 
-	bool enable_linearization();
-	void disable_linearization();
+  /**
+   * add pivot points to the linearization buffer
+   */
+  bool push_to_linearization_buffer(float linearization_pivot, bool append);
 
-	static const uint16_t MAX_LINEARIZATION_LENGTH = 2000; //max length of linearization, used to precreate the buffers
+  bool enable_linearization();
+  void disable_linearization();
+
+  static const uint16_t MAX_LINEARIZATION_LENGTH =
+      2000; // max length of linearization, used to precreate the buffers
 
 private:
-	float linearize(float value);
+  float linearize(float value);
 
-	DAC_Device* dac;
+  DAC_Device *dac;
 
-	uint32_t linearization_length;
-	uint32_t current_pivot_index;
-	float *linearization_buffer;
+  uint32_t linearization_length;
+  uint32_t current_pivot_index;
+  float *linearization_buffer;
 
-	bool linearization_available, linearization_enabled;
+  bool linearization_available, linearization_enabled;
 
-	float output_range;
-	float ramp_range;
-	float output_min;
-	float output_max;
-	float pivot_spacing;
+  float output_range;
+  float ramp_range;
+  float output_min;
+  float output_max;
+  float pivot_spacing;
 };
 
 #endif /* LIB_LINEARIZABLEDAC_H_ */
