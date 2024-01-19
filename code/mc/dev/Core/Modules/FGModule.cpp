@@ -9,7 +9,7 @@
 #include "../HAL/BasicTimer.hpp"
 #include "../HAL/DACDevice.hpp"
 #include "../Lib/pid.hpp"
-#include "BufferBaseModule.h"
+#include "../Lib/BufferBaseModule.h"
 #include "dac_config.h"
 #include "etl/circular_buffer.h"
 
@@ -26,7 +26,7 @@ etl::circular_buffer<float, 36000> aCalculatedSinBuffer;
 etl::icircular_buffer<float>::iterator itr = aCalculatedSinBuffer.begin();
 auto end = aCalculatedSinBuffer.begin();
 
-__attribute((section(".dtcmram"))) uint16_t chunk_counter = 0;
+__attribute((section(".dtcmram"))) uint16_t chunk_counter = 1;
 __attribute((section(".dtcmram"))) uint16_t current_period = 1;
 
 etl::circular_buffer<waveFunction, 100> functions;

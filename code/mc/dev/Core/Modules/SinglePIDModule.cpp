@@ -25,7 +25,7 @@
 #include "../Lib/RPIDataPackage.h"
 #include "../Lib/pid.hpp"
 
-#include "ScopeModule.h"
+#include "../Lib/ScopeModule.h"
 
 #ifdef SINGLE_PID_MODULE
 

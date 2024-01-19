@@ -5,7 +5,7 @@
  *      Author: qo
  */
 
-#include "Module.h"
+#include "../Lib/Module.h"
 #include "adc_config.h"
 #include "dac_config.h"
 #include "rpi_config.h"

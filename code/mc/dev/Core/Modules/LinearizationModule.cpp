@@ -23,7 +23,7 @@
 #include "../Lib/RPIDataPackage.h"
 #include "../Lib/pid.hpp"
 
-#include "Module.h"
+#include "../Lib/Module.h"
 
 #ifdef LINEARIZATION_MODULE
 

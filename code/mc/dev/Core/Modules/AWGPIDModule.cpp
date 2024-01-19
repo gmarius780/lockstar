@@ -14,7 +14,7 @@
 #include "../HAL/leds.hpp"
 #include "../Lib/pid.hpp"
 
-#include "BufferBaseModule.h"
+#include "../Lib/BufferBaseModule.h"
 
 #ifdef AWG_PID_MODULE
 

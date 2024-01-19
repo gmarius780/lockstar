@@ -12,7 +12,7 @@
 
 #include "../HAL/BasicTimer.hpp"
 #include "../Lib/RPIDataPackage.h"
-#include "ScopeModule.h"
+#include "../Lib/ScopeModule.h"
 #include "etl/circular_buffer.h"
 
 #ifndef MODULES_BUFFERBASEMODULE_H_

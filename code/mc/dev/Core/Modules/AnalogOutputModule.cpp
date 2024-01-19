@@ -18,7 +18,7 @@
 #include "../Lib/RPIDataPackage.h"
 #include "../Lib/pid.hpp"
 
-#include "ScopeModule.h"
+#include "../Lib/ScopeModule.h"
 
 #ifdef ANALOG_OUTPUT_MODULE
 

@@ -104,7 +104,7 @@ if asyncio.run(client.register_client_id()):
     linearization_file = join(dirname(__file__), "test_linearization.json")
     linearization_length = 2000
 
-    sampling_rate = 300000
+    sampling_rate = 600000
 
     ramp1 = ramp_gen(
         sampling_rate, flat_scale=0.1, ramp_time=0.01, amplitude=4, offset=4

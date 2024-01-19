@@ -12,7 +12,7 @@
 
 #include "../HAL/leds.hpp"
 
-#include "BufferBaseModule.h"
+#include "../Lib/BufferBaseModule.h"
 
 #ifdef AWG_MODULE
 

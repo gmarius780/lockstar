@@ -12,7 +12,7 @@
 #define MODULES_SCOPEMODULE_H_
 
 #include "../Lib/Scope.h"
-#include "Module.h"
+#include "../Lib/Module.h"
 
 class ScopeModule : public Module {
 public:

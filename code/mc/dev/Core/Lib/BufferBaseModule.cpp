@@ -5,7 +5,7 @@
  *      Author: marius
  */
 
-#include "BufferBaseModule.h"
+#include "../Lib/BufferBaseModule.h"
 
 BufferBaseModule::BufferBaseModule() : ScopeModule() {
   // TODO Auto-generated constructor stub

@@ -5,7 +5,7 @@
  *      Author: marius
  */
 
-#include "ScopeModule.h"
+#include "../Lib/ScopeModule.h"
 
 ScopeModule::ScopeModule() {}
 
