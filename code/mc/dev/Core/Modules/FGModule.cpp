@@ -24,6 +24,7 @@ uint32_t start_ticks, stop_ticks, elapsed_ticks;
 etl::circular_buffer<float, 36000> aCalculatedSinBuffer;
 
 etl::icircular_buffer<float>::iterator itr = aCalculatedSinBuffer.begin();
+etl::icircular_buffer<float>::iterator itr2 = aCalculatedSinBuffer.begin();
 auto end = aCalculatedSinBuffer.begin();
 
 __attribute((section(".dtcmram"))) uint16_t chunk_counter = 0;
@@ -87,9 +88,9 @@ public:
       if (unlocked) {
         dac_1->write();
       }
-      if (unlocked2){
-        dac_2->write();
-      }
+      // if (unlocked2){
+      //   dac_2->write();
+      // }
     }
   }
 
@@ -209,11 +210,11 @@ public:
 
   void sampling_timer_interrupt() {
     if (itr <= end) {
-      //     adc->start_conversion();
-      //     this->pid_one->calculate_output(this->setpoint_one,
-      //     adc->channel1->get_result(), 0.000002);
-      //     this->pid_two->calculate_output(this->setpoint_two,
-      //     adc->channel2->get_result(), 0.000002);
+          //     adc->start_conversion();
+          //     this->pid_one->calculate_output(this->setpoint_one,
+          //     adc->channel1->get_result(), 0.000002);
+          //     this->pid_two->calculate_output(this->setpoint_two,
+          //     adc->channel2->get_result(), 0.000002);
       // this->dac_1->write(*(itr++));
       unlocked = true;
       unlocked2 = true;

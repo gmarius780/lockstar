@@ -18,6 +18,7 @@
 
 
 extern etl::icircular_buffer<float>::iterator itr;
+extern etl::icircular_buffer<float>::iterator itr2;
 
 typedef struct
 {
@@ -85,7 +86,7 @@ protected:
     SPI *spi_handler;
     DMA_config_t dma_config;
     virtual void begin_dma_transfer();
-};
+    };
 
 
 class DAC1_Device: public DAC_Device
