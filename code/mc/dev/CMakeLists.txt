@@ -56,6 +56,7 @@ if ("${CMAKE_BUILD_TYPE}" STREQUAL "Release")
 elseif ("${CMAKE_BUILD_TYPE}" STREQUAL "RelWithDebInfo")
     message(STATUS "Maximum optimization for speed, debug info included")
     add_compile_options(-Ofast -g)
+    add_compile_options(-gdwarf-2)
 elseif ("${CMAKE_BUILD_TYPE}" STREQUAL "MinSizeRel")
     message(STATUS "Maximum optimization for size")
     add_compile_options(-Os)
@@ -106,10 +107,12 @@ add_executable(${PROJECT_NAME}.elf ${SOURCES} ${EXEC} ${LINKER_SCRIPT})
 # target_link_libraries(${PROJECT_NAME}.elf MyLib)
 
 
+set (LIST_FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.list)
 set(HEX_FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.hex)
 set(BIN_FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.bin)
 
 add_custom_command(TARGET ${PROJECT_NAME}.elf POST_BUILD
+        COMMAND ${CMAKE_OBJDUMP} -h -S $<TARGET_FILE:${PROJECT_NAME}.elf> > ${LIST_FILE}
         COMMAND ${CMAKE_OBJCOPY} -Oihex $<TARGET_FILE:${PROJECT_NAME}.elf> ${HEX_FILE}
         COMMAND ${CMAKE_OBJCOPY} -Obinary $<TARGET_FILE:${PROJECT_NAME}.elf> ${BIN_FILE}
         COMMENT "Building ${HEX_FILE}
