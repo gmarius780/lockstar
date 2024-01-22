@@ -26,13 +26,14 @@ etl::circular_buffer<float, 36000> aCalculatedSinBuffer;
 etl::icircular_buffer<float>::iterator itr = aCalculatedSinBuffer.begin();
 auto end = aCalculatedSinBuffer.begin();
 
-__attribute((section(".dtcmram"))) uint16_t chunk_counter = 1;
+__attribute((section(".dtcmram"))) uint16_t chunk_counter = 0;
 __attribute((section(".dtcmram"))) uint16_t current_period = 1;
 
 etl::circular_buffer<waveFunction, 100> functions;
 etl::circular_buffer<uint32_t, 100> times_buffer;
 uint32_t count = 0;
 etl::atomic<bool> unlocked = false;
+etl::atomic<bool> unlocked2 = false;
 std::atomic_flag lock = ATOMIC_FLAG_INIT;
 class FGModule : public BufferBaseModule {
   static const uint32_t BUFFER_LIMIT_kBYTES =
@@ -85,6 +86,9 @@ public:
     while (true) {
       if (unlocked) {
         dac_1->write();
+      }
+      if (unlocked2){
+        dac_2->write();
       }
     }
   }
@@ -212,6 +216,7 @@ public:
       //     adc->channel2->get_result(), 0.000002);
       // this->dac_1->write(*(itr++));
       unlocked = true;
+      unlocked2 = true;
       // this->dac_2->write(*(itr++));
     } else if (current_period < functions.front().n_periods) {
       current_period++;
@@ -274,12 +279,12 @@ __STATIC_FORCEINLINE float to_float(int32_t value, float scaling_factor,
 /********************
 ||      DAC2      ||
 ********************/
-__attribute__((section(".itcmram"))) void DMA2_Stream3_IRQHandler(void) {
-  module->dac_2->dma_transmission_callback();
-}
-__attribute__((section(".itcmram"))) void SPI5_IRQHandler(void) {
-  module->dac_2->dma_transmission_callback();
-}
+// __attribute__((section(".itcmram"))) void DMA2_Stream3_IRQHandler(void) {
+//   module->dac_2->dma_transmission_callback();
+// }
+// __attribute__((section(".itcmram"))) void SPI5_IRQHandler(void) {
+//   module->dac_2->dma_transmission_callback();
+// }
 /********************
 ||       ADC       ||
 ********************/

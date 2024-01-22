@@ -128,6 +128,8 @@ __attribute__((section(".itcmram"))) void
 DAC_Device::dma_transmission_callback() {}
 
 void DAC1_Device::dma_transmission_callback() {}
+void DAC2_Device::dma_transmission_callback() {}
+
 __attribute__((section(".itcmram"))) void SPI6_IRQHandler(void) {
 
   DisableChannel(BDMA_Channel1);
@@ -138,15 +140,14 @@ __attribute__((section(".itcmram"))) void SPI6_IRQHandler(void) {
   CLEAR_BIT(SPI6->CFG1, SPI_CFG1_TXDMAEN);
   // busy = false;
 }
-__attribute__((section(".itcmram"))) void
-DAC2_Device::dma_transmission_callback() {
-  DAC_conf->dma_clr_flag(DAC_conf->DMAx);
-  LL_SPI_ClearFlag_EOT(DAC_conf->SPIx);
-  CLEAR_BIT(DAC_conf->SPIx->CR1, SPI_CR1_SPE);
-  SET_BIT(DAC_conf->SPIx->IFCR, SPI_IFCR_TXTFC);
-  CLEAR_BIT(DAC_conf->SPIx->CFG1, SPI_CFG1_TXDMAEN);
+__attribute__((section(".itcmram"))) void SPI5_IRQHandler(void) {
+  LL_DMA_ClearFlag_TC3(DMA2);
+  LL_SPI_ClearFlag_EOT(SPI5);
+  CLEAR_BIT(SPI5->CR1, SPI_CR1_SPE);
+  SET_BIT(SPI5->IFCR, SPI_IFCR_TXTFC);
+  CLEAR_BIT(SPI5->CFG1, SPI_CFG1_TXDMAEN);
 
-  busy = false;
+  // busy = false;
 }
 
 void DAC_Device::config_output() {
