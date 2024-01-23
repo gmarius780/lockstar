@@ -20,6 +20,7 @@ __attribute__((section(".dtcmram"))) int32_t int_output;
 
 uint32_t skipped = 0;
 extern etl::atomic<bool> unlocked;
+extern etl::atomic<bool> unlocked2;
 extern std::atomic_flag lock;
 
 // uint32_t start_cycle, end_cycle, total_cycles;
@@ -46,6 +47,7 @@ DAC_Device::DAC_Device(DAC_Device_TypeDef *DAC_conf) {
 }
 
 DAC1_Device::DAC1_Device(DAC_Device_TypeDef *DAC_conf) : DAC_Device(DAC_conf) {
+  this->dac_itr = &itr;
   LL_SPI_SetTransferSize(DAC_conf->SPIx, DAC1_BUFFER_SIZE);
   dma_buffer = dmaD3_buffer;
   DAC_conf->BDMA_InitStruct->PeriphOrM2MSrcAddress =
@@ -58,6 +60,7 @@ DAC1_Device::DAC1_Device(DAC_Device_TypeDef *DAC_conf) : DAC_Device(DAC_conf) {
   LL_SPI_EnableIT_EOT(DAC_conf->SPIx);
 }
 DAC2_Device::DAC2_Device(DAC_Device_TypeDef *DAC_conf) : DAC_Device(DAC_conf) {
+  this->dac_itr = &itr2;
   LL_SPI_SetTransferSize(DAC_conf->SPIx, DAC2_BUFFER_SIZE);
   dma_buffer = dmaD1_buffer;
   DAC_conf->DMA_InitStruct->PeriphOrM2MSrcAddress =
@@ -105,7 +108,7 @@ __attribute__((section(".itcmram"))) void DAC_Device::write() {
   busy = true;
   unlocked = false;
   // lock.clear();
-  float output = std::min(max_output, std::max(*(itr++), min_output));
+  float output = std::min(max_output, std::max(*((*dac_itr)), min_output));
   last_output = output;
 
   int_output = (int32_t)((output - zero_voltage) * inv_step_size);
@@ -258,6 +261,8 @@ __attribute__((section(".itcmram"))) void DAC_Device::prepare_buffer() {
 
 __attribute__((section(".itcmram"))) void DAC_Device::begin_dma_transfer() {}
 __attribute__((section(".itcmram"))) void DAC1_Device::begin_dma_transfer() {
+  unlocked = false;
+  // itr++;
   SetDataLength(DAC_conf->BDMA_Channelx, DAC1_BUFFER_SIZE);
   SPI_SetTransferSize(DAC_conf->SPIx, DAC1_BUFFER_SIZE);
   EnableChannel(DAC_conf->BDMA_Channelx);
@@ -266,6 +271,8 @@ __attribute__((section(".itcmram"))) void DAC1_Device::begin_dma_transfer() {
   DAC_conf->SPIx->CR1 |= SPI_CR1_CSTART;
 }
 __attribute__((section(".itcmram"))) void DAC2_Device::begin_dma_transfer() {
+  unlocked2 = false;
+  // itr2++;
   SetDataLength(DAC_conf->DMA_Streamx, DAC2_BUFFER_SIZE);
   SPI_SetTransferSize(DAC_conf->SPIx, DAC2_BUFFER_SIZE);
   EnableChannel(DAC_conf->DMA_Streamx);

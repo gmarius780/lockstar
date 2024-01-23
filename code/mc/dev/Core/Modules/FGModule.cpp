@@ -8,8 +8,8 @@
 #include "../HAL/ADCDevice.hpp"
 #include "../HAL/BasicTimer.hpp"
 #include "../HAL/DACDevice.hpp"
-#include "../Lib/pid.hpp"
 #include "../Lib/BufferBaseModule.h"
+#include "../Lib/pid.hpp"
 #include "dac_config.h"
 #include "etl/circular_buffer.h"
 
@@ -21,21 +21,27 @@ __STATIC_INLINE float to_float(int32_t value, float scaling_factor,
 uint32_t start_ticks, stop_ticks, elapsed_ticks;
 
 /* Array of calculated sines in Q1.31 format */
-etl::circular_buffer<float, 36000> aCalculatedSinBuffer;
+etl::circular_buffer<float, 18000> aCalculatedSinBuffer;
+etl::circular_buffer<float, 18000> bCalculatedSinBuffer;
 
 etl::icircular_buffer<float>::iterator itr = aCalculatedSinBuffer.begin();
-etl::icircular_buffer<float>::iterator itr2 = aCalculatedSinBuffer.begin();
+etl::icircular_buffer<float>::iterator itr2 = bCalculatedSinBuffer.begin();
+
 auto end = aCalculatedSinBuffer.begin();
+auto end2 = bCalculatedSinBuffer.begin();
 
 __attribute((section(".dtcmram"))) uint16_t chunk_counter = 0;
 __attribute((section(".dtcmram"))) uint16_t current_period = 1;
 
 etl::circular_buffer<waveFunction, 100> functions;
 etl::circular_buffer<uint32_t, 100> times_buffer;
+
 uint32_t count = 0;
+
 etl::atomic<bool> unlocked = false;
 etl::atomic<bool> unlocked2 = false;
 std::atomic_flag lock = ATOMIC_FLAG_INIT;
+
 class FGModule : public BufferBaseModule {
   static const uint32_t BUFFER_LIMIT_kBYTES =
       160; // if this is chosen to large (200) there is no warning, the MC
@@ -73,8 +79,8 @@ public:
 
     this->sampling_timer = new BasicTimer(2, counter_max, prescaler);
 
-    dac_1->write();
-    dac_2->write();
+    dac_1->write(0);
+    dac_2->write(0);
 
     this->pid_one = new PID(0., 0., 0., 0., 0.);
     this->pid_two = new PID(0., 0., 0., 0., 0.);
@@ -88,7 +94,7 @@ public:
       if (unlocked) {
         dac_1->write();
       }
-      // if (unlocked2){
+      // if (unlocked2) {
       //   dac_2->write();
       // }
     }
@@ -137,8 +143,9 @@ public:
         // }
         func.start_value += func.step;
         CORDIC->WDATA = func.start_value;
-        aCalculatedSinBuffer.push(
-            to_float((int32_t)CORDIC->RDATA, func.scale, func.offset));
+        float tmp = to_float(CORDIC->RDATA, func.scale, func.offset);
+        aCalculatedSinBuffer.push(tmp);
+        bCalculatedSinBuffer.push(tmp);
         // __NOP();
       }
 
@@ -210,18 +217,21 @@ public:
 
   void sampling_timer_interrupt() {
     if (itr <= end) {
-          //     adc->start_conversion();
-          //     this->pid_one->calculate_output(this->setpoint_one,
-          //     adc->channel1->get_result(), 0.000002);
-          //     this->pid_two->calculate_output(this->setpoint_two,
-          //     adc->channel2->get_result(), 0.000002);
+      //     adc->start_conversion();
+      //     this->pid_one->calculate_output(this->setpoint_one,
+      //     adc->channel1->get_result(), 0.000002);
+      //     this->pid_two->calculate_output(this->setpoint_two,
+      //     adc->channel2->get_result(), 0.000002);
       // this->dac_1->write(*(itr++));
       unlocked = true;
       unlocked2 = true;
+      itr++;
+      itr2++;
       // this->dac_2->write(*(itr++));
     } else if (current_period < functions.front().n_periods) {
       current_period++;
       itr = aCalculatedSinBuffer.begin();
+      itr2 = bCalculatedSinBuffer.begin();
     } else if (!functions.empty()) {
       if (functions.front().time_start > 1) {
         sampling_timer->disable();
@@ -239,6 +249,8 @@ public:
 
         itr = aCalculatedSinBuffer.begin();
         end = aCalculatedSinBuffer.begin();
+        itr2 = bCalculatedSinBuffer.begin();
+        end2 = bCalculatedSinBuffer.begin();
 
         TIM1->ARR = 1;
         LL_DMA_ClearFlag_TC7(DMA1);

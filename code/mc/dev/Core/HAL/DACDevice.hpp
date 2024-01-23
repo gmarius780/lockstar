@@ -20,6 +20,11 @@
 extern etl::icircular_buffer<float>::iterator itr;
 extern etl::icircular_buffer<float>::iterator itr2;
 
+union {
+    uint32_t value;
+    uint8_t byteArray[4];
+} converter;
+
 typedef struct
 {
     uint8_t dac_id;
@@ -71,7 +76,7 @@ protected:
     float max_hardware_output, min_hardware_output; // as set with jumpers
     bool busy;
     bool invert;
-
+    etl::icircular_buffer<float>::iterator *dac_itr;
     float last_output;
 
     GPIO_TypeDef *sync_port;
