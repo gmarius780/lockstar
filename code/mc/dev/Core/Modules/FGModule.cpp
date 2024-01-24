@@ -93,9 +93,9 @@ public:
     while (true) {
       if (unlocked) {
         dac_1->write();
+        dac_2->write();
       }
       // if (unlocked2) {
-      //   dac_2->write();
       // }
     }
   }
@@ -143,15 +143,15 @@ public:
         // }
         func.start_value += func.step;
         CORDIC->WDATA = func.start_value;
-        float tmp = to_float(CORDIC->RDATA, func.scale, func.offset);
+        float tmp = to_float((int32_t)CORDIC->RDATA, func.scale, func.offset);
         aCalculatedSinBuffer.push(tmp);
         bCalculatedSinBuffer.push(tmp);
         // __NOP();
       }
-
+      float tmp = to_float((int32_t)CORDIC->RDATA, func.scale, func.offset);
       /* Read last result */
-      aCalculatedSinBuffer.push(
-          to_float((int32_t)CORDIC->RDATA, func.scale, func.offset));
+      aCalculatedSinBuffer.push(tmp);
+      bCalculatedSinBuffer.push(tmp);
     }
 
     advance(end, functions.front().n_samples);
@@ -237,10 +237,12 @@ public:
         sampling_timer->disable();
       }
       aCalculatedSinBuffer.pop(functions.front().n_samples);
+      bCalculatedSinBuffer.pop(functions.front().n_samples);
       current_period = 1;
       functions.pop();
       if (!functions.empty()) {
         advance(end, functions.front().n_samples);
+        advance(end2, functions.front().n_samples);
       } else {
         LL_TIM_DisableCounter(TIM1);
         sampling_timer->disable();
