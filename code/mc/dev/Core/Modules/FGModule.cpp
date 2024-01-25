@@ -35,11 +35,13 @@ __attribute((section(".dtcmram"))) uint16_t current_period = 1;
 
 etl::circular_buffer<waveFunction, 100> functions;
 etl::circular_buffer<uint32_t, 100> times_buffer;
+etl::circular_buffer<uint32_t, 100> times_buffer2;
 
 uint32_t count = 0;
 
 etl::atomic<bool> unlocked = false;
 etl::atomic<bool> unlocked2 = false;
+etl::atomic<bool> sample = false;
 std::atomic_flag lock = ATOMIC_FLAG_INIT;
 
 class FGModule : public BufferBaseModule {
@@ -94,6 +96,9 @@ public:
       if (unlocked) {
         dac_1->write();
         dac_2->write();
+      }
+      if (sample) {
+        sampling_timer_interrupt();
       }
       // if (unlocked2) {
       // }
@@ -216,13 +221,12 @@ public:
   }
 
   void sampling_timer_interrupt() {
+    sample = false;
     if (itr <= end) {
-      //     adc->start_conversion();
-      //     this->pid_one->calculate_output(this->setpoint_one,
-      //     adc->channel1->get_result(), 0.000002);
-      //     this->pid_two->calculate_output(this->setpoint_two,
-      //     adc->channel2->get_result(), 0.000002);
-      // this->dac_1->write(*(itr++));
+      // this->pid_one->calculate_output(this->setpoint_one,
+      // adc->channel1->get_result(), 0.000002);
+      // this->pid_two->calculate_output(this->setpoint_two,
+      // adc->channel2->get_result(), 0.000002);
       unlocked = true;
       unlocked2 = true;
       itr++;
@@ -327,7 +331,8 @@ __attribute__((section(".itcmram"))) void SPI1_IRQHandler(void) {
 ********************/
 __attribute__((section(".itcmram"))) void TIM2_IRQHandler(void) {
   LL_TIM_ClearFlag_UPDATE(TIM2);
-  module->sampling_timer_interrupt();
+  // module->sampling_timer_interrupt();
+  sample = true;
 }
 __attribute__((section(".itcmram"))) void TIM4_IRQHandler(void) {
   LL_TIM_ClearFlag_UPDATE(TIM4);
