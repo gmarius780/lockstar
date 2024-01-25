@@ -57,7 +57,7 @@ public:
 private:
     void update_result(int16_t result);
     // Samuel: Maybe it makes more sense to move the channel buffer to the modules using the ADC?
-    float *result;
+    float result;
     float step_size;
     bool two_comp;
     ADC_Device *parent_device;

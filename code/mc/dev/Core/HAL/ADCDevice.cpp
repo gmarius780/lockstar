@@ -103,10 +103,10 @@ ADC_Device_Channel::ADC_Device_Channel(ADC_Device *parentDevice,
 }
 
 void ADC_Device_Channel::update_result(int16_t result) {
-  result_buffer =
+  this->result =
       two_comp ? (step_size * result) : (step_size * (uint16_t)result);
 }
-float ADC_Device_Channel::get_result() { return result_buffer; }
+float ADC_Device_Channel::get_result() { return this->result; }
 
 void ADC_Device::start_conversion() {
 
