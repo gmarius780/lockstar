@@ -44,6 +44,8 @@ etl::atomic<bool> unlocked2 = false;
 etl::atomic<bool> sample = false;
 std::atomic_flag lock = ATOMIC_FLAG_INIT;
 
+float control = 0;
+
 class FGModule : public BufferBaseModule {
   static const uint32_t BUFFER_LIMIT_kBYTES =
       160; // if this is chosen to large (200) there is no warning, the MC
@@ -65,7 +67,7 @@ public:
   }
   void run() {
 
-    initialize_adc_dac(ADC_UNIPOLAR_10V, ADC_UNIPOLAR_10V);
+    initialize_adc_dac(ADC_BIPOLAR_10V, ADC_BIPOLAR_10V);
 
     prescaler = 0;
     counter_max = 1099;
@@ -84,7 +86,7 @@ public:
     dac_1->write(0);
     dac_2->write(0);
 
-    this->pid_one = new PID(0., 0., 0., 0., 0.);
+    this->pid_one = new PID(1, 0., 0., 0., 0.);
     this->pid_two = new PID(0., 0., 0., 0., 0.);
     this->setpoint_one = this->setpoint_two = 0.;
 
@@ -93,9 +95,10 @@ public:
     DMA1_Stream7->M0AR = (uint32_t)(&times_buffer[0]);
 
     while (true) {
+      adc->start_conversion();
       if (unlocked) {
         dac_1->write();
-        dac_2->write();
+        // dac_2->write();
       }
       if (sample) {
         sampling_timer_interrupt();
@@ -223,13 +226,14 @@ public:
   void sampling_timer_interrupt() {
     sample = false;
     if (itr <= end) {
-      // this->pid_one->calculate_output(this->setpoint_one,
-      // adc->channel1->get_result(), 0.000002);
+      float m1 = adc->channel1->get_result();
+      control = this->pid_one->calculate_output(*(itr++), m1, 0.000005);
       // this->pid_two->calculate_output(this->setpoint_two,
       // adc->channel2->get_result(), 0.000002);
+      dac_2->write(control);
       unlocked = true;
       unlocked2 = true;
-      itr++;
+      // itr++;
       itr2++;
       // this->dac_2->write(*(itr++));
     } else if (current_period < functions.front().n_periods) {
