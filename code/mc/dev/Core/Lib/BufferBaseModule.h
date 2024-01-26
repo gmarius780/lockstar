@@ -32,6 +32,7 @@ typedef struct waveFunction {
 
 extern etl::circular_buffer<waveFunction, 100> functions;
 extern etl::circular_buffer<uint32_t, 100> times_buffer;
+extern etl::circular_buffer<uint32_t, 100> times_buffer2;
 
 class BufferBaseModule : public ScopeModule {
 public:
@@ -103,6 +104,7 @@ public:
       *current_end_chunk_two; // points to the end of the current chunk
   uint32_t counter_max, prescaler;
   BasicTimer *sampling_timer;
+  // BasicTimer *sampling_timer2;
   waveFunction *func_buffer_one, *func_buffer_two;
   waveFunction *current_func_one, *current_func_two;
   uint32_t *time_buffer_one, *time_buffer_two;
