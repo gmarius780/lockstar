@@ -224,8 +224,8 @@ void DAC2_Device::config_output() {
   begin_dma_transfer();
 
   // Wait till configuration is sent
-  while (busy)
-    ;
+  // while (busy)
+  //   ;
 }
 __attribute__((section(".itcmram"))) void DAC_Device::prepare_buffer() {
   busy = true;
