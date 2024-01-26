@@ -72,6 +72,7 @@ static void MX_SPI1_Init(void);
 static void MX_SPI2_Init(void);
 static void MX_ADC3_Init(void);
 static void MX_TIM1_Init(void);
+static void MX_TIM8_Init(void);
 static void MX_CORDIC_Init(void);
 /* USER CODE BEGIN PFP */
 /* USER CODE END PFP */
@@ -135,6 +136,7 @@ int main(void) {
   MX_SPI2_Init();
   MX_ADC3_Init();
   MX_TIM1_Init();
+  MX_TIM8_Init();
   MX_CORDIC_Init();
   /* USER CODE BEGIN 2 */
   // TIM2 interrupt init
@@ -939,6 +941,66 @@ static void MX_TIM1_Init(void) {
   GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
   GPIO_InitStruct.Alternate = LL_GPIO_AF_1;
   LL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+}
+
+static void MX_TIM8_Init(void) {
+
+  /* USER CODE BEGIN TIM1_Init 0 */
+
+  /* USER CODE END TIM1_Init 0 */
+
+  LL_TIM_InitTypeDef TIM_InitStruct = {0};
+  /* Peripheral clock enable */
+  LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_TIM8);
+
+  /* TIM1 DMA Init */
+
+  /* TIM1_UP Init */
+  LL_DMA_SetPeriphRequest(DMA2, LL_DMA_STREAM_2, LL_DMAMUX1_REQ_TIM1_UP);
+
+  LL_DMA_SetDataTransferDirection(DMA2, LL_DMA_STREAM_2,
+                                  LL_DMA_DIRECTION_MEMORY_TO_PERIPH);
+
+  LL_DMA_SetStreamPriorityLevel(DMA2, LL_DMA_STREAM_2, LL_DMA_PRIORITY_HIGH);
+
+  LL_DMA_SetMode(DMA2, LL_DMA_STREAM_2, LL_DMA_MODE_NORMAL);
+
+  LL_DMA_SetPeriphIncMode(DMA2, LL_DMA_STREAM_2, LL_DMA_PERIPH_NOINCREMENT);
+
+  LL_DMA_SetMemoryIncMode(DMA2, LL_DMA_STREAM_2, LL_DMA_MEMORY_INCREMENT);
+
+  LL_DMA_SetPeriphSize(DMA2, LL_DMA_STREAM_2, LL_DMA_PDATAALIGN_WORD);
+
+  LL_DMA_SetMemorySize(DMA2, LL_DMA_STREAM_2, LL_DMA_MDATAALIGN_WORD);
+
+  LL_DMA_DisableFifoMode(DMA2, LL_DMA_STREAM_2);
+
+  /* TIM1 interrupt Init */
+  NVIC_SetPriority(TIM8_UP_TIM13_IRQn,
+                   NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 0, 0));
+  NVIC_EnableIRQ(TIM8_UP_TIM13_IRQn);
+  NVIC_SetPriority(TIM1_CC_IRQn,
+                   NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 0, 0));
+  NVIC_EnableIRQ(TIM8_CC_IRQn);
+
+  /* USER CODE BEGIN TIM1_Init 1 */
+
+  /* USER CODE END TIM1_Init 1 */
+  TIM_InitStruct.Prescaler = 0;
+  TIM_InitStruct.CounterMode = LL_TIM_COUNTERMODE_UP;
+  TIM_InitStruct.Autoreload = 4000;
+  TIM_InitStruct.ClockDivision = LL_TIM_CLOCKDIVISION_DIV1;
+  TIM_InitStruct.RepetitionCounter = 0;
+  LL_TIM_Init(TIM8, &TIM_InitStruct);
+  LL_TIM_DisableARRPreload(TIM8);
+  LL_TIM_ConfigETR(TIM8, LL_TIM_ETR_POLARITY_NONINVERTED,
+                   LL_TIM_ETR_PRESCALER_DIV1, LL_TIM_ETR_FILTER_FDIV1);
+  LL_TIM_SetClockSource(TIM8, LL_TIM_CLOCKSOURCE_INTERNAL);
+  LL_TIM_SetTriggerOutput(TIM8, LL_TIM_TRGO_UPDATE);
+  LL_TIM_SetTriggerOutput2(TIM8, LL_TIM_TRGO2_OC1);
+  LL_TIM_EnableMasterSlaveMode(TIM8);
+  /* USER CODE BEGIN TIM1_Init 2 */
+
 }
 
 /**
