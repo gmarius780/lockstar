@@ -23,19 +23,13 @@ class FGClient(BufferBaseClient_):
         return await self._call_lockstar(bc)
 
     async def start_ccalculation(
-        self, total_scaling: float, offset, num_samples, start_value, step_size
+        self
     ):
         bc = BackendCall(
             self.client_id,
             "FGModule",
             "start_ccalculation",
-            args={
-                "total_scaling": total_scaling,
-                "offset": offset,
-                "num_samples": num_samples,
-                "start_value": start_value,
-                "step_size": step_size,
-            },
+            args={},
         )
         return await self._call_lockstar(bc)
 
@@ -104,7 +98,7 @@ if asyncio.run(client.register_client_id()):
     linearization_file = join(dirname(__file__), "test_linearization.json")
     linearization_length = 2000
 
-    sampling_rate = 600000
+    sampling_rate = 250000
 
     ramp1 = ramp_gen(
         sampling_rate, flat_scale=0.1, ramp_time=0.01, amplitude=4, offset=4
@@ -112,17 +106,17 @@ if asyncio.run(client.register_client_id()):
     sin1 = sin_gen(sampling_rate, 50, 4, 0)
 
     func_buffer = [
-        {
-            "ll_func": 0x00000001,
-            "ll_scaling": 0x00000000,
-            "start_value": 0,
-            "step_size": 0,
-            "num_samples": 0,
-            "total_scaling": 0,
-            "offset": 0,
-            "n_periods": 4,
-            "time_start": 2600,
-        },
+        # {
+        #     "ll_func": 0x00000001,
+        #     "ll_scaling": 0x00000000,
+        #     "start_value": 0,
+        #     "step_size": 0,
+        #     "num_samples": 0,
+        #     "total_scaling": 0,
+        #     "offset": 0,
+        #     "n_periods": 4,
+        #     "time_start": 2600,
+        # },
         {
             "ll_func": 0x00000001,
             "ll_scaling": 0x00000000,
@@ -132,7 +126,7 @@ if asyncio.run(client.register_client_id()):
             "total_scaling": 4.0,
             "offset": 0,
             "n_periods": 4,
-            "time_start": 800,
+            "time_start": 4000,
         },
         {
             "ll_func": 0x00000004,
@@ -143,7 +137,7 @@ if asyncio.run(client.register_client_id()):
             "total_scaling": -568.0519530539988,
             "offset": 4,
             "n_periods": 2,
-            "time_start": 500,
+            "time_start": 7000,
         },
         {
             "ll_func": 0x00000001,
@@ -154,7 +148,7 @@ if asyncio.run(client.register_client_id()):
             "total_scaling": 4.0,
             "offset": 0,
             "n_periods": 5,
-            "time_start": 500,
+            "time_start": 8000,
         },
         {
             "ll_func": 0x00000004,
@@ -165,7 +159,7 @@ if asyncio.run(client.register_client_id()):
             "total_scaling": -568.0519530539988,
             "offset": 4,
             "n_periods": 5,
-            "time_start": 2500,
+            "time_start": 10000,
         },
         {
             "ll_func": 0x00000001,
@@ -231,7 +225,7 @@ if asyncio.run(client.register_client_id()):
             "total_scaling": -568.0519530539988,
             "offset": 4,
             "n_periods": 5,
-            "time_start": 2500,
+            "time_start": 500,
         }
     ]
     # ch_one_chunks = [999, 1999, 2999, 3999, 4999]
@@ -255,7 +249,9 @@ if asyncio.run(client.register_client_id()):
     print(asyncio.run(client.set_ch_two_output_limits(-10, 10)))
     print(asyncio.run(client.set_ch_func_buffer(func_buffer)))
     # print(asyncio.run(client.set_cfunction("arctan", "LL_CORDIC_SCALE_6")))
-    print(asyncio.run(client.start_ccalculation(*ramp1)))
+    print(asyncio.run(client.start_ccalculation()))
+    # sleep(2)
+    # print(asyncio.run(client.set_ch_func_buffer(func_buffer)))
     # print(asyncio.run(client.start_output()))
     # print(asyncio.run(client.set_cfunction("sin", "LL_CORDIC_SCALE_0")))
     # print(
