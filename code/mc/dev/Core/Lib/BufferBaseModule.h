@@ -18,7 +18,7 @@
 #ifndef MODULES_BUFFERBASEMODULE_H_
 #define MODULES_BUFFERBASEMODULE_H_
 
-typedef struct waveFunction {
+struct waveFunction {
   uint32_t function;
   uint32_t cordic_scale;
   int32_t start_value;
