@@ -31,6 +31,7 @@ struct waveFunction {
 };
 
 extern etl::circular_buffer<waveFunction, 100> functions;
+extern etl::circular_buffer<waveFunction, 100> functions2;
 extern etl::circular_buffer<uint32_t, 100> times_buffer;
 extern etl::circular_buffer<uint32_t, 100> times_buffer2;
 
@@ -79,6 +80,10 @@ public:
   void set_ch_func_buffer(RPIDataPackage *read_package,
                           waveFunction *current_read, waveFunction *func_buffer,
                           uint32_t *time_buffer, bool buffer_one);
+  static const uint32_t METHOD_SET_CH_TWO_FUNC_BUFFER = 23;
+  void set_ch_func_buffer2(RPIDataPackage *read_package,
+                          waveFunction *current_read, waveFunction *func_buffer,
+                          uint32_t *time_buffer, bool buffer_one);                          
 
   void reset_output();
   void turn_output_off();

@@ -64,6 +64,10 @@ bool BufferBaseModule::handle_rpi_base_methods() {
       set_ch_func_buffer(read_package, this->current_func_one,
                          this->func_buffer_one, this->time_buffer_one, true);
       break;
+    case METHOD_SET_CH_TWO_FUNC_BUFFER:
+      set_ch_func_buffer2(read_package, this->current_func_one,
+                         this->func_buffer_one, this->time_buffer_one, true);
+      break;      
     default:
       return false;
     }
@@ -302,10 +306,39 @@ void BufferBaseModule::set_ch_func_buffer(RPIDataPackage *read_package,
     time = read_package->pop_from_buffer<uint32_t>();
     temp.time_start = time;
     times_buffer.push(time);
-    times_buffer2.push(time);
-    // *(time_buffer) = time;
     functions.push(temp);
-    // time_buffer++;
+  }
+
+  /*** send ACK ***/
+  RPIDataPackage *write_package = rpi->get_write_package();
+  write_package->push_ack();
+  rpi->send_package(write_package);
+}
+
+void BufferBaseModule::set_ch_func_buffer2(RPIDataPackage *read_package,
+                                          waveFunction *current_read,
+                                          waveFunction *func_buffer,
+                                          uint32_t *time_buffer,
+                                          bool buffer_one) {
+
+  /***Read arguments***/
+  uint32_t nbr_values_to_read = read_package->pop_from_buffer<uint32_t>();
+  uint32_t time = 0;
+
+  for (uint32_t i = 0; i < nbr_values_to_read; i++) {
+    waveFunction temp = {
+        .function = read_package->pop_from_buffer<uint32_t>(),
+        .cordic_scale = read_package->pop_from_buffer<uint32_t>(),
+        .start_value = read_package->pop_from_buffer<int32_t>(),
+        .step = read_package->pop_from_buffer<int32_t>(),
+        .n_samples = read_package->pop_from_buffer<uint32_t>(),
+        .scale = read_package->pop_from_buffer<float>(),
+        .offset = read_package->pop_from_buffer<uint32_t>(),
+        .n_periods = read_package->pop_from_buffer<uint32_t>()};
+    time = read_package->pop_from_buffer<uint32_t>();
+    temp.time_start = time;
+    times_buffer2.push(time);
+    functions2.push(temp);
   }
 
   /*** send ACK ***/
