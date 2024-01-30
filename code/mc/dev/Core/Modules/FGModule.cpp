@@ -95,6 +95,16 @@ public:
     DMA2_Stream2->PAR = (uint32_t)&TIM8->DMAR; // Virtual register of TIM8
     DMA2_Stream2->M0AR = (uint32_t)(&times_buffer[0]);
 
+    LL_TIM_EnableUpdateEvent(TIM8);
+    LL_TIM_EnableDMAReq_UPDATE(TIM8);
+    LL_TIM_ConfigDMABurst(TIM8, LL_TIM_DMABURST_BASEADDR_ARR,
+                          LL_TIM_DMABURST_LENGTH_1TRANSFER);
+
+    LL_TIM_SetTriggerInput(TIM2, LL_TIM_TS_ITR1);
+    LL_TIM_SetSlaveMode(TIM2, LL_TIM_SLAVEMODE_TRIGGER);
+    LL_TIM_DisableIT_TRIG(TIM2);
+    LL_TIM_DisableDMAReq_TRIG(TIM2);
+
     while (true) {
       // adc->start_conversion();
       if (unlocked) {
@@ -127,33 +137,20 @@ public:
   static const uint32_t METHOD_START_CCalculation = 32;
   void start_ccalculation(RPIDataPackage *read_package) {
     DMA2_Stream2->NDTR = (uint32_t)functions.size();
-    LL_TIM_EnableUpdateEvent(TIM8);
-    LL_TIM_EnableDMAReq_UPDATE(TIM8);
-    LL_TIM_ConfigDMABurst(TIM8, LL_TIM_DMABURST_BASEADDR_ARR,
-                          LL_TIM_DMABURST_LENGTH_1TRANSFER);
     LL_TIM_GenerateEvent_UPDATE(TIM8);
-
     LL_TIM_SetCounter(TIM8, 0);
-    LL_TIM_SetTriggerInput(TIM2, LL_TIM_TS_ITR1);
-    LL_TIM_SetSlaveMode(TIM2, LL_TIM_SLAVEMODE_TRIGGER);
-    LL_TIM_DisableIT_TRIG(TIM2);
-    LL_TIM_DisableDMAReq_TRIG(TIM2);
-    uint32_t cnt = 0;
+
     for (waveFunction &func : functions) {
       LL_CORDIC_SetFunction(CORDIC, func.function);
       LL_CORDIC_SetScale(CORDIC, func.cordic_scale);
       uint32_t limit = (uint32_t)(func.n_samples * 1) - 1;
       CORDIC->WDATA = func.start_value;
       for (uint32_t j = 1; j < func.n_samples; j++) {
-        // if(j == 2500){
-        //     __asm__ __volatile__ ("bkpt #0");
-        // }
         func.start_value += func.step;
         CORDIC->WDATA = func.start_value;
         float tmp = to_float((int32_t)CORDIC->RDATA, func.scale, func.offset);
         aCalculatedSinBuffer.push(tmp);
         bCalculatedSinBuffer.push(tmp);
-        // __NOP();
       }
       float tmp = to_float((int32_t)CORDIC->RDATA, func.scale, func.offset);
       /* Read last result */
