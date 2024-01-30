@@ -66,23 +66,12 @@ class FGModule(BufferBaseModule_):
 
     async def start_ccalculation(
         self,
-        total_scaling : float,
-        offset,
-        num_samples,
-        start_value,
-        step_size,
         writer,
         respond=True,
     ):
         """Start Cordic computation"""
         mc_data_package = MCDataPackage()
         mc_data_package.push_to_buffer("uint32_t", 32)  # method_identifier
-        mc_data_package.push_to_buffer("float", total_scaling)
-        mc_data_package.push_to_buffer("uint32_t", offset)
-        mc_data_package.push_to_buffer("uint32_t", num_samples)
-        mc_data_package.push_to_buffer("int32_t", int32(start_value))
-        mc_data_package.push_to_buffer("int32_t", int32(step_size))
-
         await MC.I().write_mc_data_package(mc_data_package)
         return await self.check_for_ack(writer=(writer if respond else None))
 
