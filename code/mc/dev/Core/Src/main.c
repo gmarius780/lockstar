@@ -147,6 +147,10 @@ int main(void) {
   NVIC_SetPriority(TIM4_IRQn,
                    NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 0, 0));
   NVIC_EnableIRQ(TIM4_IRQn);
+  //   // TIM5 interrupt init
+  NVIC_SetPriority(TIM5_IRQn,
+                   NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 0, 0));
+  NVIC_EnableIRQ(TIM5_IRQn);
   // TIM7 interrupt init
   NVIC_SetPriority(TIM7_IRQn,
                    NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 0, 0));

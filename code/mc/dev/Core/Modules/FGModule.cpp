@@ -78,6 +78,8 @@ public:
     DBGMCU->APB2FZ1 |= DBGMCU_APB2FZ1_DBG_TIM8; // stop TIM8 when core is halted
     DBGMCU->APB1LFZ1 |=
         DBGMCU_APB1LFZ1_DBG_TIM2; // stop TIM2 when core is halted
+    DBGMCU->APB1LFZ1 |=
+        DBGMCU_APB1LFZ1_DBG_TIM5; // stop TIM2 when core is halted        
 
     TIM8->PSC = 27499; // Set prescaler
     TIM8->ARR = 1;
@@ -85,7 +87,7 @@ public:
     LL_TIM_EnableARRPreload(TIM8);
 
     this->sampling_timer = new BasicTimer(2, counter_max, prescaler);
-    this->sampling_timer2 = new BasicTimer(4, counter_max, prescaler);
+    this->sampling_timer2 = new BasicTimer(5, counter_max, prescaler);
 
     dac_1->write(0);
     dac_2->write(0);
@@ -108,17 +110,25 @@ public:
     LL_TIM_DisableIT_TRIG(TIM2);
     LL_TIM_DisableDMAReq_TRIG(TIM2);
 
+    // LL_TIM_SetTriggerInput(TIM5, LL_TIM_TS_ITR1);
+    // LL_TIM_SetSlaveMode(TIM5, LL_TIM_SLAVEMODE_TRIGGER);
+    // LL_TIM_DisableIT_TRIG(TIM5);
+    // LL_TIM_DisableDMAReq_TRIG(TIM5);
+
     while (true) {
       // adc->start_conversion();
       if (unlocked) {
         dac_1->write();
-        // dac_2->write();
+      }
+      if (unlocked2) {
+        dac_2->write();
       }
       if (sample) {
         sampling_timer_interrupt();
       }
-      // if (unlocked2) {
-      // }
+      if (sample2) {
+        sampling_timer_interrupt2();
+      }
     }
   }
 
@@ -258,7 +268,7 @@ public:
   }
 
   void sampling_timer_interrupt2() {
-    sample = false;
+    sample2 = false;
     if (itr2 <= end2) {
       unlocked2 = true;
       itr2++;
@@ -267,7 +277,7 @@ public:
       itr2 = bCalculatedSinBuffer.begin();
     } else if (!functions2.empty()) {
       if (functions2.front().time_start > 1) {
-        sampling_timer->disable();
+        sampling_timer2->disable();
       }
       bCalculatedSinBuffer.pop(functions2.front().n_samples);
       current_period2 = 1;
@@ -277,7 +287,7 @@ public:
         advance(end2, functions2.front().n_samples);
       } else {
         LL_TIM_DisableCounter(TIM8);
-        sampling_timer->disable();
+        sampling_timer2->disable();
         current_period2 = 1;
 
         itr2 = bCalculatedSinBuffer.begin();
@@ -359,9 +369,14 @@ __attribute__((section(".itcmram"))) void TIM2_IRQHandler(void) {
   // module->sampling_timer_interrupt();
   sample = true;
 }
+__attribute__((section(".itcmram"))) void TIM5_IRQHandler(void) {
+  LL_TIM_ClearFlag_UPDATE(TIM5);
+  // module->sampling_timer_interrupt();
+  sample2 = true;
+}
 __attribute__((section(".itcmram"))) void TIM4_IRQHandler(void) {
   LL_TIM_ClearFlag_UPDATE(TIM4);
-  sample2 = true;
+
   // module->rpi->comm_reset_timer_interrupt();
 }
 __attribute__((section(".itcmram"))) void TIM8_UP_IRQHandler(void) {
