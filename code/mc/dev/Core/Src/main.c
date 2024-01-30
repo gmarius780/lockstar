@@ -956,7 +956,7 @@ static void MX_TIM8_Init(void) {
   /* TIM1 DMA Init */
 
   /* TIM1_UP Init */
-  LL_DMA_SetPeriphRequest(DMA2, LL_DMA_STREAM_2, LL_DMAMUX1_REQ_TIM1_UP);
+  LL_DMA_SetPeriphRequest(DMA2, LL_DMA_STREAM_2, LL_DMAMUX1_REQ_TIM8_UP);
 
   LL_DMA_SetDataTransferDirection(DMA2, LL_DMA_STREAM_2,
                                   LL_DMA_DIRECTION_MEMORY_TO_PERIPH);
@@ -988,7 +988,7 @@ static void MX_TIM8_Init(void) {
   /* USER CODE END TIM1_Init 1 */
   TIM_InitStruct.Prescaler = 0;
   TIM_InitStruct.CounterMode = LL_TIM_COUNTERMODE_UP;
-  TIM_InitStruct.Autoreload = 4000;
+  TIM_InitStruct.Autoreload = 65535;
   TIM_InitStruct.ClockDivision = LL_TIM_CLOCKDIVISION_DIV1;
   TIM_InitStruct.RepetitionCounter = 0;
   LL_TIM_Init(TIM8, &TIM_InitStruct);
