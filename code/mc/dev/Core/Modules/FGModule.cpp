@@ -32,8 +32,10 @@ auto end2 = bCalculatedSinBuffer.begin();
 
 __attribute((section(".dtcmram"))) uint16_t chunk_counter = 0;
 __attribute((section(".dtcmram"))) uint16_t current_period = 1;
+__attribute((section(".dtcmram"))) uint16_t current_period2 = 1;
 
 etl::circular_buffer<waveFunction, 100> functions;
+etl::circular_buffer<waveFunction, 100> functions2;
 etl::circular_buffer<uint32_t, 100> times_buffer;
 etl::circular_buffer<uint32_t, 100> times_buffer2;
 
@@ -42,6 +44,7 @@ uint32_t count = 0;
 etl::atomic<bool> unlocked = false;
 etl::atomic<bool> unlocked2 = false;
 etl::atomic<bool> sample = false;
+etl::atomic<bool> sample2 = false;
 std::atomic_flag lock = ATOMIC_FLAG_INIT;
 
 float control = 0;
@@ -82,7 +85,7 @@ public:
     LL_TIM_EnableARRPreload(TIM8);
 
     this->sampling_timer = new BasicTimer(2, counter_max, prescaler);
-    // this->sampling_timer2 = new BasicTimer(4, counter_max, prescaler);
+    this->sampling_timer2 = new BasicTimer(4, counter_max, prescaler);
 
     dac_1->write(0);
     dac_2->write(0);
@@ -222,40 +225,61 @@ public:
   void sampling_timer_interrupt() {
     sample = false;
     if (itr <= end) {
-      // float m1 = adc->channel1->get_result();
-      // control = this->pid_one->calculate_output(*(itr++), m1, 0.000005);
-      // this->pid_two->calculate_output(this->setpoint_two,
-      // adc->channel2->get_result(), 0.000002);
-      // dac_2->write(control);
       unlocked = true;
-      unlocked2 = true;
       itr++;
-      itr2++;
-      // this->dac_2->write(*(itr++));
     } else if (current_period < functions.front().n_periods) {
       current_period++;
       itr = aCalculatedSinBuffer.begin();
-      itr2 = bCalculatedSinBuffer.begin();
     } else if (!functions.empty()) {
       if (functions.front().time_start > 1) {
         sampling_timer->disable();
       }
       aCalculatedSinBuffer.pop(functions.front().n_samples);
-      bCalculatedSinBuffer.pop(functions.front().n_samples);
       current_period = 1;
       functions.pop();
       // times_buffer.pop();
       if (!functions.empty()) {
         advance(end, functions.front().n_samples);
-        advance(end2, functions.front().n_samples);
       } else {
         LL_TIM_DisableCounter(TIM8);
         sampling_timer->disable();
         current_period = 1;
-        chunk_counter = 0;
 
         itr = aCalculatedSinBuffer.begin();
         end = aCalculatedSinBuffer.begin();
+
+        TIM8->ARR = 1;
+        LL_DMA_ClearFlag_TC2(DMA2);
+        DMA2_Stream2->NDTR = 0;
+        DMA2_Stream2->PAR = (uint32_t)&TIM8->DMAR; // Virtual register of TIM8
+        DMA2_Stream2->M0AR = (uint32_t)(&times_buffer[0]);
+      }
+    }
+  }
+
+  void sampling_timer_interrupt2() {
+    sample = false;
+    if (itr2 <= end2) {
+      unlocked2 = true;
+      itr2++;
+    } else if (current_period2 < functions2.front().n_periods) {
+      current_period2++;
+      itr2 = bCalculatedSinBuffer.begin();
+    } else if (!functions2.empty()) {
+      if (functions2.front().time_start > 1) {
+        sampling_timer->disable();
+      }
+      bCalculatedSinBuffer.pop(functions2.front().n_samples);
+      current_period2 = 1;
+      functions2.pop();
+      // times_buffer.pop();
+      if (!functions2.empty()) {
+        advance(end2, functions2.front().n_samples);
+      } else {
+        LL_TIM_DisableCounter(TIM8);
+        sampling_timer->disable();
+        current_period2 = 1;
+
         itr2 = bCalculatedSinBuffer.begin();
         end2 = bCalculatedSinBuffer.begin();
 
@@ -263,7 +287,7 @@ public:
         LL_DMA_ClearFlag_TC2(DMA2);
         DMA2_Stream2->NDTR = 0;
         DMA2_Stream2->PAR = (uint32_t)&TIM8->DMAR; // Virtual register of TIM8
-        DMA2_Stream2->M0AR = (uint32_t)(&times_buffer[0]);
+        DMA2_Stream2->M0AR = (uint32_t)(&times_buffer2[0]);
       }
     }
   }
@@ -337,6 +361,7 @@ __attribute__((section(".itcmram"))) void TIM2_IRQHandler(void) {
 }
 __attribute__((section(".itcmram"))) void TIM4_IRQHandler(void) {
   LL_TIM_ClearFlag_UPDATE(TIM4);
+  sample2 = true;
   // module->rpi->comm_reset_timer_interrupt();
 }
 __attribute__((section(".itcmram"))) void TIM8_UP_IRQHandler(void) {
