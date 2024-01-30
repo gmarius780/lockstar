@@ -104,7 +104,7 @@ public:
       *current_end_chunk_two; // points to the end of the current chunk
   uint32_t counter_max, prescaler;
   BasicTimer *sampling_timer;
-  // BasicTimer *sampling_timer2;
+  BasicTimer *sampling_timer2;
   waveFunction *func_buffer_one, *func_buffer_two;
   waveFunction *current_func_one, *current_func_two;
   uint32_t *time_buffer_one, *time_buffer_two;
