@@ -72,16 +72,17 @@ public:
     prescaler = 0;
     counter_max = 1099;
 
-    DBGMCU->APB2FZ1 |= DBGMCU_APB2FZ1_DBG_TIM1; // stop TIM1 when core is halted
+    DBGMCU->APB2FZ1 |= DBGMCU_APB2FZ1_DBG_TIM8; // stop TIM8 when core is halted
     DBGMCU->APB1LFZ1 |=
         DBGMCU_APB1LFZ1_DBG_TIM2; // stop TIM2 when core is halted
 
-    TIM1->PSC = 9999; // Set prescaler
-    TIM1->ARR = 1;
+    TIM8->PSC = 27499; // Set prescaler
+    TIM8->ARR = 1;
 
-    LL_TIM_EnableARRPreload(TIM1);
+    LL_TIM_EnableARRPreload(TIM8);
 
     this->sampling_timer = new BasicTimer(2, counter_max, prescaler);
+    // this->sampling_timer2 = new BasicTimer(4, counter_max, prescaler);
 
     dac_1->write(0);
     dac_2->write(0);
@@ -90,12 +91,12 @@ public:
     this->pid_two = new PID(0., 0., 0., 0., 0.);
     this->setpoint_one = this->setpoint_two = 0.;
 
-    DMA1_Stream7->CR |= DMA_PRIORITY_HIGH;
-    DMA1_Stream7->PAR = (uint32_t)&TIM1->DMAR; // Virtual register of TIM1
-    DMA1_Stream7->M0AR = (uint32_t)(&times_buffer[0]);
+    DMA2_Stream2->CR |= LL_DMA_PRIORITY_MEDIUM;
+    DMA2_Stream2->PAR = (uint32_t)&TIM8->DMAR; // Virtual register of TIM8
+    DMA2_Stream2->M0AR = (uint32_t)(&times_buffer[0]);
 
     while (true) {
-      adc->start_conversion();
+      // adc->start_conversion();
       if (unlocked) {
         dac_1->write();
         // dac_2->write();
@@ -125,17 +126,15 @@ public:
 
   static const uint32_t METHOD_START_CCalculation = 32;
   void start_ccalculation(RPIDataPackage *read_package) {
-    DMA1_Stream7->NDTR = (uint32_t)functions.size();
-    LL_TIM_EnableUpdateEvent(TIM1);
-    LL_TIM_EnableDMAReq_UPDATE(TIM1);
-    LL_TIM_ConfigDMABurst(TIM1, LL_TIM_DMABURST_BASEADDR_ARR,
+    DMA2_Stream2->NDTR = (uint32_t)functions.size();
+    LL_TIM_EnableUpdateEvent(TIM8);
+    LL_TIM_EnableDMAReq_UPDATE(TIM8);
+    LL_TIM_ConfigDMABurst(TIM8, LL_TIM_DMABURST_BASEADDR_ARR,
                           LL_TIM_DMABURST_LENGTH_1TRANSFER);
-    while (!LL_TIM_IsEnabledDMAReq_UPDATE(TIM1)) {
-    }
-    LL_TIM_GenerateEvent_UPDATE(TIM1);
+    LL_TIM_GenerateEvent_UPDATE(TIM8);
 
-    LL_TIM_SetCounter(TIM1, 0);
-    LL_TIM_SetTriggerInput(TIM2, LL_TIM_TS_ITR0);
+    LL_TIM_SetCounter(TIM8, 0);
+    LL_TIM_SetTriggerInput(TIM2, LL_TIM_TS_ITR1);
     LL_TIM_SetSlaveMode(TIM2, LL_TIM_SLAVEMODE_TRIGGER);
     LL_TIM_DisableIT_TRIG(TIM2);
     LL_TIM_DisableDMAReq_TRIG(TIM2);
@@ -164,9 +163,9 @@ public:
 
     advance(end, functions.front().n_samples);
 
-    TIM1->ARR = functions.front().time_start;
-    TIM1->CR1 |= TIM_CR1_CEN;
-    DMA1_Stream7->CR |= DMA_SxCR_EN; // Enable DMA
+    TIM8->ARR = functions.front().time_start;
+    TIM8->CR1 |= TIM_CR1_CEN;
+    DMA2_Stream2->CR |= DMA_SxCR_EN; // Enable DMA
 
     /*** send ACK ***/
     RPIDataPackage *write_package = rpi->get_write_package();
@@ -175,9 +174,9 @@ public:
   }
   static const uint32_t METHOD_START_Output = 33;
   void start_output(RPIDataPackage *read_package) {
-    DMA1_Stream7->NDTR = (uint32_t)functions.size();
-    DMA1_Stream7->CR |= DMA_SxCR_EN; // Enable DMA
-    TIM1->CR1 |= TIM_CR1_CEN;
+    DMA2_Stream2->NDTR = (uint32_t)functions.size();
+    DMA2_Stream2->CR |= DMA_SxCR_EN; // Enable DMA
+    TIM8->CR1 |= TIM_CR1_CEN;
 
     /*** send ACK ***/
     RPIDataPackage *write_package = rpi->get_write_package();
@@ -226,14 +225,14 @@ public:
   void sampling_timer_interrupt() {
     sample = false;
     if (itr <= end) {
-      float m1 = adc->channel1->get_result();
-      control = this->pid_one->calculate_output(*(itr++), m1, 0.000005);
+      // float m1 = adc->channel1->get_result();
+      // control = this->pid_one->calculate_output(*(itr++), m1, 0.000005);
       // this->pid_two->calculate_output(this->setpoint_two,
       // adc->channel2->get_result(), 0.000002);
-      dac_2->write(control);
+      // dac_2->write(control);
       unlocked = true;
       unlocked2 = true;
-      // itr++;
+      itr++;
       itr2++;
       // this->dac_2->write(*(itr++));
     } else if (current_period < functions.front().n_periods) {
@@ -248,11 +247,12 @@ public:
       bCalculatedSinBuffer.pop(functions.front().n_samples);
       current_period = 1;
       functions.pop();
+      // times_buffer.pop();
       if (!functions.empty()) {
         advance(end, functions.front().n_samples);
         advance(end2, functions.front().n_samples);
       } else {
-        LL_TIM_DisableCounter(TIM1);
+        LL_TIM_DisableCounter(TIM8);
         sampling_timer->disable();
         current_period = 1;
         chunk_counter = 0;
@@ -262,11 +262,11 @@ public:
         itr2 = bCalculatedSinBuffer.begin();
         end2 = bCalculatedSinBuffer.begin();
 
-        TIM1->ARR = 1;
-        LL_DMA_ClearFlag_TC7(DMA1);
-        DMA1_Stream7->NDTR = 0;
-        DMA1_Stream7->PAR = (uint32_t)&TIM1->DMAR; // Virtual register of TIM1
-        DMA1_Stream7->M0AR = (uint32_t)(&times_buffer[0]);
+        TIM8->ARR = 1;
+        LL_DMA_ClearFlag_TC2(DMA2);
+        DMA2_Stream2->NDTR = 0;
+        DMA2_Stream2->PAR = (uint32_t)&TIM8->DMAR; // Virtual register of TIM8
+        DMA2_Stream2->M0AR = (uint32_t)(&times_buffer[0]);
       }
     }
   }
@@ -342,11 +342,11 @@ __attribute__((section(".itcmram"))) void TIM4_IRQHandler(void) {
   LL_TIM_ClearFlag_UPDATE(TIM4);
   // module->rpi->comm_reset_timer_interrupt();
 }
-__attribute__((section(".itcmram"))) void TIM1_UP_IRQHandler(void) {
-  if (TIM1->SR & TIM_SR_UIF) {
+__attribute__((section(".itcmram"))) void TIM8_UP_IRQHandler(void) {
+  if (TIM8->SR & TIM_SR_UIF) {
     HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);
     module->enable_sampling();
-    TIM1->SR &= ~TIM_SR_UIF;
+    TIM8->SR &= ~TIM_SR_UIF;
   }
 }
 /******************************
