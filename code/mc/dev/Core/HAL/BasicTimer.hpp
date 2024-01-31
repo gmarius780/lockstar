@@ -34,9 +34,10 @@ public:
 
 	void reset_counter();
 	void reset_interrupt();
+	TIM_TypeDef* tim_regs;
 
 private:
-	TIM_TypeDef* tim_regs;
+	
 	uint32_t APBxLENR_bit;
 
 };
