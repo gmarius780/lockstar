@@ -79,7 +79,7 @@ public:
     DBGMCU->APB1LFZ1 |=
         DBGMCU_APB1LFZ1_DBG_TIM2; // stop TIM2 when core is halted
     DBGMCU->APB1LFZ1 |=
-        DBGMCU_APB1LFZ1_DBG_TIM5; // stop TIM2 when core is halted        
+        DBGMCU_APB1LFZ1_DBG_TIM5; // stop TIM2 when core is halted
 
     TIM8->PSC = 27499; // Set prescaler
     TIM8->ARR = 1;
@@ -105,15 +105,15 @@ public:
     LL_TIM_ConfigDMABurst(TIM8, LL_TIM_DMABURST_BASEADDR_ARR,
                           LL_TIM_DMABURST_LENGTH_1TRANSFER);
 
-    LL_TIM_SetTriggerInput(TIM2, LL_TIM_TS_ITR1);
-    LL_TIM_SetSlaveMode(TIM2, LL_TIM_SLAVEMODE_TRIGGER);
-    LL_TIM_DisableIT_TRIG(TIM2);
-    LL_TIM_DisableDMAReq_TRIG(TIM2);
+    // LL_TIM_SetTriggerInput(sampling_timer->tim_regs, LL_TIM_TS_ITR1);
+    // LL_TIM_SetSlaveMode(sampling_timer->tim_regs, LL_TIM_SLAVEMODE_TRIGGER);
+    // LL_TIM_DisableIT_TRIG(sampling_timer->tim_regs);
+    // LL_TIM_DisableDMAReq_TRIG(sampling_timer->tim_regs);
 
-    // LL_TIM_SetTriggerInput(TIM5, LL_TIM_TS_ITR1);
-    // LL_TIM_SetSlaveMode(TIM5, LL_TIM_SLAVEMODE_TRIGGER);
-    // LL_TIM_DisableIT_TRIG(TIM5);
-    // LL_TIM_DisableDMAReq_TRIG(TIM5);
+    LL_TIM_DisableIT_TRIG(sampling_timer2->tim_regs);
+    LL_TIM_DisableDMAReq_TRIG(sampling_timer2->tim_regs);
+    LL_TIM_SetSlaveMode(sampling_timer2->tim_regs, LL_TIM_SLAVEMODE_TRIGGER);
+    LL_TIM_SetTriggerInput(sampling_timer2->tim_regs, LL_TIM_TS_ITR1);
 
     while (true) {
       // adc->start_conversion();
@@ -172,6 +172,7 @@ public:
     }
 
     advance(end, functions.front().n_samples);
+    advance(end2, functions2.front().n_samples);
 
     TIM8->ARR = functions.front().time_start;
     TIM8->CR1 |= TIM_CR1_CEN;
