@@ -75,15 +75,21 @@ public:
     prescaler = 0;
     counter_max = 1099;
 
+    DBGMCU->APB2FZ1 |= DBGMCU_APB2FZ1_DBG_TIM1; // stop TIM1 when core is halted
     DBGMCU->APB2FZ1 |= DBGMCU_APB2FZ1_DBG_TIM8; // stop TIM8 when core is halted
+
     DBGMCU->APB1LFZ1 |=
         DBGMCU_APB1LFZ1_DBG_TIM2; // stop TIM2 when core is halted
     DBGMCU->APB1LFZ1 |=
         DBGMCU_APB1LFZ1_DBG_TIM5; // stop TIM2 when core is halted
 
+    TIM1->PSC = 999; // Set prescaler
+    TIM1->ARR = 1;
+
     TIM8->PSC = 27499; // Set prescaler
     TIM8->ARR = 1;
 
+    LL_TIM_EnableARRPreload(TIM1);
     LL_TIM_EnableARRPreload(TIM8);
 
     this->sampling_timer = new BasicTimer(2, counter_max, prescaler);
@@ -96,19 +102,28 @@ public:
     this->pid_two = new PID(0., 0., 0., 0., 0.);
     this->setpoint_one = this->setpoint_two = 0.;
 
+    DMA1_Stream7->CR |= DMA_PRIORITY_HIGH;
+    DMA1_Stream7->PAR = (uint32_t)&TIM1->DMAR; // Virtual register of TIM1
+    DMA1_Stream7->M0AR = (uint32_t)(&times_buffer[0]);
+
     DMA2_Stream2->CR |= LL_DMA_PRIORITY_MEDIUM;
     DMA2_Stream2->PAR = (uint32_t)&TIM8->DMAR; // Virtual register of TIM8
-    DMA2_Stream2->M0AR = (uint32_t)(&times_buffer[0]);
+    DMA2_Stream2->M0AR = (uint32_t)(&times_buffer2[0]);
+
+    LL_TIM_EnableUpdateEvent(TIM1);
+    LL_TIM_EnableDMAReq_UPDATE(TIM1);
+    LL_TIM_ConfigDMABurst(TIM1, LL_TIM_DMABURST_BASEADDR_ARR,
+                          LL_TIM_DMABURST_LENGTH_1TRANSFER);
 
     LL_TIM_EnableUpdateEvent(TIM8);
     LL_TIM_EnableDMAReq_UPDATE(TIM8);
     LL_TIM_ConfigDMABurst(TIM8, LL_TIM_DMABURST_BASEADDR_ARR,
                           LL_TIM_DMABURST_LENGTH_1TRANSFER);
 
-    // LL_TIM_SetTriggerInput(sampling_timer->tim_regs, LL_TIM_TS_ITR1);
-    // LL_TIM_SetSlaveMode(sampling_timer->tim_regs, LL_TIM_SLAVEMODE_TRIGGER);
-    // LL_TIM_DisableIT_TRIG(sampling_timer->tim_regs);
-    // LL_TIM_DisableDMAReq_TRIG(sampling_timer->tim_regs);
+    LL_TIM_DisableIT_TRIG(sampling_timer->tim_regs);
+    LL_TIM_DisableDMAReq_TRIG(sampling_timer->tim_regs);
+    LL_TIM_SetSlaveMode(sampling_timer->tim_regs, LL_TIM_SLAVEMODE_TRIGGER);
+    LL_TIM_SetTriggerInput(sampling_timer->tim_regs, LL_TIM_TS_ITR0);
 
     LL_TIM_DisableIT_TRIG(sampling_timer2->tim_regs);
     LL_TIM_DisableDMAReq_TRIG(sampling_timer2->tim_regs);
@@ -149,7 +164,11 @@ public:
 
   static const uint32_t METHOD_START_CCalculation = 32;
   void start_ccalculation(RPIDataPackage *read_package) {
-    DMA2_Stream2->NDTR = (uint32_t)functions.size();
+    DMA1_Stream7->NDTR = (uint32_t)functions.size();
+    LL_TIM_GenerateEvent_UPDATE(TIM1);
+    LL_TIM_SetCounter(TIM1, 0);
+
+    DMA2_Stream2->NDTR = (uint32_t)functions2.size();
     LL_TIM_GenerateEvent_UPDATE(TIM8);
     LL_TIM_SetCounter(TIM8, 0);
 
@@ -174,7 +193,11 @@ public:
     advance(end, functions.front().n_samples);
     advance(end2, functions2.front().n_samples);
 
-    TIM8->ARR = functions.front().time_start;
+    TIM1->ARR = functions.front().time_start;
+    TIM1->CR1 |= TIM_CR1_CEN;
+    DMA1_Stream7->CR |= DMA_SxCR_EN; // Enable DMA
+
+    TIM8->ARR = functions2.front().time_start;
     TIM8->CR1 |= TIM_CR1_CEN;
     DMA2_Stream2->CR |= DMA_SxCR_EN; // Enable DMA
 
@@ -252,18 +275,18 @@ public:
       if (!functions.empty()) {
         advance(end, functions.front().n_samples);
       } else {
-        LL_TIM_DisableCounter(TIM8);
+        LL_TIM_DisableCounter(TIM1);
         sampling_timer->disable();
         current_period = 1;
 
         itr = aCalculatedSinBuffer.begin();
         end = aCalculatedSinBuffer.begin();
 
-        TIM8->ARR = 1;
-        LL_DMA_ClearFlag_TC2(DMA2);
-        DMA2_Stream2->NDTR = 0;
-        DMA2_Stream2->PAR = (uint32_t)&TIM8->DMAR; // Virtual register of TIM8
-        DMA2_Stream2->M0AR = (uint32_t)(&times_buffer[0]);
+        TIM1->ARR = 1;
+        LL_DMA_ClearFlag_TC7(DMA1);
+        DMA1_Stream7->NDTR = 0;
+        DMA1_Stream7->PAR = (uint32_t)&TIM1->DMAR; // Virtual register of TIM1
+        DMA1_Stream7->M0AR = (uint32_t)(&times_buffer[0]);
       }
     }
   }
