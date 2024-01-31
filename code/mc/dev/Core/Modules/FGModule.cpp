@@ -132,17 +132,17 @@ public:
 
     while (true) {
       // adc->start_conversion();
-      if (unlocked) {
-        dac_1->write();
-      }
-      if (unlocked2) {
-        dac_2->write();
-      }
       if (sample) {
         sampling_timer_interrupt();
+        if (unlocked) {
+          dac_1->write();
+        }
       }
       if (sample2) {
         sampling_timer_interrupt2();
+        if (unlocked2) {
+          dac_2->write();
+        }
       }
     }
   }
@@ -255,8 +255,7 @@ public:
     } else { /* error */
     }
   }
-
-  void sampling_timer_interrupt() {
+  __attribute__((section(".itcmram"))) void sampling_timer_interrupt() {
     sample = false;
     if (itr <= end) {
       unlocked = true;
@@ -290,8 +289,7 @@ public:
       }
     }
   }
-
-  void sampling_timer_interrupt2() {
+  __attribute__((section(".itcmram"))) void sampling_timer_interrupt2() {
     sample2 = false;
     if (itr2 <= end2) {
       unlocked2 = true;
