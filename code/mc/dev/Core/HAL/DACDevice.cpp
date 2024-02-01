@@ -22,6 +22,7 @@ uint32_t skipped = 0;
 extern etl::atomic<bool> unlocked;
 extern etl::atomic<bool> unlocked2;
 extern std::atomic_flag lock;
+extern etl::icircular_buffer<uint8_t> byteBuffer;
 
 // uint32_t start_cycle, end_cycle, total_cycles;
 DAC_Device::DAC_Device(DAC_Device_TypeDef *DAC_conf) {
@@ -108,22 +109,28 @@ __attribute__((section(".itcmram"))) void DAC_Device::write() {
   busy = true;
   unlocked = false;
   // lock.clear();
-  float output = std::min(max_output, std::max(*((*dac_itr)), min_output));
-  last_output = output;
+  // float output = std::min(max_output, std::max(*((*dac_itr)), min_output));
+  // last_output = output;
 
-  int_output = (int32_t)((output - zero_voltage) * inv_step_size);
+  // int_output = (int32_t)((output - zero_voltage) * inv_step_size);
 
-  if (invert)
-    int_output = -int_output;
+  // if (invert)
+  //   int_output = -int_output;
 
   // DB23 Read/Write, DB22-D20 Address 001 --> 0x10 first byte
   // int_output is 18 bit value and has to split into 3 parts of 4, 8 and 6 bits
   // DB19-D14 buffer[0], DB13-D6 buffer[1], DB5-D2 buffer[2], last 2 bits X
-  dma_buffer[0] = 0x10; // 0x10 first byte
-  dma_buffer[0] +=
-      ((int_output >> 14) & 0x0f);          // Get the most significant 4 bits
-  dma_buffer[1] = (int_output >> 6) & 0xff; // Get the middle 8 bits
-  dma_buffer[2] = int_output & 0xff;        // Get the least significant 6 bits
+  // dma_buffer[0] = 0x10; // 0x10 first byte
+  // dma_buffer[0] +=
+  //     ((int_output >> 14) & 0x0f);          // Get the most significant 4 bits
+  // dma_buffer[1] = (int_output >> 6) & 0xff; // Get the middle 8 bits
+  // dma_buffer[2] = int_output & 0xff;        // Get the least significant 6 bits
+  dma_buffer[0] = byteBuffer.front();
+  byteBuffer.pop();
+  dma_buffer[1] = byteBuffer.front();
+  byteBuffer.pop();
+  dma_buffer[2] = byteBuffer.front();
+  byteBuffer.pop();
   begin_dma_transfer();
 }
 
