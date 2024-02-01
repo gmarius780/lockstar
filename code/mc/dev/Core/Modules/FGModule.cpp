@@ -12,17 +12,21 @@
 #include "../Lib/pid.hpp"
 #include "dac_config.h"
 #include "etl/circular_buffer.h"
+#include <algorithm>
 
 #define FIXED_POINT_FRACTIONAL_BITS 31
 
 __STATIC_INLINE float to_float(int32_t value, float scaling_factor,
                                uint32_t offset);
+__STATIC_INLINE void to_bytes(float debug_val);
 
 uint32_t start_ticks, stop_ticks, elapsed_ticks;
 
 /* Array of calculated sines in Q1.31 format */
 etl::circular_buffer<float, 18000> aCalculatedSinBuffer;
 etl::circular_buffer<float, 18000> bCalculatedSinBuffer;
+
+etl::circular_buffer<uint8_t, 1000> byteBuffer;
 
 etl::icircular_buffer<float>::iterator itr = aCalculatedSinBuffer.begin();
 etl::icircular_buffer<float>::iterator itr2 = bCalculatedSinBuffer.begin();
@@ -48,6 +52,8 @@ etl::atomic<bool> sample2 = false;
 std::atomic_flag lock = ATOMIC_FLAG_INIT;
 
 float control = 0;
+float c_step_size =  20.0 / 262143; // full_range / (2^20-1)
+float c_inv_step_size = 1 / c_step_size;
 
 class FGModule : public BufferBaseModule {
   static const uint32_t BUFFER_LIMIT_kBYTES =
@@ -138,12 +144,12 @@ public:
           dac_1->write();
         }
       }
-      if (sample2) {
-        sampling_timer_interrupt2();
-        if (unlocked2) {
-          dac_2->write();
-        }
-      }
+      // if (sample2) {
+      //   sampling_timer_interrupt2();
+      //   if (unlocked2) {
+      //     dac_2->write();
+      //   }
+      // }
     }
   }
 
@@ -181,10 +187,12 @@ public:
         func.start_value += func.step;
         CORDIC->WDATA = func.start_value;
         float tmp = to_float((int32_t)CORDIC->RDATA, func.scale, func.offset);
+        to_bytes(tmp);
         aCalculatedSinBuffer.push(tmp);
         bCalculatedSinBuffer.push(tmp);
       }
       float tmp = to_float((int32_t)CORDIC->RDATA, func.scale, func.offset);
+      to_bytes(tmp);
       /* Read last result */
       aCalculatedSinBuffer.push(tmp);
       bCalculatedSinBuffer.push(tmp);
@@ -197,9 +205,9 @@ public:
     TIM1->CR1 |= TIM_CR1_CEN;
     DMA1_Stream7->CR |= DMA_SxCR_EN; // Enable DMA
 
-    TIM8->ARR = functions2.front().time_start;
-    TIM8->CR1 |= TIM_CR1_CEN;
-    DMA2_Stream2->CR |= DMA_SxCR_EN; // Enable DMA
+    // TIM8->ARR = functions2.front().time_start;
+    // TIM8->CR1 |= TIM_CR1_CEN;
+    // DMA2_Stream2->CR |= DMA_SxCR_EN; // Enable DMA
 
     /*** send ACK ***/
     RPIDataPackage *write_package = rpi->get_write_package();
@@ -255,7 +263,7 @@ public:
     } else { /* error */
     }
   }
-  __attribute__((section(".itcmram"))) void sampling_timer_interrupt() {
+  void sampling_timer_interrupt() {
     sample = false;
     if (itr <= end) {
       unlocked = true;
@@ -289,7 +297,7 @@ public:
       }
     }
   }
-  __attribute__((section(".itcmram"))) void sampling_timer_interrupt2() {
+  void sampling_timer_interrupt2() {
     sample2 = false;
     if (itr2 <= end2) {
       unlocked2 = true;
@@ -337,6 +345,23 @@ __STATIC_FORCEINLINE float to_float(int32_t value, float scaling_factor,
       ((value * scaling_factor) / (1 << FIXED_POINT_FRACTIONAL_BITS)) + offset;
   return debug_val;
 }
+
+__STATIC_FORCEINLINE void to_bytes(float debug_val) {
+  uint8_t buffer[3];
+  debug_val = std::min((float)10, std::max((float)-10, debug_val));
+
+  int32_t int_output = (int32_t)(debug_val * c_inv_step_size);
+
+  buffer[0] = 0x10;                         // 0x10 first byte
+  buffer[0] += ((int_output >> 14) & 0x0f); // Get the most significant 4 bits
+  buffer[1] = (int_output >> 6) & 0xff;     // Get the middle 8 bits
+  buffer[2] = int_output & 0xff;            // Get the least significant 6 bits
+
+  byteBuffer.push(buffer[0]);
+  byteBuffer.push(buffer[1]);
+  byteBuffer.push(buffer[2]);
+}
+
 /******************************
  *         INTERRUPTS          *
  *******************************/
