@@ -1038,10 +1038,10 @@ static void MX_DMA_Init(void) {
   hdma_memtomem_dma2_stream6.Instance = DMA2_Stream6;
   hdma_memtomem_dma2_stream6.Init.Request = DMA_REQUEST_MEM2MEM;
   hdma_memtomem_dma2_stream6.Init.Direction = DMA_MEMORY_TO_MEMORY;
-  hdma_memtomem_dma2_stream6.Init.PeriphInc = DMA_PINC_DISABLE;
+  hdma_memtomem_dma2_stream6.Init.PeriphInc = DMA_PINC_ENABLE;
   hdma_memtomem_dma2_stream6.Init.MemInc = DMA_MINC_ENABLE;
-  hdma_memtomem_dma2_stream6.Init.PeriphDataAlignment = DMA_PDATAALIGN_HALFWORD;
-  hdma_memtomem_dma2_stream6.Init.MemDataAlignment = DMA_MDATAALIGN_HALFWORD;
+  hdma_memtomem_dma2_stream6.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+  hdma_memtomem_dma2_stream6.Init.MemDataAlignment = DMA_PDATAALIGN_BYTE;
   hdma_memtomem_dma2_stream6.Init.Mode = DMA_NORMAL;
   hdma_memtomem_dma2_stream6.Init.Priority = DMA_PRIORITY_VERY_HIGH;
   hdma_memtomem_dma2_stream6.Init.FIFOMode = DMA_FIFOMODE_ENABLE;
