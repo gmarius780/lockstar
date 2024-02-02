@@ -49,10 +49,12 @@ etl::atomic<bool> unlocked = false;
 etl::atomic<bool> unlocked2 = false;
 etl::atomic<bool> sample = false;
 etl::atomic<bool> sample2 = false;
+etl::atomic<bool> idle = false;
+etl::atomic<bool> idle2 = false;
 std::atomic_flag lock = ATOMIC_FLAG_INIT;
 
 float control = 0;
-float c_step_size =  20.0 / 262143; // full_range / (2^20-1)
+float c_step_size = 20.0 / 262143; // full_range / (2^20-1)
 float c_inv_step_size = 1 / c_step_size;
 
 class FGModule : public BufferBaseModule {
@@ -265,7 +267,7 @@ public:
   }
   void sampling_timer_interrupt() {
     sample = false;
-    if (itr <= end) {
+    if (itr < end) {
       unlocked = true;
       itr++;
     } else if (current_period < functions.front().n_periods) {
@@ -278,12 +280,14 @@ public:
       aCalculatedSinBuffer.pop(functions.front().n_samples);
       current_period = 1;
       functions.pop();
-      // times_buffer.pop();
+      times_buffer.pop();
       if (!functions.empty()) {
         advance(end, functions.front().n_samples);
       } else {
         LL_TIM_DisableCounter(TIM1);
         sampling_timer->disable();
+        sampling_timer->reset_interrupt();
+        LL_TIM_DisableIT_UPDATE(sampling_timer->tim_regs);
         current_period = 1;
 
         itr = aCalculatedSinBuffer.begin();
@@ -294,12 +298,13 @@ public:
         DMA1_Stream7->NDTR = 0;
         DMA1_Stream7->PAR = (uint32_t)&TIM1->DMAR; // Virtual register of TIM1
         DMA1_Stream7->M0AR = (uint32_t)(&times_buffer[0]);
+        idle = true;
       }
     }
   }
   void sampling_timer_interrupt2() {
     sample2 = false;
-    if (itr2 <= end2) {
+    if (itr2 < end2) {
       unlocked2 = true;
       itr2++;
     } else if (current_period2 < functions2.front().n_periods) {
@@ -312,12 +317,14 @@ public:
       bCalculatedSinBuffer.pop(functions2.front().n_samples);
       current_period2 = 1;
       functions2.pop();
-      // times_buffer.pop();
+      times_buffer2.pop();
       if (!functions2.empty()) {
         advance(end2, functions2.front().n_samples);
       } else {
         LL_TIM_DisableCounter(TIM8);
         sampling_timer2->disable();
+        sampling_timer2->reset_interrupt();
+        LL_TIM_DisableIT_UPDATE(sampling_timer2->tim_regs);
         current_period2 = 1;
 
         itr2 = bCalculatedSinBuffer.begin();
@@ -328,6 +335,7 @@ public:
         DMA2_Stream2->NDTR = 0;
         DMA2_Stream2->PAR = (uint32_t)&TIM8->DMAR; // Virtual register of TIM8
         DMA2_Stream2->M0AR = (uint32_t)(&times_buffer2[0]);
+        idle2 = true;
       }
     }
   }
