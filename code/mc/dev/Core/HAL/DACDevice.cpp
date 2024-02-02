@@ -125,13 +125,19 @@ __attribute__((section(".itcmram"))) void DAC_Device::write() {
   //     ((int_output >> 14) & 0x0f);          // Get the most significant 4 bits
   // dma_buffer[1] = (int_output >> 6) & 0xff; // Get the middle 8 bits
   // dma_buffer[2] = int_output & 0xff;        // Get the least significant 6 bits
-  dma_buffer[0] = byteBuffer.front();
+  DMA2_Stream6->NDTR = 3;
+  DMA2_Stream6->M0AR = (uint32_t)dma_buffer;
+  DMA2_Stream6->PAR = (uint32_t)(&byteBuffer[0]);
+  DMA2_Stream6->CR |= DMA_SxCR_EN;
+
+  // dma_buffer[0] = byteBuffer.front();
   byteBuffer.pop();
-  dma_buffer[1] = byteBuffer.front();
+  // dma_buffer[1] = byteBuffer.front();
   byteBuffer.pop();
-  dma_buffer[2] = byteBuffer.front();
+  // dma_buffer[2] = byteBuffer.front();
   byteBuffer.pop();
   begin_dma_transfer();
+  LL_DMA_ClearFlag_TC6(DMA2);
 }
 
 __attribute__((section(".itcmram"))) void
