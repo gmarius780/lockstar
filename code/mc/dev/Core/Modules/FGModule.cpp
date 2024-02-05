@@ -146,12 +146,12 @@ public:
           dac_1->write();
         }
       }
-      // if (sample2) {
-      //   sampling_timer_interrupt2();
-      //   if (unlocked2) {
-      //     dac_2->write();
-      //   }
-      // }
+      if (sample2) {
+        sampling_timer_interrupt2();
+        if (unlocked2) {
+          dac_2->write();
+        }
+      }
     }
   }
 
@@ -207,9 +207,9 @@ public:
     TIM1->CR1 |= TIM_CR1_CEN;
     DMA1_Stream7->CR |= DMA_SxCR_EN; // Enable DMA
 
-    // TIM8->ARR = functions2.front().time_start;
-    // TIM8->CR1 |= TIM_CR1_CEN;
-    // DMA2_Stream2->CR |= DMA_SxCR_EN; // Enable DMA
+    TIM8->ARR = functions2.front().time_start;
+    TIM8->CR1 |= TIM_CR1_CEN;
+    DMA2_Stream2->CR |= DMA_SxCR_EN; // Enable DMA
 
     /*** send ACK ***/
     RPIDataPackage *write_package = rpi->get_write_package();
@@ -299,6 +299,7 @@ public:
         DMA1_Stream7->PAR = (uint32_t)&TIM1->DMAR; // Virtual register of TIM1
         DMA1_Stream7->M0AR = (uint32_t)(&times_buffer[0]);
         idle = true;
+        dac_1->write(0);
       }
     }
   }
@@ -336,6 +337,7 @@ public:
         DMA2_Stream2->PAR = (uint32_t)&TIM8->DMAR; // Virtual register of TIM8
         DMA2_Stream2->M0AR = (uint32_t)(&times_buffer2[0]);
         idle2 = true;
+        dac_2->write(0);
       }
     }
   }
