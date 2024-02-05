@@ -121,7 +121,7 @@ public:
     LL_TIM_EnableUpdateEvent(TIM1);
     LL_TIM_EnableDMAReq_UPDATE(TIM1);
     LL_TIM_ConfigDMABurst(TIM1, LL_TIM_DMABURST_BASEADDR_ARR,
-                          LL_TIM_DMABURST_LENGTH_1TRANSFER);
+                          LL_TIM_DMABURST_LENGTH_1TRANSFER);                       
 
     LL_TIM_EnableUpdateEvent(TIM8);
     LL_TIM_EnableDMAReq_UPDATE(TIM8);
@@ -172,13 +172,6 @@ public:
 
   static const uint32_t METHOD_START_CCalculation = 32;
   void start_ccalculation(RPIDataPackage *read_package) {
-    DMA1_Stream7->NDTR = (uint32_t)functions.size();
-    LL_TIM_GenerateEvent_UPDATE(TIM1);
-    LL_TIM_SetCounter(TIM1, 0);
-
-    DMA2_Stream2->NDTR = (uint32_t)functions2.size();
-    LL_TIM_GenerateEvent_UPDATE(TIM8);
-    LL_TIM_SetCounter(TIM8, 0);
 
     for (waveFunction &func : functions) {
       LL_CORDIC_SetFunction(CORDIC, func.function);
@@ -201,27 +194,37 @@ public:
       func.computed = true;
     }
 
-    advance(end, functions.front().n_samples);
-    advance(end2, functions2.front().n_samples);
-
-    TIM1->ARR = functions.front().time_start;
-    TIM1->CR1 |= TIM_CR1_CEN;
-    DMA1_Stream7->CR |= DMA_SxCR_EN; // Enable DMA
-
-    TIM8->ARR = functions2.front().time_start;
-    TIM8->CR1 |= TIM_CR1_CEN;
-    DMA2_Stream2->CR |= DMA_SxCR_EN; // Enable DMA
-
     /*** send ACK ***/
     RPIDataPackage *write_package = rpi->get_write_package();
     write_package->push_ack();
     rpi->send_package(write_package);
   }
+
   static const uint32_t METHOD_START_Output = 33;
   void start_output(RPIDataPackage *read_package) {
-    DMA2_Stream2->NDTR = (uint32_t)functions.size();
-    DMA2_Stream2->CR |= DMA_SxCR_EN; // Enable DMA
+    LL_TIM_SetTriggerInput(TIM1, LL_TIM_TS_TI2FP2);
+    LL_TIM_SetSlaveMode(TIM1, LL_TIM_SLAVEMODE_TRIGGER);
+    LL_TIM_DisableIT_TRIG(TIM1);   
+
+    DMA1_Stream7->NDTR = (uint32_t)functions.size();
+    // LL_TIM_GenerateEvent_UPDATE(TIM1);
+    LL_TIM_SetCounter(TIM1, 0);
+
+    advance(end, functions.front().n_samples);
+
+    TIM1->ARR = functions.front().time_start;
+    // TIM1->CR1 |= TIM_CR1_CEN;
+    DMA1_Stream7->CR |= DMA_SxCR_EN; // Enable DMA
+
+    DMA2_Stream2->NDTR = (uint32_t)functions2.size();
+    LL_TIM_GenerateEvent_UPDATE(TIM8);
+    LL_TIM_SetCounter(TIM8, 0);
+
+    advance(end2, functions2.front().n_samples);
+
+    TIM8->ARR = functions2.front().time_start;
     TIM8->CR1 |= TIM_CR1_CEN;
+    DMA2_Stream2->CR |= DMA_SxCR_EN; // Enable DMA
 
     /*** send ACK ***/
     RPIDataPackage *write_package = rpi->get_write_package();
