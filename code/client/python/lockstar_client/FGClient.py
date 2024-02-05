@@ -98,7 +98,7 @@ if asyncio.run(client.register_client_id()):
     linearization_file = join(dirname(__file__), "test_linearization.json")
     linearization_length = 2000
 
-    sampling_rate = 250000
+    sampling_rate = 350000
 
     ramp1 = ramp_gen(
         sampling_rate, flat_scale=0.1, ramp_time=0.01, amplitude=4, offset=4
@@ -137,7 +137,7 @@ if asyncio.run(client.register_client_id()):
             "total_scaling": -568.0519530539988,
             "offset": 4,
             "n_periods": 2,
-            "time_start": 7000,
+            "time_start": 700,
         },
         {
             "ll_func": 0x00000001,
@@ -159,7 +159,7 @@ if asyncio.run(client.register_client_id()):
             "total_scaling": -568.0519530539988,
             "offset": 4,
             "n_periods": 5,
-            "time_start": 10000,
+            "time_start": 1000,
         },
         {
             "ll_func": 0x00000001,
@@ -177,6 +177,7 @@ if asyncio.run(client.register_client_id()):
             "ll_scaling": 0x00000000,
             "start_value": 0,
             "step_size": 17179869,
+            
             "num_samples": 250,
             "total_scaling": 4.0,
             "offset": 0,
@@ -202,7 +203,7 @@ if asyncio.run(client.register_client_id()):
             "num_samples": 250,
             "total_scaling": 4.0,
             "offset": 0,
-            "n_periods": 5,
+            "n_periods": 50,
             "time_start": 800,
         },
         {
@@ -251,9 +252,12 @@ if asyncio.run(client.register_client_id()):
     print(asyncio.run(client.set_ch_func_buffer(func_buffer, buffer_one=False)))
     # print(asyncio.run(client.set_cfunction("arctan", "LL_CORDIC_SCALE_6")))
     print(asyncio.run(client.start_ccalculation()))
-    # sleep(2)
-    # print(asyncio.run(client.set_ch_func_buffer(func_buffer)))
-    # print(asyncio.run(client.start_output()))
+    sleep(0.001)
+    # print(asyncio.run(client.set_ch_func_buffer(func_buffer, buffer_one=True)))
+    # print(asyncio.run(client.set_ch_func_buffer(func_buffer, buffer_one=False)))
+    print(asyncio.run(client.start_output()))
+    # sleep(3)
+    # print(asyncio.run(client.set_ch_func_buffer(func_buffer, buffer_one=True)))
     # print(asyncio.run(client.set_cfunction("sin", "LL_CORDIC_SCALE_0")))
     # print(
     #     asyncio.run(

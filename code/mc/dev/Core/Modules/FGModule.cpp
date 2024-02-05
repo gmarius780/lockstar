@@ -121,7 +121,7 @@ public:
     LL_TIM_EnableUpdateEvent(TIM1);
     LL_TIM_EnableDMAReq_UPDATE(TIM1);
     LL_TIM_ConfigDMABurst(TIM1, LL_TIM_DMABURST_BASEADDR_ARR,
-                          LL_TIM_DMABURST_LENGTH_1TRANSFER);                       
+                          LL_TIM_DMABURST_LENGTH_1TRANSFER);
 
     LL_TIM_EnableUpdateEvent(TIM8);
     LL_TIM_EnableDMAReq_UPDATE(TIM8);
@@ -152,6 +152,9 @@ public:
           dac_2->write();
         }
       }
+      if(idle){
+        compute_buffer();
+      }
     }
   }
 
@@ -168,6 +171,29 @@ public:
     RPIDataPackage *write_package = rpi->get_write_package();
     write_package->push_ack();
     rpi->send_package(write_package);
+  }
+
+  void compute_buffer() {
+    for (waveFunction &func : functions) {
+      if (func.computed == false) {
+        LL_CORDIC_SetFunction(CORDIC, func.function);
+        LL_CORDIC_SetScale(CORDIC, func.cordic_scale);
+
+        CORDIC->WDATA = func.start_value;
+
+        for (uint32_t j = 1; j < func.n_samples; j++) {
+          func.start_value += func.step;
+          CORDIC->WDATA = func.start_value;
+          float tmp = to_float((int32_t)CORDIC->RDATA, func.scale, func.offset);
+          aCalculatedSinBuffer.push(tmp);
+        }
+        float tmp = to_float((int32_t)CORDIC->RDATA, func.scale, func.offset);
+
+        aCalculatedSinBuffer.push(tmp);
+        func.computed = true;
+        return;
+      }
+    }
   }
 
   static const uint32_t METHOD_START_CCalculation = 32;
@@ -204,7 +230,7 @@ public:
   void start_output(RPIDataPackage *read_package) {
     LL_TIM_SetTriggerInput(TIM1, LL_TIM_TS_TI2FP2);
     LL_TIM_SetSlaveMode(TIM1, LL_TIM_SLAVEMODE_TRIGGER);
-    LL_TIM_DisableIT_TRIG(TIM1);   
+    LL_TIM_DisableIT_TRIG(TIM1);
 
     DMA1_Stream7->NDTR = (uint32_t)functions.size();
     LL_TIM_SetCounter(TIM1, 0);
@@ -266,6 +292,7 @@ public:
     }
   }
   void sampling_timer_interrupt() {
+    idle = false;
     sample = false;
     if (itr < end) {
       unlocked = true;
@@ -276,6 +303,7 @@ public:
     } else if (!functions.empty()) {
       if (functions.front().time_start > 1) {
         sampling_timer->disable();
+        idle = true;
       }
       aCalculatedSinBuffer.pop(functions.front().n_samples);
       current_period = 1;
@@ -298,8 +326,8 @@ public:
         DMA1_Stream7->NDTR = 0;
         DMA1_Stream7->PAR = (uint32_t)&TIM1->DMAR; // Virtual register of TIM1
         DMA1_Stream7->M0AR = (uint32_t)(&times_buffer[0]);
-        idle = true;
         dac_1->write(0);
+        idle = true;
       }
     }
   }
