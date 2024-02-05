@@ -133,6 +133,10 @@ void BufferBaseModule::set_sampling_rate(RPIDataPackage *read_package) {
   this->sampling_timer->set_prescaler(prescaler);
   this->sampling_timer->enable_interrupt();
 
+  this->sampling_timer2->set_auto_reload(counter_max);
+  this->sampling_timer2->set_prescaler(prescaler);
+  this->sampling_timer2->enable_interrupt();
+
   /*** send ACK ***/
   RPIDataPackage *write_package = rpi->get_write_package();
   write_package->push_ack();
