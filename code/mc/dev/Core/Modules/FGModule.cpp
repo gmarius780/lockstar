@@ -207,13 +207,9 @@ public:
     LL_TIM_DisableIT_TRIG(TIM1);   
 
     DMA1_Stream7->NDTR = (uint32_t)functions.size();
-    // LL_TIM_GenerateEvent_UPDATE(TIM1);
     LL_TIM_SetCounter(TIM1, 0);
-
     advance(end, functions.front().n_samples);
 
-    TIM1->ARR = functions.front().time_start;
-    // TIM1->CR1 |= TIM_CR1_CEN;
     DMA1_Stream7->CR |= DMA_SxCR_EN; // Enable DMA
 
     DMA2_Stream2->NDTR = (uint32_t)functions2.size();
