@@ -198,6 +198,7 @@ public:
       /* Read last result */
       aCalculatedSinBuffer.push(tmp);
       bCalculatedSinBuffer.push(tmp);
+      func.computed = true;
     }
 
     advance(end, functions.front().n_samples);

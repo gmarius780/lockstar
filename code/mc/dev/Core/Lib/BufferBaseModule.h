@@ -28,6 +28,7 @@ struct waveFunction {
   uint32_t offset;
   uint32_t n_periods;
   uint16_t time_start;
+  bool computed;
 };
 
 extern etl::circular_buffer<waveFunction, 100> functions;
