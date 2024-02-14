@@ -44,13 +44,17 @@ if __name__ == "__main__":
     #     ]
     # )
     client = AnalogOutputClient('192.168.137.2', 10780, 1234)
-    asyncio.run(client.register_client_id())
-    
-    print(asyncio.run(client.output_on()))
+
+if asyncio.run(client.register_client_id()):
+    logging.info(f"Successfully initialized AWG module")
+    temp = -5
     #asyncio.run(client.disable_linearization_one())
     #asyncio.run(client.disable_linearization_two())
-    print(asyncio.run(client.set_ch_one_output_limits(-10, 10)))
-    print(asyncio.run(client.set_ch_one_output(10)))
+    # print(asyncio.run(client.set_ch_one_output_limits(-10, 10)))
+    # print(asyncio.run(client.set_ch_two_output_limits(-10, 10)))
+    # print(asyncio.run(client.output_on()))
+    print(asyncio.run(client.set_ch_one_output(temp)))
+    print(asyncio.run(client.set_ch_two_output(temp)))
     #asyncio.run(client.set_ch_two_output(-10))
     # asyncio.run(client.output_off())
     # Scope Test
