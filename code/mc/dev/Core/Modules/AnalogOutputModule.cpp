@@ -21,6 +21,40 @@
 #include "../Lib/ScopeModule.h"
 
 #ifdef ANALOG_OUTPUT_MODULE
+#include "dac_config.h"
+#include "etl/circular_buffer.h"
+#include <algorithm>
+#include "../Lib/BufferBaseModule.h"
+/* Array of calculated sines in Q1.31 format */
+etl::circular_buffer<float, 100> aCalculatedSinBuffer;
+etl::circular_buffer<float, 100> bCalculatedSinBuffer;
+
+etl::circular_buffer<uint8_t, 1000> byteBuffer;
+
+etl::icircular_buffer<float>::iterator itr = aCalculatedSinBuffer.begin();
+etl::icircular_buffer<float>::iterator itr2 = bCalculatedSinBuffer.begin();
+
+auto end = aCalculatedSinBuffer.begin();
+auto end2 = bCalculatedSinBuffer.begin();
+
+__attribute((section(".dtcmram"))) uint16_t chunk_counter = 0;
+__attribute((section(".dtcmram"))) uint16_t current_period = 1;
+__attribute((section(".dtcmram"))) uint16_t current_period2 = 1;
+
+etl::circular_buffer<waveFunction, 100> functions;
+etl::circular_buffer<waveFunction, 100> functions2;
+etl::circular_buffer<uint32_t, 100> times_buffer;
+etl::circular_buffer<uint32_t, 100> times_buffer2;
+
+uint32_t count = 0;
+
+etl::atomic<bool> unlocked = false;
+etl::atomic<bool> unlocked2 = false;
+etl::atomic<bool> sample = false;
+etl::atomic<bool> sample2 = false;
+etl::atomic<bool> idle = false;
+etl::atomic<bool> idle2 = false;
+std::atomic_flag lock = ATOMIC_FLAG_INIT;
 
 class AnalogOutputModule : public ScopeModule {
 public:
@@ -201,55 +235,35 @@ void EXTI9_5_IRQHandler(uint16_t gpio_pin) {
 // DMA Interrupts. You probably don't want to change these, they are neccessary
 // for the low-level communications between MCU, converters and RPi
 
-/********************
-||      DAC1      ||
-********************/
-void BDMA_Channel1_IRQHandler(void) {
-  module->dac_1->dma_transmission_callback();
+__attribute__((section(".itcmram"))) void DMA1_Stream4_IRQHandler(void) {
+  module->adc->dma_receive_callback();
 }
 
-void SPI6_IRQHandler(void) { module->dac_1->dma_transmission_callback(); }
-/********************
-||      DAC2      ||
-********************/
-void DMA2_Stream3_IRQHandler(void) {
-  module->dac_2->dma_transmission_callback();
+__attribute__((section(".itcmram"))) void DMA1_Stream5_IRQHandler(void) {
+  module->adc->dma_transmission_callback();
 }
-void SPI5_IRQHandler(void) { module->dac_2->dma_transmission_callback(); }
-/********************
-||       ADC       ||
-********************/
-void DMA1_Stream4_IRQHandler(void) { module->adc->dma_receive_callback(); }
-
-void DMA1_Stream5_IRQHandler(void) { module->adc->dma_transmission_callback(); }
 /********************
 ||       RPI       ||
 ********************/
-void DMA1_Stream0_IRQHandler(void) { module->rpi_dma_in_interrupt(); }
-void DMA1_Stream1_IRQHandler(void) { module->rpi->dma_out_interrupt(); }
-void SPI1_IRQHandler(void) { module->rpi->spi_interrupt(); }
+__attribute__((section(".itcmram"))) void DMA1_Stream0_IRQHandler(void) {
+  module->rpi_dma_in_interrupt();
+}
+__attribute__((section(".itcmram"))) void DMA1_Stream1_IRQHandler(void) {
+  module->rpi->dma_out_interrupt();
+}
+__attribute__((section(".itcmram"))) void SPI1_IRQHandler(void) {
+  module->rpi->spi_interrupt();
+}
 
-void TIM4_IRQHandler(void) { module->rpi->comm_reset_timer_interrupt(); }
+__attribute__((section(".itcmram"))) void TIM4_IRQHandler(void) {
+  LL_TIM_ClearFlag_UPDATE(TIM4);
 
-void TIM7_IRQHandler(void) { module->scope_timer_interrupt(); }
-
+  // module->rpi->comm_reset_timer_interrupt();
+}
 /******************************
  *       MAIN FUNCTION        *
  ******************************/
 void start(void) {
-  /* To speed up the access to functions, that are often called, we store them
-   * in the RAM instead of the FLASH memory. RAM is volatile. We therefore need
-   * to load the code into RAM at startup time. For background and explanations,
-   * check https://rhye.org/post/stm32-with-opencm3-4-memory-sections/
-   * */
-  extern unsigned __sram_func_start, __sram_func_end, __sram_func_loadaddr;
-  volatile unsigned *src = &__sram_func_loadaddr;
-  volatile unsigned *dest = &__sram_func_start;
-  while (dest < &__sram_func_end) {
-    *dest = *src;
-    src++;
-    dest++;
-  }
 
   /* After power on, give all devices a moment to properly start up */
   HAL_Delay(200);
