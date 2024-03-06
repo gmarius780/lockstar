@@ -19,6 +19,9 @@ class SinglePIDModule(ScopeModule_):
         self.out_range_max = None
         self.locked = None
 
+        #the scope is automatically setup by the MC in the DoubleDitherLockModule
+        self.scope_max_buffer_length_nbr_of_floats = 2000
+
 
     # ==== START: client methods 
     async def initialize(self, p: float, i: float, d: float, out_range_min: float, out_range_max: float, locked: bool,
