@@ -55,6 +55,8 @@ public:
     DAC_Device(DAC_Device_TypeDef *DAC_conf);
     virtual void config_output();
     void config_output(ADC_HandleTypeDef *hadc, uint32_t ADC_SENL, uint32_t ADC_SENH);
+    void set_clear_state();
+    void unclamp_output();
 
     void write(float value);
     void write();
@@ -66,6 +68,7 @@ public:
     float get_max_output();
 
     float get_last_output();
+    bool configured = false;
 
 protected:
     float inv_step_size;
@@ -76,6 +79,7 @@ protected:
     float max_hardware_output, min_hardware_output; // as set with jumpers
     bool busy;
     bool invert;
+    int32_t int_output;
     etl::icircular_buffer<float>::iterator *dac_itr;
     float last_output;
 

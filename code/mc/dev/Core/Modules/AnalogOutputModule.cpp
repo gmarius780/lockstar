@@ -68,8 +68,9 @@ public:
 
   void run() {
     initialize_adc_dac(ADC_UNIPOLAR_10V, ADC_UNIPOLAR_10V);
-    this->dac_1->write(0);
-    this->dac_2->write(0);
+    // dac_1->unclamp_output();
+    // dac_2->unclamp_output();
+    // this->dac_1->write(0);
 
     /*** work loop ***/
     while (true) {
@@ -100,6 +101,10 @@ public:
         break;
       case METHOD_SET_CH_TWO_OUTPUT:
         set_ch_two_output(read_package);
+        break;
+      case METHOD_UNLCAMP_OUTPUT:
+        unclamp_output(read_package);
+        is_output_on = true;
         break;
       default:
         /*** send NACK because the method_identifier is not valid ***/
@@ -172,6 +177,16 @@ public:
     if (this->is_output_on)
       this->dac_2->write(output_value_two);
 
+    /*** send ACK ***/
+    RPIDataPackage *write_package = rpi->get_write_package();
+    write_package->push_ack();
+    rpi->send_package(write_package);
+  }
+  
+  static const uint32_t METHOD_UNLCAMP_OUTPUT = 18;
+  void unclamp_output(RPIDataPackage *read_package) {
+    this->dac_1->unclamp_output();
+    this->dac_2->unclamp_output();
     /*** send ACK ***/
     RPIDataPackage *write_package = rpi->get_write_package();
     write_package->push_ack();

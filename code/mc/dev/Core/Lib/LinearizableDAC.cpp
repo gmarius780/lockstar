@@ -75,6 +75,11 @@ void LinearizableDAC::set_max_output(float m) {
   ramp_range = dac->get_max_output() - dac->get_min_output();
 }
 
+void LinearizableDAC::unclamp_output() {
+  dac->unclamp_output();
+}
+void LinearizableDAC::set_clear_state() { dac->set_clear_state(); }
+
 float LinearizableDAC::get_min_output() { return dac->get_min_output(); }
 
 float LinearizableDAC::get_max_output() { return dac->get_max_output(); }

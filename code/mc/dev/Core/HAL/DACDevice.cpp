@@ -16,7 +16,7 @@ uint8_t dmaD3_buffer[DAC1_BUFFER_SIZE] = {0};
 __attribute__((section(".DMA_D1"))) __attribute__((__aligned__(32)))
 uint8_t dmaD1_buffer[DAC2_BUFFER_SIZE] = {0};
 
-__attribute__((section(".dtcmram"))) int32_t int_output;
+// __attribute__((section(".dtcmram"))) int32_t int_output;
 
 uint32_t skipped = 0;
 extern etl::atomic<bool> unlocked;
@@ -44,7 +44,6 @@ DAC_Device::DAC_Device(DAC_Device_TypeDef *DAC_conf) {
   LL_SPI_SetFIFOThreshold(DAC_conf->SPIx, LL_SPI_FIFO_TH_04DATA);
 
   // Disable Clear-bit from start
-  HAL_GPIO_WritePin(DAC_conf->clear_port, DAC_conf->clear_pin, GPIO_PIN_SET);
 }
 
 DAC1_Device::DAC1_Device(DAC_Device_TypeDef *DAC_conf) : DAC_Device(DAC_conf) {
@@ -96,7 +95,7 @@ __attribute__((section(".itcmram"))) void DAC_Device::write(float output) {
   dma_buffer[0] +=
       ((int_output >> 14) & 0x0f);          // Get the most significant 4 bits
   dma_buffer[1] = (int_output >> 6) & 0xff; // Get the middle 8 bits
-  dma_buffer[2] = int_output & 0xff;        // Get the least significant 6 bits
+  dma_buffer[2] = int_output & 0xfc;        // Get the least significant 6 bits
   begin_dma_transfer();
 }
 
@@ -212,12 +211,12 @@ void DAC_Device::config_output() {
   full_range = max_output - min_output;
   zero_voltage = (max_output + min_output) / 2.0f;
   step_size = full_range / 0x3ffff; // full_range / (2^20-1)
-  inv_step_size = 1 / step_size;
+  inv_step_size = 0x3ffff / full_range;
   invert = false;
 }
 
 void DAC1_Device::config_output() {
-  DAC_Device::config_output();
+  // DAC_Device::config_output();
   DAC_Device::prepare_buffer();
   begin_dma_transfer();
 
@@ -226,7 +225,7 @@ void DAC1_Device::config_output() {
   //     ;
 }
 void DAC2_Device::config_output() {
-  DAC_Device::config_output();
+  // DAC_Device::config_output();
   DAC_Device::prepare_buffer();
   begin_dma_transfer();
 
@@ -242,15 +241,49 @@ __attribute__((section(".itcmram"))) void DAC_Device::prepare_buffer() {
   // depending on the output range, the DAC applies a correction to improve
   // linear behavior
   uint8_t comp = 0b0000;
-  if (full_range < 10.0f)
+  if (full_range == 10)
     comp = 0b0000;
-  else if (full_range < 12.0f)
-    comp = 0b1001;
-  else if (full_range < 16.0f)
-    comp = 0b1010;
-  else if (full_range < 19.0f)
-    comp = 0b1011;
-  else if (full_range >= 19.0f)
+  else if (full_range == 20)
+    comp = 0b1100;
+
+  // construct control register, see datasheet
+  bool RBUF = true;
+  bool OPGND = true;
+  bool DACTRI = true;
+  bool NOT2C = false;
+  bool SDODIS = false;
+  volatile uint8_t control_reg =
+      (RBUF << 1) + (OPGND << 2) + (DACTRI << 3) + (NOT2C << 4) + (SDODIS << 5);
+  dma_buffer[0] = 0b00100000;
+  dma_buffer[1] = comp >> 2;
+  dma_buffer[2] = ((comp & 0b11) << 6) + control_reg;
+}
+
+__attribute__((section(".itcmram"))) void DAC_Device::set_clear_state() {
+
+  busy = true;
+  int_output = (int32_t)(zero_voltage * inv_step_size);
+
+  dma_buffer[0] = 0x30;
+  dma_buffer[0] +=
+      ((int_output >> 14) & 0x0f);          // Get the most significant 4 bits
+  dma_buffer[1] = (int_output >> 6) & 0xff; // Get the middle 8 bits
+  dma_buffer[2] = int_output & 0xfc;        // Get the least significant 6 bits
+  begin_dma_transfer();
+}
+
+__attribute__((section(".itcmram"))) void DAC_Device::unclamp_output() {
+  HAL_GPIO_WritePin(DAC_conf->clear_port, DAC_conf->clear_pin, GPIO_PIN_SET);
+  busy = true;
+
+  // bring SYNC line low to prepare DAC
+
+  // depending on the output range, the DAC applies a correction to improve
+  // linear behavior
+  uint8_t comp = 0b0000;
+  if (full_range == 10)
+    comp = 0b0000;
+  else if (full_range == 20)
     comp = 0b1100;
 
   // construct control register, see datasheet
@@ -264,6 +297,8 @@ __attribute__((section(".itcmram"))) void DAC_Device::prepare_buffer() {
   dma_buffer[0] = 0b00100000;
   dma_buffer[1] = comp >> 2;
   dma_buffer[2] = ((comp & 0b11) << 6) + control_reg;
+
+  begin_dma_transfer();
 }
 
 __attribute__((section(".itcmram"))) void DAC_Device::begin_dma_transfer() {}
@@ -291,11 +326,21 @@ __attribute__((section(".itcmram"))) void DAC2_Device::begin_dma_transfer() {
 bool DAC_Device::is_busy() { return busy; }
 
 void DAC_Device::set_min_output(float m) {
-  this->min_output = std::max(this->min_hardware_output, m);
+  // this->min_output = std::max(this->min_hardware_output, m);
+  this->min_output = m;
+  full_range = max_output - min_output;
+  zero_voltage = (max_output + min_output) / 2.0f;
+  step_size = full_range / 0x3ffff; // full_range / (2^20-1)
+  inv_step_size = 0x3ffff / full_range;
 } // can only set the minimum higher than set with jumpers
 
 void DAC_Device::set_max_output(float m) {
-  this->max_output = std::min(this->max_hardware_output, m);
+  // this->max_output = std::min(this->max_hardware_output, m);
+  this->max_output = m;
+  full_range = max_output - min_output;
+  zero_voltage = (max_output + min_output) / 2.0f;
+  step_size = full_range / 0x3ffff; // full_range / (2^20-1)
+  inv_step_size = 0x3ffff / full_range;
 } // can only set the maximum lower than set with jumpers
 
 float DAC_Device::get_min_output() { return this->min_output; }
