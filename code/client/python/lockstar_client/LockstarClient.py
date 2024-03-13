@@ -19,6 +19,10 @@ class LockstarClient():
     async def set_ch_two_output_limits(self, min: float, max: float):
         bc = BackendCall(self.client_id, self.module_name, 'set_ch_two_output_limits', args={'min': min, 'max': max})
         return await self._call_lockstar(bc)
+    
+    async def unclamp_output(self):
+        bc = BackendCall(self.client_id, self.module_name, 'unclamp_output', args={})
+        return await self._call_lockstar(bc)    
 
     #==== Linearization Methods START====
     async def set_linearization_one(self, linearization, min_output_voltage, max_output_voltage):
