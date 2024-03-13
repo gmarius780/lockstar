@@ -183,16 +183,6 @@ public:
     rpi->send_package(write_package);
   }
   
-  static const uint32_t METHOD_UNLCAMP_OUTPUT = 18;
-  void unclamp_output(RPIDataPackage *read_package) {
-    this->dac_1->unclamp_output();
-    this->dac_2->unclamp_output();
-    /*** send ACK ***/
-    RPIDataPackage *write_package = rpi->get_write_package();
-    write_package->push_ack();
-    rpi->send_package(write_package);
-  }
-
   /*** END: METHODS ACCESSIBLE FROM THE RPI ***/
 
   void rpi_dma_in_interrupt() {

@@ -57,6 +57,9 @@ bool Module::handle_rpi_base_methods() {
   case METHOD_DISABLE_LINEARIZATION_TWO:
     disable_linearization_two(read_package);
     break;
+  case METHOD_UNLCAMP_OUTPUT:
+    unclamp_output(read_package);
+    break;
   default:
     return false;
   }
@@ -102,6 +105,15 @@ void Module::set_ch_one_output_limits(RPIDataPackage *read_package) {
  */
 void Module::set_ch_two_output_limits(RPIDataPackage *read_package) {
   set_ch_output_limit(read_package, this->dac_2);
+}
+
+void Module::unclamp_output(RPIDataPackage *read_package) {
+  dac_1->unclamp_output();
+  dac_2->unclamp_output();
+  /*** send ACK ***/
+  RPIDataPackage *write_package = rpi->get_write_package();
+  write_package->push_ack();
+  rpi->send_package(write_package);
 }
 
 void Module::set_ch_output_limit(RPIDataPackage *read_package,

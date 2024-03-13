@@ -36,6 +36,9 @@ public:
   static const uint32_t METHOD_SET_CH_TWO_OUTPUT_LIMITS = 81;
   void set_ch_two_output_limits(RPIDataPackage *read_package);
 
+  static const uint32_t METHOD_UNLCAMP_OUTPUT = 90;
+  void unclamp_output(RPIDataPackage *read_package);
+
   /*LINEARIZATION-METHODS START*/
   static const uint32_t METHOD_SET_LINEARIZATION_ONE = 82;
   void set_linearization_one(
