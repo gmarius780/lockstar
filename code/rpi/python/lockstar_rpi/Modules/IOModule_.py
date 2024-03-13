@@ -72,6 +72,13 @@ class IOModule_(Module):
             self.out_range_ch_two_min = min
             self.out_range_ch_two_max = max
         return result
+    
+    async def unclamp_output(self, writer, respond=True):
+        logging.debug('Backend: unlcamp output')
+        mc_data_package = MCDataPackage()
+        mc_data_package.push_to_buffer('uint32_t', 18) # method_identifier
+        await MC.I().write_mc_data_package(mc_data_package)
+        return await self.check_for_ack(writer=(writer if respond else None))        
 
     #==== Linearization Methods START====
     async def set_linearization_one(self, linearization, min_output_voltage, max_output_voltage, writer, respond=True):
