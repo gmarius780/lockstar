@@ -98,12 +98,12 @@ if asyncio.run(client.register_client_id()):
     linearization_file = join(dirname(__file__), "test_linearization.json")
     linearization_length = 2000
 
-    sampling_rate = 350000
+    sampling_rate = 500000
 
     ramp1 = ramp_gen(
         sampling_rate, flat_scale=0.1, ramp_time=0.01, amplitude=4, offset=4
     )
-    sin1 = sin_gen(sampling_rate, 50, 4, 0)
+    sin1 = sin_gen(sampling_rate, 50, 0.1, 0)
 
     func_buffer = [
         # {
@@ -121,113 +121,113 @@ if asyncio.run(client.register_client_id()):
             "ll_func": 0x00000001,
             "ll_scaling": 0x00000000,
             "start_value": 0,
-            "step_size": 17179869,
-            "num_samples": 250,
-            "total_scaling": 4.0,
+            "step_size": 17179860,
+            "num_samples": 1000,
+            "total_scaling": 0.1,
             "offset": 0,
-            "n_periods": 4,
+            "n_periods": 1,
             "time_start": 4000,
         },
-        {
-            "ll_func": 0x00000004,
-            "ll_scaling": 0x00000600,
-            "start_value": -214748364,
-            "step_size": 85899,
-            "num_samples": 5000,
-            "total_scaling": -568.0519530539988,
-            "offset": 4,
-            "n_periods": 2,
-            "time_start": 700,
-        },
-        {
-            "ll_func": 0x00000001,
-            "ll_scaling": 0x00000000,
-            "start_value": 0,
-            "step_size": 17179869,
-            "num_samples": 250,
-            "total_scaling": 4.0,
-            "offset": 0,
-            "n_periods": 5,
-            "time_start": 8000,
-        },
-        {
-            "ll_func": 0x00000004,
-            "ll_scaling": 0x00000600,
-            "start_value": -214748364,
-            "step_size": 85899,
-            "num_samples": 5000,
-            "total_scaling": -568.0519530539988,
-            "offset": 4,
-            "n_periods": 5,
-            "time_start": 1000,
-        },
-        {
-            "ll_func": 0x00000001,
-            "ll_scaling": 0x00000000,
-            "start_value": 0,
-            "step_size": 17179869,
-            "num_samples": 250,
-            "total_scaling": 4.0,
-            "offset": 0,
-            "n_periods": 5,
-            "time_start": 2,
-        },
-        {
-            "ll_func": 0x00000001,
-            "ll_scaling": 0x00000000,
-            "start_value": 0,
-            "step_size": 17179869,
+        # {
+        #     "ll_func": 0x00000004,
+        #     "ll_scaling": 0x00000600,
+        #     "start_value": -214748364,
+        #     "step_size": 85899,
+        #     "num_samples": 5000,
+        #     "total_scaling": -568.0519530539988,
+        #     "offset": 4,
+        #     "n_periods": 2,
+        #     "time_start": 700,
+        # },
+        # {
+        #     "ll_func": 0x00000001,
+        #     "ll_scaling": 0x00000000,
+        #     "start_value": 0,
+        #     "step_size": 17179869,
+        #     "num_samples": 250,
+        #     "total_scaling": 4.0,
+        #     "offset": 0,
+        #     "n_periods": 5,
+        #     "time_start": 8000,
+        # },
+        # {
+        #     "ll_func": 0x00000004,
+        #     "ll_scaling": 0x00000600,
+        #     "start_value": -214748364,
+        #     "step_size": 85899,
+        #     "num_samples": 5000,
+        #     "total_scaling": -568.0519530539988,
+        #     "offset": 4,
+        #     "n_periods": 5,
+        #     "time_start": 1000,
+        # },
+        # {
+        #     "ll_func": 0x00000001,
+        #     "ll_scaling": 0x00000000,
+        #     "start_value": 0,
+        #     "step_size": 17179869,
+        #     "num_samples": 250,
+        #     "total_scaling": 4.0,
+        #     "offset": 0,
+        #     "n_periods": 5,
+        #     "time_start": 2,
+        # },
+        # {
+        #     "ll_func": 0x00000001,
+        #     "ll_scaling": 0x00000000,
+        #     "start_value": 0,
+        #     "step_size": 17179869,
             
-            "num_samples": 250,
-            "total_scaling": 4.0,
-            "offset": 0,
-            "n_periods": 5,
-            "time_start": 2,
-        },
-        {
-            "ll_func": 0x00000001,
-            "ll_scaling": 0x00000000,
-            "start_value": 0,
-            "step_size": 17179869,
-            "num_samples": 250,
-            "total_scaling": 4.0,
-            "offset": 0,
-            "n_periods": 5,
-            "time_start": 2,
-        },        
-        {
-            "ll_func": 0x00000001,
-            "ll_scaling": 0x00000000,
-            "start_value": 0,
-            "step_size": 17179869,
-            "num_samples": 250,
-            "total_scaling": 4.0,
-            "offset": 0,
-            "n_periods": 50,
-            "time_start": 800,
-        },
-        {
-            "ll_func": 0x00000001,
-            "ll_scaling": 0x00000000,
-            "start_value": 0,
-            "step_size": 17179869,
-            "num_samples": 250,
-            "total_scaling": 4.0,
-            "offset": 0,
-            "n_periods": 5,
-            "time_start": 300,
-        },
-        {
-            "ll_func": 0x00000004,
-            "ll_scaling": 0x00000600,
-            "start_value": -214748364,
-            "step_size": 85899,
-            "num_samples": 5000,
-            "total_scaling": -568.0519530539988,
-            "offset": 4,
-            "n_periods": 5,
-            "time_start": 500,
-        }
+        #     "num_samples": 250,
+        #     "total_scaling": 4.0,
+        #     "offset": 0,
+        #     "n_periods": 5,
+        #     "time_start": 2,
+        # },
+        # {
+        #     "ll_func": 0x00000001,
+        #     "ll_scaling": 0x00000000,
+        #     "start_value": 0,
+        #     "step_size": 17179869,
+        #     "num_samples": 250,
+        #     "total_scaling": 4.0,
+        #     "offset": 0,
+        #     "n_periods": 5,
+        #     "time_start": 2,
+        # },        
+        # {
+        #     "ll_func": 0x00000001,
+        #     "ll_scaling": 0x00000000,
+        #     "start_value": 0,
+        #     "step_size": 17179869,
+        #     "num_samples": 250,
+        #     "total_scaling": 4.0,
+        #     "offset": 0,
+        #     "n_periods": 50,
+        #     "time_start": 800,
+        # },
+        # {
+        #     "ll_func": 0x00000001,
+        #     "ll_scaling": 0x00000000,
+        #     "start_value": 0,
+        #     "step_size": 17179869,
+        #     "num_samples": 250,
+        #     "total_scaling": 4.0,
+        #     "offset": 0,
+        #     "n_periods": 5,
+        #     "time_start": 300,
+        # },
+        # {
+        #     "ll_func": 0x00000004,
+        #     "ll_scaling": 0x00000600,
+        #     "start_value": -214748364,
+        #     "step_size": 85899,
+        #     "num_samples": 5000,
+        #     "total_scaling": -568.0519530539988,
+        #     "offset": 4,
+        #     "n_periods": 5,
+        #     "time_start": 500,
+        # }
     ]
     # ch_one_chunks = [999, 1999, 2999, 3999, 4999]
     # ch_two_chunks = [1999, 2999]
@@ -248,6 +248,7 @@ if asyncio.run(client.register_client_id()):
     print(asyncio.run(client.set_sampling_rate(sampling_rate)))
     print(asyncio.run(client.set_ch_one_output_limits(-10, 10)))
     print(asyncio.run(client.set_ch_two_output_limits(-10, 10)))
+    print(asyncio.run(client.unclamp_output()))
     print(asyncio.run(client.set_ch_func_buffer(func_buffer, buffer_one=True)))
     print(asyncio.run(client.set_ch_func_buffer(func_buffer, buffer_one=False)))
     # print(asyncio.run(client.set_cfunction("arctan", "LL_CORDIC_SCALE_6")))
