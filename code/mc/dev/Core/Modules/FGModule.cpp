@@ -34,9 +34,9 @@ etl::icircular_buffer<float>::iterator itr2 = bCalculatedSinBuffer.begin();
 auto end = aCalculatedSinBuffer.begin();
 auto end2 = bCalculatedSinBuffer.begin();
 
-__attribute((section(".dtcmram"))) uint16_t chunk_counter = 0;
-__attribute((section(".dtcmram"))) uint16_t current_period = 1;
-__attribute((section(".dtcmram"))) uint16_t current_period2 = 1;
+__attribute((section(".dtcmram"))) volatile uint16_t chunk_counter = 0;
+__attribute((section(".dtcmram"))) volatile uint16_t current_period = 1;
+__attribute((section(".dtcmram"))) volatile uint16_t current_period2 = 1;
 
 etl::circular_buffer<waveFunction, 100> functions;
 etl::circular_buffer<waveFunction, 100> functions2;
@@ -68,7 +68,7 @@ public:
     initialize_rpi();
     LL_CORDIC_Config(
         CORDIC, LL_CORDIC_FUNCTION_COSINE, /* cosine function */
-        LL_CORDIC_PRECISION_6CYCLES,       /* max precision for q1.31 cosine */
+        LL_CORDIC_PRECISION_15CYCLES,       /* max precision for q1.31 cosine */
         LL_CORDIC_SCALE_0,                 /* no scale */
         LL_CORDIC_NBWRITE_1,     /* One input data: angle. Second input data
              (modulus) is 1     after cordic reset */
@@ -91,7 +91,7 @@ public:
     DBGMCU->APB1LFZ1 |=
         DBGMCU_APB1LFZ1_DBG_TIM5; // stop TIM2 when core is halted
 
-    TIM1->PSC = 999; // Set prescaler
+    TIM1->PSC = 27499; // Set prescaler
     TIM1->ARR = 1;
 
     TIM8->PSC = 27499; // Set prescaler
@@ -186,10 +186,12 @@ public:
           CORDIC->WDATA = func.start_value;
           float tmp = to_float((int32_t)CORDIC->RDATA, func.scale, func.offset);
           aCalculatedSinBuffer.push(tmp);
+          bCalculatedSinBuffer.push(tmp);
         }
         float tmp = to_float((int32_t)CORDIC->RDATA, func.scale, func.offset);
 
         aCalculatedSinBuffer.push(tmp);
+        bCalculatedSinBuffer.push(tmp);
         func.computed = true;
         return;
       }
@@ -208,12 +210,12 @@ public:
         func.start_value += func.step;
         CORDIC->WDATA = func.start_value;
         float tmp = to_float((int32_t)CORDIC->RDATA, func.scale, func.offset);
-        to_bytes(tmp);
+        // to_bytes(tmp);
         aCalculatedSinBuffer.push(tmp);
         bCalculatedSinBuffer.push(tmp);
       }
       float tmp = to_float((int32_t)CORDIC->RDATA, func.scale, func.offset);
-      to_bytes(tmp);
+      // to_bytes(tmp);
       /* Read last result */
       aCalculatedSinBuffer.push(tmp);
       bCalculatedSinBuffer.push(tmp);
@@ -228,14 +230,17 @@ public:
 
   static const uint32_t METHOD_START_Output = 33;
   void start_output(RPIDataPackage *read_package) {
-    LL_TIM_SetTriggerInput(TIM1, LL_TIM_TS_TI2FP2);
-    LL_TIM_SetSlaveMode(TIM1, LL_TIM_SLAVEMODE_TRIGGER);
-    LL_TIM_DisableIT_TRIG(TIM1);
+    // LL_TIM_SetTriggerInput(TIM1, LL_TIM_TS_TI2FP2);
+    // LL_TIM_SetSlaveMode(TIM1, LL_TIM_SLAVEMODE_TRIGGER);
+    // LL_TIM_DisableIT_TRIG(TIM1);
 
     DMA1_Stream7->NDTR = (uint32_t)functions.size();
+    LL_TIM_GenerateEvent_UPDATE(TIM8);
     LL_TIM_SetCounter(TIM1, 0);
     advance(end, functions.front().n_samples);
 
+    TIM1->ARR = functions.front().time_start;
+    TIM1->CR1 |= TIM_CR1_CEN;
     DMA1_Stream7->CR |= DMA_SxCR_EN; // Enable DMA
 
     DMA2_Stream2->NDTR = (uint32_t)functions2.size();
