@@ -159,6 +159,16 @@ __attribute__((section(".itcmram"))) void SPI5_IRQHandler(void) {
   // busy = false;
 }
 
+__attribute__((section(".itcmram"))) void SPI4_IRQHandler(void) {
+  LL_DMA_ClearFlag_TC3(DMA2);
+  LL_SPI_ClearFlag_EOT(SPI4);
+  CLEAR_BIT(SPI4->CR1, SPI_CR1_SPE);
+  SET_BIT(SPI4->IFCR, SPI_IFCR_TXTFC);
+  CLEAR_BIT(SPI4->CFG1, SPI_CFG1_TXDMAEN);
+
+  // busy = false;
+}
+
 void DAC_Device::config_output() {
   /*
    * The STM32 on-chip ADC (not the ADC_Device) is used to detect jumper
