@@ -103,8 +103,6 @@ public:
     this->sampling_timer = new BasicTimer(2, counter_max, prescaler);
     this->sampling_timer2 = new BasicTimer(5, counter_max, prescaler);
 
-    dac_1->write(0);
-    dac_2->write(0);
 
     this->pid_one = new PID(1, 0., 0., 0., 0.);
     this->pid_two = new PID(0., 0., 0., 0., 0.);
@@ -152,9 +150,9 @@ public:
           dac_2->write();
         }
       }
-      if(idle){
-        compute_buffer();
-      }
+      // if(idle){
+      //   compute_buffer();
+      // }
     }
   }
 

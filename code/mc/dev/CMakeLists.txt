@@ -76,7 +76,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/Drivers/ETL/Include
 )
 
-add_definitions([[-DUSE_HAL_DRIVER -DSTM32H725xx -DUSE_FULL_LL_DRIVER -DDEBUG -DANALOG_OUTPUT_MODULE]])
+add_definitions([[-DUSE_HAL_DRIVER -DSTM32H725xx -DUSE_FULL_LL_DRIVER -DDEBUG -DFG_MODULE]])
 
 file(GLOB_RECURSE SOURCES
         "Core/*.*" "startup_stm32h725xx.s"

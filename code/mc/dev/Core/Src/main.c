@@ -663,7 +663,6 @@ static void MX_SPI4_Init(void) {
   SPI_InitStruct.BitOrder = LL_SPI_MSB_FIRST;
   SPI_InitStruct.CRCCalculation = LL_SPI_CRCCALCULATION_DISABLE;
   SPI_InitStruct.CRCPoly = 0x0;
-  // LL_SPI_SetFIFOThreshold(SPI4, LL_SPI_FIFO_TH_08DATA);
   LL_SPI_Init(SPI4, &SPI_InitStruct);
   LL_SPI_SetStandard(SPI4, LL_SPI_PROTOCOL_MOTOROLA);
   LL_SPI_EnableNSSPulseMgt(SPI4);

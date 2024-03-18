@@ -121,7 +121,6 @@ void Module::set_ch_output_limit(RPIDataPackage *read_package,
   /***Read arguments***/
   dac->set_min_output(read_package->pop_from_buffer<float>());
   dac->set_max_output(read_package->pop_from_buffer<float>());
-  dac->write(0);
   dac->set_clear_state();
   // HAL_Delay(1);
   /*** send ACK ***/
