@@ -27,6 +27,17 @@
 
 #ifdef LINEARIZATION_MODULE
 
+etl::circular_buffer<float, 1> aCalculatedSinBuffer;
+etl::circular_buffer<float, 1> bCalculatedSinBuffer;
+
+etl::circular_buffer<uint8_t, 1> byteBuffer;
+
+etl::icircular_buffer<float>::iterator itr = aCalculatedSinBuffer.begin();
+etl::icircular_buffer<float>::iterator itr2 = bCalculatedSinBuffer.begin();
+
+etl::atomic<bool> unlocked = false;
+etl::atomic<bool> unlocked2 = false;
+
 /**
  * State-Machine:
  *
@@ -72,13 +83,14 @@ public:
 
   void run() {
 
-    initialize_adc_dac(ADC_UNIPOLAR_10V, ADC_UNIPOLAR_10V);
-    this->dac_1->write(0);
-    this->dac_2->write(0);
+    initialize_adc_dac(ADC_BIPOLAR_10V, ADC_BIPOLAR_10V);
+    // this->dac_1->write(0);
+    // this->dac_2->write(0);
 
     /*** work loop ***/
     while (true) {
       HAL_Delay(100);
+      adc->start_conversion();
       if (state.current_state == RECEIVED_LINEARIZE_COMMAND and
           state.active_channel != CH_NOT_SET) {
         perform_gain_measurement();
@@ -133,8 +145,8 @@ public:
           state.active_channel == CH_ONE ? adc->channel1 : adc->channel2;
 
       // it doesn't make sense to use the dac outside of the linearized range
-      dac->set_min_output(ramp_start);
-      dac->set_max_output(ramp_end);
+      // dac->set_min_output(ramp_start);
+      // dac->set_max_output(ramp_end);
 
       // sequentially perform gain measurement
       while (gain_measurement_index < ramp_length) {
@@ -307,41 +319,51 @@ LinearizationModule *module;
 
 // DMA Interrupts. You probably don't want to change these, they are neccessary
 // for the low-level communications between MCU, converters and RPi
-__attribute__((section("sram_func"))) __weak void
-DMA2_Stream4_IRQHandler(void) {
-  module->dac_2->dma_transmission_callback();
+/********************
+||       ADC       ||
+********************/
+__attribute__((section(".itcmram"))) void DMA1_Stream4_IRQHandler(void) {
+  module->adc->dma_receive_callback();
 }
-__attribute__((section("sram_func"))) void DMA2_Stream5_IRQHandler(void) {
-  module->dac_1->dma_transmission_callback();
-}
-__attribute__((section("sram_func"))) void DMA2_Stream2_IRQHandler(void) {
-  // SPI 1 rx
+
+__attribute__((section(".itcmram"))) void DMA1_Stream5_IRQHandler(void) {
   module->adc->dma_transmission_callback();
 }
-__attribute__((section("sram_func"))) void DMA2_Stream3_IRQHandler(void) {
-  // SPI 1 tx - SPI 5 rx
-  // no action required
-}
-__attribute__((section("sram_func"))) void DMA2_Stream0_IRQHandler(void) {
+/********************
+||       RPI       ||
+********************/
+__attribute__((section(".itcmram"))) void DMA1_Stream0_IRQHandler(void) {
   module->rpi_dma_in_interrupt();
 }
-__attribute__((section("sram_func"))) void DMA2_Stream1_IRQHandler(void) {
-  // SPI 4 Tx
+__attribute__((section(".itcmram"))) void DMA1_Stream1_IRQHandler(void) {
   module->rpi->dma_out_interrupt();
 }
-__attribute__((section("sram_func"))) void DMA2_Stream6_IRQHandler(void) {
-  // SPI 6 Rx
-  // no action required
-}
-
-__attribute__((section("sram_func"))) void SPI4_IRQHandler(void) {
+__attribute__((section(".itcmram"))) void SPI1_IRQHandler(void) {
   module->rpi->spi_interrupt();
 }
+/********************
+||      Timer      ||
+********************/
+__attribute__((section(".itcmram"))) void TIM2_IRQHandler(void) {
+  LL_TIM_ClearFlag_UPDATE(TIM2);
+  // module->sampling_timer_interrupt();
+  // sample = true;
+}
+__attribute__((section(".itcmram"))) void TIM5_IRQHandler(void) {
+  LL_TIM_ClearFlag_UPDATE(TIM5);
+  // module->sampling_timer_interrupt();
+  // sample2 = true;
+}
+__attribute__((section(".itcmram"))) void TIM4_IRQHandler(void) {
+  LL_TIM_ClearFlag_UPDATE(TIM4);
 
-__attribute__((section("sram_func"))) void
-HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
-  if (htim->Instance == TIM4) {
-    module->rpi->comm_reset_timer_interrupt();
+  // module->rpi->comm_reset_timer_interrupt();
+}
+__attribute__((section(".itcmram"))) void TIM8_UP_IRQHandler(void) {
+  if (TIM8->SR & TIM_SR_UIF) {
+    HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);
+    // module->enable_sampling();
+    TIM8->SR &= ~TIM_SR_UIF;
   }
 }
 
@@ -349,19 +371,6 @@ HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
  *       MAIN FUNCTION        *
  ******************************/
 void start(void) {
-  /* To speed up the access to functions, that are often called, we store them
-   * in the RAM instead of the FLASH memory. RAM is volatile. We therefore need
-   * to load the code into RAM at startup time. For background and explanations,
-   * check https://rhye.org/post/stm32-with-opencm3-4-memory-sections/
-   * */
-  extern unsigned __sram_func_start, __sram_func_end, __sram_func_loadaddr;
-  volatile unsigned *src = &__sram_func_loadaddr;
-  volatile unsigned *dest = &__sram_func_start;
-  while (dest < &__sram_func_end) {
-    *dest = *src;
-    src++;
-    dest++;
-  }
 
   /* After power on, give all devices a moment to properly start up */
   HAL_Delay(200);

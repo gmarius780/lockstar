@@ -44,11 +44,11 @@ __attribute__((section(".itcmram"))) void LinearizableDAC::config_output() {
   dac->config_output();
 }
 __attribute__((section(".itcmram"))) void LinearizableDAC::write(float value) {
-  // if (linearization_enabled) {
-  // 	dac->write(linearize(value));
-  // } else {
+  if (linearization_enabled) {
+  	dac->write(linearize(value));
+  } else {
   dac->write(value);
-  // }
+  }
 }
 __attribute__((section(".itcmram"))) void LinearizableDAC::write() {
   // if (linearization_enabled) {
