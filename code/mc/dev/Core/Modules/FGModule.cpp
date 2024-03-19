@@ -78,6 +78,13 @@ public:
   }
   void run() {
 
+    LL_TIM_SetAutoReload(TIM15, 322);
+    LL_TIM_EnableARRPreload(TIM15);
+
+    LL_TIM_EnableAllOutputs(TIM15);
+    LL_TIM_CC_EnableChannel(TIM15, LL_TIM_CHANNEL_CH1N);
+    LL_TIM_EnableCounter(TIM15);
+
     initialize_adc_dac(ADC_BIPOLAR_10V, ADC_BIPOLAR_10V);
 
     prescaler = 0;
