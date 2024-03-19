@@ -1006,7 +1006,7 @@ static void MX_TIM15_Init(void) {
   /* USER CODE END TIM15_Init 1 */
   TIM_InitStruct.Prescaler = 0;
   TIM_InitStruct.CounterMode = LL_TIM_COUNTERMODE_UP;
-  TIM_InitStruct.Autoreload = 322;
+  TIM_InitStruct.Autoreload = 300;
   TIM_InitStruct.ClockDivision = LL_TIM_CLOCKDIVISION_DIV1;
   TIM_InitStruct.RepetitionCounter = 0;
   LL_TIM_Init(TIM15, &TIM_InitStruct);

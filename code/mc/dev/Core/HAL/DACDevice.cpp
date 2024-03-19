@@ -326,7 +326,7 @@ __attribute__((section(".itcmram"))) void DAC2_Device::begin_dma_transfer() {
   unlocked2 = false;
   // itr2++;
   SetDataLength(DAC_conf->DMA_Streamx, DAC2_BUFFER_SIZE);
-  SPI_SetTransferSize(DAC_conf->SPIx, DAC2_BUFFER_SIZE);
+  SPI_SetTransferSize(DAC_conf->SPIx, 3);
   EnableChannel(DAC_conf->DMA_Streamx);
   LL_SPI_EnableDMAReq_TX(DAC_conf->SPIx);
   DAC_conf->SPIx->CR1 |= SPI_CR1_SPE;

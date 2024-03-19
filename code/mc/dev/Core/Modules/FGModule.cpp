@@ -78,7 +78,7 @@ public:
   }
   void run() {
 
-    LL_TIM_SetAutoReload(TIM15, 322);
+    LL_TIM_SetAutoReload(TIM15, 300);
     LL_TIM_EnableARRPreload(TIM15);
 
     LL_TIM_EnableAllOutputs(TIM15);
