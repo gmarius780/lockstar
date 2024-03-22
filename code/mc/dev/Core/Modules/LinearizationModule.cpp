@@ -83,7 +83,7 @@ public:
 
   void run() {
 
-    initialize_adc_dac(ADC_BIPOLAR_10V, ADC_BIPOLAR_10V);
+    initialize_adc_dac(ADC_UNIPOLAR_10V, ADC_UNIPOLAR_10V);
     // this->dac_1->write(0);
     // this->dac_2->write(0);
 
@@ -151,8 +151,8 @@ public:
       // sequentially perform gain measurement
       while (gain_measurement_index < ramp_length) {
         dac->write(ramp_start + ramp_stepsize * gain_measurement_index);
-        HAL_Delay(
-            settling_time_ms); // wait for settling time to start conversion
+        // HAL_Delay(
+        //     settling_time_ms); // wait for settling time to start conversion
         adc->start_conversion();
         HAL_Delay(1); // wait for conversion to finish (10us would be enough)
         gain_measurement_buffer[gain_measurement_index] =
