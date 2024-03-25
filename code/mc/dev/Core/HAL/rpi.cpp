@@ -12,8 +12,8 @@
 __attribute__((section(".RPI_W_D1"))) __attribute__((__aligned__(0x1000)))
 uint8_t write_D1_buffer[4096] = {0};
 
-__attribute__((section(".RPI_R_D1"))) __attribute__((__aligned__(0x1000)))
-uint8_t read_D1_buffer[4096] = {0};
+__attribute__((section(".RPI_R_D1"))) __attribute__((__aligned__(0x8000)))
+uint8_t read_D1_buffer[100*255] = {0};
 
 RPI::RPI(RPI_TypeDef *RPI_conf) {
   this->RPI_conf = RPI_conf;
