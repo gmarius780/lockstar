@@ -23,8 +23,8 @@ __STATIC_INLINE void to_bytes(float debug_val);
 uint32_t start_ticks, stop_ticks, elapsed_ticks;
 
 /* Array of calculated sines in Q1.31 format */
-etl::circular_buffer<float, 18000> aCalculatedSinBuffer;
-etl::circular_buffer<float, 18000> bCalculatedSinBuffer;
+etl::circular_buffer<float, 16000> aCalculatedSinBuffer;
+etl::circular_buffer<float, 16000> bCalculatedSinBuffer;
 
 etl::circular_buffer<uint8_t, 1000> byteBuffer;
 
@@ -78,12 +78,12 @@ public:
   }
   void run() {
 
-    LL_TIM_SetAutoReload(TIM15, 300);
-    LL_TIM_EnableARRPreload(TIM15);
+    // LL_TIM_SetAutoReload(TIM15, 300);
+    // LL_TIM_EnableARRPreload(TIM15);
 
-    LL_TIM_EnableAllOutputs(TIM15);
-    LL_TIM_CC_EnableChannel(TIM15, LL_TIM_CHANNEL_CH1N);
-    LL_TIM_EnableCounter(TIM15);
+    // LL_TIM_EnableAllOutputs(TIM15);
+    // LL_TIM_CC_EnableChannel(TIM15, LL_TIM_CHANNEL_CH1N);
+    // LL_TIM_EnableCounter(TIM15);
 
     initialize_adc_dac(ADC_BIPOLAR_10V, ADC_BIPOLAR_10V);
 
@@ -157,7 +157,7 @@ public:
           dac_2->write();
         }
       }
-      // if(idle){
+      // if(idle && idle2){
       //   compute_buffer();
       // }
     }
