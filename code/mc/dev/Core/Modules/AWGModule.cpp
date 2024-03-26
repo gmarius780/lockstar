@@ -52,6 +52,7 @@ public:
     prescaler = 275;
     counter_max = 1000;
     this->sampling_timer = new BasicTimer(2, counter_max, prescaler);
+    this->sampling_timer2 = new BasicTimer(5, counter_max, prescaler);
 
     // allocate buffer and chunk space
     this->buffer =
@@ -71,9 +72,9 @@ public:
       if (sample) {
         sampling_timer_interrupt();
       }
-      // if (sample2) {
-      //   sampling_timer_interrupt2();
-      // }
+      if (sample2) {
+        sampling_timer_interrupt2();
+      }
       // HAL_Delay(100);
       // this->dac_1->write(this->pid->calculate_output(adc->channel1->get_result(),
       // adc->channel2->get_result(), dt));
@@ -127,29 +128,16 @@ public:
     if (current_output_one < current_end_chunk_one) {
       this->dac_1->write(*(current_output_one++));
     } else {
-      if (current_output_two >= current_end_chunk_two) {
-        turn_LED6_off();
-        this->disable_sampling();
-        this->is_output_on = true;
-        this->is_output_ttl = false;
-        turn_LED6_on();
-
-        this->output_next_chunk();
-      }
+      sampling_timer->disable();
+      this->output_next_chunk();
     }
-
+  }
+  __attribute__((section(".itcmram"))) void sampling_timer_interrupt2() {
     if (current_output_two < current_end_chunk_two) {
       this->dac_2->write(*(current_output_two++));
     } else {
-      if (current_output_one >= current_end_chunk_one) {
-        turn_LED6_off();
-        this->disable_sampling();
-        this->is_output_on = true;
-        this->is_output_ttl = false;
-        turn_LED6_on();
-
-        this->output_next_chunk();
-      }
+      sampling_timer2->disable();
+      this->output_next_chunk();
     }
   }
 };
