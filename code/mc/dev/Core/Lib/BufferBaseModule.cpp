@@ -113,6 +113,8 @@ void BufferBaseModule::initialize_buffers(RPIDataPackage *read_package) {
     this->reset_output();
     this->sampling_timer->set_auto_reload(counter_max);
     this->sampling_timer->set_prescaler(prescaler);
+    this->sampling_timer2->set_auto_reload(counter_max);
+    this->sampling_timer2->set_prescaler(prescaler);
   }
   this->reset_output();
   /*** send ACK ***/
@@ -260,7 +262,7 @@ void BufferBaseModule::set_ch_buffer(RPIDataPackage *read_package,
   this->turn_output_off();
 
   /***Read arguments***/
-  bool append = read_package->pop_from_buffer<bool>();
+  bool append = false; //read_package->pop_from_buffer<bool>();
   uint32_t nbr_values_to_read = read_package->pop_from_buffer<uint32_t>();
 
   // start filling the buffer from scratch if neccessary
@@ -386,11 +388,15 @@ void BufferBaseModule::turn_output_off() {
 void BufferBaseModule::enable_sampling() {
   this->sampling_timer->enable_interrupt();
   this->sampling_timer->enable();
+  this->sampling_timer2->enable_interrupt();
+  this->sampling_timer2->enable();
 }
 
 void BufferBaseModule::disable_sampling() {
   this->sampling_timer->disable_interrupt();
   this->sampling_timer->disable();
+  this->sampling_timer2->disable_interrupt();
+  this->sampling_timer2->disable();
 }
 
 /**

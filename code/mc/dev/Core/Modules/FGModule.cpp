@@ -23,8 +23,8 @@ __STATIC_INLINE void to_bytes(float debug_val);
 uint32_t start_ticks, stop_ticks, elapsed_ticks;
 
 /* Array of calculated sines in Q1.31 format */
-etl::circular_buffer<float, 18000> aCalculatedSinBuffer;
-etl::circular_buffer<float, 18000> bCalculatedSinBuffer;
+etl::circular_buffer<float, 16000> aCalculatedSinBuffer;
+etl::circular_buffer<float, 16000> bCalculatedSinBuffer;
 
 etl::circular_buffer<uint8_t, 1000> byteBuffer;
 
@@ -78,6 +78,13 @@ public:
   }
   void run() {
 
+    // LL_TIM_SetAutoReload(TIM15, 300);
+    // LL_TIM_EnableARRPreload(TIM15);
+
+    // LL_TIM_EnableAllOutputs(TIM15);
+    // LL_TIM_CC_EnableChannel(TIM15, LL_TIM_CHANNEL_CH1N);
+    // LL_TIM_EnableCounter(TIM15);
+
     initialize_adc_dac(ADC_BIPOLAR_10V, ADC_BIPOLAR_10V);
 
     prescaler = 0;
@@ -91,7 +98,7 @@ public:
     DBGMCU->APB1LFZ1 |=
         DBGMCU_APB1LFZ1_DBG_TIM5; // stop TIM2 when core is halted
 
-    TIM1->PSC = 27499; // Set prescaler
+    TIM1->PSC = 999; // Set prescaler
     TIM1->ARR = 1;
 
     TIM8->PSC = 27499; // Set prescaler
@@ -136,6 +143,14 @@ public:
     LL_TIM_SetSlaveMode(sampling_timer2->tim_regs, LL_TIM_SLAVEMODE_TRIGGER);
     LL_TIM_SetTriggerInput(sampling_timer2->tim_regs, LL_TIM_TS_ITR1);
 
+    LL_TIM_SetTriggerInput(TIM1, LL_TIM_TS_TI2FP2);
+    LL_TIM_SetSlaveMode(TIM1, LL_TIM_SLAVEMODE_TRIGGER);
+    LL_TIM_CC_DisableChannel(TIM1, LL_TIM_CHANNEL_CH2);
+    LL_TIM_IC_SetFilter(TIM1, LL_TIM_CHANNEL_CH2, LL_TIM_IC_FILTER_FDIV1);
+    LL_TIM_IC_SetPolarity(TIM1, LL_TIM_CHANNEL_CH2, LL_TIM_IC_POLARITY_FALLING);
+    LL_TIM_DisableIT_TRIG(TIM1);
+    LL_TIM_DisableDMAReq_TRIG(TIM1);
+
     while (true) {
       // adc->start_conversion();
       if (sample) {
@@ -150,7 +165,7 @@ public:
           dac_2->write();
         }
       }
-      // if(idle){
+      // if(idle && idle2){
       //   compute_buffer();
       // }
     }
@@ -228,28 +243,24 @@ public:
 
   static const uint32_t METHOD_START_Output = 33;
   void start_output(RPIDataPackage *read_package) {
-    // LL_TIM_SetTriggerInput(TIM1, LL_TIM_TS_TI2FP2);
-    // LL_TIM_SetSlaveMode(TIM1, LL_TIM_SLAVEMODE_TRIGGER);
-    // LL_TIM_DisableIT_TRIG(TIM1);
 
     DMA1_Stream7->NDTR = (uint32_t)functions.size();
-    LL_TIM_GenerateEvent_UPDATE(TIM8);
     LL_TIM_SetCounter(TIM1, 0);
     advance(end, functions.front().n_samples);
 
     TIM1->ARR = functions.front().time_start;
-    TIM1->CR1 |= TIM_CR1_CEN;
+    // TIM1->CR1 |= TIM_CR1_CEN;
     DMA1_Stream7->CR |= DMA_SxCR_EN; // Enable DMA
 
-    DMA2_Stream2->NDTR = (uint32_t)functions2.size();
-    LL_TIM_GenerateEvent_UPDATE(TIM8);
-    LL_TIM_SetCounter(TIM8, 0);
+    // DMA2_Stream2->NDTR = (uint32_t)functions2.size();
+    // LL_TIM_GenerateEvent_UPDATE(TIM8);
+    // LL_TIM_SetCounter(TIM8, 0);
 
-    advance(end2, functions2.front().n_samples);
+    // advance(end2, functions2.front().n_samples);
 
-    TIM8->ARR = functions2.front().time_start;
-    TIM8->CR1 |= TIM_CR1_CEN;
-    DMA2_Stream2->CR |= DMA_SxCR_EN; // Enable DMA
+    // TIM8->ARR = functions2.front().time_start;
+    // TIM8->CR1 |= TIM_CR1_CEN;
+    // DMA2_Stream2->CR |= DMA_SxCR_EN; // Enable DMA
 
     /*** send ACK ***/
     RPIDataPackage *write_package = rpi->get_write_package();

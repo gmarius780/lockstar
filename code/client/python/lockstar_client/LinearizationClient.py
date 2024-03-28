@@ -92,7 +92,11 @@ class LinearizationClient(LockstarClient):
 
 async def main():
     from os.path import join, dirname
-    client = LinearizationClient('192.168.88.25', 10780, 1234) 
+    client = LinearizationClient('192.168.137.2', 10780, 1234)
+
+    await client.set_ch_one_output_limits(0, 10)
+    await client.set_ch_two_output_limits(0, 10)
+    await client.unclamp_output()
 
     if await client.register_client_id():
         logging.info(f'Succesfully initialized Linearization Module')

@@ -14,21 +14,16 @@ set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 # project settings
 project(dev C CXX ASM)
 
-# include(FetchContent)
+Include(FetchContent)
 
-# FetchContent_Declare(
-#     emil
-#     GIT_REPOSITORY https://github.com/philips-software/embeddedinfralib.git
-#     GIT_TAG        main
-# )
+FetchContent_Declare(
+  etl
+  GIT_REPOSITORY https://github.com/ETLCPP/etl
+  GIT_TAG        20.38.10
+)
 
-# FetchContent_Declare(
-#     halst
-#     GIT_REPOSITORY https://github.com/philips-software/amp-hal-st.git
-#     GIT_TAG        main
-# )
+FetchContent_MakeAvailable(etl)
 
-# FetchContent_MakeAvailable(emil halst)
 set(CMAKE_COLOR_DIAGNOSTICS ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_C_STANDARD 11)
@@ -73,7 +68,6 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/Drivers/STM32H7xx_HAL_Driver/Inc/Legacy
     ${CMAKE_SOURCE_DIR}/Drivers/CMSIS/Device/ST/STM32H7xx/Include
     ${CMAKE_SOURCE_DIR}/Drivers/CMSIS/Include
-    ${CMAKE_SOURCE_DIR}/Drivers/ETL/Include
 )
 
 add_definitions([[-DUSE_HAL_DRIVER -DSTM32H725xx -DUSE_FULL_LL_DRIVER -DDEBUG -DFG_MODULE]])
@@ -81,12 +75,10 @@ add_definitions([[-DUSE_HAL_DRIVER -DSTM32H725xx -DUSE_FULL_LL_DRIVER -DDEBUG -D
 file(GLOB_RECURSE SOURCES
         "Core/*.*" "startup_stm32h725xx.s"
         "Drivers/*.*"
-        #[[TODO rest of cource locations]]
         )
 
 file(GLOB_RECURSE EXEC
         "Core/Modules/*.*"
-        #[[TODO rest of cource locations]]
         )
 
 list(FILTER SOURCES EXCLUDE REGEX "ringbuffer\\.c$")
@@ -102,10 +94,8 @@ add_link_options(-T ${LINKER_SCRIPT})
 
 
 add_executable(${PROJECT_NAME}.elf ${SOURCES} ${EXEC} ${LINKER_SCRIPT})
-# add_library(MyLib STATIC ${SOURCES} ${LINKER_SCRIPT})
 
-# target_link_libraries(${PROJECT_NAME}.elf MyLib)
-
+target_link_libraries(${PROJECT_NAME}.elf PRIVATE etl::etl)
 
 set (LIST_FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.list)
 set(HEX_FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.hex)

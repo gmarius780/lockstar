@@ -57,8 +57,11 @@ if __name__ == "__main__":
         linearization_file = join(dirname(__file__), 'test_linearization.json')
         linearization_length = 2000
 
-        sampling_rate = 525000
+        sampling_rate = 500000
         
+        print(asyncio.run(client.set_ch_one_output_limits(-10, 10)))
+        print(asyncio.run(client.set_ch_two_output_limits(-10, 10)))
+        print(asyncio.run(client.unclamp_output()))
         # ch_one_chunks = [1999]
         # ch_one_buffer = np.linspace(0, 10, num=2000).tolist()
         # ch_two_chunks = [0]
@@ -91,8 +94,8 @@ if __name__ == "__main__":
         ch_two_buffer = np.concatenate((np.cos(np.linspace(0, 50*4*np.pi, num=2000)),
                                         np.linspace(1, 2, num=500), np.linspace(2, 1, num=500)))
 
-        ch_one_buffer = (ch_one_buffer * 5).tolist()
-        ch_two_buffer = (ch_two_buffer * 5).tolist()
+        ch_one_buffer = (ch_one_buffer*7).tolist()
+        ch_two_buffer = (ch_two_buffer).tolist()
         
 
         # ch_one_chunks = [1999]
@@ -105,8 +108,8 @@ if __name__ == "__main__":
         # print(await lient.set_ch_one_output_limits(0, 1))
         print(asyncio.run(client.initialize_buffers(len(ch_one_buffer), len(ch_two_buffer), len(ch_one_chunks), 
                                         len(ch_two_chunks), sampling_rate)))
-        print(asyncio.run(client.set_ch_one_output_limits(-10, 10)))
-        print(asyncio.run(client.set_ch_two_output_limits(-10, 10)))
+        # print(asyncio.run(client.set_ch_one_output_limits(-10, 10)))
+        # print(asyncio.run(client.set_ch_two_output_limits(-10, 10)))
         print(asyncio.run(client.set_ch_one_chunks(ch_one_chunks)))
         print(asyncio.run(client.set_ch_two_chunks(ch_two_chunks)))
         print(asyncio.run(client.set_ch_one_buffer(ch_one_buffer)))
