@@ -93,7 +93,7 @@ list(FILTER SOURCES EXCLUDE REGEX "ringbuffer\\.c$")
 list(FILTER SOURCES EXCLUDE REGEX "startup_stm32h725zgtx.s")
 list(FILTER SOURCES EXCLUDE REGEX "Modules/.*")
 
-set(LINKER_SCRIPT ${CMAKE_SOURCE_DIR}/STM32H725ZGTx_FLASH.ld)
+set(LINKER_SCRIPT ${CMAKE_SOURCE_DIR}/STM32H725ZGTX_FLASH.ld)
 
 add_link_options(-lc -lm -lnosys)
 add_link_options(-Wl,-gc-sections,--print-memory-usage,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map)
