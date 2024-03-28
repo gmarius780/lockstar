@@ -143,6 +143,14 @@ public:
     LL_TIM_SetSlaveMode(sampling_timer2->tim_regs, LL_TIM_SLAVEMODE_TRIGGER);
     LL_TIM_SetTriggerInput(sampling_timer2->tim_regs, LL_TIM_TS_ITR1);
 
+    LL_TIM_SetTriggerInput(TIM1, LL_TIM_TS_TI2FP2);
+    LL_TIM_SetSlaveMode(TIM1, LL_TIM_SLAVEMODE_TRIGGER);
+    LL_TIM_CC_DisableChannel(TIM1, LL_TIM_CHANNEL_CH2);
+    LL_TIM_IC_SetFilter(TIM1, LL_TIM_CHANNEL_CH2, LL_TIM_IC_FILTER_FDIV1);
+    LL_TIM_IC_SetPolarity(TIM1, LL_TIM_CHANNEL_CH2, LL_TIM_IC_POLARITY_FALLING);
+    LL_TIM_DisableIT_TRIG(TIM1);
+    LL_TIM_DisableDMAReq_TRIG(TIM1);
+
     while (true) {
       // adc->start_conversion();
       if (sample) {
@@ -235,10 +243,6 @@ public:
 
   static const uint32_t METHOD_START_Output = 33;
   void start_output(RPIDataPackage *read_package) {
-    LL_TIM_SetTriggerInput(TIM1, LL_TIM_TS_TI2FP2);
-    LL_TIM_SetSlaveMode(TIM1, LL_TIM_SLAVEMODE_TRIGGER);
-    LL_TIM_IC_SetPolarity(TIM1, LL_TIM_CHANNEL_CH2, LL_TIM_IC_POLARITY_FALLING);
-    LL_TIM_DisableIT_TRIG(TIM1);
 
     DMA1_Stream7->NDTR = (uint32_t)functions.size();
     LL_TIM_SetCounter(TIM1, 0);
