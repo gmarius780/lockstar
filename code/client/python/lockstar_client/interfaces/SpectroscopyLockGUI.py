@@ -20,6 +20,8 @@ class ScopeCanvas(FigureCanvas):
 
     def __init__(self, parent=None, width=5, height=4, dpi=100):
         self.fig, (self.ax_in, self.ax_out) = plt.subplots(nrows=2, sharex=True, figsize=(width, height), dpi=dpi)
+        self.ax_in.set_ylabel('IN')
+        self.ax_out.set_ylabel('OUT')
         super(ScopeCanvas, self).__init__(self.fig)
 
 
@@ -43,6 +45,9 @@ class SpectroscopyLockGUI(QtWidgets.QMainWindow):
         #=== members
         self.p = self.i = self.d = 0
         self.locked = False
+
+        self.dither_amp = 0.
+        self.dither_offset = 0.
 
         #===setup gui
 
@@ -176,7 +181,7 @@ class SpectroscopyLockGUI(QtWidgets.QMainWindow):
                     if trace_name == 'in_one':
                         if self.line_ch_in is None:
                             self.line_ch_in, = self.scope_canvas.ax_in.plot(self.time_axis, trace, 'o', label=trace_name, ms=1)
-                            self.scope_canvas.ax_in.legend()
+                            # self.scope_canvas.ax_in.legend()
                         else:
                             self.line_ch_in.set_ydata(trace)
                             ymin = np.min(trace)
@@ -187,7 +192,7 @@ class SpectroscopyLockGUI(QtWidgets.QMainWindow):
                     elif trace_name == 'out_one':
                         if self.line_ch_out is None:
                             self.line_ch_out, = self.scope_canvas.ax_out.plot(self.time_axis, trace, 'o', label=trace_name, ms=1)
-                            self.scope_canvas.ax_out.legend()
+                            # self.scope_canvas.ax_out.legend()
                         else:
                             self.line_ch_out.set_ydata(trace)
                             ymin = np.min(trace)
@@ -211,11 +216,12 @@ class SpectroscopyLockGUI(QtWidgets.QMainWindow):
         
 
 if __name__ == "__main__":
-    client = SpectroscopyLockClient('192.168.88.25', 10780, 1234)
+    client = SpectroscopyLockClient('192.168.88.200', 10780, 1234)
     scope_buffer_length = 400
     dither_frequency = 10
+    scope_sampling_rate=1000
     print(asyncio.run(client.setup_scope(
-        sampling_rate=1000,
+        sampling_rate=scope_sampling_rate,
         nbr_samples_in_one=scope_buffer_length,
         nbr_samples_in_two=0,
         nbr_samples_out_one=scope_buffer_length,
@@ -223,6 +229,7 @@ if __name__ == "__main__":
         adc_active_mode=False,
         double_buffer_mode=True
     )))
+    print(asyncio.run(client.set_scope_sampling_rate(scope_sampling_rate)))
     print(asyncio.run(client.set_dither_frq(dither_frequency)))
     # asyncio.run(client.set_ch_one_output_limits(-10, 10))
     # asyncio.run(client.set_ch_two_output_limits(-10, 10))

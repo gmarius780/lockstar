@@ -294,7 +294,7 @@ class DoubleDitherLockGUI(QtWidgets.QMainWindow):
         
 
 if __name__ == "__main__":
-    client = DoubleDitherLockClient('192.168.88.25', 10780, 1234)
+    client = DoubleDitherLockClient('192.168.88.200', 10780, 1234)
     scope_sampling_rate = 200
     # scope_sampling_rate = 800
     # scope_buffer_length = 400
